@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "justarod",
+  "version": "0.0.1",
+  "name": "JustARod",
+  "description": "meow",
+  "authors": [],
+  "contact": {},
+  "license": "GPL-3.0",
+  "icon": "assets/justarod/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "org.cneko.justarod.client.JustarodClient"
+    ],
+    "main": [
+      "org.cneko.justarod.Justarod"
+    ]
+  },
+  "depends": {
+    "fabricloader": "*",
+    "fabric": "*",
+    "minecraft": ">=1.21",
+    "fabric-language-kotlin": "*"
+  }
+}

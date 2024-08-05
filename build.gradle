@@ -1,6 +1,6 @@
 plugins {
-    id 'fabric-loom' version '1.7-SNAPSHOT'
     id 'maven-publish'
+    id "fabric-loom" version "1.7-SNAPSHOT"
     id 'org.jetbrains.kotlin.jvm'
 }
 
@@ -10,7 +10,6 @@ group = project.maven_group
 base {
     archivesName = project.archives_base_name
 }
-
 
 repositories {
     mavenCentral()

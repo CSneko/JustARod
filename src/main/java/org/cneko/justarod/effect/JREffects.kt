@@ -1,4 +1,4 @@
-package org.cneko.justarod.effects
+package org.cneko.justarod.effect
 
 import net.minecraft.entity.effect.StatusEffect
 import net.minecraft.registry.Registries

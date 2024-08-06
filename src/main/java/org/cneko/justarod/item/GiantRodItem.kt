@@ -11,7 +11,7 @@ import net.minecraft.registry.Registries
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.world.World
-import org.cneko.justarod.effects.JREffects
+import org.cneko.justarod.effect.JREffects
 
 class GiantRodItem: OtherUsedItem(Settings().maxCount(1).maxDamage(1000).component(JRComponents.USED_TIME_MARK, 0)) {
     override fun canAcceptEntity(stack: ItemStack, entity: Entity): Boolean {

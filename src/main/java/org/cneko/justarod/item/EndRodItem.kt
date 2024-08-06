@@ -13,7 +13,7 @@ import net.minecraft.util.ActionResult
 import net.minecraft.util.Formatting
 import net.minecraft.util.Hand
 import net.minecraft.world.World
-import org.cneko.justarod.effects.JREffects
+import org.cneko.justarod.effect.JREffects
 
 abstract class EndRodItem(settings: Settings) : Item(settings), EndRodItemInterface {
     override fun onUse(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean) : ActionResult{

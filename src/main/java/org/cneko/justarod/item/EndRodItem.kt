@@ -3,14 +3,15 @@ package org.cneko.justarod.item
 import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.effect.StatusEffectInstance
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.tooltip.TooltipType
-import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.Registries
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Formatting
+import net.minecraft.util.Hand
 import net.minecraft.world.World
 import org.cneko.justarod.effects.JREffects
 
@@ -28,6 +29,39 @@ abstract class EndRodItem(settings: Settings) : Item(settings), EndRodItemInterf
         val markedCount: Int = stack?.getOrDefault(JRComponents.USED_TIME_MARK, 0)!!
         tooltip?.add(Text.translatable("item.justarod.end_rod.used_count", markedCount).formatted(Formatting.GREEN))
     }
+    abstract fun getInstruction(): EndRodInstructions
+
+}
+
+abstract class OtherUsedItem(settings: Settings):EndRodItem(settings), OtherUsedItemInterface {
+    override fun useOnOther(stack: ItemStack, world: World?, user: PlayerEntity, target: LivingEntity):ActionResult{
+        // 插入其它实体
+        if (getInstruction() == EndRodInstructions.USE_ON_OTHER_INSERT){
+            // 从手上减少这根末地烛
+            user.inventory.removeStack(user.inventory.selectedSlot)
+            target.damage(user.damageSources?.generic(), 3f)
+            // TODO : 实现目标实体插入判断逻辑和取出的逻辑
+            user.sendMessage(Text.translatable("item.justarod.end_rod.insert_success"))
+            return ActionResult.SUCCESS
+        }else if (getInstruction() == EndRodInstructions.USE_ON_OTHER_ATTACK){
+            // 攻击其它实体
+            target.damage(user.damageSources?.generic(), 1f)
+            return ActionResult.SUCCESS
+        }
+        return ActionResult.PASS
+    }
+
+    override fun useOnEntity(
+        stack: ItemStack?,
+        user: PlayerEntity?,
+        entity: LivingEntity?,
+        hand: Hand?
+    ): ActionResult? {
+        if (super.useOnEntity(stack, user, entity, hand) == ActionResult.FAIL) return ActionResult.FAIL
+        if (!canAcceptEntity(stack!!, entity!!)) return ActionResult.FAIL
+        return useOnOther(stack, user?.world, user!!, entity)
+    }
+
 }
 
 open class SelfUsedItem(settings: Settings) : EndRodItem(settings), SelfUsedItemInterface {
@@ -49,6 +83,10 @@ open class SelfUsedItem(settings: Settings) : EndRodItem(settings), SelfUsedItem
 
     }
 
+    override fun getInstruction(): EndRodInstructions {
+        return EndRodInstructions.USE_ON_SELF
+    }
+
 
     override fun useOnSelf(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean): ActionResult {
         onUse(stack, world, entity, slot, selected)
@@ -58,7 +96,6 @@ open class SelfUsedItem(settings: Settings) : EndRodItem(settings), SelfUsedItem
             entity.addStatusEffect(orgasm)
         }
         return ActionResult.SUCCESS
-        // 默认不处理
     }
 }
 
@@ -77,6 +114,10 @@ interface SelfUsedItemInterface{
      */
     fun useOnSelf(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean):ActionResult
 }
+interface OtherUsedItemInterface{
+    fun canAcceptEntity(stack :ItemStack,entity: Entity):Boolean
+    fun useOnOther(stack: ItemStack, world: World?, user: PlayerEntity,target: LivingEntity):ActionResult
+}
 interface EndRodItemInterface{
     /**
      * 使用末地烛
@@ -87,4 +128,9 @@ interface EndRodItemInterface{
      * @param selected 是否是选中的末地烛
      */
     fun onUse(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean) : ActionResult
+}
+enum class EndRodInstructions{
+    USE_ON_SELF,
+    USE_ON_OTHER_INSERT,
+    USE_ON_OTHER_ATTACK
 }

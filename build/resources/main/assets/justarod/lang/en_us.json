@@ -1,6 +1,10 @@
 {
   "item.justarod.end_rod.used_count": "§a这根末地烛已经使用了%s次啦",
+  "item.justarod.end_rod.insert_success": "§a插入成功了喵",
   "item.justarod.slime_rod": "粘液末地烛",
+  "item.justarod.giant_rod": "巨型末地烛",
+  "item.justarod.giant_rod.tooltip": "§a这么大，插进去会坏掉的吧ouo",
+  "item.justarod.giant_rod.too_big": "§c太大了，插不进去呀(°ﾛ°٥)",
   "itemGroup.justarod": "只是根棍子",
   "effect.justarod.orgasm": "高潮"
 }

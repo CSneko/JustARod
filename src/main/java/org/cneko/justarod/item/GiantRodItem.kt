@@ -7,6 +7,7 @@ import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.item.tooltip.TooltipType
 import net.minecraft.registry.Registries
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
@@ -35,6 +36,16 @@ class GiantRodItem: OtherUsedItem(Settings().maxCount(1).maxDamage(1000).compone
 
     override fun getInstruction(): EndRodInstructions {
         return EndRodInstructions.USE_ON_OTHER_INSERT
+    }
+
+    override fun appendTooltip(
+        stack: ItemStack?,
+        context: TooltipContext?,
+        tooltip: MutableList<Text>?,
+        type: TooltipType?
+    ) {
+        super.appendTooltip(stack, context, tooltip, type)
+        tooltip?.add(Text.translatable("item.justarod.giant_rod.tooltip"))
     }
 
 

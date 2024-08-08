@@ -17,6 +17,7 @@ class JRItems {
     companion object{
         val SLIME_ROD = SlimeRodItem()
         val GIANT_ROD = GiantRodItem()
+        val LUBRICATING_BOOK = LubricatingBookItem()
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null;
         var JR_ITEM_GROUP: ItemGroup? = null;
@@ -24,6 +25,7 @@ class JRItems {
             // 注册物品
             Registry.register(Registries.ITEM, Identifier.of(MODID, "slime_rod"), SLIME_ROD)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "giant_rod"), GIANT_ROD)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "lubricating_book"), LUBRICATING_BOOK)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
@@ -36,6 +38,7 @@ class JRItems {
             ItemGroupEvents.modifyEntriesEvent(JR_ITEM_GROUP_KEY!!).register { entries ->
                 entries.add(SLIME_ROD)
                 entries.add(GIANT_ROD)
+                entries.add(LUBRICATING_BOOK)
             }
         }
     }

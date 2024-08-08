@@ -25,7 +25,7 @@ class GiantRodItem: OtherUsedItem(Settings().maxCount(1).maxDamage(1000).compone
             return ActionResult.FAIL
         }
         // 给目标实体高潮效果
-        JREffects.TATER_EFFECT?.let {
+        JREffects.ORGASM_EFFECT?.let {
             val orgasm = StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(it), 100, 0)
             target.addStatusEffect(orgasm)
         }

@@ -8,12 +8,18 @@ import org.cneko.justarod.Justarod.MODID
 
 class JREffects {
     companion object{
-        var TATER_EFFECT: StatusEffect? = null
+        var ORGASM_EFFECT: StatusEffect? = null
+        var LUBRICATING_EFFECT: StatusEffect? = null
         fun init(){
-            TATER_EFFECT = Registry.register(
+            ORGASM_EFFECT = Registry.register(
                 Registries.STATUS_EFFECT,
                 Identifier.of(MODID, "orgasm"),
                 OrgasmEffect()
+            )
+            LUBRICATING_EFFECT = Registry.register(
+                Registries.STATUS_EFFECT,
+                Identifier.of(MODID, "lubricating"),
+                LubricatingEffect()
             )
         }
     }

@@ -10,7 +10,6 @@ import net.minecraft.util.math.random.Random
 
 
 class OrgasmEffect() : StatusEffect(StatusEffectCategory.BENEFICIAL, 0xe9b8b3) {
-    private var timer: Long = 0
     private var damageTimer: Long = 0
     // 每tick都会调用一次，直到返回false
     override fun canApplyUpdateEffect(duration: Int, amplifier: Int): Boolean {
@@ -23,19 +22,6 @@ class OrgasmEffect() : StatusEffect(StatusEffectCategory.BENEFICIAL, 0xe9b8b3) {
         val random: Random = world.random
         // 每3~5秒播放一次音效
         val time = System.currentTimeMillis()
-//        if (time - timer > random.nextInt(3) + 3) {
-//            timer = time
-//            // 随机播放0~7的音效
-//            val sound: Int = random.nextInt(8)
-//            world.playSound(
-//                entity,
-//                entity.blockPos,
-//                SoundEvent.of(Identifier.of(MODID, "effect.orgasm.$sound")),
-//                SoundCategory.VOICE,
-//                1f,
-//                1f
-//            )
-//        }
         // 添加爱心效果
         world.addParticle(
             ParticleTypes.HEART,

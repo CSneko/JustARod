@@ -11,6 +11,7 @@ public class Justarod implements ModInitializer {
     public void onInitialize() {
         JRItems.Companion.init();
         JREffects.Companion.init();
+        JRAttributes.Companion.init();
         EntityAttackEvent.init();
     }
 }

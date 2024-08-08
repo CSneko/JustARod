@@ -91,7 +91,7 @@ open class SelfUsedItem(settings: Settings) : EndRodItem(settings), SelfUsedItem
     override fun useOnSelf(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean): ActionResult {
         onUse(stack, world, entity, slot, selected)
         // 给予玩家gc效果
-        JREffects.TATER_EFFECT?.let {
+        JREffects.ORGASM_EFFECT?.let {
             val orgasm = StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(it), 100, 0)
             entity.addStatusEffect(orgasm)
         }

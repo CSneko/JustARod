@@ -3,6 +3,7 @@ package org.cneko.justarod
 import net.fabricmc.fabric.api.`object`.builder.v1.entity.FabricDefaultAttributeRegistry
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.attribute.ClampedEntityAttribute
+import net.minecraft.entity.attribute.DefaultAttributeContainer
 import net.minecraft.entity.attribute.EntityAttribute
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.registry.Registries
@@ -10,7 +11,8 @@ import net.minecraft.registry.Registry
 import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.util.Identifier
 import org.cneko.justarod.Justarod.MODID
-
+import org.cneko.toneko.fabric.api.events.AttributeEvents
+import org.cneko.toneko.fabric.api.events.AttributeEvents.OnRegisterPlayerAttributes
 
 class JRAttributes {
     companion object{
@@ -26,9 +28,12 @@ class JRAttributes {
             return Registry.registerReference(Registries.ATTRIBUTE, id, attribute)
         }
         fun init(){
-            FabricDefaultAttributeRegistry.register(EntityType.PLAYER, PlayerEntity.createPlayerAttributes()
-                .add(PLAYER_LUBRICATING)
-            );
+            AttributeEvents.ON_REGISTER_PLAYER_ATTRIBUTES.register(OnRegisterPlayerAttributes { builder: DefaultAttributeContainer.Builder ->
+                val b = builder.add(PLAYER_LUBRICATING)
+                return@OnRegisterPlayerAttributes b
+            })
+            FabricDefaultAttributeRegistry.register(EntityType.PLAYER, PlayerEntity.createPlayerAttributes())
+
         }
     }
 }

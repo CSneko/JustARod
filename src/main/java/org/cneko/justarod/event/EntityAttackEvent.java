@@ -2,6 +2,8 @@ package org.cneko.justarod.event;
 
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -13,6 +15,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
+import org.cneko.justarod.effect.JREffects;
 import org.cneko.justarod.item.GiantRodItem;
 
 
@@ -45,6 +48,11 @@ public class EntityAttackEvent {
             }else {
                 player.sendMessage(Text.translatable("item.justarod.giant_rod.too_big"));
             }
+        }
+
+        if (Registries.ITEM.getId(stack.getItem()).getPath().equalsIgnoreCase("end_rod") && entity instanceof LivingEntity e){
+            StatusEffectInstance orgasm = new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getORGASM_EFFECT()), 20, 1);
+            e.addStatusEffect(orgasm);
         }
         return ActionResult.PASS;
     }

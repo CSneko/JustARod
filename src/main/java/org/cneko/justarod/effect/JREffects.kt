@@ -10,6 +10,7 @@ class JREffects {
     companion object{
         var ORGASM_EFFECT: StatusEffect? = null
         var LUBRICATING_EFFECT: StatusEffect? = null
+        var ESTRUS_EFFECT: StatusEffect? = null
         fun init(){
             ORGASM_EFFECT = Registry.register(
                 Registries.STATUS_EFFECT,
@@ -20,6 +21,11 @@ class JREffects {
                 Registries.STATUS_EFFECT,
                 Identifier.of(MODID, "lubricating"),
                 LubricatingEffect()
+            )
+            ESTRUS_EFFECT = Registry.register(
+                Registries.STATUS_EFFECT,
+                Identifier.of(MODID, "estrus"),
+                EstrusEffect()
             )
         }
     }

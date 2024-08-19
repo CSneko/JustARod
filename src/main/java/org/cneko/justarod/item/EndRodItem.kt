@@ -1,5 +1,11 @@
 package org.cneko.justarod.item
 
+import net.fabricmc.fabric.impl.biome.modification.BuiltInRegistryKeys
+import net.minecraft.client.render.VertexFormatElement.ComponentType
+import net.minecraft.component.DataComponentTypes
+import net.minecraft.component.type.ItemEnchantmentsComponent
+import net.minecraft.enchantment.Enchantment
+import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.effect.StatusEffectInstance
@@ -8,6 +14,9 @@ import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.tooltip.TooltipType
 import net.minecraft.registry.Registries
+import net.minecraft.registry.entry.RegistryEntry
+import net.minecraft.registry.BuiltinRegistries
+import net.minecraft.registry.RegistryKeys
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Formatting
@@ -20,6 +29,7 @@ abstract class EndRodItem(settings: Settings) : Item(settings), EndRodItemInterf
         // 添加计数
         val count = stack.getOrDefault(JRComponents.USED_TIME_MARK, 0)
         stack.set(JRComponents.USED_TIME_MARK, count + 1)
+
         return ActionResult.SUCCESS
     }
 

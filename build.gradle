@@ -33,7 +33,7 @@ dependencies {
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    modImplementation "maven.modrinth:tonekomod:1.2.2"
+    modImplementation "maven.modrinth:tonekomod:${project.toneko_version}"
 }
 
 processResources {

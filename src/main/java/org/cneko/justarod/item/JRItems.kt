@@ -18,6 +18,7 @@ class JRItems {
         val SLIME_ROD = SlimeRodItem()
         val GIANT_ROD = GiantRodItem()
         val LUBRICATING_BOOK = LubricatingBookItem()
+        val REDSTONE_ROD = RedstoneEndRod()
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null;
         var JR_ITEM_GROUP: ItemGroup? = null;
@@ -26,11 +27,12 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "slime_rod"), SLIME_ROD)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "giant_rod"), GIANT_ROD)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "lubricating_book"), LUBRICATING_BOOK)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "redstone_rod"), REDSTONE_ROD)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
             JR_ITEM_GROUP = FabricItemGroup.builder()
-                .icon(Supplier<ItemStack> { ItemStack(SLIME_ROD) })
+                .icon { ItemStack(SLIME_ROD) }
                 .displayName(Text.translatable("itemGroup.justarod"))
                 .build()
             Registry.register(Registries.ITEM_GROUP, JR_ITEM_GROUP_KEY, JR_ITEM_GROUP)
@@ -39,6 +41,7 @@ class JRItems {
                 entries.add(SLIME_ROD)
                 entries.add(GIANT_ROD)
                 entries.add(LUBRICATING_BOOK)
+                entries.add(REDSTONE_ROD)
             }
         }
     }

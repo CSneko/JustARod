@@ -1,5 +1,7 @@
 package org.cneko.justarod.quirks
 
+import org.cneko.toneko.common.quirks.QuirkRegister
+
 
 class JRQuirks {
     companion object{
@@ -15,6 +17,7 @@ class JRQuirks {
 //                "imprisonment", // 囚禁
 //                "creampie" // 中出し
 //            ).forEach { JRDefaultQuirk.of(it) }
+            QuirkRegister.register(EndRodQuirk())
         }
     }
 }

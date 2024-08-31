@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " S ",
+    "QCQ",
+    " S "
+  ],
+  "key": {
+    "Q": {
+      "item": "minecraft:milk_bucket"
+    },
+    "C": {
+      "item": "minecraft:end_rod"
+    },
+    "S": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "id": "justarod:redstone_rod",
+    "count": 1
+  }
+}

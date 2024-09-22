@@ -1,0 +1,59 @@
+{
+	"credit": "Made with Blockbench",
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "justarod:item/cactus_rod",
+		"particle": "justarod:item/cactus_rod"
+	},
+	"elements": [
+		{
+			"name": "bottom",
+			"from": [5, 0, 5],
+			"to": [11, 2, 11],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7, 0, 7]},
+			"faces": {
+				"north": {"uv": [0, 0, 3, 1], "texture": "#0"},
+				"east": {"uv": [0, 0, 3, 1], "texture": "#0"},
+				"south": {"uv": [0, 0, 3, 1], "texture": "#0"},
+				"west": {"uv": [0, 0, 3, 1], "texture": "#0"},
+				"up": {"uv": [0, 0, 3, 3], "texture": "#0"},
+				"down": {"uv": [0, 0, 3, 3], "texture": "#0"}
+			}
+		},
+		{
+			"name": "meow",
+			"from": [6, 2, 6],
+			"to": [10, 21, 10],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7, 2, 7]},
+			"faces": {
+				"north": {"uv": [10, 6.5, 12, 16], "texture": "#0"},
+				"east": {"uv": [8, 6.5, 10, 16], "texture": "#0"},
+				"south": {"uv": [14, 6.5, 16, 16], "texture": "#0"},
+				"west": {"uv": [12, 6.5, 14, 16], "texture": "#0"},
+				"up": {"uv": [12, 6.5, 10, 4.5], "texture": "#0"},
+				"down": {"uv": [14, 4.5, 12, 6.5], "texture": "#0"}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [75, 0, 0],
+			"translation": [-6.25, -5.75, -2.75],
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"firstperson_righthand": {
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"firstperson_lefthand": {
+			"translation": [0, -2.25, 0],
+			"scale": [0, 0, 0]
+		},
+		"head": {
+			"rotation": [113, 0, 0],
+			"translation": [0, 0, -15]
+		}
+	}
+}

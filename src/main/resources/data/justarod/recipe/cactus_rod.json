@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " C ",
+    " R "
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:cactus"
+    },
+    "R": {
+      "item": "minecraft:end_rod"
+    }
+  },
+  "result": {
+    "id": "justarod:cactus_rod",
+    "count": 1
+  }
+}

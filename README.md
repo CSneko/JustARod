@@ -5,4 +5,4 @@
 
 喜欢这个模组的话记得把star点上(｢・ω・)｢
 # 如何使用
-你自己探索吧,我就是不写文档,气不气,有本事你来艹我啊
+你自己探索吧,我就是不写[文档](https://github.com/CSneko/JustARod/blob/master/docs/doc.md),气不气,有本事你来艹我啊

@@ -28,7 +28,7 @@ public class SeeeeexNekoActionScreen extends InteractionScreen implements INekoS
 
     public static Map<String, ButtonWidget.Builder> getSeeeeexButtonBuilders(SeeeeexNekoEntity neko){
         Map<String, ButtonWidget.Builder> buttonBuilders = NekoActionScreen.getButtonBuilders(neko);
-        buttonBuilders.put("screen.justarod.seeeeex_neko_action.button.mb", ButtonWidget.builder(Text.of("Seeeeeeex"), (button)->{
+        buttonBuilders.put("screen.justarod.seeeeex_neko_action.button.mb", ButtonWidget.builder(Text.of("screen.justarod.seeeeex_neko_action.button.mb"), (button)->{
             // TODO 不想做网络发包
             neko.setMasturbation(true);
         }));

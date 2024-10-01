@@ -8,13 +8,18 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.world.World
 import org.cneko.justarod.payload.SeeeeexNekoInteractivePayload
+import org.cneko.toneko.common.mod.api.NekoSkinRegistry
 import org.cneko.toneko.common.mod.entities.INeko
 import org.cneko.toneko.fabric.entities.NekoEntity
-import software.bernie.geckolib.animation.*
+import software.bernie.geckolib.animation.AnimatableManager
+import software.bernie.geckolib.animation.AnimationController
+import software.bernie.geckolib.animation.PlayState
+import software.bernie.geckolib.animation.RawAnimation
 import software.bernie.geckolib.constant.DefaultAnimations
-open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, val world: World): NekoEntity(type, world) {
-    companion object{
 
+open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, world: World): NekoEntity(type, world) {
+    companion object{
+        val SKIN:String = "shiuri_neko"
     }
     var isMasturbation = false
     override fun getBreedOffspring(world: ServerWorld?, neko: INeko?): NekoEntity? {
@@ -41,7 +46,11 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, va
     }
 
     override fun getSkin(): String {
-        return "Shirui_neko"
+        return SKIN
+    }
+
+    override fun getRandomSkin(): String {
+        return SKIN
     }
 
     override fun openInteractiveMenu(player: ServerPlayerEntity?) {

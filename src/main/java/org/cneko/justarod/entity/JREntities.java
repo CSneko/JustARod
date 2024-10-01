@@ -12,11 +12,11 @@ import net.minecraft.util.Identifier;
 import static org.cneko.justarod.Justarod.MODID;
 
 public class JREntities {
-    public static final EntityType<SeeeeexNeko> SEEEEEX_NEKO = Registry.register(
+    public static final EntityType<SeeeeexNekoEntity> SEEEEEX_NEKO = Registry.register(
             Registries.ENTITY_TYPE,
             Identifier.of(MODID, "seeeeeex_neko"),
-            FabricEntityType.Builder.createMob(SeeeeexNeko::new, SpawnGroup.CREATURE,
-                    builder ->builder.defaultAttributes(SeeeeexNeko::createNekoAttributes))
+            FabricEntityType.Builder.createMob(SeeeeexNekoEntity::new, SpawnGroup.CREATURE,
+                    builder ->builder.defaultAttributes(SeeeeexNekoEntity::createNekoAttributes))
                     .dimensions(0.5f,1.7f).eyeHeight(1.6f)
                     .build()
     );

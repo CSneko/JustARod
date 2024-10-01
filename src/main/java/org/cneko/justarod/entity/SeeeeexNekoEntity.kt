@@ -1,23 +1,24 @@
 package org.cneko.justarod.entity
 
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.entity.EntityPose
 import net.minecraft.entity.EntityType
 import net.minecraft.registry.tag.FluidTags
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.world.World
+import org.cneko.justarod.payload.SeeeeexNekoInteractivePayload
 import org.cneko.toneko.common.mod.entities.INeko
 import org.cneko.toneko.fabric.entities.NekoEntity
 import software.bernie.geckolib.animation.*
-import software.bernie.geckolib.animation.AnimationController.AnimationStateHandler
 import software.bernie.geckolib.constant.DefaultAnimations
-
-open class SeeeeexNeko(private val type: EntityType<SeeeeexNeko>, val world: World): NekoEntity(type, world) {
+open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, val world: World): NekoEntity(type, world) {
     companion object{
 
     }
     var isMasturbation = false
     override fun getBreedOffspring(world: ServerWorld?, neko: INeko?): NekoEntity? {
-        return world?.let { SeeeeexNeko(this.type, it) }
+        return world?.let { SeeeeexNekoEntity(this.type, it) }
     }
 
     override fun registerControllers(controllers: AnimatableManager.ControllerRegistrar?) {
@@ -40,7 +41,11 @@ open class SeeeeexNeko(private val type: EntityType<SeeeeexNeko>, val world: Wor
     }
 
     override fun getSkin(): String {
-        return "" // TODO You
+        return "Shirui_neko"
+    }
+
+    override fun openInteractiveMenu(player: ServerPlayerEntity?) {
+        ServerPlayNetworking.send(player,SeeeeexNekoInteractivePayload(this.uuid.toString()))
     }
 
 }

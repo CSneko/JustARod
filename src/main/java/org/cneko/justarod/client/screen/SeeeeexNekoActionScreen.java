@@ -8,7 +8,6 @@ import org.cneko.justarod.entity.SeeeeexNekoEntity;
 import org.cneko.toneko.fabric.client.screens.INekoScreen;
 import org.cneko.toneko.fabric.client.screens.InteractionScreen;
 import org.cneko.toneko.fabric.client.screens.NekoActionScreen;
-import org.cneko.toneko.fabric.entities.NekoEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

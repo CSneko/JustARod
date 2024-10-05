@@ -20,6 +20,7 @@ class JRItems {
         val LUBRICATING_BOOK = LubricatingBookItem()
         val REDSTONE_ROD = RedstoneEndRod()
         val CACTUS_ROD = CactusRodItem()
+        val EATABLE_ROD = EatableRodItem()
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null;
         var JR_ITEM_GROUP: ItemGroup? = null;
@@ -30,6 +31,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "lubricating_book"), LUBRICATING_BOOK)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "redstone_rod"), REDSTONE_ROD)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "cactus_rod"), CACTUS_ROD)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "eatable_rod"), EATABLE_ROD)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
@@ -45,6 +47,7 @@ class JRItems {
                 entries.add(LUBRICATING_BOOK)
                 entries.add(REDSTONE_ROD)
                 entries.add(CACTUS_ROD)
+                entries.add(EATABLE_ROD)
             }
         }
     }

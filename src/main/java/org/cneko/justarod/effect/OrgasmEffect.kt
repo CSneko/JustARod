@@ -36,10 +36,10 @@ class OrgasmEffect() : StatusEffect(StatusEffectCategory.BENEFICIAL, 0xe9b8b3) {
         val x: Int = random.nextInt(10) - 5
         val z: Int = random.nextInt(10) - 5
         entity.move(MovementType.SHULKER_BOX, Vec3d(x * 0.001, 0.0, z * 0.001))
-        if (time - damageTimer > random.nextInt(10) + 1) {
-            damageTimer = time
-            entity.damage(entity.damageSources.generic(), 0.2f)
-        }
+//        if (time - damageTimer > random.nextInt(10) + 1) {
+//            damageTimer = time
+//            entity.damage(entity.damageSources.generic(), 0.2f)
+//        }
         return super.applyUpdateEffect(entity, amplifier)
     }
 }

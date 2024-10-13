@@ -9,7 +9,7 @@ class CactusRodItem: SelfUsedItem(Settings().maxCount(1).maxDamage(2000)) {
     override fun useOnSelf(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean): ActionResult {
         if (super.useOnSelf(stack, world, entity, slot, selected) == ActionResult.SUCCESS){
             // 扣血
-            entity.damage(entity.world.damageSources.cactus(), 2f)
+            entity.damage(entity.world.damageSources.cactus(), 10f)
             return ActionResult.SUCCESS
         }
         return ActionResult.PASS

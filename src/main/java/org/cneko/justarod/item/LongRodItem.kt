@@ -25,7 +25,7 @@ class LongRodItem : BothUsedItem(Settings().component(JRComponents.USED_TIME_MAR
     override fun useOnSelf(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean): ActionResult {
         val result = super.useOnSelf(stack, world, entity, slot, selected)
         if (result == ActionResult.SUCCESS){
-            entity.damage(JRDamageTypes.sexualExcitement(entity), 0.4f)
+            entity.damage(JRDamageTypes.sexualExcitement(entity), 4.0f)
             entity.sendMessage(Text.translatable("item.justarod.long_rod.already_top"))
         }
         return result

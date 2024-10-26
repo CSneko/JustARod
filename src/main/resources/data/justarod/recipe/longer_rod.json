@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " R ",
+    " R ",
+    " R "
+  ],
+  "key": {
+    "R": {
+      "item": "justarod:long_rod"
+    }
+  },
+  "result": {
+    "id": "justarod:longer_rod",
+    "count": 1
+  }
+}

@@ -22,6 +22,7 @@ class JRItems {
         val CACTUS_ROD = CactusRodItem()
         val EATABLE_ROD = EatableRodItem()
         val LONG_ROD = LongRodItem()
+        val LONGER_ROD = LongerRodItem()
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null;
         var JR_ITEM_GROUP: ItemGroup? = null;
@@ -34,6 +35,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "cactus_rod"), CACTUS_ROD)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "eatable_rod"), EATABLE_ROD)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "long_rod"), LONG_ROD)
+            Registry.register(Registries.ITEM, Identifier.of(MODID,"longer_rod"), LONGER_ROD)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
@@ -51,6 +53,7 @@ class JRItems {
                 entries.add(CACTUS_ROD)
                 entries.add(EATABLE_ROD)
                 entries.add(LONG_ROD)
+                entries.add(LONGER_ROD)
             }
         }
     }

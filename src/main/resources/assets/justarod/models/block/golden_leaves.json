@@ -1,0 +1,6 @@
+{
+  "parent": "block/cube_all",
+  "textures": {
+    "all": "justarod:block/golden_leaves"
+  }
+}

@@ -10,7 +10,8 @@ import net.minecraft.registry.RegistryKey
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.cneko.justarod.Justarod.MODID
-import java.util.function.Supplier
+
+import org.cneko.justarod.block.JRBlocks.*
 
 
 class JRItems {
@@ -54,6 +55,7 @@ class JRItems {
                 entries.add(EATABLE_ROD)
                 entries.add(LONG_ROD)
                 entries.add(LONGER_ROD)
+                entries.add(GOLDEN_LEAVES)
             }
         }
     }

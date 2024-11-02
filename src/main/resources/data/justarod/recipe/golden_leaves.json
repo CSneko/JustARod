@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "GLG",
+    "GGG"
+  ],
+  "key": {
+    "G": {
+      "item": "gold_nugget"
+    },
+    "L": {
+      "item": "#minecraft:leaves"
+    }
+  },
+  "result": {
+    "id": "justarod:golden_leaves",
+    "count": 1
+  }
+}

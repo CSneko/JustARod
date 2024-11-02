@@ -14,20 +14,6 @@
           "condition": "minecraft:survives_explosion"
         }
       ]
-    },
-    {
-      "rolls": 0.05,
-      "entries": [
-        {
-          "type": "minecraft:item",
-          "name": "minecraft:cherry_sapling"
-        }
-      ],
-      "conditions": [
-        {
-          "condition": "minecraft:survives_explosion"
-        }
-      ]
     }
   ]
 }

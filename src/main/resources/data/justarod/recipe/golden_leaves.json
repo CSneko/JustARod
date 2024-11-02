@@ -7,10 +7,10 @@
   ],
   "key": {
     "G": {
-      "item": "gold_nugget"
+      "item": "minecraft:gold_nugget"
     },
     "L": {
-      "item": "#minecraft:leaves"
+      "tag": "minecraft:leaves"
     }
   },
   "result": {

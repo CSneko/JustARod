@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "justarod",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "name": "JustARod",
   "description": "meow",
   "authors": [],
@@ -22,6 +22,6 @@
     "fabric": "*",
     "minecraft": ">=1.21",
     "fabric-language-kotlin": "*",
-    "toneko": ">=1.3.5"
+    "toneko": ">=1.4.0"
   }
 }

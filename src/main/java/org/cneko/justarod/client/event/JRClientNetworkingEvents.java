@@ -10,8 +10,7 @@ import net.minecraft.world.World;
 import org.cneko.justarod.client.screen.SeeeeexNekoInteractiveScreen;
 import org.cneko.justarod.entity.SeeeeexNekoEntity;
 import org.cneko.justarod.payload.SeeeeexNekoInteractivePayload;
-import org.cneko.toneko.fabric.client.screens.CrystalNekoInteractiveScreen;
-import org.cneko.toneko.fabric.entities.NekoEntity;
+import org.cneko.toneko.common.mod.entities.NekoEntity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;

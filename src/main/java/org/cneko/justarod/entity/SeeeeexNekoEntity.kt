@@ -10,7 +10,7 @@ import net.minecraft.world.World
 import org.cneko.justarod.payload.SeeeeexNekoInteractivePayload
 import org.cneko.toneko.common.mod.api.NekoSkinRegistry
 import org.cneko.toneko.common.mod.entities.INeko
-import org.cneko.toneko.fabric.entities.NekoEntity
+import org.cneko.toneko.common.mod.entities.NekoEntity
 import software.bernie.geckolib.animation.AnimatableManager
 import software.bernie.geckolib.animation.AnimationController
 import software.bernie.geckolib.animation.PlayState

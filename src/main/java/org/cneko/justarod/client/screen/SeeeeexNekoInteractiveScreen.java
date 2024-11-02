@@ -11,17 +11,16 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import org.cneko.justarod.entity.SeeeeexNekoEntity;
 import org.cneko.toneko.common.mod.client.api.ClientEntityPoseManager;
+import org.cneko.toneko.common.mod.client.screens.INekoScreen;
+import org.cneko.toneko.common.mod.client.screens.InteractionScreen;
+import org.cneko.toneko.common.mod.client.screens.NekoMateScreen;
 import org.cneko.toneko.common.mod.entities.INeko;
+import org.cneko.toneko.common.mod.entities.NekoEntity;
 import org.cneko.toneko.common.mod.packets.interactives.FollowOwnerPayload;
 import org.cneko.toneko.common.mod.packets.interactives.GiftItemPayload;
 import org.cneko.toneko.common.mod.packets.interactives.NekoPosePayload;
 import org.cneko.toneko.common.mod.packets.interactives.RideEntityPayload;
 import org.cneko.toneko.common.mod.util.EntityUtil;
-import org.cneko.toneko.fabric.client.screens.INekoScreen;
-import org.cneko.toneko.fabric.client.screens.InteractionScreen;
-import org.cneko.toneko.fabric.client.screens.NekoActionScreen;
-import org.cneko.toneko.fabric.client.screens.NekoMateScreen;
-import org.cneko.toneko.fabric.entities.NekoEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,7 +53,7 @@ public class SeeeeexNekoInteractiveScreen extends InteractionScreen implements I
                 MinecraftClient.getInstance().player.sendMessage(Text.translatable("message.toneko.neko.breed_fail_baby." + i));
             } else {
                 List<INeko> entities = new ArrayList();
-                Iterator var3 = EntityUtil.getLivingEntitiesInRange(neko, MinecraftClient.getInstance().player.getWorld(), (float)NekoEntity.DEFAULT_FIND_RANGE).iterator();
+                Iterator var3 = EntityUtil.getLivingEntitiesInRange(neko, MinecraftClient.getInstance().player.getWorld(), (float) NekoEntity.DEFAULT_FIND_RANGE).iterator();
 
                 while(var3.hasNext()) {
                     LivingEntity entity = (LivingEntity)var3.next();

@@ -3,6 +3,7 @@ package org.cneko.justarod.block;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.LeavesBlock;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
@@ -15,7 +16,7 @@ import static org.cneko.justarod.Justarod.MODID;
 public class JRBlocks {
 
     public static final Block GOLDEN_LEAVES = register(
-            new Block(AbstractBlock.Settings.create().sounds(BlockSoundGroup.CHERRY_LEAVES)),
+            new LeavesBlock(AbstractBlock.Settings.create().sounds(BlockSoundGroup.CHERRY_LEAVES).noCollision()),
             "golden_leaves",
             true
     );

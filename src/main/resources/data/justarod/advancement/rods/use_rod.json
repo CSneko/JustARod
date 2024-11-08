@@ -1,0 +1,25 @@
+{
+  "parent": "justarod:rods/root",
+  "criteria": {
+    "end_rod": {
+      "conditions": {
+        "effects": {
+          "justarod:orgasm": {}
+        }
+      },
+      "trigger": "minecraft:effects_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.rods.use_rod.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "justarod:redstone_rod"
+    },
+    "title": {
+      "translate": "advancements.rods.use_rod.title"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "parent": "justarod:rods/root",
+  "criteria": {
+    "enter_golden_leaves": {
+      "trigger": "minecraft:enter_block",
+      "conditions": {
+        "block": "justarod:golden_leaves"
+      }
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.rods.enter_golden_leaves.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "justarod:golden_leaves"
+    },
+    "title": {
+      "translate": "advancements.rods.enter_golden_leaves.title"
+    }
+  }
+}

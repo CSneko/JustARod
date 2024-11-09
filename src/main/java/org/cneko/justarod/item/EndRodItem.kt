@@ -201,8 +201,8 @@ interface SelfUsedItemInterface : EndRodItemInterface{
         if (speed >= 100){
             // 被草飞了喵
             val random = world?.random
-            entity.move(MovementType.SHULKER_BOX, Vec3d((random?.nextFloat()?.times(1) ?: 0f).toDouble(),
-                (random?.nextFloat()?.times(2) ?: 0f).toDouble(), (random?.nextFloat()?.times(1) ?: 0f).toDouble())
+            entity.move(MovementType.SHULKER_BOX, Vec3d((random?.nextFloat()?.times(1) ?: 0f).toDouble()*0.05,
+                (random?.nextFloat()?.times(speed) ?: 0f).toDouble()*0.01, (random?.nextFloat()?.times(1) ?: 0f).toDouble()*0.05)
             )
         }
         return ActionResult.SUCCESS

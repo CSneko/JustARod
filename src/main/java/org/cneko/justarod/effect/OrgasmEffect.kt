@@ -29,10 +29,12 @@ class OrgasmEffect() : StatusEffect(StatusEffectCategory.BENEFICIAL, 0xe9b8b3) {
             amplifier+1.5,
             0.0
         )
-        // 随机移动玩家的位置
-        val x: Int = random.nextInt((amplifier+1)*5) - 5
-        val z: Int = random.nextInt((amplifier+1)*5) - 5
-        entity.move(MovementType.SHULKER_BOX, Vec3d(x * 0.001, amplifier*0.0003, z * 0.001))
+        if (random.nextBoolean()) {
+            // 随机移动玩家的位置
+            val x: Int = random.nextInt((amplifier + 1) * 5) - 5
+            val z: Int = random.nextInt((amplifier + 1) * 5) - 5
+            entity.move(MovementType.SHULKER_BOX, Vec3d(x * 0.001, amplifier * 0.0003, z * 0.001))
+        }
         return super.applyUpdateEffect(entity, amplifier)
     }
 }

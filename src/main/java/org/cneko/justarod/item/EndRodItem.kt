@@ -2,6 +2,8 @@ package org.cneko.justarod.item
 
 import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
+import net.minecraft.entity.MovementType
+import net.minecraft.entity.ai.control.MoveControl
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
@@ -12,7 +14,9 @@ import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Formatting
 import net.minecraft.util.Hand
+import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
+import org.cneko.justarod.damage.JRDamageTypes
 import org.cneko.justarod.effect.JREffects
 import kotlin.math.sqrt
 
@@ -99,18 +103,6 @@ open class SelfUsedItem(settings: Settings) : EndRodItem(settings), SelfUsedItem
         return EndRodInstructions.USE_ON_SELF
     }
 
-
-    override fun useOnSelf(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean): ActionResult {
-        onUse(stack, world, entity, slot, selected)
-        // 给予玩家gc效果
-        JREffects.ORGASM_EFFECT?.let {
-            val speed = this.getSpeed(stack)
-            val orgasm = StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(it), 100, sqrt(speed.toFloat()).toInt())
-            entity.addStatusEffect(orgasm)
-        }
-        return ActionResult.SUCCESS
-    }
-
 }
 
 abstract class BothUsedItem(settings: Settings) : EndRodItem(settings),SelfUsedItemInterface, OtherUsedItemInterface {
@@ -124,16 +116,6 @@ abstract class BothUsedItem(settings: Settings) : EndRodItem(settings),SelfUsedI
         super.appendTooltip(stack, context, tooltip, type)
         val speed = this.getSpeed(stack)
         tooltip?.add(Text.translatable("item.justarod.end_rod.speed", speed).formatted(Formatting.LIGHT_PURPLE))
-    }
-    override fun useOnSelf(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean): ActionResult {
-        onUse(stack, world, entity, slot, selected)
-        // 给予玩家gc效果
-        JREffects.ORGASM_EFFECT?.let {
-            val speed = this.getSpeed(stack)
-            val orgasm = StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(it), 100, sqrt(speed.toFloat()).toInt())
-            entity.addStatusEffect(orgasm)
-        }
-        return ActionResult.SUCCESS
     }
     override fun useOnOther(stack: ItemStack, world: World?, user: PlayerEntity, target: LivingEntity):ActionResult{
         // 插入其它实体
@@ -185,7 +167,7 @@ abstract class BothUsedItem(settings: Settings) : EndRodItem(settings),SelfUsedI
 /**
  * 给自己使用的末地烛接口
  */
-interface SelfUsedItemInterface{
+interface SelfUsedItemInterface : EndRodItemInterface{
     /**
      * 使用末地烛
      * @param stack 使用的末地烛
@@ -195,13 +177,42 @@ interface SelfUsedItemInterface{
      * @param selected 是否是选中的末地烛
      * @return 使用结果
      */
-    fun useOnSelf(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean):ActionResult
+    fun useOnSelf(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean):ActionResult{
+        val speed = this.getSpeed(stack)
+        if (speed < 10000) {
+            for (i: Int in 0..speed) {
+                onUse(stack, world, entity, slot, selected)
+            }
+        }
+        // 给予玩家gc效果
+        JREffects.ORGASM_EFFECT?.let {
+            val orgasm =
+                StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(it), 100, sqrt(speed.toFloat()).toInt())
+            entity.addStatusEffect(orgasm)
+        }
+        if ((stack.maxDamage - stack.damage)<=speed){
+            stack.damage = stack.maxDamage
+        }else{
+            stack.damage += speed
+        }
+        if (speed >=10){
+            entity.damage(JRDamageTypes.sexualExcitement(entity), (speed*0.3).toFloat())
+        }
+        if (speed >= 100){
+            // 被草飞了喵
+            val random = world?.random
+            entity.move(MovementType.SHULKER_BOX, Vec3d((random?.nextFloat()?.times(1) ?: 0f).toDouble(),
+                (random?.nextFloat()?.times(2) ?: 0f).toDouble(), (random?.nextFloat()?.times(1) ?: 0f).toDouble())
+            )
+        }
+        return ActionResult.SUCCESS
+    }
     fun getSpeed(stack: ItemStack?):Int{
         if (stack != null) return stack.components.getOrDefault(JRComponents.SPEED,1)
         return 1
     }
 }
-interface OtherUsedItemInterface{
+interface OtherUsedItemInterface: EndRodItemInterface{
     fun canAcceptEntity(stack :ItemStack,entity: Entity):Boolean
     fun useOnOther(stack: ItemStack, world: World?, user: PlayerEntity,target: LivingEntity):ActionResult
 }

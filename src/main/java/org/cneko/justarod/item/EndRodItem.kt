@@ -1,11 +1,5 @@
 package org.cneko.justarod.item
 
-import net.fabricmc.fabric.impl.biome.modification.BuiltInRegistryKeys
-import net.minecraft.client.render.VertexFormatElement.ComponentType
-import net.minecraft.component.DataComponentTypes
-import net.minecraft.component.type.ItemEnchantmentsComponent
-import net.minecraft.enchantment.Enchantment
-import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.effect.StatusEffectInstance
@@ -14,9 +8,6 @@ import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.tooltip.TooltipType
 import net.minecraft.registry.Registries
-import net.minecraft.registry.entry.RegistryEntry
-import net.minecraft.registry.BuiltinRegistries
-import net.minecraft.registry.RegistryKeys
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Formatting
@@ -83,8 +74,8 @@ open class SelfUsedItem(settings: Settings) : EndRodItem(settings), SelfUsedItem
         type: TooltipType?
     ) {
         super.appendTooltip(stack, context, tooltip, type)
-        val speed = stack?.getOrDefault(JRComponents.SPEED, 1)!!
-        tooltip?.add(Text.translatable("item.justarod.end_rod.speed", speed).formatted(Formatting.GREEN))
+        val speed = this.getSpeed(stack)
+        tooltip?.add(Text.translatable("item.justarod.end_rod.speed", speed).formatted(Formatting.LIGHT_PURPLE))
     }
     override fun inventoryTick(stack: ItemStack, world: World?, entity: Entity?, slot: Int, selected: Boolean) {
         super.inventoryTick(stack, world, entity, slot, selected)
@@ -113,21 +104,33 @@ open class SelfUsedItem(settings: Settings) : EndRodItem(settings), SelfUsedItem
         onUse(stack, world, entity, slot, selected)
         // 给予玩家gc效果
         JREffects.ORGASM_EFFECT?.let {
-            val speed = this.components.getOrDefault(JRComponents.SPEED,0)
+            val speed = this.getSpeed(stack)
             val orgasm = StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(it), 100, sqrt(speed.toFloat()).toInt())
             entity.addStatusEffect(orgasm)
         }
         return ActionResult.SUCCESS
     }
+
 }
 
 abstract class BothUsedItem(settings: Settings) : EndRodItem(settings),SelfUsedItemInterface, OtherUsedItemInterface {
 
+    override fun appendTooltip(
+        stack: ItemStack?,
+        context: TooltipContext?,
+        tooltip: MutableList<Text>?,
+        type: TooltipType?
+    ) {
+        super.appendTooltip(stack, context, tooltip, type)
+        val speed = this.getSpeed(stack)
+        tooltip?.add(Text.translatable("item.justarod.end_rod.speed", speed).formatted(Formatting.LIGHT_PURPLE))
+    }
     override fun useOnSelf(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean): ActionResult {
         onUse(stack, world, entity, slot, selected)
         // 给予玩家gc效果
         JREffects.ORGASM_EFFECT?.let {
-            val orgasm = StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(it), 100, 0)
+            val speed = this.getSpeed(stack)
+            val orgasm = StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(it), 100, sqrt(speed.toFloat()).toInt())
             entity.addStatusEffect(orgasm)
         }
         return ActionResult.SUCCESS
@@ -193,6 +196,10 @@ interface SelfUsedItemInterface{
      * @return 使用结果
      */
     fun useOnSelf(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean):ActionResult
+    fun getSpeed(stack: ItemStack?):Int{
+        if (stack != null) return stack.components.getOrDefault(JRComponents.SPEED,1)
+        return 1
+    }
 }
 interface OtherUsedItemInterface{
     fun canAcceptEntity(stack :ItemStack,entity: Entity):Boolean

@@ -25,7 +25,7 @@ class JRItems {
         val LONG_ROD = LongRodItem()
         val LONGER_ROD = LongerRodItem()
         val LIGHTNING_END_ROD = LightningEndRodItem()
-        var NET_WORKING_ROD: NetWorkingRodItem? = null
+        val NETWORKING_ROD: NetWorkingRodItem = NetWorkingRodItem()
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null;
         var JR_ITEM_GROUP: ItemGroup? = null;
@@ -40,6 +40,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "long_rod"), LONG_ROD)
             Registry.register(Registries.ITEM, Identifier.of(MODID,"longer_rod"), LONGER_ROD)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "lightning_end_rod"), LIGHTNING_END_ROD)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "networking_rod"), NETWORKING_ROD)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
@@ -60,9 +61,7 @@ class JRItems {
                 entries.add(LONGER_ROD)
                 entries.add(LIGHTNING_END_ROD)
                 entries.add(GOLDEN_LEAVES)
-                if (NET_WORKING_ROD != null){
-                    entries.add(NET_WORKING_ROD!!)
-                }
+                entries.add(NETWORKING_ROD)
             }
         }
     }

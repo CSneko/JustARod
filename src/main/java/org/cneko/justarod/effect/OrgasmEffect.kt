@@ -22,9 +22,9 @@ class OrgasmEffect() : StatusEffect(StatusEffectCategory.BENEFICIAL, 0xe9b8b3) {
         // 添加爱心效果
         world.addParticle(
             ParticleTypes.HEART,
-            entity.x + random.nextInt(amplifier) - 1,
-            entity.y + random.nextInt(amplifier) + 2,
-            entity.z + random.nextInt(amplifier) - 1,
+            entity.x + random.nextInt(1) - 1,
+            entity.y + random.nextInt(2) + 2,
+            entity.z + random.nextInt(2) - 1,
             0.0,
             amplifier+1.5,
             0.0

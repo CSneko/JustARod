@@ -1,5 +1,7 @@
 package org.cneko.justarod.item
 
+import net.minecraft.entity.EntityType
+import net.minecraft.entity.LightningEntity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
@@ -9,7 +11,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.world.World
 
-class LightningEndRodItem: SelfUsedItem(Settings().maxCount(1).maxDamage(1000).component(JRComponents.USED_TIME_MARK,0)) {
+class LightningEndRodItem: SelfUsedItem(Settings().maxCount(1).maxDamage(2000).component(JRComponents.USED_TIME_MARK,0)) {
     override fun useOnSelf(
         stack: ItemStack,
         world: World?,
@@ -22,6 +24,12 @@ class LightningEndRodItem: SelfUsedItem(Settings().maxCount(1).maxDamage(1000).c
             // 中毒中毒~
             val e = StatusEffectInstance(StatusEffects.POISON, 200, 0)
             entity.addStatusEffect(e)
+            // 雷雨天，召唤雷电
+            if (entity.world.isThundering && world?.random?.nextInt(3) == 0){
+                val light = LightningEntity(EntityType.LIGHTNING_BOLT,world)
+                light.setPos(entity.x, entity.y, entity.z)
+                entity.world.spawnEntity(light)
+            }
             return result
         }
         return result

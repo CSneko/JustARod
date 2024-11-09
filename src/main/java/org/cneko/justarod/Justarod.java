@@ -2,6 +2,7 @@ package org.cneko.justarod;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import org.cneko.justarod.api.NetWorkingRodData;
 import org.cneko.justarod.block.JRBlocks;
 import org.cneko.justarod.effect.JREffects;
 import org.cneko.justarod.entity.JREntities;
@@ -14,6 +15,7 @@ public class Justarod implements ModInitializer {
     public static final String MODID = "justarod";
     @Override
     public void onInitialize() {
+        NetWorkingRodData.Companion.init();
         JRItems.Companion.init();
         JRBlocks.init();
         JREffects.Companion.init();

@@ -1,5 +1,6 @@
 {
   "item.justarod.end_rod.used_count": "§a这根末地烛已经使用了%s次啦",
+  "item.justarod.end_rod.speed": "§d速度：%d /t",
   "item.justarod.end_rod.insert_success": "§a插入成功了喵",
   "item.justarod.slime_rod": "粘液末地烛",
   "item.justarod.giant_rod": "巨型末地烛",
@@ -16,6 +17,7 @@
   "item.justarod.longer_rod.tooltip": "一节更比六节长",
   "item.justarod.lightning_end_rod": "避雷针末地烛",
   "item.justarod.lightning_end_rod.tooltip": "你真要用这玩意？",
+  "item.justarod.networking_rod": "网络末地烛",
   "block.justarod.golden_leaves": "金叶",
   "itemGroup.justarod": "只是根棍子",
   "effect.justarod.orgasm": "高潮",

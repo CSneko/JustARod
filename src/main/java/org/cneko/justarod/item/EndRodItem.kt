@@ -23,6 +23,7 @@ import net.minecraft.util.Formatting
 import net.minecraft.util.Hand
 import net.minecraft.world.World
 import org.cneko.justarod.effect.JREffects
+import kotlin.math.sqrt
 
 abstract class EndRodItem(settings: Settings) : Item(settings), EndRodItemInterface {
     override fun onUse(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean) : ActionResult{
@@ -75,6 +76,16 @@ abstract class OtherUsedItem(settings: Settings):EndRodItem(settings), OtherUsed
 }
 
 open class SelfUsedItem(settings: Settings) : EndRodItem(settings), SelfUsedItemInterface {
+    override fun appendTooltip(
+        stack: ItemStack?,
+        context: TooltipContext?,
+        tooltip: MutableList<Text>?,
+        type: TooltipType?
+    ) {
+        super.appendTooltip(stack, context, tooltip, type)
+        val speed = stack?.getOrDefault(JRComponents.SPEED, 1)!!
+        tooltip?.add(Text.translatable("item.justarod.end_rod.speed", speed).formatted(Formatting.GREEN))
+    }
     override fun inventoryTick(stack: ItemStack, world: World?, entity: Entity?, slot: Int, selected: Boolean) {
         super.inventoryTick(stack, world, entity, slot, selected)
 
@@ -102,7 +113,8 @@ open class SelfUsedItem(settings: Settings) : EndRodItem(settings), SelfUsedItem
         onUse(stack, world, entity, slot, selected)
         // 给予玩家gc效果
         JREffects.ORGASM_EFFECT?.let {
-            val orgasm = StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(it), 100, 0)
+            val speed = this.components.getOrDefault(JRComponents.SPEED,0)
+            val orgasm = StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(it), 100, sqrt(speed.toFloat()).toInt())
             entity.addStatusEffect(orgasm)
         }
         return ActionResult.SUCCESS

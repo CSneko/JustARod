@@ -16,5 +16,10 @@ class JRComponents{
             Identifier.of(MODID, "used_time_mark"),
             ComponentType.builder<Int>().codec(Codec.INT).build()
         )
+        val SPEED: ComponentType<Int> = Registry.register(
+            Registries.DATA_COMPONENT_TYPE,
+            Identifier.of(MODID, "speed"),
+            ComponentType.builder<Int>().codec(Codec.INT).build()
+        )
     }
 }

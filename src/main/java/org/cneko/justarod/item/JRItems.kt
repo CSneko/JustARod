@@ -25,6 +25,7 @@ class JRItems {
         val LONG_ROD = LongRodItem()
         val LONGER_ROD = LongerRodItem()
         val LIGHTNING_END_ROD = LightningEndRodItem()
+        var NET_WORKING_ROD: NetWorkingRodItem? = null
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null;
         var JR_ITEM_GROUP: ItemGroup? = null;
@@ -59,6 +60,9 @@ class JRItems {
                 entries.add(LONGER_ROD)
                 entries.add(LIGHTNING_END_ROD)
                 entries.add(GOLDEN_LEAVES)
+                if (NET_WORKING_ROD != null){
+                    entries.add(NET_WORKING_ROD!!)
+                }
             }
         }
     }

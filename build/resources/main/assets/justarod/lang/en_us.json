@@ -1,5 +1,6 @@
 {
   "item.justarod.end_rod.used_count": "§aThis rod has been used %s times",
+  "item.justarod.end_rod.speed": "§dSpeed：%d /t",
   "item.justarod.end_rod.insert_success": "§aInsert successfully!",
   "item.justarod.slime_rod": "Slimed Rod",
   "item.justarod.giant_rod": "Gianted Rod",
@@ -16,6 +17,7 @@
   "item.justarod.longer_rod.tooltip": "This is the longest, sharpest, and toughest rod I can craft.(It might be longer than you!)",
   "item.justarod.lightning_end_rod": "Lightning Rod End Rod",
   "item.justarod.lightning_end_rod.tooltip": "Are you kidding? Use this?",
+  "item.justarod.networking_rod": "Networking Rod",
   "block.justarod.golden_leaves": "Golden Leaves",
   "itemGroup.justarod": "Just A Rod",
   "effect.justarod.orgasm": "Orgasm",

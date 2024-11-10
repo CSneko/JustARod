@@ -1,0 +1,116 @@
+{
+  "parent": "justarod:rods/use_rod",
+  "display": {
+    "frame": "challenge",
+    "hidden": true,
+    "icon": {
+      "count": 1,
+      "id": "minecraft:end_rod",
+      "components": {
+        "enchantment_glint_override": true
+      }
+    },
+    "title": {
+      "translate": "advancements.justarod.rods.use_all_rod.title"
+    },
+    "description": {
+      "translate": "advancements.justarod.rods.use_all_rod.description"
+    }
+  },
+  "criteria": {
+    "use_cactus_rod": {
+      "trigger": "minecraft:item_durability_changed",
+      "conditions": {
+        "durability": 0,
+        "item": {
+          "item": "justarod:cactus_rod"
+        }
+      }
+    },
+    "use_eatable_rod": {
+      "trigger": "minecraft:item_durability_changed",
+      "conditions": {
+        "durability": 0,
+        "item": {
+          "item": "justarod:eatable_rod"
+        }
+      }
+    },
+    "use_end_rod": {
+      "trigger": "minecraft:item_durability_changed",
+      "conditions": {
+        "durability": 0,
+        "item": {
+          "item": "justarod:end_rod"
+        }
+      }
+    },
+    "use_giant_rod": {
+      "trigger": "minecraft:item_durability_changed",
+      "conditions": {
+        "durability": 0,
+        "item": {
+          "item": "justarod:giant_rod"
+        }
+      }
+    },
+    "use_lightning_rod": {
+      "trigger": "minecraft:item_durability_changed",
+      "conditions": {
+        "durability": 0,
+        "item": {
+          "item": "justarod:lightning_rod"
+        }
+      }
+    },
+    "use_longer_rod": {
+      "trigger": "minecraft:item_durability_changed",
+      "conditions": {
+        "durability": 0,
+        "item": {
+          "item": "justarod:longer_rod"
+        }
+      }
+    },
+    "use_long_rod": {
+      "trigger": "minecraft:item_durability_changed",
+      "conditions": {
+        "durability": 0,
+        "item": {
+          "item": "justarod:long_rod"
+        }
+      }
+    },
+    "use_net_working_rod": {
+      "trigger": "minecraft:item_durability_changed",
+      "conditions": {
+        "durability": 0,
+        "item": {
+          "item": "justarod:net_working_rod"
+        }
+      }
+    },
+    "use_redstone_rod": {
+      "trigger": "minecraft:item_durability_changed",
+      "conditions": {
+        "durability": 0,
+        "item": {
+          "item": "justarod:redstone_rod"
+        }
+      }
+    },
+    "use_slime_rod": {
+      "trigger": "minecraft:item_durability_changed",
+      "conditions": {
+        "durability": 0,
+        "item": {
+          "item": "justarod:slime_rod"
+        }
+      }
+    }
+  },
+  "rewards": {
+    "experience": 520,
+    "function": "justarod:advancement_reward/use_all_rods"
+  }
+}

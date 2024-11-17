@@ -48,6 +48,10 @@ dependencies {
 
     modImplementation "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
 
+    include modApi('teamreborn:energy:4.1.0') {
+    exclude(group: "net.fabricmc.fabric-api")
+}
+
 }
 
 processResources {

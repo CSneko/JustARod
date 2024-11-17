@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " R ",
+    " E ",
+    " C "
+  ],
+  "key": {
+    "R": {
+      "item": "techreborn:red_cell_battery"
+    },
+    "E": {
+      "item": "justarod:redstone_rod"
+    },
+    "C": {
+      "item": "techreborn:electronic_circuit"
+    }
+  },
+  "result": {
+    "id": "justarod:basic_electric_rod",
+    "count": 1
+  }
+}

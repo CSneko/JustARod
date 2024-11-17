@@ -234,13 +234,18 @@ interface EndRodItemInterface{
      */
     fun onUse(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean) : ActionResult
     fun damage(stack: ItemStack, amount: Int, world: World?) {
+        stack.damage += getDamageAmount(stack, amount, world)
+    }
+
+    fun getDamageAmount(stack: ItemStack, amount: Int, world: World?): Int {
         // 无法破坏
         if (stack.components.contains(DataComponentTypes.UNBREAKABLE)){
-            return
+            return 0
         }
         // 获取物品上的耐久附魔等级
         val rm = world?.registryManager;
         val unbreakingLevel = stack.enchantments.getLevel(rm?.get(RegistryKeys.ENCHANTMENT)?.entryOf(Enchantments.UNBREAKING))
+        var total = 0
         // 遍历每一点潜在耐久损失，进行概率判定
         for (i in 1..amount) {
             // 计算损失耐久的概率
@@ -248,9 +253,10 @@ interface EndRodItemInterface{
 
             // 判断是否真正损失耐久
             if (Math.random() < chance) {
-                stack.damage += 1
+                total++
             }
         }
+        return total
     }
 
     fun canDamage(stack: ItemStack, amount: Int):Boolean{

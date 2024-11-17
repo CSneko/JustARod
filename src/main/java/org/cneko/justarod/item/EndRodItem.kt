@@ -1,5 +1,7 @@
 package org.cneko.justarod.item
 
+import net.minecraft.component.DataComponentTypes
+import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.MovementType
@@ -10,6 +12,8 @@ import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.tooltip.TooltipType
 import net.minecraft.registry.Registries
+import net.minecraft.registry.RegistryKeys
+import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Formatting
@@ -179,6 +183,10 @@ interface SelfUsedItemInterface : EndRodItemInterface{
      */
     fun useOnSelf(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean):ActionResult{
         val speed = this.getSpeed(stack)
+        if (speed<=0){
+            // 喵？
+            return ActionResult.PASS
+        }
         if (speed < 10000) {
             for (i: Int in 0..speed) {
                 onUse(stack, world, entity, slot, selected)
@@ -190,11 +198,9 @@ interface SelfUsedItemInterface : EndRodItemInterface{
                 StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(it), 100, sqrt(speed.toFloat()).toInt())
             entity.addStatusEffect(orgasm)
         }
-        if ((stack.maxDamage - stack.damage)<=speed){
-            stack.damage = stack.maxDamage
-        }else{
-            stack.damage += speed
-        }
+       if (this.canDamage(stack, speed)){
+           this.damage(stack, speed, world)
+       }
         if (speed >=10){
             entity.damage(JRDamageTypes.sexualExcitement(entity), (speed*0.3).toFloat())
         }
@@ -205,6 +211,7 @@ interface SelfUsedItemInterface : EndRodItemInterface{
                 (random?.nextFloat()?.times(speed) ?: 0f).toDouble()*0.01, (random?.nextFloat()?.times(1) ?: 0f).toDouble()*0.05)
             )
         }
+        // TODO： 淫叫
         return ActionResult.SUCCESS
     }
     fun getSpeed(stack: ItemStack?):Int{
@@ -226,6 +233,29 @@ interface EndRodItemInterface{
      * @param selected 是否是选中的末地烛
      */
     fun onUse(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean) : ActionResult
+    fun damage(stack: ItemStack, amount: Int, world: World?) {
+        // 无法破坏
+        if (stack.components.contains(DataComponentTypes.UNBREAKABLE)){
+            return
+        }
+        // 获取物品上的耐久附魔等级
+        val rm = world?.registryManager;
+        val unbreakingLevel = stack.enchantments.getLevel(rm?.get(RegistryKeys.ENCHANTMENT)?.entryOf(Enchantments.UNBREAKING))
+        // 遍历每一点潜在耐久损失，进行概率判定
+        for (i in 1..amount) {
+            // 计算损失耐久的概率
+            val chance = 1.0 / (unbreakingLevel + 1)
+
+            // 判断是否真正损失耐久
+            if (Math.random() < chance) {
+                stack.damage += 1
+            }
+        }
+    }
+
+    fun canDamage(stack: ItemStack, amount: Int):Boolean{
+        return stack.damage+amount < stack.maxDamage
+    }
 }
 enum class EndRodInstructions{
     USE_ON_SELF,

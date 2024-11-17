@@ -60,8 +60,8 @@ class JRItems {
                 entries.add(LONG_ROD)
                 entries.add(LONGER_ROD)
                 entries.add(LIGHTNING_END_ROD)
-                entries.add(GOLDEN_LEAVES)
                 entries.add(NETWORKING_ROD)
+                entries.add(GOLDEN_LEAVES)
             }
         }
     }

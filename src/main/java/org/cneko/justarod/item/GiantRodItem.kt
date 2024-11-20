@@ -14,6 +14,9 @@ import net.minecraft.util.ActionResult
 import net.minecraft.world.World
 import org.cneko.justarod.effect.JREffects
 
+/*
+事实上没人可以把这个塞进去，哪怕扩张有多厉害
+ */
 class GiantRodItem: OtherUsedItem(Settings().maxCount(1).maxDamage(1000).component(JRComponents.USED_TIME_MARK, 0)) {
     override fun canAcceptEntity(stack: ItemStack, entity: Entity): Boolean {
         return entity.type.equals(EntityType.ENDER_DRAGON)

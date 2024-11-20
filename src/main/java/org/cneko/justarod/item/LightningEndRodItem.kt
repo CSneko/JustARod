@@ -11,6 +11,9 @@ import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.world.World
 
+/*
+毕竟是铜做的，多少带点毒吧
+ */
 class LightningEndRodItem: SelfUsedItem(Settings().maxCount(1).maxDamage(2000).component(JRComponents.USED_TIME_MARK,0)) {
     override fun useOnSelf(
         stack: ItemStack,

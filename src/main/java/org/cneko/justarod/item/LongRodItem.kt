@@ -14,6 +14,9 @@ import org.cneko.justarod.damage.JRDamageTypes
 import org.cneko.justarod.damage.SexualExcitement
 import org.cneko.justarod.effect.JREffects
 
+/*
+其实可以插到顶了
+ */
 class LongRodItem : BothUsedItem(Settings().component(JRComponents.USED_TIME_MARK, 0).maxDamage(2000).maxCount(1)){
     override fun getInstruction(): EndRodInstructions {
         return EndRodInstructions.USE_ON_OTHER_INSERT

@@ -11,6 +11,9 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.registry.entry.RegistryEntry
 import org.cneko.justarod.JRAttributes
 
+/*
+在玩耍的过程中呢，润滑还是很必要的，不然会有点疼，还容易受伤
+ */
 class LubricatingEffect: StatusEffect(StatusEffectCategory.BENEFICIAL, 3507428) {
     override fun canApplyUpdateEffect(duration: Int, amplifier: Int): Boolean {
         return true

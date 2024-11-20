@@ -9,6 +9,9 @@ import net.minecraft.util.ActionResult
 import net.minecraft.world.World
 import org.cneko.justarod.damage.JRDamageTypes
 
+/*
+插到顶了后也还会露出很大一截（你想试试共用吗）
+ */
 class LongerRodItem: BothUsedItem(Settings().maxCount(1).maxDamage(1000).component(JRComponents.USED_TIME_MARK,0)) {
     override fun getInstruction(): EndRodInstructions {
         return EndRodInstructions.SELF_AND_OTHER_ATTACK

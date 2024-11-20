@@ -8,8 +8,12 @@ import net.minecraft.particle.ParticleTypes
 import net.minecraft.util.math.Vec3d
 import net.minecraft.util.math.random.Random
 
-
-class OrgasmEffect() : StatusEffect(StatusEffectCategory.BENEFICIAL, 0xe9b8b3) {
+/*
+在高潮后会疯狂喘气，而且会沉浸在其中，脑子很难正常思考，也很难正常说话，有点晕乎乎的感觉，只想躺在床上
+而且呢，还会不自觉的发出娇喘，而且会感觉很热，但总体来说还是很舒服的（不信你可以试试）
+还有就是，在门口抽插其实会比在里面更有感觉哦
+ */
+class OrgasmEffect : StatusEffect(StatusEffectCategory.BENEFICIAL, 0xe9b8b3) {
     // 每tick都会调用一次，直到返回false
     override fun canApplyUpdateEffect(duration: Int, amplifier: Int): Boolean {
         return true

@@ -15,6 +15,9 @@ import net.minecraft.world.World
 import net.minecraft.world.event.GameEvent
 import net.minecraft.world.event.GameEvent.Emitter
 
+/*
+其实用过之后味道是有点酸的，也会有点咸咸的，你要喜欢可以舔舔，虽然可能有点细菌，不过不是不能接受
+ */
 class EatableRodItem: SelfUsedItem(Settings().food(FoodComponent.Builder().nutrition(1).saturationModifier(0.2f).build()).component(JRComponents.USED_TIME_MARK, 0).maxDamage(200)){
     override fun finishUsing(stack: ItemStack?, world: World, user: LivingEntity): ItemStack {
         val itemStack = super.finishUsing(stack, world, user)

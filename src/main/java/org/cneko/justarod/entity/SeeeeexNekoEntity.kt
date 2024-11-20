@@ -17,6 +17,9 @@ import software.bernie.geckolib.animation.PlayState
 import software.bernie.geckolib.animation.RawAnimation
 import software.bernie.geckolib.constant.DefaultAnimations
 
+/*
+小猫娘~~ 可可爱爱
+ */
 open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, world: World): NekoEntity(type, world) {
     companion object{
         val SKIN:String = "shiuri_neko"

@@ -8,6 +8,9 @@ import net.minecraft.particle.ParticleTypes
 import net.minecraft.util.math.Vec3d
 import net.minecraft.util.math.random.Random
 
+/*
+其实人类没啥发情期，感觉到的发情也就是想要涩涩而已
+ */
 class EstrusEffect:StatusEffect(StatusEffectCategory.BENEFICIAL, 0xe9b8b5) {
     override fun canApplyUpdateEffect(duration: Int, amplifier: Int): Boolean {
         return true

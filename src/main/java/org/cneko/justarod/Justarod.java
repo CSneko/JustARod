@@ -11,6 +11,12 @@ import org.cneko.justarod.item.JRItems;
 import org.cneko.justarod.payload.SeeeeexNekoInteractivePayload;
 import org.cneko.justarod.quirks.JRQuirks;
 
+/*
+说实话，这个模组其实算不上难做，难的就是呢得把涩涩的感触做进游戏里
+可是吧，涩涩的时候大脑都是被快感给占领了，想要记住细节其实很难的
+没有这些细节的话呢，做出来的感觉很奇怪
+还有就是，得要阅本量丰富才能做的炉火纯青
+ */
 public class Justarod implements ModInitializer {
     public static final String MODID = "justarod";
     @Override

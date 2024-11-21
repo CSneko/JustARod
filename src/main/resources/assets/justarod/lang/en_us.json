@@ -22,6 +22,7 @@
   "item.justarod.electric_rod.tooltip": "Energy: %s / %s",
   "item.justarod.basic_electric_rod": "Basic Electric End Rod",
   "item.justarod.basic_electric_rod.tooltip": "§dA very basic electric end rod, but it seems to leak electricity.",
+  "item.justarod.bremelanotide": "C50H68N14O10",
   "block.justarod.golden_leaves": "Golden Leaves",
   "itemGroup.justarod": "Just A Rod",
   "effect.justarod.orgasm": "Orgasm",

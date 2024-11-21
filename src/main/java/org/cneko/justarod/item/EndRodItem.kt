@@ -6,6 +6,7 @@ import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.MovementType
 import net.minecraft.entity.ai.control.MoveControl
+import net.minecraft.entity.effect.StatusEffect
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
@@ -193,11 +194,7 @@ interface SelfUsedItemInterface : EndRodItemInterface{
             }
         }
         // 给予玩家gc效果
-        JREffects.ORGASM_EFFECT?.let {
-            val orgasm =
-                StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(it), 100, sqrt(speed.toFloat()).toInt())
-            entity.addStatusEffect(orgasm)
-        }
+        entity.addEffect(JREffects.ORGASM_EFFECT,100,sqrt(speed.toFloat()).toInt())
        if (this.canDamage(stack, speed)){
            this.damage(stack, speed, world)
        }
@@ -219,6 +216,7 @@ interface SelfUsedItemInterface : EndRodItemInterface{
         return 1
     }
 }
+
 interface OtherUsedItemInterface: EndRodItemInterface{
     fun canAcceptEntity(stack :ItemStack,entity: Entity):Boolean
     fun useOnOther(stack: ItemStack, world: World?, user: PlayerEntity,target: LivingEntity):ActionResult
@@ -269,4 +267,17 @@ enum class EndRodInstructions{
     USE_ON_OTHER_ATTACK,
     SELF_AND_OTHER_INSERT,
     SELF_AND_OTHER_ATTACK
+}
+
+
+fun LivingEntity.addEffect(effect: StatusEffect?, duration: Int, amplifier: Int) {
+    effect?.let {
+        this.addStatusEffect(StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(it), duration, amplifier))
+    }
+}
+fun LivingEntity?.addEffect(effect: RegistryEntry<StatusEffect>?, duration: Int, amplifier: Int) {
+    this?.addStatusEffect(StatusEffectInstance(effect, duration, amplifier))
+}
+fun LivingEntity.hasEffect(effect: StatusEffect?): Boolean {
+    return this.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(effect))
 }

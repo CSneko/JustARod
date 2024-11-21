@@ -28,9 +28,10 @@ class JRItems {
         val LIGHTNING_END_ROD = LightningEndRodItem()
         val NETWORKING_ROD: NetWorkingRodItem = NetWorkingRodItem()
         val BASIC_ELECTRIC_ROD = BasicElectricRodItem()
+        val BREMELANOTIDE = BremelanotideItem()
 
-        var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null;
-        var JR_ITEM_GROUP: ItemGroup? = null;
+        var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
+        var JR_ITEM_GROUP: ItemGroup? = null
         fun init(){
             // 注册物品
             Registry.register(Registries.ITEM, Identifier.of(MODID, "slime_rod"), SLIME_ROD)
@@ -44,6 +45,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "lightning_end_rod"), LIGHTNING_END_ROD)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "networking_rod"), NETWORKING_ROD)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "basic_electric_rod"), BASIC_ELECTRIC_ROD)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "bremelanotide"), BREMELANOTIDE)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
@@ -66,6 +68,7 @@ class JRItems {
                 entries.add(NETWORKING_ROD)
                 entries.add(GOLDEN_LEAVES)
                 entries.add(BASIC_ELECTRIC_ROD)
+                entries.add(BREMELANOTIDE)
             }
         }
     }

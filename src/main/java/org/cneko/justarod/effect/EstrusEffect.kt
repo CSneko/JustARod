@@ -11,7 +11,7 @@ import net.minecraft.util.math.random.Random
 /*
 其实人类没啥发情期，感觉到的发情也就是想要涩涩而已
  */
-class EstrusEffect:StatusEffect(StatusEffectCategory.BENEFICIAL, 0xe9b8b5) {
+class EstrusEffect:StatusEffect(StatusEffectCategory.BENEFICIAL, 0xffb6c1) {
     override fun canApplyUpdateEffect(duration: Int, amplifier: Int): Boolean {
         return true
     }
@@ -19,8 +19,8 @@ class EstrusEffect:StatusEffect(StatusEffectCategory.BENEFICIAL, 0xe9b8b5) {
     override fun applyUpdateEffect(entity: LivingEntity, amplifier: Int): Boolean {
         val world = entity.world
         val random: Random = world.random
-        // 1/20添加爱心效果
-        if (kotlin.random.Random.nextInt(20) == 0) {
+        // 1/10添加爱心效果
+        if (kotlin.random.Random.nextInt(10) == 0) {
             world.addParticle(
                 ParticleTypes.HEART,
                 entity.x + random.nextInt(2) - 1,
@@ -38,4 +38,6 @@ class EstrusEffect:StatusEffect(StatusEffectCategory.BENEFICIAL, 0xe9b8b5) {
 
         return super.applyUpdateEffect(entity, amplifier)
     }
+
+    //
 }

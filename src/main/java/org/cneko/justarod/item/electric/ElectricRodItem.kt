@@ -1,6 +1,5 @@
 package org.cneko.justarod.item.electric
 
-import com.sun.xml.internal.stream.Entity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.tooltip.TooltipType
@@ -62,7 +61,7 @@ abstract class ElectricRodItem(settings: Settings) : EndRodItem(settings),Simple
     }
 
     override fun canDamage(stack: ItemStack, amount: Int): Boolean {
-        return this.getStoredEnergy(stack) >= amount
+        return this.getStoredEnergy(stack)>this.getEnergyCapacity(stack)*0.01 && this.getStoredEnergy(stack) >= amount
     }
 
     override fun inventoryTick(

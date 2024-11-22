@@ -184,21 +184,25 @@ interface SelfUsedItemInterface : EndRodItemInterface{
      */
     fun useOnSelf(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean):ActionResult{
         val speed = this.getSpeed(stack)
+        if (this.canDamage(stack, speed)){
+           this.damage(stack, speed, world)
+        }else{
+            return ActionResult.FAIL
+        }
         if (speed<=0){
             // 喵？
-            return ActionResult.PASS
+            return ActionResult.FAIL
         }
+        // 我相信... 这个速度你承受不住
         if (speed < 10000) {
             for (i: Int in 0..speed) {
                 onUse(stack, world, entity, slot, selected)
             }
         }
-        // 给予玩家gc效果
+        // 要... 要高潮了
         entity.addEffect(JREffects.ORGASM_EFFECT,100,sqrt(speed.toFloat()).toInt())
-       if (this.canDamage(stack, speed)){
-           this.damage(stack, speed, world)
-       }
         if (speed >=10){
+            // 痛死了！！！
             entity.damage(JRDamageTypes.sexualExcitement(entity), (speed*0.3).toFloat())
         }
         if (speed >= 100){

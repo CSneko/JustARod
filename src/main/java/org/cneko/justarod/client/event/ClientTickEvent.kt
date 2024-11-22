@@ -3,22 +3,28 @@ package org.cneko.justarod.client.event
 import com.mojang.blaze3d.systems.RenderSystem
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gl.ShaderProgram
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.*
-import net.minecraft.client.util.math.MatrixStack
-import net.minecraft.item.ItemStack
+import net.minecraft.entity.player.PlayerEntity
 import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.item.hasEffect
+import java.util.*
 
 class ClientTickEvent {
     companion object{
         fun init(){
             HudRenderCallback.EVENT.register {context,_->
                 val client = MinecraftClient.getInstance()
-                if (client.player != null && client.player!!.hasEffect(JREffects.ESTRUS_EFFECT)) {
+                if (client.player != null && client.player!!.hasEffect(JREffects.ESTRUS_EFFECT) || client.player!!.hasEffect(JREffects.ORGASM_EFFECT)) {
+                    // 粉嫩粉嫩的
                     renderPinkGUI()
                     renderPinkOverlay(context)
+                }
+                if (client.player!!.hasEffect(JREffects.ORGASM_EFFECT)){
+                    // 抖起来！！！
+                    val intensity = client.window.scaledWidth * (0.00f + Random().nextFloat() * 0.005f)
+                    applyScreenShake(context, intensity)
+                    applyViewShake(client.player!!, intensity)
                 }
             }
         }
@@ -30,33 +36,58 @@ class ClientTickEvent {
             RenderSystem.setShaderColor(1.0f, 0.6f, 0.8f, 0.5f) // RGB + 透明度
             RenderSystem.setShader(GameRenderer::getPositionProgram)
         }
-private fun renderPinkOverlay(context: DrawContext) {
-    val client = MinecraftClient.getInstance()
-    val width = client.window.scaledWidth
-    val height = client.window.scaledHeight
+        private fun renderPinkOverlay(context: DrawContext) {
+            val client = MinecraftClient.getInstance()
+            val width = client.window.scaledWidth
+            val height = client.window.scaledHeight
 
-    // 启用混合模式以支持透明
-    RenderSystem.enableBlend()
-    RenderSystem.defaultBlendFunc()
+            // 启用混合模式以支持透明
+            RenderSystem.enableBlend()
+            RenderSystem.defaultBlendFunc()
 
-    // 设置透明粉色
-    RenderSystem.setShaderColor(1.0f, 0.71f, 0.76f, 0.2f) // RGB(255, 182, 193) + 透明度 80%
+            // 设置透明粉色
+            RenderSystem.setShaderColor(1.0f, 0.71f, 0.76f, 0.3f) // RGB(255, 182, 193) + 透明度 70%
 
-    // 使用 OpenGL 绘制一个覆盖整个屏幕的矩形
-    val bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION)
-    val matrix = context.matrices.peek().positionMatrix
+            // 使用 OpenGL 绘制一个覆盖整个屏幕的矩形
+            val bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION)
+            val matrix = context.matrices.peek().positionMatrix
 
-    bufferBuilder.vertex(matrix, 0f, height.toFloat(), 0f)
-    bufferBuilder.vertex(matrix, width.toFloat(), height.toFloat(), 0f)
-    bufferBuilder.vertex(matrix, width.toFloat(), 0f, 0f)
-    bufferBuilder.vertex(matrix, 0f, 0f, 0f)
-    BufferRenderer.drawWithGlobalProgram(bufferBuilder.end())
+            with(bufferBuilder) {
+                vertex(matrix, 0f, height.toFloat(), 0f)
+                vertex(matrix, width.toFloat(), height.toFloat(), 0f)
+                vertex(matrix, width.toFloat(), 0f, 0f)
+                vertex(matrix, 0f, 0f, 0f)
+            }
+            BufferRenderer.drawWithGlobalProgram(bufferBuilder.end())
 
-    // 禁用混合模式
-    RenderSystem.disableBlend()
-}
+            // 禁用混合模式
+            RenderSystem.disableBlend()
+        }
+        private fun applyScreenShake(context: DrawContext, intensity: Float) {
+            val random = Random()
+            val shakeX = (random.nextFloat() - 0.5f) * 2 * intensity // 随机偏移X，范围 [-intensity, intensity]
+            val shakeY = (random.nextFloat() - 0.5f) * 2 * intensity // 随机偏移Y，范围 [-intensity, intensity]
+
+            // 在当前渲染矩阵中应用偏移
+            context.matrices.translate(shakeX.toDouble(), shakeY.toDouble(), 0.0)
+        }
+
+        private fun applyViewShake(player: PlayerEntity, intensity: Float) {
+            val random = Random()
+
+            // 随机生成偏移角度，控制范围为 [-intensity, intensity]
+            val shakeYaw = (random.nextFloat() - 0.5f) * 2 * intensity
+            val shakePitch = (random.nextFloat() - 0.5f) * 2 * intensity
+
+            // 修改玩家视角
+            player.yaw += shakeYaw
+            player.pitch = (player.pitch + shakePitch).coerceIn(-90f, 90f) // 限制 pitch 在 [-90, 90] 范围内
+        }
+
 
     }
 }
+
+
 
 

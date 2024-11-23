@@ -40,8 +40,9 @@ abstract class MultiModeSelfUsedElectricRodItem(settings:Settings): SelfUsedElec
     override fun use(world: World?, user: PlayerEntity?, hand: Hand?): TypedActionResult<ItemStack> {
         user?.let {
             if (user.isSneaking){
-                switchMode(user.getStackInHand(hand))
-                return TypedActionResult.success(ItemStack.EMPTY)
+                val stack = user.getStackInHand(hand)
+                switchMode(stack)
+                return TypedActionResult.success(stack)
             }
         }
         return super.use(world, user, hand)

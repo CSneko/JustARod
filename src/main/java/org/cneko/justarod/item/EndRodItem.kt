@@ -27,10 +27,10 @@ import org.cneko.justarod.effect.JREffects
 import kotlin.math.sqrt
 
 abstract class EndRodItem(settings: Settings) : Item(settings), EndRodItemInterface {
-    override fun onUse(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean) : ActionResult{
+    override fun onUse(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean,times: Int) : ActionResult{
         // 添加计数
         val count = stack.getOrDefault(JRComponents.USED_TIME_MARK, 0)
-        stack.set(JRComponents.USED_TIME_MARK, count + 1)
+        stack.set(JRComponents.USED_TIME_MARK, count + times)
 
         return ActionResult.SUCCESS
     }
@@ -194,20 +194,20 @@ interface SelfUsedItemInterface : EndRodItemInterface{
             // 喵？
             return ActionResult.FAIL
         }
-        // 我相信... 这个速度你承受不住
-        if (speed < 10000) {
-            for (i: Int in 0..speed) {
-                onUse(stack, world, entity, slot, selected)
-            }
-        }
+        // 这个速度... 什么东西啊
+        if (speed >= 10000) return ActionResult.PASS
+        onUse(stack, world, entity, slot, selected,speed)
+
         // 要... 要高潮了
         entity.addEffect(JREffects.ORGASM_EFFECT,100,sqrt(speed.toFloat()).toInt())
 
         // 润滑还是得要的哦
-        val lubricate = entity.getAttributeValue(JRAttributes.PLAYER_LUBRICATING)
+        var lubricate = entity.getAttributeValue(JRAttributes.PLAYER_LUBRICATING)
+
+        if (lubricate == 0.toDouble()) lubricate = 1.0
 
         // 最终的伤害指数
-        val amount = speed / (lubricate+1)
+        val amount = speed / (lubricate)
 
         if (amount >=10){
             // 痛死了！！！
@@ -242,7 +242,7 @@ interface EndRodItemInterface{
      * @param slot 使用的末地烛所在的槽位
      * @param selected 是否是选中的末地烛
      */
-    fun onUse(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean) : ActionResult
+    fun onUse(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean, times: Int) : ActionResult
     fun damage(stack: ItemStack, amount: Int, world: World?) {
         stack.damage += getDamageAmount(stack, amount, world)
     }

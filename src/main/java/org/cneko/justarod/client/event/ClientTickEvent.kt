@@ -3,9 +3,11 @@ package org.cneko.justarod.client.event
 import com.mojang.blaze3d.systems.RenderSystem
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gl.PostEffectProcessor
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.*
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.util.Identifier
 import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.item.hasEffect
 import java.util.*
@@ -41,12 +43,17 @@ class ClientTickEvent {
             val width = client.window.scaledWidth
             val height = client.window.scaledHeight
 
+            // 动态透明度，基于随机数波动
+            val baseAlpha = 0.3f
+            val fluctuation = 0.01f
+            val alpha = baseAlpha + Random().nextFloat() * fluctuation
+
             // 启用混合模式以支持透明
             RenderSystem.enableBlend()
             RenderSystem.defaultBlendFunc()
 
             // 设置透明粉色
-            RenderSystem.setShaderColor(1.0f, 0.71f, 0.76f, 0.3f) // RGB(255, 182, 193) + 透明度 70%
+            RenderSystem.setShaderColor(1.0f, 0.71f, 0.76f, alpha) // 动态透明度
 
             // 使用 OpenGL 绘制一个覆盖整个屏幕的矩形
             val bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION)
@@ -63,6 +70,10 @@ class ClientTickEvent {
             // 禁用混合模式
             RenderSystem.disableBlend()
         }
+
+
+
+
         private fun applyScreenShake(context: DrawContext, intensity: Float) {
             val random = Random()
             val shakeX = (random.nextFloat() - 0.5f) * 2 * intensity // 随机偏移X，范围 [-intensity, intensity]
@@ -87,7 +98,6 @@ class ClientTickEvent {
 
     }
 }
-
 
 
 

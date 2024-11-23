@@ -3,25 +3,25 @@ package org.cneko.justarod.item.electric
 import net.minecraft.item.ItemStack
 import org.cneko.justarod.item.JRComponents
 
-class AdvancedElectricRodItem:MultiModeSelfUsedElectricRodItem(Settings().component(JRComponents.USED_TIME_MARK,0).maxDamage(100000).component(JRComponents.SPEED,20).component(JRComponents.MODE,"zako")) {
+class IndustrialElectricRodItem: MultiModeSelfUsedElectricRodItem(Settings().component(JRComponents.USED_TIME_MARK,0).maxDamage(10000000).component(JRComponents.SPEED,50).component(JRComponents.MODE,"normal")) {
     override fun getModes(stack: ItemStack): List<String> {
-        return listOf("zako","normal","quick")
+        return listOf("normal","quick","fly")
     }
 
     override fun getDefaultMode(stack: ItemStack): String {
-        return "zako"
+        return "normal"
     }
 
     override fun getSpeed(stack: ItemStack?): Int {
         return when (stack?.let { getMode(it) }){
-            "zako" -> 5
-            "normal" -> 15
-            "quick" -> 25
-            else -> 10
+            "normal" -> 30
+            "quick" -> 60
+            "fly" -> 100
+            else -> 50
         }
     }
 
     override fun getEnergyMaxInput(stack: ItemStack?): Long {
-        return 10000
+        return 100000
     }
 }

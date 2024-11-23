@@ -1,0 +1,66 @@
+{
+	"credit": "Made with Blockbench",
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "justarod:item/industrial_electric_rod",
+		"particle": "justarod:item/industrial_electric_rod"
+	},
+	"elements": [
+		{
+			"name": "medium",
+			"from": [7, 2, 8],
+			"to": [9, 20, 10],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7, 2, 8]},
+			"faces": {
+				"north": {"uv": [12.5, 1, 13.5, 10], "texture": "#0"},
+				"east": {"uv": [11.5, 1, 12.5, 10], "texture": "#0"},
+				"south": {"uv": [14.5, 1, 15.5, 10], "texture": "#0"},
+				"west": {"uv": [13.5, 1, 14.5, 10], "texture": "#0"},
+				"up": {"uv": [13.5, 1, 12.5, 0], "texture": "#0"},
+				"down": {"uv": [14.5, 0, 13.5, 1], "texture": "#0"}
+			}
+		},
+		{
+			"name": "bottom",
+			"from": [6, 1, 7],
+			"to": [10, 2, 11],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7, 0, 8]},
+			"faces": {
+				"north": {"uv": [2, 2, 4, 2.5], "texture": "#0"},
+				"east": {"uv": [0, 2, 2, 2.5], "texture": "#0"},
+				"south": {"uv": [6, 2, 8, 2.5], "texture": "#0"},
+				"west": {"uv": [4, 2, 6, 2.5], "texture": "#0"},
+				"up": {"uv": [4, 2, 2, 0], "texture": "#0"},
+				"down": {"uv": [6, 0, 4, 2], "texture": "#0"}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"translation": [0, 0, -0.25],
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [70, 0, 0],
+			"translation": [-6.75, -6, -3],
+			"scale": [0.7, 0.7, 0.7]
+		},
+		"firstperson_lefthand": {
+			"translation": [-80, 0, 0]
+		},
+		"ground": {
+			"translation": [0, 0.5, 0],
+			"scale": [0.7, 0.7, 0.7]
+		},
+		"gui": {
+			"scale": [0.7, 0.7, 0.7]
+		},
+		"head": {
+			"rotation": [99.75, 0, 0],
+			"translation": [0, 0, -17.25]
+		},
+		"fixed": {
+			"scale": [0.7, 0.7, 0.7]
+		}
+	}
+}

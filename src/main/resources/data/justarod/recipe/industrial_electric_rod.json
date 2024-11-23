@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " C ",
+    " R ",
+    "TET"
+  ],
+  "key": {
+    "T": {
+      "tag": "c:ingots/iridium"
+    },
+    "R": {
+      "item": "techreborn:lapotron_crystal"
+    },
+    "E": {
+      "item": "justarod:advanced_electric_rod"
+    },
+    "C": {
+      "item": "techreborn:industrial_circuit"
+    }
+  },
+  "result": {
+    "id": "justarod:industrial_electric_rod",
+    "count": 1
+  }
+}

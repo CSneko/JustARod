@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DCD",
+    "DRD",
+    "TET"
+  ],
+  "key": {
+    "T": {
+      "tag": "c:ingots/titanium"
+    },
+    "R": {
+      "item": "techreborn:lithium_ion_battery"
+    },
+    "E": {
+      "item": "justarod:basic_electric_rod"
+    },
+    "C": {
+      "item": "techreborn:advanced_circuit"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    }
+  },
+  "result": {
+    "id": "justarod:advanced_electric_rod",
+    "count": 1
+  }
+}

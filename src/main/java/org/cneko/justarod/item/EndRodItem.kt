@@ -21,6 +21,7 @@ import net.minecraft.util.Formatting
 import net.minecraft.util.Hand
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
+import org.cneko.justarod.JRAttributes
 import org.cneko.justarod.damage.JRDamageTypes
 import org.cneko.justarod.effect.JREffects
 import kotlin.math.sqrt
@@ -201,15 +202,22 @@ interface SelfUsedItemInterface : EndRodItemInterface{
         }
         // 要... 要高潮了
         entity.addEffect(JREffects.ORGASM_EFFECT,100,sqrt(speed.toFloat()).toInt())
-        if (speed >=10){
+
+        // 润滑还是得要的哦
+        val lubricate = entity.getAttributeValue(JRAttributes.PLAYER_LUBRICATING)
+
+        // 最终的伤害指数
+        val amount = speed / (lubricate+1)
+
+        if (amount >=10){
             // 痛死了！！！
-            entity.damage(JRDamageTypes.sexualExcitement(entity), (speed*0.3).toFloat())
+            entity.damage(JRDamageTypes.sexualExcitement(entity), (amount*0.3).toFloat())
         }
-        if (speed >= 100){
+        if (amount >= 100){
             // 被草飞了喵
             val random = world?.random
             entity.move(MovementType.SHULKER_BOX, Vec3d((random?.nextFloat()?.times(1) ?: 0f).toDouble()*0.05,
-                (random?.nextFloat()?.times(speed) ?: 0f).toDouble()*0.01, (random?.nextFloat()?.times(1) ?: 0f).toDouble()*0.05)
+                (random?.nextFloat()?.times(amount) ?: 0f).toDouble()*0.01, (random?.nextFloat()?.times(1) ?: 0f).toDouble()*0.05)
             )
         }
         // TODO： 淫叫

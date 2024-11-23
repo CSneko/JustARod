@@ -21,5 +21,10 @@ class JRComponents{
             Identifier.of(MODID, "speed"),
             ComponentType.builder<Int>().codec(Codec.INT).build()
         )
+        val MODE: ComponentType<String> = Registry.register(
+            Registries.DATA_COMPONENT_TYPE,
+            Identifier.of(MODID, "mode"),
+            ComponentType.builder<String>().codec(Codec.STRING).build()
+        )
     }
 }

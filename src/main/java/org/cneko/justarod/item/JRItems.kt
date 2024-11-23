@@ -12,6 +12,7 @@ import net.minecraft.util.Identifier
 import org.cneko.justarod.Justarod.MODID
 
 import org.cneko.justarod.block.JRBlocks.*
+import org.cneko.justarod.item.electric.AdvancedElectricRodItem
 import org.cneko.justarod.item.electric.BasicElectricRodItem
 
 
@@ -29,6 +30,7 @@ class JRItems {
         val NETWORKING_ROD: NetWorkingRodItem = NetWorkingRodItem()
         val BASIC_ELECTRIC_ROD = BasicElectricRodItem()
         val BREMELANOTIDE = BremelanotideItem()
+        val ADVANCED_ELECTRIC_ROD = AdvancedElectricRodItem()
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -46,6 +48,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "networking_rod"), NETWORKING_ROD)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "basic_electric_rod"), BASIC_ELECTRIC_ROD)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "bremelanotide"), BREMELANOTIDE)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "advanced_electric_rod"), ADVANCED_ELECTRIC_ROD)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
@@ -68,6 +71,7 @@ class JRItems {
                 entries.add(NETWORKING_ROD)
                 entries.add(GOLDEN_LEAVES)
                 entries.add(BASIC_ELECTRIC_ROD)
+                entries.add(ADVANCED_ELECTRIC_ROD)
                 entries.add(BREMELANOTIDE)
             }
         }

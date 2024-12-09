@@ -10,13 +10,13 @@
       "tag": "c:ingots/iridium"
     },
     "R": {
-      "item": "techreborn:lapotron_crystal"
+      "item": "justarod:lapotron_crystal"
     },
     "E": {
       "item": "justarod:advanced_electric_rod"
     },
     "C": {
-      "item": "techreborn:industrial_circuit"
+      "tag": "justarod:industrial_circuit"
     }
   },
   "result": {

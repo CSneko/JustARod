@@ -10,13 +10,13 @@
       "tag": "c:ingots/titanium"
     },
     "R": {
-      "item": "techreborn:lithium_ion_battery"
+      "tag": "justarod:lithium_ion_battery"
     },
     "E": {
-      "item": "justarod:basic_electric_rod"
+      "tag": "justarod:basic_electric_rod"
     },
     "C": {
-      "item": "techreborn:advanced_circuit"
+      "tag": "justarod:advanced_circuit"
     },
     "D": {
       "item": "minecraft:diamond"

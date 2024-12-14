@@ -23,5 +23,13 @@
     "minecraft": ">=${minecraft_version}",
     "fabric-language-kotlin": "*",
     "toneko": ">=1.4.0"
+  },
+  "mixins": [
+    "justarod.mixins.json"
+  ],
+  "custom": {
+    "loom:injected_interfaces": {
+      "net/minecraft/class_3222": ["org/cneko/justarod/entity/Insertable"]
+    }
   }
 }

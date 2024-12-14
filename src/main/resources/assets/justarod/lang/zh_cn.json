@@ -26,7 +26,7 @@
   "item.justarod.industrial_electric_rod": "工业级电动末地烛",
   "item.justarod.bremelanotide": "C50H68N14O10",
   "item.justarod.insertion_pedestal": "插入底座",
-  "item.justarod.insertion_pedestal.must_be_rod": "§c必须是末地烛哦",
+  "item.justarod.insertion_pedestal.must_be_rod": "§c必须是可以给自己用的末地烛哦",
   "item.justarod.multi_mode_rods.current_mode": "§e当前模式: %s",
   "item.justarod.multi_mode_rods.switch_mode": "§o§6按下shift+右键切换模式",
   "item.justarod.multi_mode_rods.all_modes": "§o§5所有模式:",

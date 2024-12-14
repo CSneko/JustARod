@@ -1,13 +1,17 @@
 package org.cneko.justarod.item
 
+import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
+import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import net.minecraft.util.TypedActionResult
 import net.minecraft.world.World
+import org.cneko.justarod.entity.Insertable
 
 class InsertionPedestalItem:Item(Settings()) {
     override fun use(world: World?, user: PlayerEntity?, hand: Hand?): TypedActionResult<ItemStack> {
@@ -18,7 +22,7 @@ class InsertionPedestalItem:Item(Settings()) {
         val stack = user.getStackInHand(Hand.OFF_HAND)
         val rodStack = user.getStackInHand(Hand.MAIN_HAND)
 
-        if (rodStack.item !is EndRodItem){
+        if (rodStack.item !is SelfUsedItemInterface){
             user.sendMessage(Text.translatable("item.justarod.insertion_pedestal.must_be_rod"))
             return super.use(world, user, hand)
         }
@@ -26,6 +30,13 @@ class InsertionPedestalItem:Item(Settings()) {
         val id = rodStack.item.getId()
         stack.set(JRComponents.ROD_ID, id)
         return TypedActionResult.success(rodStack)
+    }
+
+    override fun useOnEntity(stack: ItemStack?, user: PlayerEntity?, entity: LivingEntity?, hand: Hand?): ActionResult {
+        if (entity is Insertable){
+
+        }
+        return super.useOnEntity(stack, user, entity, hand)
     }
 }
 

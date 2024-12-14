@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "org.cneko.justarod.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "PlayerMixin"
+  ],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

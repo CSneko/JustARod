@@ -11,6 +11,7 @@ import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import net.minecraft.util.TypedActionResult
 import net.minecraft.world.World
+import org.cneko.justarod.damage.JRDamageTypes
 import org.cneko.justarod.entity.Insertable
 
 class InsertionPedestalItem:Item(Settings()) {
@@ -29,16 +30,43 @@ class InsertionPedestalItem:Item(Settings()) {
         // 获取副手末地烛的id
         val id = rodStack.item.getId()
         stack.set(JRComponents.ROD_ID, id)
+
         return TypedActionResult.success(rodStack)
     }
 
     override fun useOnEntity(stack: ItemStack?, user: PlayerEntity?, entity: LivingEntity?, hand: Hand?): ActionResult {
         if (entity is Insertable){
+            // 已经在里面了哇，塞不进去啦
+            if(entity.hasRodInside()){
+                user?.sendMessage(Text.translatable("item.justarod.insertion_pedestal.already_has_rod"))
+                return ActionResult.FAIL
+            }
+            val id = stack?.getOrDefault(JRComponents.ROD_ID, "") ?: ""
+            if (id.isEmpty()){
+                // 什么也没有呢...
+                user?.sendMessage(Text.translatable("item.justarod.insertion_pedestal.no_rod"))
+                return ActionResult.FAIL
+            }
+            // 插入
+            stack?.let { user?.setStackInHand(hand,entity.insertRod(it).value) }
 
         }
         return super.useOnEntity(stack, user, entity, hand)
     }
 }
+
+fun ServerPlayerEntity.hasRodInside(): Boolean{
+    return (this as Insertable).hasRodInside()
+}
+fun <T> T.insertRod(pedestal: ItemStack): TypedActionResult<ItemStack>
+where T : LivingEntity, T : Insertable {
+    this.rodInside = pedestal.getOrDefault(JRComponents.ROD_ID, "")
+    // 受伤
+    this.damage(JRDamageTypes.sexualExcitement(this), 4f)
+    this.sendMessage(Text.translatable("item.justarod.insertion_pedestal.insert_rod"))
+    return TypedActionResult.success(pedestal)
+}
+
 
 private fun Item.getId(): String {
     return Registries.ITEM.getId(this).path

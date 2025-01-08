@@ -3,6 +3,7 @@ package org.cneko.justarod.item
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.component.ComponentType
+import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
 import net.minecraft.util.Identifier
@@ -26,10 +27,10 @@ class JRComponents{
             Identifier.of(MODID, "mode"),
             ComponentType.builder<String>().codec(Codec.STRING).build()
         )
-        val ROD_ID: ComponentType<String> = Registry.register(
+        val ROD_INSIDE: ComponentType<ItemStack> = Registry.register(
             Registries.DATA_COMPONENT_TYPE,
-            Identifier.of(MODID, "rod_id"),
-            ComponentType.builder<String>().codec(Codec.STRING).build()
+            Identifier.of(MODID, "rod_inside"),
+            ComponentType.builder<ItemStack>().codec(ItemStack.CODEC).build()
         )
     }
 }

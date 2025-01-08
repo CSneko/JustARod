@@ -1,5 +1,6 @@
 package org.cneko.justarod.item
 
+import net.minecraft.advancement.criterion.InventoryChangedCriterion.Conditions.Slots
 import net.minecraft.component.DataComponentTypes
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.Entity
@@ -9,12 +10,14 @@ import net.minecraft.entity.ai.control.MoveControl
 import net.minecraft.entity.effect.StatusEffect
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.inventory.SlotRanges
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.tooltip.TooltipType
 import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.entry.RegistryEntry
+import net.minecraft.screen.slot.SlotActionType
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Formatting
@@ -96,7 +99,7 @@ open class SelfUsedItem(settings: Settings) : EndRodItem(settings), SelfUsedItem
         val e:LivingEntity = entity
 
         // 如果放在副手
-        if (e.offHandStack == stack){
+        if (slot == 99){
             // 减少一点耐久 (即使没耐久也不损坏)
             stack.damage++
             // 执行
@@ -160,7 +163,7 @@ abstract class BothUsedItem(settings: Settings) : EndRodItem(settings),SelfUsedI
         val e:LivingEntity = entity
 
         // 如果放在副手
-        if (e.offHandStack == stack){
+        if (slot == 99){
             // 减少一点耐久 (即使没耐久也不损坏)
             stack.damage++
             // 执行

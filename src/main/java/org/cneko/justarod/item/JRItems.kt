@@ -33,6 +33,8 @@ class JRItems {
         val BREMELANOTIDE = BremelanotideItem()
         val ADVANCED_ELECTRIC_ROD = AdvancedElectricRodItem()
         val INDUSTRIAL_ROD = IndustrialElectricRodItem()
+        val INSERTION_PEDESTAL = InsertionPedestalItem()
+        val RETRIEVER = RetrieverItem()
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -52,7 +54,8 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "bremelanotide"), BREMELANOTIDE)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "advanced_electric_rod"), ADVANCED_ELECTRIC_ROD)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "industrial_electric_rod"), INDUSTRIAL_ROD)
-
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "insertion_pedestal"), INSERTION_PEDESTAL)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "retriever"), RETRIEVER)
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
             JR_ITEM_GROUP = FabricItemGroup.builder()
@@ -77,6 +80,8 @@ class JRItems {
                 entries.add(ADVANCED_ELECTRIC_ROD)
                 entries.add(INDUSTRIAL_ROD)
                 entries.add(BREMELANOTIDE)
+                entries.add(INSERTION_PEDESTAL)
+                entries.add(RETRIEVER)
             }
         }
     }

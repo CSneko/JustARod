@@ -1,8 +1,7 @@
 {
   "replace": false,
   "values": [
-    "techreborn:electronic_circuit",
-    "mekanism:basic_control_circuit"
+    "techreborn:electronic_circuit"
   ]
 }
 

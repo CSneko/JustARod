@@ -1,8 +1,7 @@
 {
   "replace": false,
   "values": [
-    "techreborn:industrial_circuit",
-    "mekanism:elite_control_circuit"
+    "techreborn:industrial_circuit"
   ]
 }
 

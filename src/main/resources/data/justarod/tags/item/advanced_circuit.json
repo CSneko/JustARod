@@ -1,8 +1,7 @@
 {
   "replace": false,
   "values": [
-    "techreborn:advanced_circuit",
-    "mekanism:advanced_control_circuit"
+    "techreborn:advanced_circuit"
   ]
 }
 

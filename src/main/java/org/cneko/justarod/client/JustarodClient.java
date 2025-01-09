@@ -12,7 +12,7 @@ public class JustarodClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        EntityRendererRegistry.register(JREntities.SEEEEEX_NEKO, NekoRenderer::new);
+        //EntityRendererRegistry.register(JREntities.SEEEEEX_NEKO, NekoRenderer::new);
         JRClientNetworkingEvents.init();
         ClientTickEvent.Companion.init();
     }

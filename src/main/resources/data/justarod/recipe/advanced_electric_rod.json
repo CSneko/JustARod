@@ -13,7 +13,7 @@
       "tag": "justarod:lithium_ion_battery"
     },
     "E": {
-      "tag": "justarod:basic_electric_rod"
+      "item": "justarod:basic_electric_rod"
     },
     "C": {
       "tag": "justarod:advanced_circuit"

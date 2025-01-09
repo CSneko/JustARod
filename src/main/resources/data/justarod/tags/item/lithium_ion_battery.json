@@ -1,8 +1,7 @@
 {
   "replace": false,
   "values": [
-    "techreborn:lithium_ion_battery",
-    "mekanism:basic_energy_cube"
+    "techreborn:lithium_ion_battery"
   ]
 }
 

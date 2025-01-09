@@ -1,8 +1,7 @@
 {
   "replace": false,
   "values": [
-    "techreborn:lapotron_crystal",
-    "mekanism:advanced_energy_cube"
+    "techreborn:lapotron_crystal"
   ]
 }
 

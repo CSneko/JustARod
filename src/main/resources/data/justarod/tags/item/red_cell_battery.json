@@ -1,8 +1,7 @@
 {
   "replace": false,
   "values": [
-    "techreborn:red_cell_battery",
-    "mekanism:energy_tablet"
+    "techreborn:red_cell_battery"
   ]
 }
 

@@ -104,7 +104,7 @@ abstract class SelfUsedElectricRodItem(settings: Settings) : ElectricRodItem(set
         val e: LivingEntity = entity
 
         // 如果放在副手
-        if (slot == 99){
+        if (slot == 0){
             // 减少一点耐久 (即使没耐久也不损坏)
             stack.damage++
             // 执行

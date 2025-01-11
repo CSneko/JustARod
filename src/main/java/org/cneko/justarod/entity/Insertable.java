@@ -20,7 +20,7 @@ public interface Insertable {
         if (hasRodInside()){
             var stack = this.getRodInside();
             var item = stack.getItem();
-            item.inventoryTick(stack, entity.getWorld(), entity, 99, false);
+            item.inventoryTick(stack, entity.getWorld(), entity, 0, false);
         }
     }
 }

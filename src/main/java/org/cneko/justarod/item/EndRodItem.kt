@@ -92,14 +92,13 @@ open class SelfUsedItem(settings: Settings) : EndRodItem(settings), SelfUsedItem
     }
     override fun inventoryTick(stack: ItemStack, world: World?, entity: Entity?, slot: Int, selected: Boolean) {
         super.inventoryTick(stack, world, entity, slot, selected)
-
         // 如果耐久为0或者实体不是LivingEntity，则不处理
         if(stack.damage == stack.maxDamage || entity !is LivingEntity) return
 
         val e:LivingEntity = entity
 
         // 如果放在副手
-        if (slot == 99){
+        if (slot == 0){
             // 减少一点耐久 (即使没耐久也不损坏)
             stack.damage++
             // 执行
@@ -163,7 +162,7 @@ abstract class BothUsedItem(settings: Settings) : EndRodItem(settings),SelfUsedI
         val e:LivingEntity = entity
 
         // 如果放在副手
-        if (slot == 99){
+        if (slot == 0){
             // 减少一点耐久 (即使没耐久也不损坏)
             stack.damage++
             // 执行

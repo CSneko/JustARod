@@ -42,7 +42,7 @@ class JRItems {
         val INSERTION_PEDESTAL = InsertionPedestalItem()
         val RETRIEVER = RetrieverItem()
         val SHENBAO = Item(Item.Settings().food(FoodComponent.Builder()
-            .nutrition(1).statusEffect(StatusEffectInstance(JREffects.STRONG_EFFECT.entry(), 6000,1,false,true),1f)
+            .nutrition(1).statusEffect(StatusEffectInstance(JREffects.STRONG_EFFECT.entry(), 6000,1,false,true),1f).alwaysEdible()
             .build()))
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null

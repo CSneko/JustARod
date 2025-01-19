@@ -1,4 +1,8 @@
 {
+  "command.justarod.rod.get.success": "§aThe End Rod inside is %s",
+  "command.justarod.rod.get.failure": "§cYou don't have the End Rod inside!",
+  "command.justarod.rod.set.success": "§aYou have successfully set the End Rod %s",
+  "command.justarod.rod.remove.success": "§aYou have successfully removed the End Rod",
   "item.justarod.end_rod.used_count": "§aThis rod has been used %s times",
   "item.justarod.end_rod.speed": "§dSpeed：%d /t",
   "item.justarod.end_rod.insert_success": "§aInsert successfully!",

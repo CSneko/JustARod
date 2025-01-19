@@ -1,4 +1,4 @@
-package org.cneko.justarod.commands;
+package org.cneko.justarod.command;
 
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -8,5 +8,6 @@ public class JRCommands {
         CommandRegistrationCallback.EVENT.register(
                 (dispatcher, dedicatedServer, registryAccess) -> RodCommand.register(dispatcher)
         );
+        ImpactCommand.Companion.init();
     }
 }

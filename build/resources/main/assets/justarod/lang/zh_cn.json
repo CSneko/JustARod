@@ -1,4 +1,8 @@
 {
+  "command.justarod.rod.get.success": "§a在你里面的末地烛是%s",
+  "command.justarod.rod.get.failure": "§c你没有末地烛",
+  "command.justarod.rod.set.success": "§a你已成功设置末地烛%s",
+  "command.justarod.rod.remove.success": "§a你已成功移除末地烛",
   "item.justarod.end_rod.used_count": "§a这根末地烛已经使用了%s次啦",
   "item.justarod.end_rod.speed": "§d速度：%d /t",
   "item.justarod.end_rod.insert_success": "§a插入成功了喵",

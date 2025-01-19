@@ -1,4 +1,4 @@
-package org.cneko.justarod.commands;
+package org.cneko.justarod.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.server.command.CommandManager;

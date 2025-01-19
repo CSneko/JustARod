@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "awa",
+    "qaq"
+  ],
+  "key": {
+    "w": {
+      "item": "minecraft:golden_apple"
+    },
+    "a": {
+      "item": "minecraft:carrot"
+    },
+    "q": {
+      "item": "minecraft:wheat"
+    }
+  },
+  "result": {
+    "id": "justarod:shenbao",
+    "count": 1
+  }
+}

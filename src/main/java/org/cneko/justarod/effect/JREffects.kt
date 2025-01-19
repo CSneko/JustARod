@@ -8,25 +8,27 @@ import org.cneko.justarod.Justarod.MODID
 
 class JREffects {
     companion object{
-        var ORGASM_EFFECT: StatusEffect? = OrgasmEffect()
-        var LUBRICATING_EFFECT: StatusEffect? = LubricatingEffect()
-        var ESTRUS_EFFECT: StatusEffect? = EstrusEffect()
+        var ORGASM_EFFECT: StatusEffect? = Registry.register(
+            Registries.STATUS_EFFECT,
+            Identifier.of(MODID, "orgasm"),
+            OrgasmEffect()
+        )
+        var LUBRICATING_EFFECT: StatusEffect? = Registry.register(
+            Registries.STATUS_EFFECT,
+            Identifier.of(MODID, "lubricating"),
+            LubricatingEffect()
+        )
+        var ESTRUS_EFFECT: StatusEffect? = Registry.register(
+            Registries.STATUS_EFFECT,
+            Identifier.of(MODID, "estrus"),
+            EstrusEffect()
+        )
+        var STRONG_EFFECT: StatusEffect? = Registry.register(
+            Registries.STATUS_EFFECT,
+            Identifier.of(MODID, "strong"),
+            StrongEffect()
+        )
         fun init(){
-            ORGASM_EFFECT = Registry.register(
-                Registries.STATUS_EFFECT,
-                Identifier.of(MODID, "orgasm"),
-                ORGASM_EFFECT
-            )
-            LUBRICATING_EFFECT = Registry.register(
-                Registries.STATUS_EFFECT,
-                Identifier.of(MODID, "lubricating"),
-                LUBRICATING_EFFECT
-            )
-            ESTRUS_EFFECT = Registry.register(
-                Registries.STATUS_EFFECT,
-                Identifier.of(MODID, "estrus"),
-                ESTRUS_EFFECT
-            )
         }
     }
 

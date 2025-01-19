@@ -2,16 +2,22 @@ package org.cneko.justarod.item
 
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents
+import net.minecraft.component.type.FoodComponent
+import net.minecraft.entity.effect.StatusEffect
+import net.minecraft.entity.effect.StatusEffectInstance
+import net.minecraft.item.Item
 import net.minecraft.item.ItemGroup
 import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
 import net.minecraft.registry.RegistryKey
+import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.cneko.justarod.Justarod.MODID
 
 import org.cneko.justarod.block.JRBlocks.*
+import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.item.electric.AdvancedElectricRodItem
 import org.cneko.justarod.item.electric.BasicElectricRodItem
 import org.cneko.justarod.item.electric.IndustrialElectricRodItem
@@ -35,6 +41,9 @@ class JRItems {
         val INDUSTRIAL_ROD = IndustrialElectricRodItem()
         val INSERTION_PEDESTAL = InsertionPedestalItem()
         val RETRIEVER = RetrieverItem()
+        val SHENBAO = Item(Item.Settings().food(FoodComponent.Builder()
+            .nutrition(1).statusEffect(StatusEffectInstance(JREffects.STRONG_EFFECT.entry(), 6000,1,false,true),1f)
+            .build()))
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -56,6 +65,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "industrial_electric_rod"), INDUSTRIAL_ROD)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "insertion_pedestal"), INSERTION_PEDESTAL)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "retriever"), RETRIEVER)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "shenbao"), SHENBAO)
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
             JR_ITEM_GROUP = FabricItemGroup.builder()
@@ -82,7 +92,12 @@ class JRItems {
                 entries.add(BREMELANOTIDE)
                 entries.add(INSERTION_PEDESTAL)
                 entries.add(RETRIEVER)
+                entries.add(SHENBAO)
             }
         }
     }
+}
+
+fun StatusEffect?.entry(): RegistryEntry<StatusEffect>? {
+    return Registries.STATUS_EFFECT.getEntry(this)
 }

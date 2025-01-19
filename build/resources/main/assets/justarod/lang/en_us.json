@@ -23,11 +23,13 @@
   "item.justarod.basic_electric_rod": "Basic Electric End Rod",
   "item.justarod.basic_electric_rod.tooltip": "§dA very basic electric end rod, but it seems to leak electricity.",
   "item.justarod.bremelanotide": "C50H68N14O10",
+  "item.justarod.shenbao": "Shenbao",
   "block.justarod.golden_leaves": "Golden Leaves",
   "itemGroup.justarod": "Just A Rod",
   "effect.justarod.orgasm": "Orgasm",
   "effect.justarod.lubricating": "Lubricating",
   "effect.justarod.estrus": "Estrus",
+  "effect.justarod.strong": "Strong",
   "attribute.name.player.lubricating": "Lubricating",
   "death.attack.sexual_excitement": "%s died in 's'excitement",
   "quirk.toneko.end_rod": "End rod",
@@ -43,5 +45,7 @@
   "advancements.justarod.rods.get_lubricating_book.title": "We need more lubrication！",
   "advancements.justarod.rods.get_lubricating_book.description": "More lubricating, more orgasm, more excitement!",
   "advancements.justarod.rods.use_all_rod.title": "Much Lubricating!",
-  "advancements.justarod.rods.use_all_rod.description": "§5You are on the rod, no going back... But, isn't it GREAT?§r"
+  "advancements.justarod.rods.use_all_rod.description": "§5You are on the rod, no going back... But, isn't it GREAT?§r",
+  "command.justarod.impact.enable": "§aThe party has been opened",
+  "command.justarod.impact.disable": "§aThe party has been closed"
 }

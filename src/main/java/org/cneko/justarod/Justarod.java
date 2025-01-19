@@ -4,9 +4,11 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import org.cneko.justarod.api.NetWorkingRodData;
 import org.cneko.justarod.block.JRBlocks;
+import org.cneko.justarod.command.ImpactCommand;
 import org.cneko.justarod.effect.JREffects;
 import org.cneko.justarod.entity.JREntities;
 import org.cneko.justarod.event.EntityAttackEvent;
+import org.cneko.justarod.event.TickEvent;
 import org.cneko.justarod.item.JRItems;
 import org.cneko.justarod.payload.SeeeeexNekoInteractivePayload;
 import org.cneko.justarod.quirks.JRQuirks;
@@ -46,7 +48,9 @@ public class Justarod implements ModInitializer {
         JRAttributes.Companion.init();
         JRQuirks.Companion.init();
         EntityAttackEvent.init();
+        TickEvent.Companion.init();
         JREntities.init();
+        ImpactCommand.Companion.init();
         PayloadTypeRegistry.playS2C().register(SeeeeexNekoInteractivePayload.ID, SeeeeexNekoInteractivePayload.CODEC);
     }
 }

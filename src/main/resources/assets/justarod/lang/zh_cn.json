@@ -42,11 +42,13 @@
   "item.justarod.multi_mode_rods.mode.normal": "普通",
   "item.justarod.multi_mode_rods.mode.quick": "快速",
   "item.justarod.multi_mode_rods.mode.fly": "起飞",
+  "item.justarod.shenbao": "肾宝片",
   "block.justarod.golden_leaves": "金叶",
   "itemGroup.justarod": "只是根棍子",
   "effect.justarod.orgasm": "高潮",
   "effect.justarod.lubricating": "润滑",
   "effect.justarod.estrus": "发情",
+  "effect.justarod.strong": "强壮",
   "attribute.name.player.lubricating": "润滑",
   "death.attack.sexual_excitement": "%s因为过度性奋而死",
   "quirk.toneko.end_rod": "末地烛",
@@ -62,5 +64,7 @@
   "advancements.justarod.rods.get_lubricating_book.title": "需要更润滑！",
   "advancements.justarod.rods.get_lubricating_book.description": "更润滑，更高潮，更性奋！",
   "advancements.justarod.rods.use_all_rod.title": "非常润滑！",
-  "advancements.justarod.rods.use_all_rod.description": "§5你在这条路上，一去不复返...但是这不很棒吗？§r"
+  "advancements.justarod.rods.use_all_rod.description": "§5你在这条路上，一去不复返...但是这不很棒吗？§r",
+  "command.justarod.impact.enable": "§a已开启银趴",
+  "command.justarod.impact.disable": "§a已关闭银趴"
 }

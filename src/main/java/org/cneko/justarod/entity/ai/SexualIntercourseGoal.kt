@@ -23,8 +23,8 @@ class SexualIntercourseGoal(val neko: SeeeeexNekoEntity) : Goal (){
             val world = neko.world
             if (neko.nekoMateGoal.target==null && world is ServerWorld){
                 // 性欲下降点
-                neko.decreaseSexualDesire(20)
                 neko.tryMating(world,target!!)
+                neko.decreaseSexualDesire(20)
             }
         }else if (neko.getSexualDesire()>=50){
             val target = neko.world.getNekoInRange(neko,neko.getSexualDesire()* 0.1f)

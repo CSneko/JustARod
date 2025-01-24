@@ -7,9 +7,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
-import org.cneko.justarod.client.screen.SeeeeexNekoInteractiveScreen;
 import org.cneko.justarod.entity.SeeeeexNekoEntity;
-import org.cneko.justarod.payload.SeeeeexNekoInteractivePayload;
 import org.cneko.toneko.common.mod.entities.NekoEntity;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,26 +16,6 @@ import java.util.UUID;
 
 public class JRClientNetworkingEvents {
     public static void init(){
-        ClientPlayNetworking.registerGlobalReceiver(SeeeeexNekoInteractivePayload.ID, (payload, context) -> {
-            context.client().execute(() -> {
-                String uuid = payload.uuid();
-                if (uuid != null && !uuid.isEmpty()) {
-                    SeeeeexNekoEntity neko = findNearbySeeeeexNekoByUuid(UUID.fromString(uuid), NekoEntity.DEFAULT_FIND_RANGE);
-                    SeeeeexNekoInteractiveScreen.open(neko);
-
-                }
-
-            });
-        });
-    }
-
-    public static @Nullable SeeeeexNekoEntity findNearbySeeeeexNekoByUuid(UUID targetUuid, double range) {
-        LivingEntity var4 = findNearbyEntityByUuid(targetUuid, range);
-        if (var4 instanceof SeeeeexNekoEntity nekoEntity) {
-            return nekoEntity;
-        } else {
-            return null;
-        }
     }
 
     public static @Nullable LivingEntity findNearbyEntityByUuid(UUID targetUuid, double range) {

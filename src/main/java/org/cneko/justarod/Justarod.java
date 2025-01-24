@@ -10,7 +10,6 @@ import org.cneko.justarod.entity.JREntities;
 import org.cneko.justarod.event.EntityAttackEvent;
 import org.cneko.justarod.event.TickEvent;
 import org.cneko.justarod.item.JRItems;
-import org.cneko.justarod.payload.SeeeeexNekoInteractivePayload;
 import org.cneko.justarod.quirks.JRQuirks;
 
 /*
@@ -51,6 +50,5 @@ public class Justarod implements ModInitializer {
         JREntities.init();
         TickEvent.Companion.init();
         JRCommands.init();
-        PayloadTypeRegistry.playS2C().register(SeeeeexNekoInteractivePayload.ID, SeeeeexNekoInteractivePayload.CODEC);
     }
 }

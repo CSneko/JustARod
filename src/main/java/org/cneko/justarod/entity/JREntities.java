@@ -12,15 +12,16 @@ import net.minecraft.util.Identifier;
 import static org.cneko.justarod.Justarod.MODID;
 
 public class JREntities {
-//    public static final EntityType<SeeeeexNekoEntity> SEEEEEX_NEKO = Registry.register(
-//            Registries.ENTITY_TYPE,
-//            Identifier.of(MODID, "seeeeeex_neko"),
-//            FabricEntityType.Builder.createMob(SeeeeexNekoEntity::new, SpawnGroup.CREATURE,
-//                    builder ->builder.defaultAttributes(SeeeeexNekoEntity::createNekoAttributes))
-//                    .dimensions(0.5f,1.7f).eyeHeight(1.6f)
-//                    .build()
-//    );
+    public static final Identifier SEEEEEX_NEKO_ID = Identifier.of(MODID, "seeeeeex_neko");
+    public static final EntityType<SeeeeexNekoEntity> SEEEEEX_NEKO = Registry.register(
+            Registries.ENTITY_TYPE,
+            SEEEEEX_NEKO_ID,
+            FabricEntityType.Builder.createMob(SeeeeexNekoEntity::new, SpawnGroup.CREATURE,
+                    builder ->builder.defaultAttributes(SeeeeexNekoEntity::createNekoAttributes))
+                    .dimensions(0.5f,1.7f).eyeHeight(1.6f)
+                    .build()
+    );
     public static void init(){
-        //BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(), SpawnGroup.CREATURE, SEEEEEX_NEKO, 10, 1, 1);
+        BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(), SpawnGroup.CREATURE, SEEEEEX_NEKO, 10, 1, 1);
     }
 }

@@ -1,14 +1,14 @@
 package org.cneko.justarod.entity
 
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.entity.EntityPose
 import net.minecraft.entity.EntityType
+import net.minecraft.entity.data.DataTracker
+import net.minecraft.entity.data.TrackedData
+import net.minecraft.entity.data.TrackedDataHandlerRegistry
 import net.minecraft.registry.tag.FluidTags
-import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.world.World
-import org.cneko.justarod.payload.SeeeeexNekoInteractivePayload
-import org.cneko.toneko.common.mod.api.NekoSkinRegistry
+import org.cneko.justarod.entity.ai.SexualIntercourseGoal
 import org.cneko.toneko.common.mod.entities.INeko
 import org.cneko.toneko.common.mod.entities.NekoEntity
 import software.bernie.geckolib.animation.AnimatableManager
@@ -23,10 +23,17 @@ import software.bernie.geckolib.constant.DefaultAnimations
 open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, world: World): NekoEntity(type, world) {
     companion object{
         val SKIN:String = "shiuri_neko"
+        val SEXUAL_DESIRE_ID:TrackedData<Int> = DataTracker.registerData(SeeeeexNekoEntity::class.java, TrackedDataHandlerRegistry.INTEGER)
     }
     var isMasturbation = false
+
     override fun getBreedOffspring(world: ServerWorld?, neko: INeko?): NekoEntity? {
         return world?.let { SeeeeexNekoEntity(this.type, it) }
+    }
+
+    override fun initGoals() {
+        super.initGoals()
+        this.goalSelector.add(5, SexualIntercourseGoal(this))
     }
 
     override fun registerControllers(controllers: AnimatableManager.ControllerRegistrar?) {
@@ -48,16 +55,26 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
         })
     }
 
+    fun getSexualDesire(): Int {
+        return this.dataTracker.get(SEXUAL_DESIRE_ID)
+    }
+    fun setSexualDesire(desire: Int) {
+        this.dataTracker.set(SEXUAL_DESIRE_ID, desire)
+    }
+
+    override fun baseTick() {
+        super.baseTick()
+        if (!world.isClient()) {
+            setSexualDesire(getSexualDesire())
+        }
+    }
+
     override fun getSkin(): String {
         return SKIN
     }
 
     override fun getRandomSkin(): String {
         return SKIN
-    }
-
-    override fun openInteractiveMenu(player: ServerPlayerEntity?) {
-        ServerPlayNetworking.send(player,SeeeeexNekoInteractivePayload(this.uuid.toString()))
     }
 
 }

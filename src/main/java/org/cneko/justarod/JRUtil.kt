@@ -16,5 +16,5 @@ fun World.getNekoInRange(entity: Entity, radius: Float): List<INeko> {
         entity.z + radius.toDouble()
     )
     val entities = this.getNonSpectatingEntities(LivingEntity::class.java, box)
-    return entities.filter { it is INeko && it.entity.hasStatusEffect(StatusEffects.WEAKNESS) } as List<INeko>
+    return entities.filter { it is INeko && !it.entity.hasStatusEffect(StatusEffects.WEAKNESS) && it != entity } as List<INeko>
 }

@@ -4,6 +4,7 @@ import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.ai.goal.Goal
 import net.minecraft.entity.effect.StatusEffects
+import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.Box
 import net.minecraft.world.World
 import org.cneko.justarod.entity.SeeeeexNekoEntity
@@ -18,9 +19,14 @@ class SexualIntercourseGoal(val neko: SeeeeexNekoEntity) : Goal (){
 
     override fun tick() {
         super.tick()
-        if (target != null && target!!.entity.hasStatusEffect(StatusEffects.WEAKNESS)){
-            neko.nekoMateGoal.setTarget(target)
-        }else if (neko.getSexualDesire()>50){
+        if (target != null && neko.canMate(target!!)){
+            val world = neko.world
+            if (neko.nekoMateGoal.target==null && world is ServerWorld){
+                // 性欲下降点
+                neko.decreaseSexualDesire(20)
+                neko.tryMating(world,target!!)
+            }
+        }else if (neko.getSexualDesire()>=50){
             val target = neko.world.getNekoInRange(neko,neko.getSexualDesire()* 0.1f)
             if (target.isNotEmpty()){
                 this.target = target[0]

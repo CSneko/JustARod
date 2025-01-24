@@ -8,6 +8,7 @@ import net.minecraft.entity.effect.StatusEffectCategory
 import net.minecraft.particle.ParticleTypes
 import net.minecraft.util.math.Vec3d
 import net.minecraft.util.math.random.Random
+import org.cneko.justarod.entity.Sexual
 import org.cneko.toneko.common.mod.api.EntityPoseManager
 
 /*
@@ -33,16 +34,22 @@ class EstrusEffect:StatusEffect(StatusEffectCategory.BENEFICIAL, 0xffb6c1) {
                 0.0
             )
         }
-        // 让玩家趴下
+        // 让实体趴下
         EntityPoseManager.setPose(entity, EntityPose.SWIMMING)
 
-        // 随机移动玩家的位置
+        // 随机移动位置
         val x: Int = random.nextInt(10) - 5
         val z: Int = random.nextInt(10) - 5
-        entity.move(MovementType.SHULKER_BOX, Vec3d(x * 0.1, 0.0, z * 0.1))
+        entity.move(MovementType.SHULKER_BOX, Vec3d(x * 0.05, 0.01, z * 0.05))
+
+        if (entity is Sexual){
+            // 1/20的概率增加性欲
+            if(entity.random.nextInt(20) == 0){
+                entity.increaseSexualDesire(1)
+            }
+        }
 
         return super.applyUpdateEffect(entity, amplifier)
     }
 
-    //
 }

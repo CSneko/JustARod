@@ -39,7 +39,7 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
 
     override fun initDataTracker(builder: DataTracker.Builder) {
         super.initDataTracker(builder)
-        builder.add(SEXUAL_DESIRE_ID, 25)
+        builder.add(SEXUAL_DESIRE_ID, 40)
     }
 
     override fun canMate(other: INeko?): Boolean {
@@ -57,6 +57,11 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
         if (compound.contains("sexual_desire")) {
             this.sexualDesire = compound.getInt("sexual_desire")
         }
+    }
+
+    override fun afterMate() {
+        super.afterMate()
+        this.decreaseSexualDesire(20)
     }
 
     override fun registerControllers(controllers: AnimatableManager.ControllerRegistrar?) {

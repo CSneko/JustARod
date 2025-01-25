@@ -11,6 +11,12 @@ public interface Sexual {
     default void decreaseSexualDesire(int decrease){
         setSexualDesire(getSexualDesire() - decrease);
     }
+    default boolean enableCompleteProcess(){
+        return false;
+    }
+    default boolean enableAgeLimit(){
+        return false;
+    }
     default void sexualTick(LivingEntity entity){
         // 性欲大于100的时候，1/1000的概率减少1
         if (getSexualDesire() > 100 && getSexualDesire() <200&& entity.getRandom().nextInt(1000) == 0) {

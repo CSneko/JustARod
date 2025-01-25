@@ -33,8 +33,8 @@ class EstrusEffect:StatusEffect(StatusEffectCategory.BENEFICIAL, 0xffb6c1) {
     override fun applyUpdateEffect(entity: LivingEntity, amplifier: Int): Boolean {
         val world = entity.world
         val random: Random = world.random
-        // 1/10添加爱心效果
-        if (kotlin.random.Random.nextInt(10) == 0) {
+        // 1/2添加爱心效果
+        if (kotlin.random.Random.nextInt(2) == 0) {
             world.addParticle(
                 ParticleTypes.HEART,
                 entity.x + random.nextInt(2) - 1,

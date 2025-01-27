@@ -27,6 +27,7 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
         val SEXUAL_DESIRE_ID:TrackedData<Int> = DataTracker.registerData(SeeeeexNekoEntity::class.java, TrackedDataHandlerRegistry.INTEGER)
     }
     var isMasturbation = false
+    var sexualIntercourseGoal: SexualIntercourseGoal? = null;
 
     override fun getBreedOffspring(world: ServerWorld?, neko: INeko?): NekoEntity? {
         return world?.let { SeeeeexNekoEntity(this.type, it) }
@@ -34,7 +35,8 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
 
     override fun initGoals() {
         super.initGoals()
-        this.goalSelector.add(5, SexualIntercourseGoal(this))
+        sexualIntercourseGoal = SexualIntercourseGoal(this)
+        this.goalSelector.add(5, sexualIntercourseGoal)
     }
 
     override fun initDataTracker(builder: DataTracker.Builder) {
@@ -90,11 +92,13 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
         this.dataTracker.set(SEXUAL_DESIRE_ID, desire)
     }
 
-    override fun baseTick() {
-        super.baseTick()
+    override fun slowTick(){
+        super.slowTick()
         if (!world.isClient()) {
             sexualDesire = sexualDesire
+            sexualIntercourseGoal?.slowTick()
         }
+
     }
 
     override fun tick() {

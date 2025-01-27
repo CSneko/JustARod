@@ -8,6 +8,6 @@ public class JRCommands {
         CommandRegistrationCallback.EVENT.register(
                 (dispatcher, dedicatedServer, registryAccess) -> RodCommand.register(dispatcher)
         );
-        ImpactCommand.Companion.init();
+        ImpartCommand.Companion.init();
     }
 }

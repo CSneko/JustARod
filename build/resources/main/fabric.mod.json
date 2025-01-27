@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "justarod",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "name": "JustARod",
   "description": "meow",
   "authors": [],
@@ -22,7 +22,7 @@
     "fabric": "*",
     "minecraft": ">=1.21",
     "fabric-language-kotlin": "*",
-    "toneko": ">=1.4.11"
+    "toneko": ">=1.4.12"
   },
   "mixins": [
     "justarod.mixins.json"

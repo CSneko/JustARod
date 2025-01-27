@@ -30,6 +30,8 @@ repositories {
             includeGroup("software.bernie.geckolib")
         }
     }
+
+    maven { url = 'https://oss.sonatype.org/content/groups/public/' }
 }
 
 dependencies {
@@ -47,6 +49,8 @@ dependencies {
     modImplementation "maven.modrinth:ctlibmod:0.1.13"
 
     modImplementation "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
+
+    modCompileOnly "me.lucko:fabric-permissions-api:0.2-SNAPSHOT"
 
     include modApi('teamreborn:energy:4.1.0') {
         exclude(group: "net.fabricmc.fabric-api")

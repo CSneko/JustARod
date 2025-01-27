@@ -10,11 +10,14 @@ import net.minecraft.text.Text;
 import java.util.Objects;
 
 import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
+import static org.cneko.toneko.common.mod.util.PermissionUtil.has;
 
 public class RodCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(CommandManager.literal("rod")
+                .requires(source-> has(source,Permissions.COMMAND_ROD))
                 .then(CommandManager.literal("item")
+                        .requires(source-> has(source,Permissions.COMMAND_ROD_ITEM))
                         .then(CommandManager.literal("get").executes(context -> {
                             return getRodItem(Objects.requireNonNull(context.getSource().getPlayer()));
                         }))

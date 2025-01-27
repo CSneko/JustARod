@@ -9,12 +9,15 @@ import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 import org.cneko.justarod.api.ImpactModel
 
-class ImpactCommand {
+import org.cneko.toneko.common.mod.util.PermissionUtil.has
+
+class ImpartCommand {
     companion object{
         fun init(){
             CommandRegistrationCallback.EVENT.register{ dispatcher, _, _ ->
-                dispatcher.register(literal("impact")
-                    .executes(ImpactCommand::execute)
+                dispatcher.register(literal("impart")
+                    .requires{source-> has(source,Permissions.COMMAND_IMPART)}
+                    .executes(ImpartCommand::execute)
                 )
             }
 
@@ -25,12 +28,12 @@ class ImpactCommand {
             if (ImpactModel.isEnable(player)){
                 ImpactModel.setEnable(player,false)
                 context.source.sendFeedback({
-                    Text.translatable("command.justarod.impact.disable")
+                    Text.translatable("command.justarod.impart.disable")
                 }, true)
             }else{
                 ImpactModel.setEnable(player,true)
                 context.source.sendFeedback({
-                    Text.translatable("command.justarod.impact.enable")
+                    Text.translatable("command.justarod.impart.enable")
                 }, true)
             }
             return 1

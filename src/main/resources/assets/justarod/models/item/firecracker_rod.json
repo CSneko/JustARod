@@ -1,0 +1,55 @@
+{
+	"credit": "Made with Blockbench",
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "justarod:item/firecracker_rod",
+		"particle": "justarod:item/firecracker_rod"
+	},
+	"elements": [
+		{
+			"name": "bottom",
+			"from": [6, 0, 6],
+			"to": [10, 2, 10],
+			"rotation": {"angle": 0, "axis": "y", "origin": [6, 0, 8]},
+			"faces": {
+				"north": {"uv": [2, 2, 4, 3], "texture": "#0"},
+				"east": {"uv": [0, 2, 2, 3], "texture": "#0"},
+				"south": {"uv": [6, 2, 8, 3], "texture": "#0"},
+				"west": {"uv": [4, 2, 6, 3], "texture": "#0"},
+				"up": {"uv": [4, 2, 2, 0], "texture": "#0"},
+				"down": {"uv": [6, 0, 4, 2], "texture": "#0"}
+			}
+		},
+		{
+			"name": "medium",
+			"from": [7, 2, 7],
+			"to": [9, 14, 9],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7, 2, 7]},
+			"faces": {
+				"north": {"uv": [13, 1, 14, 7], "texture": "#0"},
+				"east": {"uv": [12, 1, 13, 7], "texture": "#0"},
+				"south": {"uv": [15, 1, 16, 7], "texture": "#0"},
+				"west": {"uv": [14, 1, 15, 7], "texture": "#0"},
+				"up": {"uv": [14, 1, 13, 0], "texture": "#0"},
+				"down": {"uv": [15, 0, 14, 1], "texture": "#0"}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"translation": [0.5, 0, 0],
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [69.75, 0, 0],
+			"translation": [-6.5, -5, 0]
+		},
+		"firstperson_lefthand": {
+			"translation": [21.25, 0, 0]
+		},
+		"head": {
+			"rotation": [120, 0, 0],
+			"translation": [0, -0.5, -11.25]
+		}
+	}
+}

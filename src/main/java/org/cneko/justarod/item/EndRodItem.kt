@@ -43,6 +43,12 @@ abstract class EndRodItem(settings: Settings) : Item(settings), EndRodItemInterf
         // 将使用次数添加到tooltip中
         val markedCount: Int = stack?.getOrDefault(JRComponents.USED_TIME_MARK, 0)!!
         tooltip?.add(Text.translatable("item.justarod.end_rod.used_count", markedCount).formatted(Formatting.GREEN))
+        tooltip?.add(Text.translatable("item.justarod.end_rod.owner", stack.getOrDefault(JRComponents.OWNER,"无")).formatted(Formatting.YELLOW))
+    }
+
+    override fun onCraftByPlayer(stack: ItemStack?, world: World?, player: PlayerEntity?) {
+        super.onCraftByPlayer(stack, world, player)
+        stack?.set(JRComponents.OWNER, player?.name?.string)
     }
     abstract fun getInstruction(): EndRodInstructions
 

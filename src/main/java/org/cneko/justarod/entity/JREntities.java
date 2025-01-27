@@ -7,7 +7,9 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.tag.BiomeTags;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.biome.BiomeKeys;
 
 import static org.cneko.justarod.Justarod.MODID;
 
@@ -22,6 +24,6 @@ public class JREntities {
                     .build()
     );
     public static void init(){
-        BiomeModifications.addSpawn(BiomeSelectors.foundInOverworld(), SpawnGroup.CREATURE, SEEEEEX_NEKO, 10, 1, 1);
+        BiomeModifications.addSpawn(BiomeSelectors.tag(BiomeTags.IS_BEACH).or(BiomeSelectors.tag(BiomeTags.IS_HILL)), SpawnGroup.CREATURE, SEEEEEX_NEKO, 10, 1, 1);
     }
 }

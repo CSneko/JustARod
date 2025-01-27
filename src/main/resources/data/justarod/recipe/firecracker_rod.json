@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GSG",
+    "GRG",
+    "GSG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:gunpowder"
+    },
+    "R": {
+      "item": "minecraft:end_rod"
+    },
+    "S": {
+      "item": "minecraft:sand"
+    }
+  },
+  "result": {
+    "id": "justarod:firecracker_rod",
+    "count": 1
+  }
+}

@@ -4,7 +4,7 @@ import net.minecraft.entity.ai.goal.Goal
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.server.world.ServerWorld
 import org.cneko.justarod.entity.SeeeeexNekoEntity
-import org.cneko.justarod.getNekoInRange
+import org.cneko.justarod.JRUtil.Companion.getNekoInRange
 import org.cneko.toneko.common.mod.entities.INeko
 
 class SexualIntercourseGoal(val neko: SeeeeexNekoEntity) : Goal() {
@@ -18,9 +18,9 @@ class SexualIntercourseGoal(val neko: SeeeeexNekoEntity) : Goal() {
         val world = neko.world
 
         if (world is ServerWorld) {
-            val nearbyNekos = world.getNekoInRange(neko, neko.sexualDesire * 0.1f)
-            // 大于100 个 Neko，不进行操作
-            if (nearbyNekos.size > 100) {
+            val nearbyNekos = world.getNekoInRange(neko, neko.sexualDesire * 0.09f)
+            // 大于 4 个 Neko，不进行操作
+            if (nearbyNekos.size > 4) {
                 target = null
                 return
             }

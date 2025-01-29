@@ -1,0 +1,22 @@
+{
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "justarod:item/fireworks_rod",
+		"particle": "justarod:item/fireworks_rod"
+	},
+	"elements": [
+		{
+			"from": [8, 0, 7],
+			"to": [10, 8, 9],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 0, 7]},
+			"faces": {
+				"north": {"uv": [2, 2, 4, 10], "texture": "#0"},
+				"east": {"uv": [0, 2, 2, 10], "texture": "#0"},
+				"south": {"uv": [6, 2, 8, 10], "texture": "#0"},
+				"west": {"uv": [4, 2, 6, 10], "texture": "#0"},
+				"up": {"uv": [4, 2, 2, 0], "texture": "#0"},
+				"down": {"uv": [6, 0, 4, 2], "texture": "#0"}
+			}
+		}
+	]
+}

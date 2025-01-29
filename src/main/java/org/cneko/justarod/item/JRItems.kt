@@ -18,6 +18,7 @@ import org.cneko.justarod.Justarod.MODID
 
 import org.cneko.justarod.block.JRBlocks.*
 import org.cneko.justarod.effect.JREffects
+import org.cneko.justarod.item.armor.FireworksRodItem
 import org.cneko.justarod.item.electric.AdvancedElectricRodItem
 import org.cneko.justarod.item.electric.BasicElectricRodItem
 import org.cneko.justarod.item.electric.IndustrialElectricRodItem
@@ -45,6 +46,7 @@ class JRItems {
         val SHENBAO = Item(Item.Settings().food(FoodComponent.Builder()
             .nutrition(1).statusEffect(StatusEffectInstance(JREffects.STRONG_EFFECT.entry(), 6000,1,false,true),1f).alwaysEdible()
             .build()))
+        val FIREWORKS_ROD = FireworksRodItem()
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -68,6 +70,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "insertion_pedestal"), INSERTION_PEDESTAL)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "retriever"), RETRIEVER)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "shenbao"), SHENBAO)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, FireworksRodItem.ID), FIREWORKS_ROD)
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
             JR_ITEM_GROUP = FabricItemGroup.builder()
@@ -96,6 +99,7 @@ class JRItems {
                 entries.add(INSERTION_PEDESTAL)
                 entries.add(RETRIEVER)
                 entries.add(SHENBAO)
+                entries.add(FIREWORKS_ROD)
             }
         }
     }

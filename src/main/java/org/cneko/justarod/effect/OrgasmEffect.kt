@@ -5,8 +5,14 @@ import net.minecraft.entity.MovementType
 import net.minecraft.entity.effect.StatusEffect
 import net.minecraft.entity.effect.StatusEffectCategory
 import net.minecraft.particle.ParticleTypes
+import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
 import net.minecraft.util.math.random.Random
+import org.cneko.toneko.common.api.Messaging
+import org.cneko.toneko.common.mod.entities.INeko
+import org.cneko.toneko.common.mod.events.CommonChatEvent
+import org.cneko.toneko.common.mod.util.TextUtil
 
 /*
 在高潮后会疯狂喘气，而且会沉浸在其中，脑子很难正常思考，也很难正常说话，有点晕乎乎的感觉，只想躺在床上
@@ -14,6 +20,24 @@ import net.minecraft.util.math.random.Random
 还有就是，在门口抽插其实会比在里面更有感觉哦
  */
 class OrgasmEffect : StatusEffect(StatusEffectCategory.BENEFICIAL, 0xe9b8b3) {
+
+    companion object{
+        val screamTexts = listOf(
+            "♡要...要去了",
+            "好...好爽喵...",
+            "♡哈啊~~",
+            "啊... 好过瘾♡",
+            "雅蠛蝶...",
+            "恩啊啊♡",
+            "好多...水...",
+            "喷...喷出来呢...",
+            "嗯啊♡",
+            "好舒服...",
+            "为什么... 会变成这样呢...",
+            "好满足♡"
+            // 救命我写不下去了♡
+        )
+    }
     // 每tick都会调用一次，直到返回false
     override fun canApplyUpdateEffect(duration: Int, amplifier: Int): Boolean {
         return true
@@ -26,18 +50,43 @@ class OrgasmEffect : StatusEffect(StatusEffectCategory.BENEFICIAL, 0xe9b8b3) {
         // 添加爱心效果
         world.addParticle(
             ParticleTypes.HEART,
-            entity.x + random.nextInt(1) - 1,
-            entity.y + random.nextInt(2) + 2,
-            entity.z + random.nextInt(2) - 1,
+            entity.x + (random.nextDouble() * 2 - 1),  // 确保x方向正负概率相等
+            entity.y + random.nextDouble() * 2 + 2,  // 保持y方向逻辑
+            entity.z + (random.nextDouble() * 2 - 1),  // 确保z方向正负概率相等
             0.0,
-            amplifier+1.5,
+            amplifier + 1.5,
             0.0
         )
+
         if (random.nextBoolean()) {
-            // 随机移动玩家的位置
-            val x: Int = random.nextInt((amplifier + 1) * 5) - 5
-            val z: Int = random.nextInt((amplifier + 1) * 5) - 5
+            // 随机移动玩家的位置，确保正负方向概率相等
+            val x: Double = (random.nextDouble() * 2 - 1) * (amplifier + 1) * 2.5
+            val z: Double = (random.nextDouble() * 2 - 1) * (amplifier + 1) * 2.5
             entity.move(MovementType.SHULKER_BOX, Vec3d(x * 0.001, amplifier * 0.0003, z * 0.001))
+        }
+
+        // 添加水滴效果
+        if (random.nextInt(5) == 0) {
+            world.addParticle(
+                ParticleTypes.RAIN,
+                entity.x,
+                entity.y,
+                entity.z,
+                0.0,
+                amplifier * 0.003,
+                0.0
+            )
+        }
+
+        if (entity is ServerPlayerEntity && entity is INeko){
+            // 1/1000的概率发送淫叫
+            if (random.nextInt(1000) == 0) {
+                val neko = entity.neko
+                val playerName = TextUtil.getPlayerName(entity)
+                val nickname: String = neko.nickName
+                val msg = Messaging.format(screamTexts[random.nextInt(screamTexts.size)], playerName, nickname)
+                CommonChatEvent.sendMessage(Text.of(msg))
+            }
         }
         return super.applyUpdateEffect(entity, amplifier)
     }

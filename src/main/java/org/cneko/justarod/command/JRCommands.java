@@ -9,5 +9,6 @@ public class JRCommands {
                 (dispatcher, dedicatedServer, registryAccess) -> RodCommand.register(dispatcher)
         );
         ImpartCommand.Companion.init();
+        MateCommand.Companion.init();
     }
 }

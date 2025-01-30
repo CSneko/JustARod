@@ -32,8 +32,8 @@ public class RodCommand {
     private static int getRodItem(ServerPlayerEntity player) {
         ItemStack stack = player.getRodInside();
         if (stack!= null && stack!= ItemStack.EMPTY) {
-            String message = Text.translatable("command.justarod.rod.get.success") + stack.getItem().getName().getString();
-            player.sendMessage(Text.of(message), false);
+            Text message = Text.translatable("command.justarod.rod.get.success",stack.getItem().getName().getString());
+            player.sendMessage(message, false);
             return SINGLE_SUCCESS;
         }
         else {

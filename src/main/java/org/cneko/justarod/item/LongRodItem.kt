@@ -2,18 +2,14 @@ package org.cneko.justarod.item
 
 import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.damage.DamageTypes
-import net.minecraft.entity.effect.StatusEffectInstance
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.tooltip.TooltipType
-import net.minecraft.registry.Registries
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
+import net.minecraft.util.Hand
 import net.minecraft.world.World
 import org.cneko.justarod.damage.JRDamageTypes
-import org.cneko.justarod.damage.SexualExcitement
-import org.cneko.justarod.effect.JREffects
-
 /*
 其实可以插到顶了
  */

@@ -60,13 +60,13 @@ abstract class OtherUsedItem(settings: Settings):EndRodItem(settings), OtherUsed
         if (getInstruction() == EndRodInstructions.USE_ON_OTHER_INSERT){
             // 从手上减少这根末地烛
             user.inventory.removeStack(user.inventory.selectedSlot)
-            target.damage(user.damageSources?.generic(), 3f)
+            target.damage(JRDamageTypes.grass(user), 3f)
             // TODO : 实现目标实体插入判断逻辑和取出的逻辑
             user.sendMessage(Text.translatable("item.justarod.end_rod.insert_success"))
             return ActionResult.SUCCESS
         }else if (getInstruction() == EndRodInstructions.USE_ON_OTHER_ATTACK){
             // 攻击其它实体
-            target.damage(user.damageSources?.generic(), 1f)
+            target.damage(JRDamageTypes.grass(user), 1f)
             return ActionResult.SUCCESS
         }
         return ActionResult.PASS
@@ -154,7 +154,7 @@ abstract class BothUsedItem(settings: Settings) : EndRodItem(settings),SelfUsedI
         entity: LivingEntity?,
         hand: Hand?
     ): ActionResult? {
-        if (super.useOnEntity(stack, user, entity, hand) == ActionResult.FAIL) return ActionResult.FAIL
+        // if (super.useOnEntity(stack, user, entity, hand) == ActionResult.FAIL) return ActionResult.FAIL
         if (!canAcceptEntity(stack!!, entity!!)) return ActionResult.FAIL
         return useOnOther(stack, user?.world, user!!, entity)
     }

@@ -12,6 +12,7 @@ import static org.cneko.justarod.Justarod.MODID;
 
 public class JRDamageTypes {
     public static final RegistryKey<DamageType> SEXUAL_EXCITEMENT = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Identifier.of(MODID, "sexual_excitement"));
+    public static final RegistryKey<DamageType> GRASS = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Identifier.of(MODID, "grass"));
 
     public static DamageSource of(World world, RegistryKey<DamageType> key) {
         return new DamageSource(world.getRegistryManager().get(RegistryKeys.DAMAGE_TYPE).entryOf(key));
@@ -19,5 +20,8 @@ public class JRDamageTypes {
 
     public static DamageSource sexualExcitement(Entity entity) {
         return new SexualExcitement(entity.getWorld().getRegistryManager().get(RegistryKeys.DAMAGE_TYPE).entryOf(SEXUAL_EXCITEMENT),entity);
+    }
+    public static DamageSource grass(Entity entity) {
+        return new KilledByGrass(entity.getWorld().getRegistryManager().get(RegistryKeys.DAMAGE_TYPE).entryOf(GRASS),entity);
     }
 }

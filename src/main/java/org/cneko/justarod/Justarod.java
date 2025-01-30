@@ -27,11 +27,8 @@ import org.cneko.justarod.quirks.JRQuirks;
  4. 海绵末地烛
  5. 淫水
  6. 末地烛处刑机
- 7. 淫叫
  8. 公屏求草
- 9. 控制聊天（需完善toNeko）
  10. quirks/SM
- 11. 春药合成配方
  12. 远控末地烛
  13. 全服共享末地烛
  14. 双头末地烛

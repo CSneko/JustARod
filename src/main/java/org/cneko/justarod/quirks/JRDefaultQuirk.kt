@@ -1,14 +1,10 @@
 package org.cneko.justarod.quirks
 
 import net.minecraft.text.Text
-import org.cneko.toneko.common.mod.quirks.QuirkContext
 import org.cneko.toneko.common.mod.quirks.ToNekoQuirk
 import org.cneko.toneko.common.quirks.QuirkRegister
 
 open class JRDefaultQuirk(id:String): ToNekoQuirk(id) {
-    override fun getInteractionValue(p0: QuirkContext?): Int {
-        return interactionValue
-    }
 
     override fun getInteractionValue(): Int {
         return 1

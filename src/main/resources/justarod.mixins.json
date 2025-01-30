@@ -4,7 +4,6 @@
   "package": "org.cneko.justarod.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "MessagingMixin",
     "NekoEntityMixin",
     "PlayerMixin"
   ],

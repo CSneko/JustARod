@@ -81,11 +81,8 @@ class OrgasmEffect : StatusEffect(StatusEffectCategory.BENEFICIAL, 0xe9b8b3) {
         if (entity is ServerPlayerEntity && entity is INeko){
             // 1/1000的概率发送淫叫
             if (random.nextInt(1000) == 0) {
-                val neko = entity.neko
                 val playerName = TextUtil.getPlayerName(entity)
-                val nickname: String = neko.nickName
-                val msg = Messaging.format(screamTexts[random.nextInt(screamTexts.size)], playerName, nickname)
-                CommonChatEvent.sendMessage(Text.of(msg))
+                Messaging.sendMessage(playerName,screamTexts[random.nextInt(screamTexts.size)], false)
             }
         }
         return super.applyUpdateEffect(entity, amplifier)

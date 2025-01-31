@@ -5,15 +5,14 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.StackReference
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
+import net.minecraft.item.ItemUsageContext
 import net.minecraft.item.tooltip.TooltipType
 import net.minecraft.registry.Registries
 import net.minecraft.screen.slot.Slot
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
-import net.minecraft.util.ActionResult
-import net.minecraft.util.ClickType
-import net.minecraft.util.Hand
-import net.minecraft.util.TypedActionResult
+import net.minecraft.util.*
+import net.minecraft.util.hit.HitResult
 import net.minecraft.world.World
 import org.cneko.justarod.damage.JRDamageTypes
 import org.cneko.justarod.entity.Insertable
@@ -89,6 +88,30 @@ class InsertionPedestalItem:Item(Settings()) {
 
         }
         return super.useOnEntity(stack, user, entity, hand)
+    }
+    //我只能做到右键方块触发,因为我不知道有没有api能在右键不到方块的时候触发
+    override fun useOnBlock(context: ItemUsageContext?): ActionResult {
+        if (context != null){
+            if (
+                context.stack != null
+                && context.player != null
+                ) {
+                val player = context.player!!
+                val usingStack = context.stack!!
+                if (player.isSneaking) {
+                    if (usingStack.components.contains(JRComponents.ROD_INSIDE)) {
+                        val givingStack = usingStack.getOrDefault(JRComponents.ROD_INSIDE, ItemStack.EMPTY)
+                        if (!givingStack.isEmpty){
+                            if (!player.giveItemStack(givingStack)) {
+                                player.dropStack(givingStack)
+                            }//我都想弄个static方法出来了,就叫giveOrDropStack
+                            usingStack.remove(JRComponents.ROD_INSIDE)
+                        }
+                    }
+                }
+            }
+        }
+        return super.useOnBlock(context)
     }
 
     override fun appendTooltip(

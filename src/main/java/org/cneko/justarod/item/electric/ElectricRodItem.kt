@@ -107,6 +107,7 @@ abstract class SelfUsedElectricRodItem(settings: Settings) : ElectricRodItem(set
         // 如果放在副手
         if (
             e.getStackInHand(Hand.OFF_HAND) == stack //是的,直接用==
+            || slot == Int.MIN_VALUE // now works with inserted rods
         ){
             // 减少一点耐久 (即使没耐久也不损坏)
             stack.damage++

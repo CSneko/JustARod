@@ -1,23 +1,19 @@
 package org.cneko.justarod.item
 
-import net.minecraft.advancement.criterion.InventoryChangedCriterion.Conditions.Slots
 import net.minecraft.component.DataComponentTypes
 import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.MovementType
-import net.minecraft.entity.ai.control.MoveControl
 import net.minecraft.entity.effect.StatusEffect
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.inventory.SlotRanges
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.tooltip.TooltipType
 import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.entry.RegistryEntry
-import net.minecraft.screen.slot.SlotActionType
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Formatting
@@ -107,6 +103,7 @@ open class SelfUsedItem(settings: Settings) : EndRodItem(settings), SelfUsedItem
         // 修bug:在工具栏第一格也生效
         if (
             e.getStackInHand(Hand.OFF_HAND) == stack //是的,直接用==
+            || slot == Int.MIN_VALUE // now works with inserted rods
             ){
             // 减少一点耐久 (即使没耐久也不损坏)
             stack.damage++
@@ -173,6 +170,7 @@ abstract class BothUsedItem(settings: Settings) : EndRodItem(settings),SelfUsedI
         // 如果放在副手
         if (
             e.getStackInHand(Hand.OFF_HAND) == stack //是的,直接用==
+            || slot == Int.MIN_VALUE // now works with inserted rods
         ){
             // 减少一点耐久 (即使没耐久也不损坏)
             stack.damage++

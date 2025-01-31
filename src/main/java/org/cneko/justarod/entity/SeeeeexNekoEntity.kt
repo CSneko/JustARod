@@ -63,7 +63,7 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
 
     override fun afterMate() {
         super.afterMate()
-        this.decreaseSexualDesire(20)
+        this.decreaseSexualDesire(30)
     }
 
     override fun registerControllers(controllers: AnimatableManager.ControllerRegistrar?) {
@@ -97,14 +97,10 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
         if (!world.isClient()) {
             sexualDesire = sexualDesire
             sexualIntercourseGoal?.slowTick()
+            this.sexualSlowTick(this)
         }
-
     }
 
-    override fun tick() {
-        super.tick()
-        this.sexualTick(this)
-    }
 
     override fun getSkin(): String {
         return SKIN

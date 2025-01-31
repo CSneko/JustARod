@@ -24,7 +24,7 @@ class InsertionPedestalItem:Item(Settings()) {
     }
 
     override fun onClicked(
-        stack: ItemStack?,
+        probablyPedestalStack: ItemStack?,
         otherStack: ItemStack?,
         slot: Slot?,
         clickType: ClickType?,
@@ -35,19 +35,31 @@ class InsertionPedestalItem:Item(Settings()) {
             // 必须是潜行，并且是副手，并且主手不是空的
             if (player.getStackInHand(Hand.MAIN_HAND)?.isEmpty!!) {
                 player.sendMessage(Text.translatable("item.justarod.insertion_pedestal.must_be_thing_in_hand"))
-                return super.onClicked(stack, otherStack, slot, clickType, player, cursorStackReference)
+                return super.onClicked(probablyPedestalStack, otherStack, slot, clickType, player, cursorStackReference)
             }
             val rodStack = player.getStackInHand(Hand.MAIN_HAND)
 
             if (rodStack.item !is SelfUsedItemInterface) {
                 player.sendMessage(Text.translatable("item.justarod.insertion_pedestal.must_be_rod"))
-                return super.onClicked(stack, otherStack, slot, clickType, player, cursorStackReference)
+                return super.onClicked(probablyPedestalStack, otherStack, slot, clickType, player, cursorStackReference)
             }
-            stack?.let {
-                if (it.components.contains(JRComponents.ROD_INSIDE)) {
-                    player.dropStack(it.getOrDefault(JRComponents.ROD_INSIDE, ItemStack.EMPTY))
+
+            probablyPedestalStack?.let { pedestalStack ->
+                if (pedestalStack.components.contains(JRComponents.ROD_INSIDE)) {
+                    player.dropStack(pedestalStack.getOrDefault(JRComponents.ROD_INSIDE, ItemStack.EMPTY))
                 }
-                it.set(JRComponents.ROD_INSIDE, rodStack)
+                if (pedestalStack.count == 1){
+                    pedestalStack.set(JRComponents.ROD_INSIDE, rodStack)
+                }else{
+                    //issue #11
+                    pedestalStack.count -= 1
+                    val newPedestalStack = pedestalStack.copy()
+                    newPedestalStack.count = 1
+                    newPedestalStack.set(JRComponents.ROD_INSIDE, rodStack)
+                    if (!player.giveItemStack(newPedestalStack)){//usually inventory full,we cannot give stack
+                        player.dropStack(newPedestalStack)
+                    }
+                }
                 // 去掉一个rod
                 if (rodStack.count > 1) {
                     rodStack.decrement(1)
@@ -56,7 +68,7 @@ class InsertionPedestalItem:Item(Settings()) {
                 }
             }
         }
-        return super.onClicked(stack, otherStack, slot, clickType, player, cursorStackReference)
+        return super.onClicked(probablyPedestalStack, otherStack, slot, clickType, player, cursorStackReference)
     }
 
     override fun useOnEntity(stack: ItemStack?, user: PlayerEntity?, entity: LivingEntity?, hand: Hand?): ActionResult {
@@ -66,7 +78,7 @@ class InsertionPedestalItem:Item(Settings()) {
                 user.sendMessage(Text.translatable("item.justarod.insertion_pedestal.already_has_rod"))
                 return ActionResult.FAIL
             }
-                val rod: ItemStack? = stack?.getOrDefault(JRComponents.ROD_INSIDE, ItemStack.EMPTY)
+            val rod: ItemStack? = stack?.getOrDefault(JRComponents.ROD_INSIDE, ItemStack.EMPTY)
             if (rod?.isEmpty == true){
                 // 什么也没有呢...
                 user.sendMessage(Text.translatable("item.justarod.insertion_pedestal.no_rod"))
@@ -100,7 +112,7 @@ fun ServerPlayerEntity.hasRodInside(): Boolean{
     return (this as Insertable).hasRodInside()
 }
 fun <T> T.insertRod(player: PlayerEntity,pedestal: ItemStack): TypedActionResult<ItemStack>
-where T : LivingEntity, T : Insertable {
+        where T : LivingEntity, T : Insertable {
     this.rodInside = pedestal.getOrDefault(JRComponents.ROD_INSIDE, ItemStack.EMPTY)
     if (!player.isCreative) {
         pedestal.remove(JRComponents.ROD_INSIDE)

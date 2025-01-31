@@ -104,7 +104,10 @@ open class SelfUsedItem(settings: Settings) : EndRodItem(settings), SelfUsedItem
         val e:LivingEntity = entity
 
         // 如果放在副手
-        if (slot == 0){
+        // 修bug:在工具栏第一格也生效
+        if (
+            e.getStackInHand(Hand.OFF_HAND) == stack //是的,直接用==
+            ){
             // 减少一点耐久 (即使没耐久也不损坏)
             stack.damage++
             // 执行
@@ -168,7 +171,9 @@ abstract class BothUsedItem(settings: Settings) : EndRodItem(settings),SelfUsedI
         val e:LivingEntity = entity
 
         // 如果放在副手
-        if (slot == 0){
+        if (
+            e.getStackInHand(Hand.OFF_HAND) == stack //是的,直接用==
+        ){
             // 减少一点耐久 (即使没耐久也不损坏)
             stack.damage++
             // 执行

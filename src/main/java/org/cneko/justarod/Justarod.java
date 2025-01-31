@@ -7,10 +7,7 @@ import org.cneko.justarod.block.JRBlocks;
 import org.cneko.justarod.command.JRCommands;
 import org.cneko.justarod.effect.JREffects;
 import org.cneko.justarod.entity.JREntities;
-import org.cneko.justarod.event.EntityAttackEvent;
-import org.cneko.justarod.event.EntityDeathEvent;
-import org.cneko.justarod.event.MessagingEvent;
-import org.cneko.justarod.event.TickEvent;
+import org.cneko.justarod.event.*;
 import org.cneko.justarod.item.JRItems;
 import org.cneko.justarod.quirks.JRQuirks;
 
@@ -52,5 +49,6 @@ public class Justarod implements ModInitializer {
         JRCommands.init();
 
         EntityDeathEvent.init();
+        EntityRespawnEvent.init();
     }
 }

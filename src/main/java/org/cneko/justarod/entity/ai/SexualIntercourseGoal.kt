@@ -4,9 +4,10 @@ import net.minecraft.entity.ai.goal.Goal
 import net.minecraft.server.world.ServerWorld
 import org.cneko.justarod.entity.SeeeeexNekoEntity
 import org.cneko.justarod.JRUtil.Companion.getNekoInRange
+import org.cneko.toneko.common.api.NekoQuery
 import org.cneko.toneko.common.mod.entities.INeko
 
-class SexualIntercourseGoal(val neko: SeeeeexNekoEntity) : Goal() {
+class SexualIntercourseGoal(private val neko: SeeeeexNekoEntity) : Goal() {
     private var target: INeko? = null
 
     override fun canStart(): Boolean {
@@ -17,9 +18,8 @@ class SexualIntercourseGoal(val neko: SeeeeexNekoEntity) : Goal() {
         val world = neko.world
 
         if (world is ServerWorld) {
-            val nearbyNekos = world.getNekoInRange(neko, neko.sexualDesire * 0.09f)
-            // 大于 3 个 Neko，不进行操作
-            if (nearbyNekos.size > 3) {
+            // 大于 2000 个 Neko，不进行操作
+            if (NekoQuery.NekoData.getNekoCount() > 2000) {
                 target = null
                 return
             }
@@ -32,7 +32,7 @@ class SexualIntercourseGoal(val neko: SeeeeexNekoEntity) : Goal() {
                     target
                 }
 
-                neko.sexualDesire >= 50 -> nearbyNekos.find {neko.canMate(it) }
+                neko.sexualDesire >= 50 -> world.getNekoInRange(neko, neko.sexualDesire * 0.09f).find {neko.canMate(it) }
                 else -> null
             }
         }

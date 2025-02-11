@@ -5,6 +5,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.item.tooltip.TooltipType
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import net.minecraft.util.Hand
 import net.minecraft.world.World
 import org.cneko.justarod.item.EndRodInstructions
 import org.cneko.justarod.item.EndRodItem
@@ -104,7 +105,10 @@ abstract class SelfUsedElectricRodItem(settings: Settings) : ElectricRodItem(set
         val e: LivingEntity = entity
 
         // 如果放在副手
-        if (slot == 0){
+        if (
+            e.getStackInHand(Hand.OFF_HAND) == stack //是的,直接用==
+            || slot == Int.MIN_VALUE // now works with inserted rods
+        ){
             // 减少一点耐久 (即使没耐久也不损坏)
             stack.damage++
             // 执行

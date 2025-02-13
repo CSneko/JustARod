@@ -47,6 +47,7 @@ class JRItems {
             .nutrition(1).statusEffect(StatusEffectInstance(JREffects.STRONG_EFFECT.entry(), 6000,1,false,true),1f).alwaysEdible()
             .build()))
         val FIREWORKS_ROD = FireworksRodItem()
+        val XP_GUN = XPGun()
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -71,6 +72,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "retriever"), RETRIEVER)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "shenbao"), SHENBAO)
             Registry.register(Registries.ITEM, Identifier.of(MODID, FireworksRodItem.ID), FIREWORKS_ROD)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "xp_gun"), XP_GUN)
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
             JR_ITEM_GROUP = FabricItemGroup.builder()
@@ -100,6 +102,7 @@ class JRItems {
                 entries.add(RETRIEVER)
                 entries.add(SHENBAO)
                 entries.add(FIREWORKS_ROD)
+                entries.add(XP_GUN)
             }
         }
     }

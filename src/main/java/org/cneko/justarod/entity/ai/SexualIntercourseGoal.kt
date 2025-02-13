@@ -18,8 +18,8 @@ class SexualIntercourseGoal(private val neko: SeeeeexNekoEntity) : Goal() {
         val world = neko.world
 
         if (world is ServerWorld) {
-            // 大于 700 个 Neko，不进行操作
-            if (NekoQuery.NekoData.getNekoCount() > 700) {
+            // 大于 500 个 Neko，不进行操作
+            if (NekoQuery.NekoData.getNekoCount() > 500) {
                 target = null
                 return
             }

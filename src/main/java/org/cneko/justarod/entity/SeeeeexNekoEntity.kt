@@ -10,6 +10,7 @@ import net.minecraft.registry.tag.FluidTags
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.world.World
 import org.cneko.justarod.entity.ai.SexualIntercourseGoal
+import org.cneko.toneko.common.api.NekoQuery
 import org.cneko.toneko.common.mod.entities.INeko
 import org.cneko.toneko.common.mod.entities.NekoEntity
 import software.bernie.geckolib.animation.AnimatableManager
@@ -45,7 +46,7 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
     }
 
     override fun canMate(other: INeko?): Boolean {
-        return super.canMate(other) && this.sexualDesire >= 40
+        return super.canMate(other) && this.sexualDesire >= 40 && NekoQuery.NekoData.getNekoCount() <= 700
     }
 
     override fun writeCustomDataToNbt(compound: NbtCompound) {

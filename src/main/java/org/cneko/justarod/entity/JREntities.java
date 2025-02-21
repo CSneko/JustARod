@@ -23,6 +23,15 @@ public class JREntities {
                     .dimensions(0.5f,1.7f).eyeHeight(1.6f)
                     .build()
     );
+    public static final Identifier ROD_ID = Identifier.of(MODID, "rod");
+    public static final EntityType<RodEntity> ROD = Registry.register(
+            Registries.ENTITY_TYPE,
+            ROD_ID,
+            FabricEntityType.Builder.createMob(RodEntity::new,SpawnGroup.CREATURE,
+                    builder -> builder.defaultAttributes(RodEntity.Companion::createRodAttribute))
+                    .dimensions(0.5f,0.5f).eyeHeight(0.4f)
+                    .build()
+    );
     public static void init(){
         BiomeModifications.addSpawn(BiomeSelectors.tag(BiomeTags.IS_BEACH).or(BiomeSelectors.tag(BiomeTags.IS_HILL)), SpawnGroup.CREATURE, SEEEEEX_NEKO, 10, 1, 1);
     }

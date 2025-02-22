@@ -1,4 +1,7 @@
 {
+  "entity.justarod.rod": "末地烛",
+  "entity.justarod.seeeeeex_neko": "涩涩猫娘",
+  "entity.justarod.seeeeeex_neko.des": "喜欢涩涩の猫娘",
   "command.justarod.rod.get.success": "§a在你里面的末地烛是%s",
   "command.justarod.rod.get.failure": "§c你没有末地烛",
   "command.justarod.rod.set.success": "§a你已成功设置末地烛%s",

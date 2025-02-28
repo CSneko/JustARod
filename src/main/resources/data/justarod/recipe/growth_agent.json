@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "GCG",
+    "GLG"
+  ],
+  "key": {
+    "G": {
+      "item": "justarod:golden_leaves"
+    },
+    "L": {
+      "item": "minecraft:glass"
+    },
+    "C": {
+      "item": "minecraft:golden_apple"
+    }
+  },
+  "result": {
+    "id": "justarod:growth_agent",
+    "count": 1
+  }
+}

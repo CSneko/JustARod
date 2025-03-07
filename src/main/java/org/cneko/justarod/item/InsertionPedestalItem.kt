@@ -12,7 +12,6 @@ import net.minecraft.screen.slot.Slot
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.*
-import net.minecraft.util.hit.HitResult
 import net.minecraft.world.World
 import org.cneko.justarod.damage.JRDamageTypes
 import org.cneko.justarod.entity.Insertable

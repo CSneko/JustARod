@@ -6,7 +6,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import org.cneko.justarod.JRAttributes;
 import org.cneko.justarod.entity.Insertable;
-import org.cneko.justarod.entity.JREntities;
 import org.cneko.toneko.common.mod.entities.NekoEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

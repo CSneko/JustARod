@@ -5,6 +5,11 @@
   "name": "JustARod",
   "description": "meow",
   "authors": [],
+  "contributors": [
+    "IgnoreLicensesCN",
+    "cleep5564",
+    "LingyiBit0"
+  ],
   "contact": {},
   "license": "GPL-3.0",
   "icon": "assets/justarod/icon.png",

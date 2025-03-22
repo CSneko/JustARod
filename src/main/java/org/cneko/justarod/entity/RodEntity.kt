@@ -9,9 +9,13 @@ import net.minecraft.entity.passive.PassiveEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.nbt.NbtCompound
 import net.minecraft.particle.ParticleTypes
 import net.minecraft.server.world.ServerWorld
+import net.minecraft.util.ActionResult
+import net.minecraft.util.Hand
 import net.minecraft.world.World
+import org.cneko.toneko.common.mod.items.ToNekoItems
 import software.bernie.geckolib.animatable.GeoEntity
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache
 import software.bernie.geckolib.animation.AnimatableManager
@@ -69,5 +73,32 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Anim
                 0.0
             )
        }
+    }
+
+    override fun interactMob(player: PlayerEntity?, hand: Hand?): ActionResult {
+        // 如果是猫娘药水
+        if (player?.isHolding{
+                i -> i.item == ToNekoItems.NEKO_POTION
+            } == true){
+            // 减少一瓶并给予空瓶
+            if (!player.isCreative) {
+                player.getStackInHand(hand!!).decrement(1)
+                player.giveItemStack(ItemStack(Items.GLASS_BOTTLE))
+            }
+            // 把末地烛remove并生成一只猫娘
+            if (world is ServerWorld) {
+                world as ServerWorld
+                this.remove(RemovalReason.DISCARDED)
+                val neko = SeeeeexNekoEntity(JREntities.SEEEEEX_NEKO, world)
+                neko.setPos(this.x, this.y, this.z)
+                neko.sexualDesire = 200
+                world.spawnEntity(neko)
+                // 如果有名字的话
+                if (this.hasCustomName()){
+                    neko.customName = this.customName
+                }
+            }
+        }
+        return super.interactMob(player, hand)
     }
 }

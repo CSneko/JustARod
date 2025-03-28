@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "GCG",
+    "GLG"
+  ],
+  "key": {
+    "G": {
+      "item": "justarod:golden_leaves"
+    },
+    "L": {
+      "item": "minecraft:glass"
+    },
+    "C": {
+      "item": "minecraft:end_rod"
+    }
+  },
+  "result": {
+    "id": "justarod:rod_agent",
+    "count": 1
+  }
+}

@@ -1,10 +1,15 @@
 {
   "schemaVersion": 1,
   "id": "justarod",
-  "version": "0.0.29",
+  "version": "0.0.32",
   "name": "JustARod",
   "description": "meow",
   "authors": [],
+  "contributors": [
+    "IgnoreLicensesCN",
+    "cleep5564",
+    "LingyiBit0"
+  ],
   "contact": {},
   "license": "GPL-3.0",
   "icon": "assets/justarod/icon.png",
@@ -22,7 +27,7 @@
     "fabric": "*",
     "minecraft": ">=1.21",
     "fabric-language-kotlin": "*",
-    "toneko": ">=1.5.0"
+    "toneko": ">=1.5.14"
   },
   "mixins": [
     "justarod.mixins.json"

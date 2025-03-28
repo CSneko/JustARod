@@ -25,6 +25,7 @@ import org.cneko.justarod.item.electric.IndustrialElectricRodItem
 import org.cneko.justarod.item.syringe.BremelanotideItem
 import org.cneko.justarod.item.syringe.GrowthAgentItem
 import org.cneko.justarod.item.syringe.ReverseGrowthAgentItem
+import org.cneko.justarod.item.syringe.RodAgentItem
 
 
 class JRItems {
@@ -43,6 +44,7 @@ class JRItems {
         val BREMELANOTIDE = BremelanotideItem()
         val GROWTH_AGENT = GrowthAgentItem()
         val REVERSE_GROWTH_AGENT = ReverseGrowthAgentItem()
+        val ROD_AGENT = RodAgentItem()
         val ADVANCED_ELECTRIC_ROD = AdvancedElectricRodItem()
         val INDUSTRIAL_ROD = IndustrialElectricRodItem()
         val FirecrackerRodItem = FirecrackerRodItem()
@@ -72,6 +74,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "bremelanotide"), BREMELANOTIDE)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "growth_agent"), GROWTH_AGENT)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "reverse_growth_agent"), REVERSE_GROWTH_AGENT)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "rod_agent"), ROD_AGENT)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "advanced_electric_rod"), ADVANCED_ELECTRIC_ROD)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "industrial_electric_rod"), INDUSTRIAL_ROD)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "firecracker_rod"), FirecrackerRodItem)
@@ -107,6 +110,7 @@ class JRItems {
                 entries.add(BREMELANOTIDE)
                 entries.add(GROWTH_AGENT)
                 entries.add(REVERSE_GROWTH_AGENT)
+                entries.add(ROD_AGENT)
                 entries.add(INSERTION_PEDESTAL)
                 entries.add(RETRIEVER)
                 entries.add(SHENBAO)

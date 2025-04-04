@@ -1,11 +1,22 @@
 package org.cneko.justarod.entity
 
+import net.minecraft.entity.Entity
+import net.minecraft.entity.EntityStatuses
 import net.minecraft.entity.EntityType
+import net.minecraft.entity.LivingEntity
+import net.minecraft.entity.Ownable
 import net.minecraft.entity.ai.goal.*
 import net.minecraft.entity.attribute.DefaultAttributeContainer
+import net.minecraft.entity.attribute.EntityAttributes
+import net.minecraft.entity.data.DataTracker
+import net.minecraft.entity.data.TrackedDataHandlerRegistry
+import net.minecraft.entity.mob.Angerable
+import net.minecraft.entity.mob.HostileEntity
 import net.minecraft.entity.mob.MobEntity
+import net.minecraft.entity.mob.Monster
 import net.minecraft.entity.passive.AnimalEntity
 import net.minecraft.entity.passive.PassiveEntity
+import net.minecraft.entity.passive.TameableEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
@@ -14,15 +25,23 @@ import net.minecraft.particle.ParticleTypes
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
+import net.minecraft.util.TimeHelper
 import net.minecraft.world.World
+import org.cneko.justarod.block.JRBlocks
+import org.cneko.justarod.effect.JREffects
+import org.cneko.justarod.item.addEffect
 import org.cneko.toneko.common.mod.items.ToNekoItems
 import software.bernie.geckolib.animatable.GeoEntity
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache
 import software.bernie.geckolib.animation.AnimatableManager
 import software.bernie.geckolib.util.GeckoLibUtil
+import java.util.*
+import java.util.function.Predicate
 
-class RodEntity(private val entityType:EntityType<RodEntity>, world: World):AnimalEntity(entityType,world),GeoEntity {
+class RodEntity(private val entityType:EntityType<RodEntity>, world: World):TameableEntity(entityType,world),GeoEntity,Angerable {
     private val animCache: AnimatableInstanceCache = GeckoLibUtil.createInstanceCache(this)
+    private val defSpeed:Double = 0.6
+    private val slowSpeed:Double = 0.4
     override fun createChild(world: ServerWorld?, entity: PassiveEntity?): PassiveEntity {
         val baby = RodEntity(entityType, world!!)
         return baby
@@ -34,8 +53,8 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Anim
 
     override fun initGoals() {
         super.initGoals()
-        goalSelector.add(3, AnimalMateGoal(this, 0.1))
-        goalSelector.add(5, FollowParentGoal(this, 0.1))
+        goalSelector.add(3, AnimalMateGoal(this, slowSpeed))
+        goalSelector.add(5, FollowParentGoal(this, slowSpeed))
         goalSelector.add(6, WanderAroundFarGoal(this, 0.1))
         goalSelector.add(
             7, LookAtEntityGoal(
@@ -43,13 +62,33 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Anim
                 PlayerEntity::class.java, 6.0f
             )
         )
+        goalSelector.add(2, MeleeAttackGoal(this, defSpeed, true))
         goalSelector.add(8, LookAroundGoal(this))
+        goalSelector.add(2,TemptGoal(this, defSpeed, {stack->stack.isOf(Items.END_ROD)||stack.isOf(JRBlocks.GOLDEN_LEAVES.asItem())},false))
+        goalSelector.add(1,FollowOwnerGoal(this, defSpeed, 10.0f, 2.0f))
+        targetSelector.add(2, AttackWithOwnerGoal(this))
+
+        targetSelector.apply {
+            add(1, TrackOwnerAttackerGoal(this@RodEntity)) // 跟踪攻击主人的目标
+            add(2, AttackWithOwnerGoal(this@RodEntity))    // 攻击主人攻击的目标
+            add(3, RevengeGoal(this@RodEntity).setGroupRevenge()) // 被攻击时复仇
+            add(10, ActiveTargetGoal(
+                this@RodEntity,
+                HostileEntity::class.java,  // 主动攻击所有敌对生物
+                true
+            ) { _ -> true })
+            add(5, UniversalAngerGoal(this@RodEntity, true)) // 通用愤怒机制
+        }
     }
 
-    companion object{
-        fun createRodAttribute():DefaultAttributeContainer.Builder{
-            return MobEntity.createMobAttributes()
+
+
+    override fun tryAttack(target: Entity?): Boolean {
+        // 给予对方orgasm效果
+        if (target is LivingEntity){
+            target.addEffect(JREffects.ORGASM_EFFECT, 100, 0)
         }
+        return super.tryAttack(target)
     }
 
     override fun registerControllers(controllers: AnimatableManager.ControllerRegistrar?) {
@@ -73,9 +112,47 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Anim
                 0.0
             )
        }
+        tickAnger()
+        
     }
 
     override fun interactMob(player: PlayerEntity?, hand: Hand?): ActionResult {
+
+        val stack = player?.getStackInHand(hand!!)
+
+        // 驯服逻辑（使用末地烛）
+        if (!isTamed && stack?.isOf(Items.END_ROD) == true) {
+            if (!world.isClient) {
+                // 1/3 驯服成功率
+                if (random.nextInt(3) == 0) {
+                    tryTame(player)
+                    world.sendEntityStatus(this, EntityStatuses.ADD_POSITIVE_PLAYER_REACTION_PARTICLES) // 绿色爱心粒子
+
+                    // 消耗物品（非创造模式）
+                    if (!player.isCreative) {
+                        stack.decrement(1)
+                    }
+                    return ActionResult.SUCCESS
+                } else {
+                    world.sendEntityStatus(this, EntityStatuses.ADD_NEGATIVE_PLAYER_REACTION_PARTICLES) // 灰色烟雾粒子
+                }
+            }
+            return ActionResult.success(world.isClient)
+        }
+
+        // 使用金叶治疗
+        if (isTamed && isOwner(player)) {
+            if (stack?.isOf(JRBlocks.GOLDEN_LEAVES.asItem()) == true && health < maxHealth) {
+                if (!world.isClient) {
+                    heal(4.0f)
+                    if (!player.isCreative) {
+                        stack.decrement(1)
+                    }
+                }
+                return ActionResult.success(world.isClient)
+            }
+        }
+
         // 如果是猫娘药水
         if (player?.isHolding{
                 i -> i.item == ToNekoItems.NEKO_POTION
@@ -101,4 +178,81 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Anim
         }
         return super.interactMob(player, hand)
     }
+
+    private fun tryTame(player: PlayerEntity) {
+        ownerUuid = player.uuid
+        setTamed(true,true)
+        setOwner(player)
+        navigation.stop()
+        target = null
+
+        isSitting = false
+    }
+
+    override fun updateAttributesForTamed() {
+        super.updateAttributesForTamed()
+        getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH)?.baseValue = 40.0
+    }
+
+
+    override fun initDataTracker(builder: DataTracker.Builder?) {
+        super.initDataTracker(builder)
+        builder?.add(ANGER_TIME,0)
+    }
+
+    override fun writeCustomDataToNbt(nbt: NbtCompound) {
+        super.writeCustomDataToNbt(nbt)
+        writeAngerToNbt(nbt)
+    }
+
+    override fun readCustomDataFromNbt(nbt: NbtCompound) {
+        super.readCustomDataFromNbt(nbt)
+        readAngerFromNbt(world, nbt)
+    }
+
+
+    // 在类中添加愤怒时间变量
+    private var angerTime = 0
+    private var angryAt: UUID? = null
+
+    override fun getAngerTime(): Int = dataTracker.get(ANGER_TIME)
+    override fun setAngerTime(time: Int) = dataTracker.set(ANGER_TIME, time)
+
+    override fun getAngryAt() = angryAt
+    override fun setAngryAt(uuid: UUID?) { angryAt = uuid }
+
+    override fun chooseRandomAngerTime() {
+        setAngerTime(ANGER_TIME_RANGE.get(random))
+    }
+
+    override fun shouldAngerAt(entity: LivingEntity?): Boolean {
+        return this.hasAngerTime() && this.angryAt?.equals(entity?.uuid) == true
+    }
+
+    fun tickAnger() {
+        if (world.isClient) return
+
+        if (hasAngerTime()) {
+            setAngerTime(getAngerTime() - 1)
+            if (!hasAngerTime()) {
+                onAngerRemoved()
+            }
+        }
+    }
+    private fun onAngerRemoved() {
+        angryAt = null
+        target = null
+    }
+
+    companion object{
+        fun createRodAttribute():DefaultAttributeContainer.Builder{
+            return createMobAttributes().add(EntityAttributes.GENERIC_ATTACK_DAMAGE,4.0)
+        }
+        private val ANGER_TIME = DataTracker.registerData(RodEntity::class.java, TrackedDataHandlerRegistry.INTEGER)
+        private val ANGER_TIME_RANGE = TimeHelper.betweenSeconds(20, 39)
+    }
+
+
+
+
 }

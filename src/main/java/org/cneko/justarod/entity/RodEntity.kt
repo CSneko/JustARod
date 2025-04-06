@@ -8,6 +8,7 @@ import net.minecraft.entity.Ownable
 import net.minecraft.entity.ai.goal.*
 import net.minecraft.entity.attribute.DefaultAttributeContainer
 import net.minecraft.entity.attribute.EntityAttributes
+import net.minecraft.entity.damage.DamageSource
 import net.minecraft.entity.data.DataTracker
 import net.minecraft.entity.data.TrackedDataHandlerRegistry
 import net.minecraft.entity.mob.Angerable
@@ -40,8 +41,8 @@ import java.util.function.Predicate
 
 class RodEntity(private val entityType:EntityType<RodEntity>, world: World):TameableEntity(entityType,world),GeoEntity,Angerable {
     private val animCache: AnimatableInstanceCache = GeckoLibUtil.createInstanceCache(this)
-    private val defSpeed:Double = 0.6
-    private val slowSpeed:Double = 0.4
+    private val defSpeed:Double = 0.8
+    private val slowSpeed:Double = 0.6
     override fun createChild(world: ServerWorld?, entity: PassiveEntity?): PassiveEntity {
         val baby = RodEntity(entityType, world!!)
         return baby
@@ -66,6 +67,8 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
         goalSelector.add(8, LookAroundGoal(this))
         goalSelector.add(2,TemptGoal(this, defSpeed, {stack->stack.isOf(Items.END_ROD)||stack.isOf(JRBlocks.GOLDEN_LEAVES.asItem())},false))
         goalSelector.add(1,FollowOwnerGoal(this, defSpeed, 10.0f, 2.0f))
+
+
         targetSelector.add(2, AttackWithOwnerGoal(this))
 
         targetSelector.apply {
@@ -77,14 +80,21 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
                 HostileEntity::class.java,  // 主动攻击所有敌对生物
                 true
             ) { _ -> true })
+
+            // 修改后的玩家目标选择条件
+            add(1, ActiveTargetGoal(
+                this@RodEntity,
+                PlayerEntity::class.java,
+                false
+            ) { entity ->
+                shouldAngerAt(entity as LivingEntity) // 移除!isTamed条件
+            })
+
             add(5, UniversalAngerGoal(this@RodEntity, true)) // 通用愤怒机制
         }
     }
 
-
-
     override fun tryAttack(target: Entity?): Boolean {
-        // 给予对方orgasm效果
         if (target is LivingEntity){
             target.addEffect(JREffects.ORGASM_EFFECT, 100, 0)
         }
@@ -100,7 +110,6 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
 
     override fun tick() {
         super.tick()
-        // 10%的概率生成末地烛粒子
         if (random.nextInt(10) == 0) {
             world.addParticle(
                 ParticleTypes.END_ROD,
@@ -111,36 +120,31 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
                 0.0,
                 0.0
             )
-       }
+        }
         tickAnger()
-        
+        // 如果头上有生物，给予orgasm
+        if (firstPassenger != null && firstPassenger is LivingEntity) {
+            (firstPassenger as LivingEntity).addEffect(JREffects.ORGASM_EFFECT, 100, 0)
+        }
     }
 
     override fun interactMob(player: PlayerEntity?, hand: Hand?): ActionResult {
-
         val stack = player?.getStackInHand(hand!!)
-
-        // 驯服逻辑（使用末地烛）
         if (!isTamed && stack?.isOf(Items.END_ROD) == true) {
             if (!world.isClient) {
-                // 1/3 驯服成功率
                 if (random.nextInt(3) == 0) {
                     tryTame(player)
-                    world.sendEntityStatus(this, EntityStatuses.ADD_POSITIVE_PLAYER_REACTION_PARTICLES) // 绿色爱心粒子
-
-                    // 消耗物品（非创造模式）
+                    world.sendEntityStatus(this, EntityStatuses.ADD_POSITIVE_PLAYER_REACTION_PARTICLES)
                     if (!player.isCreative) {
                         stack.decrement(1)
                     }
                     return ActionResult.SUCCESS
                 } else {
-                    world.sendEntityStatus(this, EntityStatuses.ADD_NEGATIVE_PLAYER_REACTION_PARTICLES) // 灰色烟雾粒子
+                    world.sendEntityStatus(this, EntityStatuses.ADD_NEGATIVE_PLAYER_REACTION_PARTICLES)
                 }
             }
             return ActionResult.success(world.isClient)
         }
-
-        // 使用金叶治疗
         if (isTamed && isOwner(player)) {
             if (stack?.isOf(JRBlocks.GOLDEN_LEAVES.asItem()) == true && health < maxHealth) {
                 if (!world.isClient) {
@@ -152,17 +156,13 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
                 return ActionResult.success(world.isClient)
             }
         }
-
-        // 如果是猫娘药水
         if (player?.isHolding{
-                i -> i.item == ToNekoItems.NEKO_POTION
+                    i -> i.item == ToNekoItems.NEKO_POTION
             } == true){
-            // 减少一瓶并给予空瓶
             if (!player.isCreative) {
                 player.getStackInHand(hand!!).decrement(1)
                 player.giveItemStack(ItemStack(Items.GLASS_BOTTLE))
             }
-            // 把末地烛remove并生成一只猫娘
             if (world is ServerWorld) {
                 world as ServerWorld
                 this.remove(RemovalReason.DISCARDED)
@@ -170,7 +170,6 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
                 neko.setPos(this.x, this.y, this.z)
                 neko.sexualDesire = 200
                 world.spawnEntity(neko)
-                // 如果有名字的话
                 if (this.hasCustomName()){
                     neko.customName = this.customName
                 }
@@ -179,22 +178,28 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
         return super.interactMob(player, hand)
     }
 
+    override fun onDamaged(damageSource: DamageSource?) {
+        super.onDamaged(damageSource)
+        if (damageSource?.attacker is PlayerEntity && !isOwner((damageSource.attacker as PlayerEntity))) {
+            setAngryAt((damageSource.attacker as PlayerEntity).uuid)
+            chooseRandomAngerTime()
+        }
+    }
+
     private fun tryTame(player: PlayerEntity) {
         ownerUuid = player.uuid
         setTamed(true,true)
         setOwner(player)
-        navigation.stop()
         target = null
-
         isSitting = false
     }
 
     override fun updateAttributesForTamed() {
         super.updateAttributesForTamed()
         getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH)?.baseValue = 40.0
+        // 添加移动速度调整
+        getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED)?.baseValue = defSpeed
     }
-
-
     override fun initDataTracker(builder: DataTracker.Builder?) {
         super.initDataTracker(builder)
         builder?.add(ANGER_TIME,0)
@@ -210,8 +215,6 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
         readAngerFromNbt(world, nbt)
     }
 
-
-    // 在类中添加愤怒时间变量
     private var angerTime = 0
     private var angryAt: UUID? = null
 
@@ -231,7 +234,6 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
 
     fun tickAnger() {
         if (world.isClient) return
-
         if (hasAngerTime()) {
             setAngerTime(getAngerTime() - 1)
             if (!hasAngerTime()) {
@@ -251,8 +253,4 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
         private val ANGER_TIME = DataTracker.registerData(RodEntity::class.java, TrackedDataHandlerRegistry.INTEGER)
         private val ANGER_TIME_RANGE = TimeHelper.betweenSeconds(20, 39)
     }
-
-
-
-
 }

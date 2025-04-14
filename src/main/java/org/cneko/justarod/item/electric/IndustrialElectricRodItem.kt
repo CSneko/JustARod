@@ -12,7 +12,7 @@ class IndustrialElectricRodItem: MultiModeSelfUsedElectricRodItem(Settings().com
         return "normal"
     }
 
-    override fun getSpeed(stack: ItemStack?): Int {
+    override fun getRodSpeed(stack: ItemStack?): Int {
         return when (stack?.let { getMode(it) }){
             "normal" -> 30
             "quick" -> 60

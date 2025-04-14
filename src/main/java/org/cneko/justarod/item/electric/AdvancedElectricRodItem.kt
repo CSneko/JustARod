@@ -12,7 +12,7 @@ class AdvancedElectricRodItem:MultiModeSelfUsedElectricRodItem(Settings().compon
         return "zako"
     }
 
-    override fun getSpeed(stack: ItemStack?): Int {
+    override fun getRodSpeed(stack: ItemStack?): Int {
         return when (stack?.let { getMode(it) }){
             "zako" -> 5
             "normal" -> 15

@@ -12,11 +12,13 @@ import net.minecraft.screen.slot.Slot
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.*
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import org.cneko.justarod.damage.JRDamageTypes
 import org.cneko.justarod.entity.Insertable
+import org.cneko.toneko.common.mod.items.BazookaItem.Ammunition
 
-class InsertionPedestalItem:Item(Settings()) {
+class InsertionPedestalItem:Item(Settings()),Ammunition {
     override fun use(world: World?, user: PlayerEntity?, hand: Hand?): TypedActionResult<ItemStack> {
         return super.use(world, user, hand)
     }
@@ -83,7 +85,8 @@ class InsertionPedestalItem:Item(Settings()) {
                 return ActionResult.FAIL
             }
             // 插入
-            stack?.let { user.setStackInHand(hand,entity.insertRod(user,it).value) }
+            stack?.let { entity.insertRod(user, it) }
+            //stack?.let { user.setStackInHand(hand,entity.insertRod(user,it).value) }
 
         }
         return super.useOnEntity(stack, user, entity, hand)
@@ -127,6 +130,30 @@ class InsertionPedestalItem:Item(Settings()) {
             tooltip?.add(Text.translatable("item.justarod.insertion_pedestal.has_rod",Text.translatable(rod?.item?.translationKey)))
             rod?.item?.appendTooltip(rod,context,tooltip,type)
         }
+    }
+
+    override fun hitOnEntity(shooter: LivingEntity?, target: LivingEntity?, bazooka: ItemStack?, ammo: ItemStack?) {
+        if (target is Insertable && shooter is PlayerEntity && !target.world.isClient){
+            useOnEntity(ammo,shooter,target,Hand.MAIN_HAND)
+        }
+    }
+
+    override fun hitOnBlock(p0: LivingEntity?, p1: BlockPos?, p2: ItemStack?, p3: ItemStack?) {
+    }
+
+    override fun hitOnAir(p0: LivingEntity?, p1: BlockPos?, p2: ItemStack?, p3: ItemStack?) {
+    }
+
+    override fun getSpeed(p0: ItemStack?, p1: ItemStack?): Float {
+        return 1f
+    }
+
+    override fun getMaxDistance(p0: ItemStack?, p1: ItemStack?): Float {
+        return 30f
+    }
+
+    override fun getCooldownTicks(p0: ItemStack?, p1: ItemStack?): Int {
+        return 20
     }
 }
 

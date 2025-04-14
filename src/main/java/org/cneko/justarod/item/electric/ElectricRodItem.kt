@@ -87,7 +87,7 @@ abstract class SelfUsedElectricRodItem(settings: Settings) : ElectricRodItem(set
         type: TooltipType?
     ) {
         super.appendTooltip(stack, context, tooltip, type)
-        val speed = this.getSpeed(stack)
+        val speed = this.getRodSpeed(stack)
         tooltip?.add(Text.translatable("item.justarod.end_rod.speed", speed).formatted(Formatting.LIGHT_PURPLE))
     }
     override fun inventoryTick(

@@ -18,11 +18,13 @@ import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Formatting
 import net.minecraft.util.Hand
+import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import org.cneko.justarod.JRAttributes
 import org.cneko.justarod.damage.JRDamageTypes
 import org.cneko.justarod.effect.JREffects
+import org.cneko.toneko.common.mod.items.BazookaItem.Ammunition
 import kotlin.math.sqrt
 
 abstract class EndRodItem(settings: Settings) : Item(settings), EndRodItemInterface {
@@ -55,7 +57,9 @@ abstract class OtherUsedItem(settings: Settings):EndRodItem(settings), OtherUsed
         // 插入其它实体
         if (getInstruction() == EndRodInstructions.USE_ON_OTHER_INSERT){
             // 从手上减少这根末地烛
-            user.inventory.removeStack(user.inventory.selectedSlot)
+            if (!user.isCreative) {
+                stack.decrement(1)
+            }
             target.damage(JRDamageTypes.grass(user), 3f)
             // TODO : 实现目标实体插入判断逻辑和取出的逻辑
             user.sendMessage(Text.translatable("item.justarod.end_rod.insert_success"))
@@ -79,6 +83,7 @@ abstract class OtherUsedItem(settings: Settings):EndRodItem(settings), OtherUsed
         return useOnOther(stack, user?.world, user!!, entity)
     }
 
+
 }
 
 open class SelfUsedItem(settings: Settings) : EndRodItem(settings), SelfUsedItemInterface {
@@ -89,7 +94,7 @@ open class SelfUsedItem(settings: Settings) : EndRodItem(settings), SelfUsedItem
         type: TooltipType?
     ) {
         super.appendTooltip(stack, context, tooltip, type)
-        val speed = this.getSpeed(stack)
+        val speed = this.getRodSpeed(stack)
         tooltip?.add(Text.translatable("item.justarod.end_rod.speed", speed).formatted(Formatting.LIGHT_PURPLE))
     }
     override fun inventoryTick(stack: ItemStack, world: World?, entity: Entity?, slot: Int, selected: Boolean) {
@@ -128,14 +133,16 @@ abstract class BothUsedItem(settings: Settings) : EndRodItem(settings),SelfUsedI
         type: TooltipType?
     ) {
         super.appendTooltip(stack, context, tooltip, type)
-        val speed = this.getSpeed(stack)
+        val speed = this.getRodSpeed(stack)
         tooltip?.add(Text.translatable("item.justarod.end_rod.speed", speed).formatted(Formatting.LIGHT_PURPLE))
     }
     override fun useOnOther(stack: ItemStack, world: World?, user: PlayerEntity, target: LivingEntity):ActionResult{
         // 插入其它实体
         if (getInstruction() == EndRodInstructions.SELF_AND_OTHER_INSERT){
             // 从手上减少这根末地烛
-            user.inventory.removeStack(user.inventory.selectedSlot)
+            if (!user.isCreative){
+                stack.decrement(1)
+            }
             target.damage(user.damageSources?.generic(), 3f)
             // TODO : 实现目标实体插入判断逻辑和取出的逻辑
             user.sendMessage(Text.translatable("item.justarod.end_rod.insert_success"))
@@ -195,7 +202,7 @@ interface SelfUsedItemInterface : EndRodItemInterface{
      * @return 使用结果
      */
     fun useOnSelf(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean):ActionResult{
-        val speed = this.getSpeed(stack)
+        val speed = this.getRodSpeed(stack)
         if (this.canDamage(stack, speed)){
            this.damage(stack, speed, world)
         }else{
@@ -234,15 +241,43 @@ interface SelfUsedItemInterface : EndRodItemInterface{
         // TODO： 淫叫
         return ActionResult.SUCCESS
     }
-    fun getSpeed(stack: ItemStack?):Int{
+    fun getRodSpeed(stack: ItemStack?):Int{
         if (stack != null) return stack.components.getOrDefault(JRComponents.SPEED,1)
         return 1
     }
 }
 
-interface OtherUsedItemInterface: EndRodItemInterface{
+interface OtherUsedItemInterface: EndRodItemInterface,Ammunition{
     fun canAcceptEntity(stack :ItemStack,entity: Entity):Boolean
     fun useOnOther(stack: ItemStack, world: World?, user: PlayerEntity,target: LivingEntity):ActionResult
+
+    override fun getSpeed(p0: ItemStack?, p1: ItemStack?): Float {
+        return 1f
+    }
+
+    override fun getCooldownTicks(p0: ItemStack?, p1: ItemStack?): Int {
+        return 20
+    }
+
+    override fun getMaxDistance(p0: ItemStack?, p1: ItemStack?): Float {
+        return 30f
+    }
+
+    override fun hitOnEntity(shooter: LivingEntity?, target: LivingEntity?, stack: ItemStack?, p3: ItemStack?) {
+        if (shooter is PlayerEntity){
+            if (stack != null && target != null) {
+                if (canAcceptEntity(stack, target)) {
+                    useOnOther(stack, shooter.world, shooter, target)
+                }
+            }
+        }
+    }
+
+    override fun hitOnAir(p0: LivingEntity?, p1: BlockPos?, p2: ItemStack?, p3: ItemStack?) {
+    }
+
+    override fun hitOnBlock(p0: LivingEntity?, p1: BlockPos?, p2: ItemStack?, p3: ItemStack?) {
+    }
 }
 interface EndRodItemInterface{
     /**
@@ -264,7 +299,7 @@ interface EndRodItemInterface{
             return 0
         }
         // 获取物品上的耐久附魔等级
-        val rm = world?.registryManager;
+        val rm = world?.registryManager
         val unbreakingLevel = stack.enchantments.getLevel(rm?.get(RegistryKeys.ENCHANTMENT)?.entryOf(Enchantments.UNBREAKING))
         var total = 0
         // 遍历每一点潜在耐久损失，进行概率判定

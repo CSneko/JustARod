@@ -4,7 +4,6 @@ import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityStatuses
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.Ownable
 import net.minecraft.entity.ai.goal.*
 import net.minecraft.entity.attribute.DefaultAttributeContainer
 import net.minecraft.entity.attribute.EntityAttributes
@@ -13,9 +12,6 @@ import net.minecraft.entity.data.DataTracker
 import net.minecraft.entity.data.TrackedDataHandlerRegistry
 import net.minecraft.entity.mob.Angerable
 import net.minecraft.entity.mob.HostileEntity
-import net.minecraft.entity.mob.MobEntity
-import net.minecraft.entity.mob.Monster
-import net.minecraft.entity.passive.AnimalEntity
 import net.minecraft.entity.passive.PassiveEntity
 import net.minecraft.entity.passive.TameableEntity
 import net.minecraft.entity.player.PlayerEntity
@@ -37,7 +33,6 @@ import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache
 import software.bernie.geckolib.animation.AnimatableManager
 import software.bernie.geckolib.util.GeckoLibUtil
 import java.util.*
-import java.util.function.Predicate
 
 class RodEntity(private val entityType:EntityType<RodEntity>, world: World):TameableEntity(entityType,world),GeoEntity,Angerable {
     private val animCache: AnimatableInstanceCache = GeckoLibUtil.createInstanceCache(this)

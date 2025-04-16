@@ -33,18 +33,16 @@ class EstrusEffect:StatusEffect(StatusEffectCategory.BENEFICIAL, 0xffb6c1) {
     override fun applyUpdateEffect(entity: LivingEntity, amplifier: Int): Boolean {
         val world = entity.world
         val random: Random = world.random
-        // 1/2添加爱心效果
-        if (kotlin.random.Random.nextInt(2) == 0) {
-            world.addParticle(
-                ParticleTypes.HEART,
-                entity.x + random.nextInt(2) - 1,
-                entity.y + random.nextInt(2) + 2,
-                entity.z + random.nextInt(2) - 1,
-                0.0,
-                2.0,
-                0.0
-            )
-        }
+        //添加爱心效
+        world.addParticle(
+            ParticleTypes.HEART,
+            entity.x + random.nextInt(2) - 1,
+            entity.y + random.nextInt(2) + 2,
+            entity.z + random.nextInt(2) - 1,
+            0.0,
+            2.0,
+            0.0
+        )
 
         if (entity is Sexual){
             // 1/10的概率增加性欲

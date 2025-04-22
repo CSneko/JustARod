@@ -22,6 +22,7 @@ import org.cneko.justarod.item.armor.FireworksRodItem
 import org.cneko.justarod.item.electric.AdvancedElectricRodItem
 import org.cneko.justarod.item.electric.BasicElectricRodItem
 import org.cneko.justarod.item.electric.IndustrialElectricRodItem
+import org.cneko.justarod.item.electric.TribochargingRod
 import org.cneko.justarod.item.syringe.BremelanotideItem
 import org.cneko.justarod.item.syringe.GrowthAgentItem
 import org.cneko.justarod.item.syringe.ReverseGrowthAgentItem
@@ -54,6 +55,7 @@ class JRItems {
             .nutrition(1).statusEffect(StatusEffectInstance(JREffects.STRONG_EFFECT.entry(), 6000,1,false,true),1f).alwaysEdible()
             .build()))
         val FIREWORKS_ROD = FireworksRodItem()
+        val TRIBOCHARGING_ROD = TribochargingRod(Item.Settings())
         val XP_GUN = XPGun()
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
@@ -78,6 +80,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "advanced_electric_rod"), ADVANCED_ELECTRIC_ROD)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "industrial_electric_rod"), INDUSTRIAL_ROD)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "firecracker_rod"), FirecrackerRodItem)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "tribocharging_rod"), TRIBOCHARGING_ROD)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "insertion_pedestal"), INSERTION_PEDESTAL)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "retriever"), RETRIEVER)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "shenbao"), SHENBAO)
@@ -115,6 +118,7 @@ class JRItems {
                 entries.add(RETRIEVER)
                 entries.add(SHENBAO)
                 entries.add(FIREWORKS_ROD)
+                entries.add(TRIBOCHARGING_ROD)
                 entries.add(XP_GUN)
             }
         }

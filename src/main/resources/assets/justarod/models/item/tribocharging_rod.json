@@ -1,0 +1,47 @@
+{
+	"credit": "Made with Blockbench",
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "justarod:item/tribocharging_rod",
+		"particle": "justarod:item/tribocharging_rod"
+	},
+	"elements": [
+		{
+			"name": "bottom",
+			"from": [6, 0, 6],
+			"to": [10, 1, 10],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7, 0, 7]},
+			"faces": {
+				"north": {"uv": [2, 2, 4, 2.5], "texture": "#0"},
+				"east": {"uv": [0, 2, 2, 2.5], "texture": "#0"},
+				"south": {"uv": [6, 2, 8, 2.5], "texture": "#0"},
+				"west": {"uv": [4, 2, 6, 2.5], "texture": "#0"},
+				"up": {"uv": [4, 2, 2, 0], "texture": "#0"},
+				"down": {"uv": [6, 0, 4, 2], "texture": "#0"}
+			}
+		},
+		{
+			"name": "medium",
+			"from": [7, 1, 7],
+			"to": [9, 15, 9],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7, 1, 7]},
+			"faces": {
+				"north": {"uv": [10.5, 6, 11.5, 13], "texture": "#0"},
+				"east": {"uv": [9.5, 6, 10.5, 13], "texture": "#0"},
+				"south": {"uv": [12.5, 6, 13.5, 13], "texture": "#0"},
+				"west": {"uv": [11.5, 6, 12.5, 13], "texture": "#0"},
+				"up": {"uv": [11.5, 6, 10.5, 5], "texture": "#0"},
+				"down": {"uv": [12.5, 5, 11.5, 6], "texture": "#0"}
+			}
+		}
+	],
+	"display": {
+		"ground": {
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"head": {
+			"rotation": [97.25, 0, 0],
+			"translation": [0, -3.5, -7.75]
+		}
+	}
+}

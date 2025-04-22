@@ -7,15 +7,22 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
+import org.cneko.justarod.client.screen.FrictionScreen;
 import org.cneko.justarod.entity.SeeeeexNekoEntity;
+import org.cneko.justarod.packet.FrictionPayload;
 import org.cneko.toneko.common.mod.entities.NekoEntity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
 import java.util.UUID;
 
+import static net.minecraft.client.MinecraftClient.getInstance;
+
 public class JRClientNetworkingEvents {
     public static void init(){
+        ClientPlayNetworking.registerGlobalReceiver(FrictionPayload.ID,((payload, context) -> {
+            getInstance().setScreen(new FrictionScreen());
+        }));
     }
 
     public static @Nullable LivingEntity findNearbyEntityByUuid(UUID targetUuid, double range) {

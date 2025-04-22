@@ -9,6 +9,7 @@ import org.cneko.justarod.effect.JREffects;
 import org.cneko.justarod.entity.JREntities;
 import org.cneko.justarod.event.*;
 import org.cneko.justarod.item.JRItems;
+import org.cneko.justarod.packet.JRPackets;
 import org.cneko.justarod.quirks.JRQuirks;
 
 /*
@@ -47,6 +48,7 @@ public class Justarod implements ModInitializer {
         JREntities.init();
         TickEvent.Companion.init();
         JRCommands.init();
+        JRPackets.init();
 
         EntityDeathEvent.init();
         EntityRespawnEvent.init();

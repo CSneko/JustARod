@@ -1,8 +1,11 @@
 package org.cneko.justarod.client.screen
 
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.item.ItemStack
+import net.minecraft.item.Items
 import net.minecraft.text.Text
 import kotlin.math.abs
 import kotlin.random.Random
@@ -17,7 +20,7 @@ class FrictionScreen : Screen(Text.empty()) {
     private var lastSliderPosition = 0.5f // 记录上次滑块位置
 
     // 常量
-    private val maxHeat =10000f
+    private val maxHeat =5000f
     private val heatWarningThreshold = 0.7f*maxHeat // 粒子开始生成的阈值
     private val shakeThreshold = 0.8f*maxHeat // 屏幕开始抖动的阈值
 
@@ -90,9 +93,12 @@ class FrictionScreen : Screen(Text.empty()) {
         context.fill(sliderX.toInt(), (sliderY + sliderHeight / 2 - 2).toInt(),
             (sliderX + sliderWidth).toInt(), (sliderY + sliderHeight / 2 + 2).toInt(), 0xFFAAAAAA.toInt())
 
-        // 滑动条拇指
-        context.fill((sliderThumbX - 5).toInt(), sliderY.toInt(),
-            (sliderThumbX + 5).toInt(), (sliderY + sliderHeight).toInt(), 0xFFFFFFFF.toInt())
+        // 使用纸张物品渲染滑块
+        val stack = ItemStack(Items.PAPER)
+        val itemX = (sliderThumbX - 8).toInt()
+        val itemY = (sliderY - 4).toInt()
+        context.drawItem(stack, itemX, itemY)
+
 
         // 绘制粒子
         for (particle in particles) {
@@ -129,7 +135,7 @@ class FrictionScreen : Screen(Text.empty()) {
 
     private fun updateParticles(delta: Float) {
         if (heat > heatWarningThreshold) {
-            // 添加新粒子 - 增加粒子生成数量和频率
+            // 添加新粒子
             val spawnChance = ((heat - heatWarningThreshold) / (maxHeat - heatWarningThreshold)) * delta * 200
             val particlesToAdd = (spawnChance * 3).toInt()
 

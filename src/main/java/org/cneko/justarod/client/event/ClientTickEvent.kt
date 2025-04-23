@@ -11,6 +11,8 @@ import net.minecraft.util.Identifier
 import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.item.hasEffect
 import java.util.*
+import kotlin.math.cos
+import kotlin.math.sin
 
 class ClientTickEvent {
     companion object{
@@ -27,6 +29,12 @@ class ClientTickEvent {
                     val intensity = client.window.scaledWidth * (0.00f + Random().nextFloat() * 0.005f)
                     applyScreenShake(context, intensity)
                     applyViewShake(client.player!!, intensity)
+                }
+                if (client.player!!.hasEffect(JREffects.FAINT_EFFECT)){
+                    // 晕了
+                    renderFaintEffect(context)
+                }else {
+                    faintAlpha = 0f
                 }
             }
         }
@@ -94,6 +102,43 @@ class ClientTickEvent {
             player.yaw += shakeYaw
             player.pitch = (player.pitch + shakePitch).coerceIn(-90f, 90f) // 限制 pitch 在 [-90, 90] 范围内
         }
+
+
+
+        private var faintAlpha = 0f
+        private fun renderFaintEffect(context: DrawContext) {
+            val client = MinecraftClient.getInstance()
+            val width = client.window.scaledWidth
+            val height = client.window.scaledHeight
+
+            // 淡入黑屏效果：通过帧时间线性增加 alpha
+            val maxAlpha = 0.95f // 接近全黑
+            val fadeSpeed = 0.01f // 每帧增加的透明度
+            faintAlpha = (faintAlpha + fadeSpeed).coerceAtMost(maxAlpha)
+
+            // 启用混合模式
+            RenderSystem.enableBlend()
+            RenderSystem.defaultBlendFunc()
+
+            // 设置全黑遮罩颜色和透明度
+            RenderSystem.setShaderColor(0f, 0f, 0f, faintAlpha)
+
+            // 绘制全屏黑色覆盖层
+            val bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION)
+            val matrix = context.matrices.peek().positionMatrix
+
+            with(bufferBuilder) {
+                vertex(matrix, 0f, height.toFloat(), 0f)
+                vertex(matrix, width.toFloat(), height.toFloat(), 0f)
+                vertex(matrix, width.toFloat(), 0f, 0f)
+                vertex(matrix, 0f, 0f, 0f)
+            }
+            BufferRenderer.drawWithGlobalProgram(bufferBuilder.end())
+
+            RenderSystem.disableBlend()
+            RenderSystem.setShaderColor(1f, 1f, 1f, 1f) // 重置颜色
+        }
+
 
 
     }

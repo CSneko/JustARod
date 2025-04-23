@@ -28,6 +28,11 @@ class JREffects {
             Identifier.of(MODID, "strong"),
             StrongEffect()
         )
+        var FAINT_EFFECT: StatusEffect? = Registry.register(
+            Registries.STATUS_EFFECT,
+            Identifier.of(MODID, "faint"),
+            FaintEffect()
+        )
         fun init(){
         }
     }

@@ -1,13 +1,16 @@
 package org.cneko.justarod.effect
 
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.entity.EntityPose
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.effect.StatusEffect
 import net.minecraft.entity.effect.StatusEffectCategory
+import net.minecraft.server.network.ServerPlayerEntity
 import org.cneko.toneko.common.mod.api.EntityPoseManager
 import org.cneko.toneko.common.mod.effects.ExcitingEffect
+import org.cneko.toneko.common.mod.packets.EntityPosePayload
 
 class FaintEffect: StatusEffect(StatusEffectCategory.BENEFICIAL, 0x3c3c3c)  {
     init {
@@ -23,6 +26,18 @@ class FaintEffect: StatusEffect(StatusEffectCategory.BENEFICIAL, 0x3c3c3c)  {
             -2.0,
             EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE
         )
+        this.addAttributeModifier(
+            EntityAttributes.GENERIC_ATTACK_SPEED,
+            ExcitingEffect.LOCATION,
+            -2.0,
+            EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE
+        )
+        this.addAttributeModifier(
+            EntityAttributes.GENERIC_JUMP_STRENGTH,
+            ExcitingEffect.LOCATION,
+            -2.0,
+            EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE
+        )
     }
 
     override fun canApplyUpdateEffect(duration: Int, amplifier: Int): Boolean {
@@ -31,6 +46,9 @@ class FaintEffect: StatusEffect(StatusEffectCategory.BENEFICIAL, 0x3c3c3c)  {
 
     override fun applyUpdateEffect(entity: LivingEntity?, amplifier: Int): Boolean {
         EntityPoseManager.setPose(entity, EntityPose.SLEEPING)
+        if (entity is ServerPlayerEntity){
+            ServerPlayNetworking.send(entity, EntityPosePayload(EntityPose.SLEEPING, entity.uuid.toString(), true))
+        }
         return super.applyUpdateEffect(entity, amplifier)
     }
 }

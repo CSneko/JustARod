@@ -49,6 +49,7 @@ public class Justarod implements ModInitializer {
         TickEvent.Companion.init();
         JRCommands.init();
         JRPackets.init();
+        JRNetWorkingEvents.init();
 
         EntityDeathEvent.init();
         EntityRespawnEvent.init();

@@ -1,12 +1,13 @@
 package org.cneko.justarod.client.screen
 
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.text.Text
+import org.cneko.justarod.packet.FullHeatPayload
 import kotlin.math.abs
 import kotlin.random.Random
 import kotlin.math.min
@@ -20,7 +21,7 @@ class FrictionScreen : Screen(Text.empty()) {
     private var lastSliderPosition = 0.5f // 记录上次滑块位置
 
     // 常量
-    private val maxHeat =5000f
+    private val maxHeat =3000f
     private val heatWarningThreshold = 0.7f*maxHeat // 粒子开始生成的阈值
     private val shakeThreshold = 0.8f*maxHeat // 屏幕开始抖动的阈值
 
@@ -112,6 +113,11 @@ class FrictionScreen : Screen(Text.empty()) {
     }
 
     private fun updateHeat(delta: Float) {
+        // 如果大于95%，则晕倒
+        if (heat > 0.95f * maxHeat) {
+            ClientPlayNetworking.send(FullHeatPayload("full"))
+            MinecraftClient.getInstance().setScreen(null)
+        }
         // 计算滑块位置的变化量
         val positionChange = abs(sliderPosition - lastSliderPosition)
 

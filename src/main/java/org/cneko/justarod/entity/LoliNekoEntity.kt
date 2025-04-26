@@ -39,7 +39,7 @@ class LoliNekoEntity(private val type: EntityType<LoliNekoEntity>, world: World)
     override fun readCustomDataFromNbt(compound: NbtCompound) {
         super.readCustomDataFromNbt(compound)
         if (compound.contains("showing_age")) {
-            this.setShowingAge(compound.getInt("sexual_desire"))
+            this.setShowingAge(compound.getInt("showing_age"))
         }else {
             this.setShowingAge(random.nextInt(20)+18)
         }

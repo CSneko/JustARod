@@ -6,6 +6,7 @@ import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
+import org.cneko.justarod.entity.LoliNekoEntity;
 import org.cneko.justarod.entity.Sexual;
 import org.cneko.toneko.common.mod.client.screens.InteractionScreen;
 import org.cneko.toneko.common.mod.client.screens.NekoScreenBuilder;
@@ -30,6 +31,12 @@ public class JRScreenBuilders {
             .addTooltip(JRTooltipFactories.SEEEEEX_NEKO_AGE_LIMIT_TOOLTIP)
             .addButton(JRButtonFactories.SEEEEEX_NEKO_ATTACKING_BUTTON)
             .addButton(JRButtonFactories.SEEEEEX_NEKO_RECEIVING_BUTTON);
+    public static final NekoScreenBuilder LOLI_NEKO_INTERACTIVE_SCREEN = ScreenBuilders.COMMON_TOOLTIP.clone()
+            .addTooltip(JRTooltipFactories.LOLI_NEKO_SHOWING_AGE)
+            .addButton(ButtonFactories.CHAT_BUTTON)
+            .addButton(ButtonFactories.GIFT_BUTTON)
+            .addButton(ButtonFactories.ACTION_BUTTON)
+            .addButton(ButtonFactories.BREED_BUTTON);
 
     public static final class JRButtonFactories {
         public static final ButtonFactory SEEEEEX_NEKO_BREED_BUTTON = screen -> ButtonWidget.builder(Text.translatable("screen.toneko.neko_entity_interactive.button.breed"), (btn) -> {
@@ -71,6 +78,12 @@ public class JRScreenBuilders {
                 return Text.translatable("screen.justarod.seeeeex_neko_mating.tooltip.enable_age_limit",neko.enableAgeLimit()? Text.translatable("misc.toneko.is_or_not.is").getString() : Text.translatable("misc.toneko.is_or_not.not"));
             }
             return Text.translatable("screen.justarod.seeeeex_neko_mating.tooltip.enable_age_limit",Text.translatable("misc.toneko.is_or_not.not.not"));
+        };
+        public static final TooltipFactory LOLI_NEKO_SHOWING_AGE = screen -> {
+            if (screen.getNeko() instanceof LoliNekoEntity neko){
+                return Text.translatable("screen.justarod.loli_neko.tooltip.showing_age",neko.getShowingAge());
+            }
+            return Text.translatable("screen.justarod.loli_neko.tooltip.showing_age",18);
         };
     }
 }

@@ -20,7 +20,7 @@ class StrongEffect: StatusEffect(StatusEffectCategory.BENEFICIAL, 0xffb6c1) {
         }
         // 增加体力
         if (entity is Powerable){
-            entity.power += 0.01 * amplifier
+            entity.power += 0.03 * (amplifier+1)
         }
         return super.applyUpdateEffect(entity, amplifier)
     }

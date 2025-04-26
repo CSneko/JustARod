@@ -10,6 +10,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.tag.BiomeTags;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.biome.BiomeKeys;
+import org.cneko.toneko.common.mod.entities.NekoEntity;
 
 import static org.cneko.justarod.Justarod.MODID;
 
@@ -23,6 +24,15 @@ public class JREntities {
                     .dimensions(0.5f,1.7f).eyeHeight(1.6f)
                     .build()
     );
+    public static final Identifier LOLI_NEKO_ID = Identifier.of(MODID, "loli_neko");
+    public static final EntityType<LoliNekoEntity> LOLI_NEKO = Registry.register(
+            Registries.ENTITY_TYPE,
+            LOLI_NEKO_ID,
+            FabricEntityType.Builder.createMob(LoliNekoEntity::new,SpawnGroup.CREATURE,
+                    builder -> builder.defaultAttributes(NekoEntity::createNekoAttributes))
+                    .dimensions(0.5f,1.7f).eyeHeight(0.4f)
+                    .build()
+    );
     public static final Identifier ROD_ID = Identifier.of(MODID, "rod");
     public static final EntityType<RodEntity> ROD = Registry.register(
             Registries.ENTITY_TYPE,
@@ -34,5 +44,6 @@ public class JREntities {
     );
     public static void init(){
         BiomeModifications.addSpawn(BiomeSelectors.tag(BiomeTags.IS_BEACH).or(BiomeSelectors.tag(BiomeTags.IS_HILL)), SpawnGroup.CREATURE, SEEEEEX_NEKO, 10, 1, 1);
+        BiomeModifications.addSpawn(BiomeSelectors.tag(BiomeTags.IS_BEACH), SpawnGroup.CREATURE, LOLI_NEKO, 10, 1, 1);
     }
 }

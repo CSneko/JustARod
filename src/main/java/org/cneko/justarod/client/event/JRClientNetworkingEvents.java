@@ -5,11 +5,13 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 import org.cneko.justarod.client.screen.FrictionScreen;
 import org.cneko.justarod.entity.SeeeeexNekoEntity;
 import org.cneko.justarod.packet.FrictionPayload;
+import org.cneko.justarod.packet.PowerSyncPayload;
 import org.cneko.toneko.common.mod.entities.NekoEntity;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,6 +25,9 @@ public class JRClientNetworkingEvents {
         ClientPlayNetworking.registerGlobalReceiver(FrictionPayload.ID,((payload, context) -> {
             getInstance().setScreen(new FrictionScreen());
         }));
+        ClientPlayNetworking.registerGlobalReceiver(PowerSyncPayload.ID, (payload, context) -> {
+            getInstance().player.setPower(payload.power());
+        });
     }
 
     public static @Nullable LivingEntity findNearbyEntityByUuid(UUID targetUuid, double range) {

@@ -24,12 +24,22 @@ class JRAttributes {
                 1.0, 0.0, 1000.0
             ).setTracked(true)
         )
+        val GENERIC_MAX_POWER_ID = Identifier.of(MODID, "generic.max_power")
+        val GENERIC_MAX_POWER: RegistryEntry<EntityAttribute> = register(
+            GENERIC_MAX_POWER_ID,
+            ClampedEntityAttribute(
+                "attribute.name.generic.max_power",
+                100.0, 0.0, 1000.0
+            ).setTracked(true)
+        )
         fun register(id: Identifier?, attribute: EntityAttribute?): RegistryEntry<EntityAttribute> {
             return Registry.registerReference(Registries.ATTRIBUTE, id, attribute)
         }
         fun init(){
             AttributeEvents.ON_REGISTER_PLAYER_ATTRIBUTES.register(OnRegisterPlayerAttributes { builder: DefaultAttributeContainer.Builder ->
-                val b = builder.add(PLAYER_LUBRICATING)
+                val b = builder
+                    .add(PLAYER_LUBRICATING)
+                    .add(GENERIC_MAX_POWER)
                 return@OnRegisterPlayerAttributes b
             })
             FabricDefaultAttributeRegistry.register(EntityType.PLAYER, PlayerEntity.createPlayerAttributes())

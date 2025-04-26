@@ -24,7 +24,9 @@ import net.minecraft.world.World
 import org.cneko.justarod.JRAttributes
 import org.cneko.justarod.damage.JRDamageTypes
 import org.cneko.justarod.effect.JREffects
+import org.cneko.justarod.entity.Powerable
 import org.cneko.toneko.common.mod.items.BazookaItem.Ammunition
+import kotlin.math.hypot
 import kotlin.math.sqrt
 
 abstract class EndRodItem(settings: Settings) : Item(settings), EndRodItemInterface {
@@ -238,6 +240,12 @@ interface SelfUsedItemInterface : EndRodItemInterface{
                 (random?.nextFloat()?.times(amount) ?: 0f).toDouble()*0.01, (random?.nextFloat()?.times(1) ?: 0f).toDouble()*0.05)
             )
         }
+
+        // 要晕掉惹...
+        if (entity is Powerable){
+            entity.power = entity.power - 0.1
+        }
+
         // TODO： 淫叫
         return ActionResult.SUCCESS
     }

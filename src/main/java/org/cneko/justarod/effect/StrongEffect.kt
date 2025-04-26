@@ -4,6 +4,7 @@ import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.effect.StatusEffect
 import net.minecraft.entity.effect.StatusEffectCategory
 import net.minecraft.entity.effect.StatusEffects
+import org.cneko.justarod.entity.Powerable
 
 class StrongEffect: StatusEffect(StatusEffectCategory.BENEFICIAL, 0xffb6c1) {
     // 每tick都会调用一次，直到返回false
@@ -16,6 +17,10 @@ class StrongEffect: StatusEffect(StatusEffectCategory.BENEFICIAL, 0xffb6c1) {
         // 如果有虚弱的效果，则取消该效果。
         if (entity.hasStatusEffect(StatusEffects.WEAKNESS)) {
             entity.removeStatusEffect(StatusEffects.WEAKNESS)
+        }
+        // 增加体力
+        if (entity is Powerable){
+            entity.power += 0.01 * amplifier
         }
         return super.applyUpdateEffect(entity, amplifier)
     }

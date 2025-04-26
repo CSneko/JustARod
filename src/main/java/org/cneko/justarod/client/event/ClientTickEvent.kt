@@ -3,16 +3,14 @@ package org.cneko.justarod.client.event
 import com.mojang.blaze3d.systems.RenderSystem
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gl.PostEffectProcessor
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.*
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.Identifier
+import org.cneko.justarod.JRAttributes
 import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.item.hasEffect
 import java.util.*
-import kotlin.math.cos
-import kotlin.math.sin
 
 class ClientTickEvent {
     companion object{
@@ -36,8 +34,65 @@ class ClientTickEvent {
                 }else {
                     faintAlpha = 0f
                 }
+
+                // 渲染体力条
+                renderPowerBar(context)
             }
         }
+
+        private val POWER_ICON = Identifier.of("textures/item/diamond_sword.png")
+        private fun renderPowerBar(context: DrawContext) {
+            val client = MinecraftClient.getInstance()
+            if (client.options.hudHidden) return
+            val player = client.player ?: return
+            val power = player.power
+            val maxPower = player.attributes?.getValue(JRAttributes.GENERIC_MAX_POWER) ?: return
+
+            // 如果体力是满的，则隐藏
+            if (power >= maxPower) return
+
+            // 获取屏幕尺寸
+            val height = context.scaledWindowHeight
+
+            // 设置位置和尺寸
+            val barWidth = 91
+            val barHeight = 4
+            val iconSize = 8
+            val margin = 10
+            val x = margin + iconSize + 2
+            val y = height - margin - barHeight
+
+            // 绘制钻石剑图标
+            context.drawTexture(POWER_ICON, x - iconSize - 2, y - (iconSize - barHeight)/2, 0f, 0f, iconSize, iconSize, iconSize, iconSize)
+
+            // 计算体力百分比
+            val percent = power / maxPower
+            val powerWidth = barWidth * percent
+
+            // 绘制背景条
+            context.fill(
+                x, y,
+                x + barWidth, y + barHeight,
+                0x80 shl 24 // 半透明黑色背景
+            )
+
+            // 绘制渐变体力条（黄色调）
+            for (i in 0 until powerWidth.toInt()) {
+                val progress = i.toFloat() / barWidth
+                // 渐变从暗黄色(255,200,0)到亮黄色(255,255,150)
+                val red = 255 // 保持红色分量最大
+                val green = (200 * (1 - progress) + 255 * progress).toInt()
+                val blue = (0 * (1 - progress) + 150 * progress).toInt()
+                val color = (0xFF shl 24) or (red shl 16) or (green shl 8) or blue
+
+                context.fill(
+                    x + i, y,
+                    x + i + 1, y + barHeight,
+                    color
+                )
+            }
+        }
+
 
         private fun renderPinkGUI() {
             // 设置半透明粉色
@@ -112,7 +167,7 @@ class ClientTickEvent {
             val height = client.window.scaledHeight
 
             // 淡入黑屏效果：通过帧时间线性增加 alpha
-            val maxAlpha = 0.95f // 接近全黑
+            val maxAlpha = 0.9f // 接近全黑
             val fadeSpeed = 0.01f // 每帧增加的透明度
             faintAlpha = (faintAlpha + fadeSpeed).coerceAtMost(maxAlpha)
 

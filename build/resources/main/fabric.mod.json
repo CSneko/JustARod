@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "justarod",
-  "version": "0.0.35",
+  "version": "0.0.36",
   "name": "JustARod",
   "description": "meow",
   "authors": [],
@@ -34,7 +34,9 @@
   ],
   "custom": {
     "loom:injected_interfaces": {
-      "net/minecraft/class_3222": ["org/cneko/justarod/entity/Insertable"],
+      "net/minecraft/class_1657": [
+        "org/cneko/justarod/entity/Insertable","org/cneko/justarod/entity/Powerable"
+      ],
       "org/cneko/toneko/common/mod/entities/NekoEntity": ["org/cneko/justarod/entity/Insertable"]
     }
   }

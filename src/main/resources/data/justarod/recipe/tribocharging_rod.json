@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " G ",
+    " R "
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:paper"
+    },
+    "R": {
+      "item": "minecraft:end_rod"
+    }
+  },
+  "result": {
+    "id": "justarod:tribocharging_rod",
+    "count": 1
+  }
+}

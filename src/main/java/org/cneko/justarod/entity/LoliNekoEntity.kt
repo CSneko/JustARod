@@ -41,7 +41,7 @@ class LoliNekoEntity(private val type: EntityType<LoliNekoEntity>, world: World)
         if (compound.contains("showing_age")) {
             this.setShowingAge(compound.getInt("showing_age"))
         }else {
-            this.setShowingAge(random.nextInt(20)+18)
+            this.setShowingAge(random.nextInt(1000)+18)
         }
     }
 

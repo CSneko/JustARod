@@ -15,8 +15,9 @@ import org.cneko.toneko.common.mod.client.screens.NekoScreenBuilder.TooltipFacto
 import org.cneko.toneko.common.mod.client.screens.factories.ButtonFactories;
 import org.cneko.toneko.common.mod.client.screens.factories.ScreenBuilders;
 import org.cneko.toneko.common.mod.packets.interactives.NekoMatePayload;
-
 import java.util.Random;
+
+import static net.minecraft.client.MinecraftClient.getInstance;
 
 public class JRScreenBuilders {
     public static final NekoScreenBuilder SEEEEEX_NEKO_INTERACTIVE_SCREEN = ScreenBuilders.COMMON_START.clone()
@@ -39,15 +40,19 @@ public class JRScreenBuilders {
             .addButton(ButtonFactories.BREED_BUTTON);
 
     public static final class JRButtonFactories {
-        public static final ButtonFactory SEEEEEX_NEKO_BREED_BUTTON = screen -> ButtonWidget.builder(Text.translatable("screen.toneko.neko_entity_interactive.button.breed"), (btn) -> {
+        public static final ButtonFactory SEEEEEX_NEKO_BREED_BUTTON = screen -> ButtonWidget.builder(Text.translatable("screen.toneko.seeeeeex_neko_entity_interactive.button.breed"), (btn) -> {
             if (screen.getNeko() instanceof Sexual) {
                 MinecraftClient.getInstance().setScreen(new InteractionScreen(Text.empty(), screen.getNeko(), screen.lastScreen, SEEEEEX_NEKO_BREED_SCREEN));
             }
         });
         public static final ButtonFactory SEEEEEX_NEKO_ATTACKING_BUTTON = screen -> ButtonWidget.builder(Text.translatable("screen.toneko.neko_entity_interactive.button.attacking"), (btn) -> {
             // 设置为灰色
-            btn.active = false;
-            btn.setTooltip(Tooltip.of(Text.translatable("screen.toneko.neko_entity_interactive.button.attacking.fail")));
+            if (getInstance().player.getPower() < 60) {
+                btn.active = false;
+                btn.setTooltip(Tooltip.of(Text.translatable("screen.toneko.neko_entity_interactive.button.attacking.fail")));
+            }else {
+                getInstance().setScreen(new MateScreen(screen.getNeko()));
+            }
         });
         public static final ButtonFactory SEEEEEX_NEKO_RECEIVING_BUTTON = screen -> ButtonWidget.builder(Text.translatable("screen.toneko.neko_entity_interactive.button.receiving"), (btn) -> {
             PlayerEntity entity = MinecraftClient.getInstance().player;

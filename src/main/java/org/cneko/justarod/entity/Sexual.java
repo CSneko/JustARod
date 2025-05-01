@@ -12,7 +12,7 @@ public interface Sexual {
         setSexualDesire(getSexualDesire() - decrease);
     }
     default boolean enableCompleteProcess(){
-        return false;
+        return true;
     }
     default boolean enableAgeLimit(){
         return false;

@@ -7,4 +7,4 @@
 
 可以来[爱发电](https://afdian.com/a/csneko)支持作者获取整合包哦
 # 如何使用
-你自己探索吧,我就是不写[文档](https://github.com/CSneko/JustARod/blob/master/docs/doc.md),气不气,有本事你来艹我啊
+你自己探索吧,我就是不写[文档](https://github.com/CSneko/JustARod/blob/master/docs/doc.md),草服我就给你写~~

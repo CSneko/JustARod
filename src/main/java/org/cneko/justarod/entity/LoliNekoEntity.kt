@@ -2,6 +2,7 @@ package org.cneko.justarod.entity
 
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.data.DataTracker
+import net.minecraft.entity.data.TrackedData
 import net.minecraft.entity.data.TrackedDataHandlerRegistry
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.server.world.ServerWorld
@@ -13,7 +14,7 @@ import org.cneko.toneko.common.mod.entities.ToNekoEntities
 
 class LoliNekoEntity(private val type: EntityType<LoliNekoEntity>, world: World): NekoEntity(type, world) {
     companion object{
-        val SHOWING_AGE = DataTracker.registerData(LoliNekoEntity::class.java, TrackedDataHandlerRegistry.INTEGER)
+        val SHOWING_AGE: TrackedData<Int?> = DataTracker.registerData(LoliNekoEntity::class.java, TrackedDataHandlerRegistry.INTEGER)
     }
     override fun getBreedOffspring(
         p0: ServerWorld?,
@@ -22,7 +23,7 @@ class LoliNekoEntity(private val type: EntityType<LoliNekoEntity>, world: World)
         return LoliNekoEntity(type, world)
     }
     fun getShowingAge(): Int {
-        return dataTracker.get(SHOWING_AGE)
+        return dataTracker.get(SHOWING_AGE)!!
     }
     fun setShowingAge(age: Int) {
         dataTracker.set(SHOWING_AGE, age)

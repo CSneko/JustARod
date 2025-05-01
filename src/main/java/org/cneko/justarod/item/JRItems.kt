@@ -22,6 +22,7 @@ import org.cneko.justarod.item.armor.FireworksRodItem
 import org.cneko.justarod.item.electric.AdvancedElectricRodItem
 import org.cneko.justarod.item.electric.BasicElectricRodItem
 import org.cneko.justarod.item.electric.IndustrialElectricRodItem
+import org.cneko.justarod.item.electric.RemoteControlItem
 import org.cneko.justarod.item.electric.TribochargingRod
 import org.cneko.justarod.item.syringe.BremelanotideItem
 import org.cneko.justarod.item.syringe.GrowthAgentItem
@@ -57,6 +58,7 @@ class JRItems {
         val FIREWORKS_ROD = FireworksRodItem()
         val TRIBOCHARGING_ROD = TribochargingRod(Item.Settings())
         val XP_GUN = XPGun()
+        val REMOTE_CONTROL = RemoteControlItem(Item.Settings())
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -86,6 +88,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "shenbao"), SHENBAO)
             Registry.register(Registries.ITEM, Identifier.of(MODID, FireworksRodItem.ID), FIREWORKS_ROD)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "xp_gun"), XP_GUN)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "remote_control"), REMOTE_CONTROL)
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
             JR_ITEM_GROUP = FabricItemGroup.builder()
@@ -120,6 +123,7 @@ class JRItems {
                 entries.add(FIREWORKS_ROD)
                 entries.add(TRIBOCHARGING_ROD)
                 entries.add(XP_GUN)
+                entries.add(REMOTE_CONTROL)
             }
         }
     }

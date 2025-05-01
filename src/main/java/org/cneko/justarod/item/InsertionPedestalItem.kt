@@ -19,10 +19,6 @@ import org.cneko.justarod.entity.Insertable
 import org.cneko.toneko.common.mod.items.BazookaItem.Ammunition
 
 class InsertionPedestalItem:Item(Settings()),Ammunition {
-    override fun use(world: World?, user: PlayerEntity?, hand: Hand?): TypedActionResult<ItemStack> {
-        return super.use(world, user, hand)
-    }
-
     override fun onClicked(
         probablyPedestalStack: ItemStack?,
         otherStack: ItemStack?,
@@ -32,7 +28,7 @@ class InsertionPedestalItem:Item(Settings()),Ammunition {
         cursorStackReference: StackReference?
     ): Boolean {
         if (player?.world?.isClient == false) {
-            // 必须是潜行，并且是副手，并且主手不是空的
+            // 主手不是空的
             if (player.getStackInHand(Hand.MAIN_HAND)?.isEmpty!!) {
                 player.sendMessage(Text.translatable("item.justarod.insertion_pedestal.must_be_thing_in_hand"))
                 return super.onClicked(probablyPedestalStack, otherStack, slot, clickType, player, cursorStackReference)

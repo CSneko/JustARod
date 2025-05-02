@@ -49,7 +49,7 @@ public class RodCommand {
     }
 
     private static int removeRodItem(ServerPlayerEntity player) {
-        player.setRodInside(null);
+        player.setRodInside(ItemStack.EMPTY);
         player.sendMessage(Text.translatable("command.justarod.rod.remove.success"), false);
         return SINGLE_SUCCESS;
     }

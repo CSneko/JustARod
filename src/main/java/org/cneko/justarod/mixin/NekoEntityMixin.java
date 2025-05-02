@@ -7,6 +7,7 @@ import net.minecraft.nbt.NbtCompound;
 import org.cneko.justarod.JRAttributes;
 import org.cneko.justarod.entity.Insertable;
 import org.cneko.toneko.common.mod.entities.NekoEntity;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -27,7 +28,7 @@ public abstract class NekoEntityMixin implements Insertable {
     }
 
     @Override
-    public void setRodInside(ItemStack rodInside) {
+    public void setRodInside(@NotNull ItemStack rodInside) {
         this.rodInside = rodInside;
     }
 

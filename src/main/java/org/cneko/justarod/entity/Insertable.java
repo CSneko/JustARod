@@ -2,6 +2,7 @@ package org.cneko.justarod.entity;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.throwables.MixinException;
 
 public interface Insertable {
@@ -10,9 +11,9 @@ public interface Insertable {
     }
 
     default ItemStack getRodInside(){
-        return null;
+        return ItemStack.EMPTY;
     }
-    default void setRodInside(ItemStack rodInside){
+    default void setRodInside(@NotNull ItemStack rodInside){
         throw new RuntimeException("要在子类实现哦");
     }
 

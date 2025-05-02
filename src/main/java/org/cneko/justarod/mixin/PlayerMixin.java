@@ -9,6 +9,7 @@ import net.minecraft.server.world.ServerWorld;
 import org.cneko.justarod.entity.Insertable;
 import org.cneko.justarod.entity.Powerable;
 import org.cneko.justarod.packet.PowerSyncPayload;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -33,7 +34,7 @@ public abstract class PlayerMixin implements Insertable, Powerable {
     }
 
     @Override
-    public void setRodInside(ItemStack rodInside) {
+    public void setRodInside(@NotNull ItemStack rodInside) {
         this.rodInside = rodInside;
     }
 

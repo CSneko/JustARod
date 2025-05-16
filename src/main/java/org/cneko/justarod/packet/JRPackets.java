@@ -8,5 +8,6 @@ public class JRPackets {
         PayloadTypeRegistry.playC2S().register(FullHeatPayload.ID, FullHeatPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(PowerSyncPayload.ID, PowerSyncPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(MatePayload.ID, MatePayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(PassiveMatingPayload.ID, PassiveMatingPayload.CODEC);
     }
 }

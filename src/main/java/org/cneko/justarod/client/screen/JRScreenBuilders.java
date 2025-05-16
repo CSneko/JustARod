@@ -8,6 +8,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
 import org.cneko.justarod.entity.LoliNekoEntity;
 import org.cneko.justarod.entity.Sexual;
+import org.cneko.justarod.packet.PassiveMatingPayload;
 import org.cneko.toneko.common.mod.client.screens.InteractionScreen;
 import org.cneko.toneko.common.mod.client.screens.NekoScreenBuilder;
 import org.cneko.toneko.common.mod.client.screens.NekoScreenBuilder.ButtonFactory;
@@ -60,7 +61,7 @@ public class JRScreenBuilders {
                 int i = (new Random()).nextInt(13);
                 MinecraftClient.getInstance().player.sendMessage(Text.translatable("message.toneko.neko.breed_fail_baby." + i));
             } else {
-                ClientPlayNetworking.send(new NekoMatePayload(screen.getNeko().getEntity().getUuid().toString(), entity.getUuid().toString()));
+                ClientPlayNetworking.send(new PassiveMatingPayload(screen.getNeko().getEntity().getUuid().toString(), entity.getUuid().toString()));
                 MinecraftClient.getInstance().setScreen(screen.lastScreen);
             }
         });

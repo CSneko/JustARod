@@ -43,7 +43,9 @@ public class JRScreenBuilders {
     public static final class JRButtonFactories {
         public static final ButtonFactory SEEEEEX_NEKO_BREED_BUTTON = screen -> ButtonWidget.builder(Text.translatable("screen.toneko.seeeeeex_neko_entity_interactive.button.breed"), (btn) -> {
             if (screen.getNeko() instanceof Sexual) {
-                MinecraftClient.getInstance().setScreen(new InteractionScreen(Text.empty(), screen.getNeko(), screen.lastScreen, SEEEEEX_NEKO_BREED_SCREEN));
+                MinecraftClient.getInstance().setScreen(new QuestionScreen(Questions.randomQuestion(),
+                        ()-> MinecraftClient.getInstance().setScreen(new InteractionScreen(Text.empty(), screen.getNeko(), screen.lastScreen, SEEEEEX_NEKO_BREED_SCREEN)),
+                        ()-> getInstance().player.sendMessage(Text.of("§c这都答错了呢~ 杂鱼杂鱼♡~~")), Questions::randomQuestion));
             }
         });
         public static final ButtonFactory SEEEEEX_NEKO_ATTACKING_BUTTON = screen -> ButtonWidget.builder(Text.translatable("screen.toneko.neko_entity_interactive.button.attacking"), (btn) -> {

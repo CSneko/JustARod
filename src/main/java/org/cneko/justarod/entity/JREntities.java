@@ -43,7 +43,7 @@ public class JREntities {
                     .build()
     );
     public static void init(){
-        BiomeModifications.addSpawn(BiomeSelectors.tag(BiomeTags.IS_BEACH).or(BiomeSelectors.tag(BiomeTags.IS_HILL)), SpawnGroup.CREATURE, SEEEEEX_NEKO, 10, 1, 1);
+        BiomeModifications.addSpawn(BiomeSelectors.tag(BiomeTags.IS_HILL), SpawnGroup.CREATURE, SEEEEEX_NEKO, 20, 1, 1);
         BiomeModifications.addSpawn(BiomeSelectors.tag(BiomeTags.IS_BEACH), SpawnGroup.CREATURE, LOLI_NEKO, 10, 1, 1);
     }
 }

@@ -5,13 +5,11 @@ import net.minecraft.entity.EntityType
 import net.minecraft.entity.data.DataTracker
 import net.minecraft.entity.data.TrackedData
 import net.minecraft.entity.data.TrackedDataHandlerRegistry
-import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.tag.FluidTags
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.world.World
 import org.cneko.justarod.entity.ai.SexualIntercourseGoal
-import org.cneko.toneko.common.api.NekoQuery
 import org.cneko.toneko.common.mod.entities.INeko
 import org.cneko.toneko.common.mod.entities.NekoEntity
 import software.bernie.geckolib.animation.AnimatableManager
@@ -43,23 +41,23 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
 
     override fun initDataTracker(builder: DataTracker.Builder) {
         super.initDataTracker(builder)
-        builder.add(SEXUAL_DESIRE_ID, 40)
+        builder.add(SEXUAL_DESIRE_ID, 20)
     }
 
     override fun canMate(other: INeko?): Boolean {
-        return super.canMate(other) && this.sexualDesire >= 40 && NekoQuery.NekoData.getNekoCount() <= 700
+        return super.canMate(other) && this.sexualDesire >= 40
     }
 
     override fun writeCustomDataToNbt(compound: NbtCompound) {
         super.writeCustomDataToNbt(compound)
         if (this.sexualDesire > 0) {
-            compound.putInt("sexual_desire", this.sexualDesire)
+            compound.putInt("SexualDesire", this.sexualDesire)
         }
     }
     override fun readCustomDataFromNbt(compound: NbtCompound) {
         super.readCustomDataFromNbt(compound)
-        if (compound.contains("sexual_desire")) {
-            this.sexualDesire = compound.getInt("sexual_desire")
+        if (compound.contains("SexualDesire")) {
+            this.sexualDesire = compound.getInt("SexualDesire")
         }
     }
 

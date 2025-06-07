@@ -1,6 +1,7 @@
 package org.cneko.justarod.quirks
 
-import org.cneko.toneko.common.quirks.QuirkRegister
+import org.cneko.toneko.common.mod.quirks.QuirkRegister
+
 
 class JRQuirks {
     companion object{

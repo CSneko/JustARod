@@ -13,12 +13,14 @@ import net.minecraft.world.World
 import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.item.addEffect
 import org.cneko.toneko.common.mod.entities.INeko
+import org.cneko.toneko.common.mod.quirks.Quirk
 
 
 class CCBQuirk() : JRDefaultQuirk("ccb") {
     override fun getInteractionValue(): Int {
         return 1
     }
+
 
     override fun onInteractionOther(
         player: PlayerEntity?,
@@ -58,5 +60,6 @@ class CCBQuirk() : JRDefaultQuirk("ccb") {
         }
         return super.onInteractionOther(player, level, hand, other, hitResult)
     }
+
 
 }

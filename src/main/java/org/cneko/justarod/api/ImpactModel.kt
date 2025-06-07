@@ -42,6 +42,7 @@ class ImpactModel {
                 }
             }
         }
+
     }
 }
 

@@ -6,12 +6,10 @@ import net.minecraft.entity.effect.StatusEffect
 import net.minecraft.entity.effect.StatusEffectCategory
 import net.minecraft.particle.ParticleTypes
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
 import net.minecraft.util.math.random.Random
-import org.cneko.toneko.common.api.Messaging
 import org.cneko.toneko.common.mod.entities.INeko
-import org.cneko.toneko.common.mod.events.CommonChatEvent
+import org.cneko.toneko.common.mod.misc.Messaging
 import org.cneko.toneko.common.mod.util.TextUtil
 
 /*
@@ -81,8 +79,7 @@ class OrgasmEffect : StatusEffect(StatusEffectCategory.BENEFICIAL, 0xe9b8b3) {
         if (entity is ServerPlayerEntity && entity is INeko){
             // 1/1000的概率发送淫叫
             if (random.nextInt(1000) == 0) {
-                val playerName = TextUtil.getPlayerName(entity)
-                Messaging.sendMessage(playerName,screamTexts[random.nextInt(screamTexts.size)], false)
+                Messaging.modifyAndSendMessageToAll(entity,screamTexts[random.nextInt(screamTexts.size)])
             }
         }
         return super.applyUpdateEffect(entity, amplifier)

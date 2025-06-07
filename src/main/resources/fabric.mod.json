@@ -27,7 +27,7 @@
     "fabric": "*",
     "minecraft": ">=${minecraft_version}",
     "fabric-language-kotlin": "*",
-    "toneko": ">=1.5.16"
+    "toneko": ">=1.7.0"
   },
   "mixins": [
     "justarod.mixins.json"

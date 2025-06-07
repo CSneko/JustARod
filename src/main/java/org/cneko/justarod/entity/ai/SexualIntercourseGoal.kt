@@ -5,7 +5,6 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.world.ServerWorld
 import org.cneko.justarod.JRUtil.Companion.getPlayerInRange
 import org.cneko.justarod.entity.SeeeeexNekoEntity
-import org.cneko.toneko.common.api.NekoQuery
 import org.cneko.toneko.common.mod.entities.INeko
 
 class SexualIntercourseGoal(private val neko: SeeeeexNekoEntity) : Goal() {
@@ -19,11 +18,7 @@ class SexualIntercourseGoal(private val neko: SeeeeexNekoEntity) : Goal() {
         val world = neko.world
 
         if (world is ServerWorld) {
-            // 大于 300 个 Neko，不进行操作
-            if (NekoQuery.NekoData.getNekoCount() > 300) {
-                target = null
-                return
-            }
+
 
             target = when {
                 target != null && neko.canMate(target as INeko) -> {

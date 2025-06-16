@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "justarod",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "name": "JustARod",
   "description": "meow",
   "authors": [],
@@ -37,7 +37,8 @@
       "net/minecraft/class_1657": [
         "org/cneko/justarod/entity/Insertable","org/cneko/justarod/entity/Powerable"
       ],
-      "org/cneko/toneko/common/mod/entities/NekoEntity": ["org/cneko/justarod/entity/Insertable"]
+      "org/cneko/toneko/common/mod/entities/NekoEntity": ["org/cneko/justarod/entity/Insertable"],
+      "net/minecraft/class_1297": ["org/cneko/justarod/entity/Fallible"]
     }
   }
 }

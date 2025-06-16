@@ -1,6 +1,8 @@
 package org.cneko.justarod.entity
 
+import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
+import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.data.DataTracker
 import net.minecraft.entity.data.TrackedData
 import net.minecraft.entity.data.TrackedDataHandlerRegistry
@@ -11,6 +13,7 @@ import org.cneko.toneko.common.mod.api.NekoSkinRegistry
 import org.cneko.toneko.common.mod.entities.INeko
 import org.cneko.toneko.common.mod.entities.NekoEntity
 import org.cneko.toneko.common.mod.entities.ToNekoEntities
+import org.spongepowered.asm.mixin.Unique
 
 class LoliNekoEntity(private val type: EntityType<LoliNekoEntity>, world: World): NekoEntity(type, world) {
     companion object{

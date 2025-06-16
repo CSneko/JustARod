@@ -9,7 +9,6 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.tag.BiomeTags;
 import net.minecraft.util.Identifier;
-import net.minecraft.world.biome.BiomeKeys;
 import org.cneko.toneko.common.mod.entities.NekoEntity;
 
 import static org.cneko.justarod.Justarod.MODID;
@@ -40,6 +39,16 @@ public class JREntities {
             FabricEntityType.Builder.createMob(RodEntity::new,SpawnGroup.CREATURE,
                     builder -> builder.defaultAttributes(RodEntity.Companion::createRodAttribute))
                     .dimensions(0.5f,0.5f).eyeHeight(0.4f)
+                    .build()
+    );
+    public static final Identifier ICED_TEA_PROJECTILE_ID = Identifier.of(MODID, "iced_tea");
+    public static final EntityType<IcedTeaProjectileEntity> ICED_TEA_PROJECTILE = Registry.register(
+            Registries.ENTITY_TYPE,
+            ICED_TEA_PROJECTILE_ID,
+            EntityType.Builder.<IcedTeaProjectileEntity>create(IcedTeaProjectileEntity::new, SpawnGroup.MISC)
+                    .dimensions(1f, 1f)
+                    .maxTrackingRange(4)
+                    .trackingTickInterval(10)
                     .build()
     );
     public static void init(){

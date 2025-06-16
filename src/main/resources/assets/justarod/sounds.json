@@ -1,0 +1,11 @@
+{
+  "man": {
+    "category": "voice",
+    "sounds": [
+      {
+        "name": "justarod:man",
+        "stream": true
+      }
+    ]
+  }
+}

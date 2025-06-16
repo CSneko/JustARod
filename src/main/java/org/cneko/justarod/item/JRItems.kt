@@ -59,6 +59,7 @@ class JRItems {
         val TRIBOCHARGING_ROD = TribochargingRod(Item.Settings())
         val XP_GUN = XPGun()
         val REMOTE_CONTROL = RemoteControlItem(Item.Settings())
+        val ICED_TEA = IcedTeaItem(Item.Settings().maxCount(1).maxDamage(64))
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -89,6 +90,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, FireworksRodItem.ID), FIREWORKS_ROD)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "xp_gun"), XP_GUN)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "remote_control"), REMOTE_CONTROL)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "iced_tea"), ICED_TEA)
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
             JR_ITEM_GROUP = FabricItemGroup.builder()
@@ -124,6 +126,7 @@ class JRItems {
                 entries.add(TRIBOCHARGING_ROD)
                 entries.add(XP_GUN)
                 entries.add(REMOTE_CONTROL)
+                entries.add(ICED_TEA)
             }
         }
     }

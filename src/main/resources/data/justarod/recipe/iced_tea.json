@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GBG",
+    "GPG",
+    "GAG"
+  ],
+  "key": {
+    "G": {
+      "item": "justarod:golden_leaves"
+    },
+    "B": {
+      "item": "minecraft:breeze_rod"
+    },
+    "P": {
+      "item": "minecraft:popped_chorus_fruit"
+    },
+    "A": {
+      "item": "minecraft:anvil"
+    }
+  },
+  "result": {
+    "id": "justarod:iced_tea",
+    "count": 1
+  }
+}

@@ -12,6 +12,7 @@ import net.minecraft.entity.data.DataTracker
 import net.minecraft.entity.data.TrackedDataHandlerRegistry
 import net.minecraft.entity.mob.Angerable
 import net.minecraft.entity.mob.HostileEntity
+import net.minecraft.entity.mob.Monster
 import net.minecraft.entity.passive.PassiveEntity
 import net.minecraft.entity.passive.TameableEntity
 import net.minecraft.entity.player.PlayerEntity
@@ -27,17 +28,21 @@ import net.minecraft.world.World
 import org.cneko.justarod.block.JRBlocks
 import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.item.addEffect
+import org.cneko.toneko.common.mod.entities.NekoEntity
 import org.cneko.toneko.common.mod.items.ToNekoItems
+import org.cneko.toneko.common.mod.misc.mixininterface.SlowTickable
 import software.bernie.geckolib.animatable.GeoEntity
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache
 import software.bernie.geckolib.animation.AnimatableManager
 import software.bernie.geckolib.util.GeckoLibUtil
 import java.util.*
 
-class RodEntity(private val entityType:EntityType<RodEntity>, world: World):TameableEntity(entityType,world),GeoEntity,Angerable {
+class RodEntity(private val entityType:EntityType<RodEntity>, world: World):TameableEntity(entityType,world),GeoEntity,Angerable,
+    Monster, SlowTickable {
     private val animCache: AnimatableInstanceCache = GeckoLibUtil.createInstanceCache(this)
     private val defSpeed:Double = 0.8
     private val slowSpeed:Double = 0.6
+    private var slowTickCount = 0
     override fun createChild(world: ServerWorld?, entity: PassiveEntity?): PassiveEntity {
         val baby = RodEntity(entityType, world!!)
         return baby
@@ -121,6 +126,24 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
         if (firstPassenger != null && firstPassenger is LivingEntity) {
             (firstPassenger as LivingEntity).addEffect(JREffects.ORGASM_EFFECT, 100, 0)
         }
+        if (slowTickCount++> 20) {
+            slowTickCount = 0
+            `toneko$slowTick`()
+        }
+    }
+
+    override fun `toneko$slowTick`() {
+        // 如果周围有猫娘，则缓慢回血
+        if (world.isClient) return
+        var nekoCount = 0
+        if (world.getEntitiesByClass(NekoEntity::class.java, this.boundingBox.expand(10.0)) {
+            nekoCount ++
+            true
+        }.isNotEmpty()  ) {
+            if (health < maxHealth) {
+                heal(nekoCount.toFloat())
+            }
+        }
     }
 
     override fun interactMob(player: PlayerEntity?, hand: Hand?): ActionResult {
@@ -176,10 +199,23 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
     override fun onDamaged(damageSource: DamageSource?) {
         super.onDamaged(damageSource)
         if (damageSource?.attacker is PlayerEntity && !isOwner((damageSource.attacker as PlayerEntity))) {
-            setAngryAt((damageSource.attacker as PlayerEntity).uuid)
+            angryAt = (damageSource.attacker as PlayerEntity).uuid
             chooseRandomAngerTime()
         }
+        if (damageSource?.attacker is NekoEntity){
+            // 变大
+            this.getAttributeInstance(EntityAttributes.GENERIC_SCALE)?.let {
+                it.baseValue = it.baseValue + 0.2
+            }
+            this.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH)?.let {
+                it.baseValue = it.baseValue + 2.0
+            }
+            this.health = this.health + 2.0f
+            angryAt = damageSource.attacker?.uuid
+        }
+
     }
+
 
     private fun tryTame(player: PlayerEntity) {
         ownerUuid = player.uuid

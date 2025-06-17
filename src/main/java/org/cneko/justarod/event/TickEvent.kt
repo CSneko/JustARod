@@ -7,6 +7,7 @@ import org.cneko.justarod.api.isEnableImpact
 class TickEvent {
     companion object{
         fun init() {
+
             ServerTickEvents.START_WORLD_TICK.register { world ->
                 if (world.isClient) return@register
                 for (player in world.players) {
@@ -15,6 +16,8 @@ class TickEvent {
                     }
                 }
             }
+
+
         }
     }
 }

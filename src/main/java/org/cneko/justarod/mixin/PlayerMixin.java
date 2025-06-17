@@ -1,6 +1,7 @@
 package org.cneko.justarod.mixin;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -16,6 +17,9 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import static org.cneko.justarod.JRAttributes.Companion;
 
 @SuppressWarnings({"AddedMixinMembersNamePattern", "ConstantValue", "DataFlowIssue"})
 @Mixin(PlayerEntity.class)
@@ -88,6 +92,13 @@ public abstract class PlayerMixin implements Insertable, Powerable {
                 ServerPlayNetworking.send(sp, new PowerSyncPayload(getPower()));
             }
         }
+    }
+
+    @Inject(method = "createPlayerAttributes", at = @At("RETURN"))
+    private static void createPlayerAttributes(CallbackInfoReturnable<DefaultAttributeContainer.Builder> cir) {
+        cir.getReturnValue()
+                .add(Companion.getPLAYER_LUBRICATING())
+                .add(Companion.getGENERIC_MAX_POWER());
     }
 
 }

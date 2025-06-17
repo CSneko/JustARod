@@ -59,7 +59,7 @@ class JRItems {
         val TRIBOCHARGING_ROD = TribochargingRod(Item.Settings())
         val XP_GUN = XPGun()
         val REMOTE_CONTROL = RemoteControlItem(Item.Settings())
-        val ICED_TEA = IcedTeaItem(Item.Settings().maxCount(1).maxDamage(64))
+        val ICED_TEA = IcedTeaItem(Item.Settings())
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null

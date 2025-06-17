@@ -46,9 +46,6 @@ class FaintEffect: StatusEffect(StatusEffectCategory.BENEFICIAL, 0x3c3c3c)  {
 
     override fun applyUpdateEffect(entity: LivingEntity?, amplifier: Int): Boolean {
         EntityPoseManager.setPose(entity, EntityPose.SLEEPING)
-        if (entity is ServerPlayerEntity){
-            ServerPlayNetworking.send(entity, EntityPosePayload(EntityPose.SLEEPING, entity.uuid.toString(), true))
-        }
         return super.applyUpdateEffect(entity, amplifier)
     }
 }

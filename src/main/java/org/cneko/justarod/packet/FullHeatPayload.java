@@ -8,6 +8,7 @@ import net.minecraft.util.Identifier;
 
 import static org.cneko.justarod.Justarod.MODID;
 
+// 好烫
 public record FullHeatPayload(String message) implements CustomPayload {
     public static final CustomPayload.Id<FullHeatPayload> ID = new CustomPayload.Id<>(Identifier.of(MODID, "full_heat"));
     public static final PacketCodec<RegistryByteBuf,FullHeatPayload> CODEC = PacketCodec.tuple(

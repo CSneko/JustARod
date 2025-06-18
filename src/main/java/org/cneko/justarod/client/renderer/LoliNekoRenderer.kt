@@ -11,6 +11,7 @@ import software.bernie.geckolib.cache.`object`.BakedGeoModel
 import software.bernie.geckolib.cache.`object`.GeoBone
 import java.util.Optional
 
+// 萝莉控？变态变态变态！
 class LoliNekoRenderer(renderManager: EntityRendererFactory.Context) : NekoRenderer<LoliNekoEntity>(renderManager) {
 
 

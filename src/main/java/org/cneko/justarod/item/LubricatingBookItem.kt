@@ -10,7 +10,10 @@ import net.minecraft.registry.Registries
 import net.minecraft.world.World
 import org.cneko.justarod.effect.JREffects
 
-
+/*
+不上润滑也能玩，但是你最好上一个
+不然小心痛的嗯啊嗯啊的叫♡
+ */
 class LubricatingBookItem : Item(
     Settings().maxCount(1).food(FoodComponents.APPLE)
 ){

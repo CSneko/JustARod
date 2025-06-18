@@ -7,6 +7,7 @@ import org.cneko.toneko.common.mod.entities.NekoEntity
 import org.cneko.toneko.common.mod.util.EntityUtil
 import java.util.HashMap
 
+// 你也想来和我一起开银趴吗~ 嘿嘿~~
 class ImpactModel {
     companion object {
         private val using: HashMap<PlayerEntity, Boolean> = HashMap()

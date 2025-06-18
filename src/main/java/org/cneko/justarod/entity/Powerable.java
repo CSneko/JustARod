@@ -8,6 +8,9 @@ import org.cneko.justarod.JRAttributes;
 import org.cneko.justarod.effect.JREffects;
 import org.jetbrains.annotations.NotNull;
 
+/*
+那种事情超废体力的好吗
+ */
 public interface Powerable{
     default double getPower(){
         return 0;

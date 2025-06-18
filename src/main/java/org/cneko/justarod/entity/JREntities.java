@@ -14,6 +14,12 @@ import org.cneko.toneko.common.mod.entities.NekoEntity;
 
 import static org.cneko.justarod.Justarod.MODID;
 
+/*
+可恶的连接器有Bug喵！不让咱用Fabric的属性喵！！害得我整夜整夜地修复。
+超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！
+超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！
+超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！
+ */
 public class JREntities {
     public static final Identifier SEEEEEX_NEKO_ID = Identifier.of(MODID, "seeeeeex_neko");
     public static final EntityType<SeeeeexNekoEntity> SEEEEEX_NEKO = Registry.register(

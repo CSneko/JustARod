@@ -37,6 +37,10 @@ import software.bernie.geckolib.animation.AnimatableManager
 import software.bernie.geckolib.util.GeckoLibUtil
 import java.util.*
 
+/*
+我不敢想象，如果它真的活了过来
+哇哦哇哦，那可得太爽了呀~
+ */
 class RodEntity(private val entityType:EntityType<RodEntity>, world: World):TameableEntity(entityType,world),GeoEntity,Angerable,
     Monster, SlowTickable {
     private val animCache: AnimatableInstanceCache = GeckoLibUtil.createInstanceCache(this)

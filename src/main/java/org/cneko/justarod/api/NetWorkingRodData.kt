@@ -12,7 +12,7 @@ import java.util.HashMap
 
 class NetWorkingRodData {
     companion object{
-        val URL = "https://api.justarod.cneko.org/v0/get/"
+        const val URL = "https://api.justarod.cneko.org/v0/get/" // 看我偷偷改速度把你草四~~
         var SPEED = 1
         var MAX_DAMAGE = 1000
 

@@ -10,6 +10,7 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.GameRules;
 import org.cneko.justarod.entity.Insertable;
 
+// 啊我死了
 public class EntityDeathEvent {
 
     public static void init(){

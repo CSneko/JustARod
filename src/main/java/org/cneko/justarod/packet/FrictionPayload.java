@@ -8,6 +8,7 @@ import net.minecraft.util.Identifier;
 
 import static org.cneko.justarod.Justarod.MODID;
 
+// 哼哼
 public record FrictionPayload(String message) implements CustomPayload {
     public static final CustomPayload.Id<FrictionPayload> ID = new CustomPayload.Id<>(Identifier.of(MODID, "friction"));
     public static final PacketCodec<RegistryByteBuf,FrictionPayload> CODEC = PacketCodec.tuple(

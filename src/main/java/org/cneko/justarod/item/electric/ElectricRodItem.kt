@@ -12,6 +12,10 @@ import org.cneko.justarod.item.EndRodItem
 import org.cneko.justarod.item.SelfUsedItemInterface
 import team.reborn.energy.api.base.SimpleEnergyItem
 
+/*
+电动的就不需要自己动手啦... 不那么费力的说
+但是振动的话就是越快越爽呢
+ */
 abstract class ElectricRodItem(settings: Settings) : EndRodItem(settings),SimpleEnergyItem {
     override fun getEnergyCapacity(stack: ItemStack?): Long {
         return stack?.maxDamage?.toLong()!!

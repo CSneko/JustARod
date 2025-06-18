@@ -71,6 +71,7 @@ public class JRNetWorkingEvents {
                             player.sendMessage(Text.of("§a对方已接受请求，正在生成参数"));
                             player.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 1000,4));
                         });
+                        // TODO 射我里面
                         queue.addTask(40, () -> {
                             // 1.0~5.0
                             double probability = player.getRandom().nextDouble() * 5;

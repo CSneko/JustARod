@@ -2,6 +2,7 @@ package org.cneko.justarod.event;
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 
+// 我又活啦
 public class EntityRespawnEvent {
     public static void init(){
         ServerPlayerEvents.AFTER_RESPAWN.register(SET_ROD_AFTER_RESPAWN);

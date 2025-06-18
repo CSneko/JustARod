@@ -11,6 +11,9 @@ import net.minecraft.util.TypedActionResult
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 
+/*
+动漫量
+ */
 class XPGun : Item(Settings().maxCount(1)) {
     override fun use(world: World?, user: PlayerEntity?, hand: Hand?): TypedActionResult<ItemStack> {
         user ?: return super.use(world, user, hand)

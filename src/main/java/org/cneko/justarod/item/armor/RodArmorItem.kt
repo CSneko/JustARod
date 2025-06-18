@@ -10,6 +10,9 @@ import net.minecraft.world.World
 import org.cneko.justarod.client.renderer.armor.RodArmorRenderer
 import org.cneko.toneko.common.mod.items.NekoArmor
 
+/*
+好玩嘿嘿
+ */
 abstract class RodArmorItem<T : RodArmorItem<T>>(material: RegistryEntry<ArmorMaterial>?,settings: Settings) : NekoArmor<T>(material,
     Type.CHESTPLATE,
     settings) {

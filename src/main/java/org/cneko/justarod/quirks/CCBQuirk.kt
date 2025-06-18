@@ -15,7 +15,7 @@ import org.cneko.justarod.item.addEffect
 import org.cneko.toneko.common.mod.entities.INeko
 import org.cneko.toneko.common.mod.quirks.Quirk
 
-
+// 不好吃
 class CCBQuirk() : JRDefaultQuirk("ccb") {
     override fun getInteractionValue(): Int {
         return 1

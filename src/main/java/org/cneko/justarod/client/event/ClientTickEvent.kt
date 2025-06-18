@@ -136,7 +136,7 @@ class ClientTickEvent {
 
 
 
-
+        // 高潮的时候全身会发抖... 不自觉的...
         private fun applyScreenShake(context: DrawContext, intensity: Float) {
             val random = Random()
             val shakeX = (random.nextFloat() - 0.5f) * 2 * intensity // 随机偏移X，范围 [-intensity, intensity]
@@ -161,6 +161,9 @@ class ClientTickEvent {
 
 
         private var faintAlpha = 0f
+        /*
+        说实话，咱做不出来那种晕倒后的效果，这里的话呢其实只是那种玩得太太太太多了的那种效果
+         */
         private fun renderFaintEffect(context: DrawContext) {
             val client = MinecraftClient.getInstance()
             val width = client.window.scaledWidth

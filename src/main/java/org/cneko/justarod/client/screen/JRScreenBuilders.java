@@ -52,7 +52,7 @@ public class JRScreenBuilders {
             // 设置为灰色
             if (getInstance().player.getPower() < 60) {
                 btn.active = false;
-                btn.setTooltip(Tooltip.of(Text.translatable("screen.toneko.neko_entity_interactive.button.attacking.fail")));
+                btn.setTooltip(Tooltip.of(Text.translatable("screen.toneko.neko_entity_interactive.button.attacking.fail"))); // 哼哼~ 不持久我都看不上呢
             }else {
                 getInstance().setScreen(new MateScreen(screen.getNeko()));
             }
@@ -61,7 +61,7 @@ public class JRScreenBuilders {
             PlayerEntity entity = MinecraftClient.getInstance().player;
             if (screen.getNeko().isBaby()) {
                 int i = (new Random()).nextInt(13);
-                MinecraftClient.getInstance().player.sendMessage(Text.translatable("message.toneko.neko.breed_fail_baby." + i));
+                MinecraftClient.getInstance().player.sendMessage(Text.translatable("message.toneko.neko.breed_fail_baby." + i)); // FBI! Open door!
             } else {
                 ClientPlayNetworking.send(new PassiveMatingPayload(screen.getNeko().getEntity().getUuid().toString(), entity.getUuid().toString()));
                 MinecraftClient.getInstance().setScreen(screen.lastScreen);

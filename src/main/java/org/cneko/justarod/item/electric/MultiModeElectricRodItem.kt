@@ -9,6 +9,9 @@ import net.minecraft.util.TypedActionResult
 import net.minecraft.world.World
 import org.cneko.justarod.item.JRComponents
 
+/*
+很智能的呢，多种模式任你选择~
+ */
 abstract class MultiModeSelfUsedElectricRodItem(settings:Settings): SelfUsedElectricRodItem(settings) {
     fun getMode(stack: ItemStack): String {
         return stack.getOrDefault(JRComponents.MODE, this.getDefaultMode(stack))

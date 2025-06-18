@@ -5,6 +5,9 @@ import net.minecraft.item.ItemStack
 import net.minecraft.util.ActionResult
 import net.minecraft.world.World
 
+/*
+请勿模仿
+ */
 class FirecrackerRodItem:SelfUsedItem(Settings().maxCount(1).maxDamage(2000)) {
     override fun useOnSelf(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean): ActionResult {
         val result = super.useOnSelf(stack, world, entity, slot, selected)

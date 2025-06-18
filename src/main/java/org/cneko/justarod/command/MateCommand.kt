@@ -30,6 +30,7 @@ class MateCommand {
                     .then(literal("send")
                         .then(argument("target", EntityArgumentType.player())
                             .then(literal("force")
+                                // 怎么的给你强上了
                                 .executes { ctx -> mateCommand(ctx, true) }
                             )
                             .executes { ctx -> mateCommand(ctx, false) }

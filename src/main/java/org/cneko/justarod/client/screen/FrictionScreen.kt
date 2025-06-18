@@ -13,6 +13,7 @@ import kotlin.random.Random
 import kotlin.math.min
 import kotlin.math.max
 
+// 好奇芦管是什么感觉
 class FrictionScreen : Screen(Text.empty()) {
     private var heat = 0.0f
     private var sliderPosition = 0.5f // 初始位置在中间

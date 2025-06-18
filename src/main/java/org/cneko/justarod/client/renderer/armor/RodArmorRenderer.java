@@ -18,7 +18,7 @@ import software.bernie.geckolib.model.DefaultedItemGeoModel;
 import software.bernie.geckolib.renderer.GeoArmorRenderer;
 
 import static org.cneko.justarod.Justarod.MODID;
-
+// 假yangju
 public class RodArmorRenderer <T extends RodArmorItem<T>> extends GeoArmorRenderer<T> {
     public RodArmorRenderer(String id) {
         super(new DefaultedItemGeoModel(Identifier.of(MODID, "armor/"+id)));

@@ -10,6 +10,9 @@ import net.minecraft.world.World
 import org.cneko.justarod.damage.JRDamageTypes
 import org.cneko.justarod.item.JRComponents
 
+/*
+其实漏电也不错的说... 低压的话还是挺棒的哦
+ */
 open class BasicElectricRodItem: SelfUsedElectricRodItem(Settings().component(JRComponents.USED_TIME_MARK,0).component(JRComponents.SPEED,10).maxDamage(10000)) {
 
     override fun appendTooltip(

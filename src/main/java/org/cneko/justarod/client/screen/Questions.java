@@ -5,6 +5,7 @@ import net.minecraft.text.Text;
 import java.util.List;
 import java.util.Random;
 
+// 做吗？做！
 public class Questions {
     public static final List<QuestionScreen.Question> QUESTIONS = List.of(
             new QuestionScreen.Question(

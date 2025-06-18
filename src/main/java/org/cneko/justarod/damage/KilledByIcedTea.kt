@@ -7,6 +7,7 @@ import net.minecraft.entity.damage.DamageType
 import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.text.Text
 
+// 哦哦哦哦~~~哦哦哦哦哦哦哦~~~~~
 class KilledByIcedTea(type: RegistryEntry<DamageType>?, attacker: Entity?) :
     DamageSource(type, attacker) {
     override fun getDeathMessage(killed: LivingEntity?): Text {

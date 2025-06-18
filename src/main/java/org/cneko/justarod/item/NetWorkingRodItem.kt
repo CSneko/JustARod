@@ -10,6 +10,7 @@ import net.minecraft.util.ActionResult
 import net.minecraft.world.World
 import org.cneko.justarod.api.NetWorkingRodData
 
+// 都看到这里了，还不去给我点个三连啊，不理你了哼！
 class NetWorkingRodItem: SelfUsedItem(Settings().maxCount(1).maxDamage(NetWorkingRodData.MAX_DAMAGE).component(JRComponents.SPEED, NetWorkingRodData.SPEED).component(JRComponents.USED_TIME_MARK, 0)) {
     override fun getRodSpeed(stack: ItemStack?): Int {
         return NetWorkingRodData.SPEED

@@ -5,6 +5,9 @@ import net.minecraft.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.throwables.MixinException;
 
+/*
+插~ 进~ 嗯啊~ 去~~
+ */
 public interface Insertable {
     default boolean hasRodInside(){
         return !getRodInside().isEmpty();

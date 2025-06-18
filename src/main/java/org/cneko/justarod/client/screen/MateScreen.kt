@@ -10,6 +10,7 @@ import org.cneko.justarod.packet.MatePayload
 import org.cneko.toneko.common.mod.client.screens.INekoScreen
 import org.cneko.toneko.common.mod.entities.NekoEntity
 
+// 交配... （只和自己交配过）（小声）
 class MateScreen(val nekoEntity: NekoEntity) : Screen(Text.empty()), INekoScreen {
     private var amountSlider: AmountSliderWidget? = null
     private var timeSlider: TimeSliderWidget? = null

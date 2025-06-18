@@ -34,6 +34,10 @@ import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache
 import software.bernie.geckolib.animation.AnimatableManager
 import software.bernie.geckolib.util.GeckoLibUtil
 
+/*
+So let the light guide your way~ Hold every memory as you go~
+And every road you take will always lead you home~
+ */
 class IcedTeaProjectileEntity : ThrownItemEntity, GeoEntity {
     val cache: AnimatableInstanceCache = GeckoLibUtil.createInstanceCache(this)
 

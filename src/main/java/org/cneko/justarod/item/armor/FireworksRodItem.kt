@@ -11,6 +11,9 @@ import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.world.World
 
+/*
+我嘞个豆~~~~~~~~~~~~~
+ */
 class FireworksRodItem : RodArmorItem<FireworksRodItem>(JRArmorMaterials.FIREWORKS_ROD_MATERIAL, Settings().maxCount(1).maxDamage(1000)) {
     companion object{
         const val ID = "fireworks_rod"

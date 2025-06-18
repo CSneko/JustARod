@@ -26,8 +26,9 @@ public class EntityAttackEvent {
 
     public static ActionResult onAttack(PlayerEntity player, World world, Hand hand, Entity entity, EntityHitResult entityHitResult) {
         ItemStack stack = player.getStackInHand(hand);
-        if (stack.getItem() instanceof GiantRodItem rod) {
+        if (stack.getItem() instanceof GiantRodItem) {
             if (Registries.ENTITY_TYPE.getId(entity.getType()).getPath().equalsIgnoreCase("ender_dragon")){
+                // 嗯啊♡~~
                 Random random = world.random;
                 world.addParticle(
                         ParticleTypes.HEART,
@@ -38,12 +39,15 @@ public class EntityAttackEvent {
                         2.0,
                         0.0
                 );
+                // 这么大... 真的会受不了的...
                 player.getInventory().removeOne(stack);
                 if (!world.isClient()) {
                     player.sendMessage(Text.translatable("item.justarod.end_rod.insert_success"));
                 }
+                // 快拔出来吧... 求求了...
                 entity.damage(player.getDamageSources().playerAttack(player), 5);
                 entity.dropItem(Items.DRAGON_EGG);
+                // 啊好像... 呜啊...♡
                 return ActionResult.SUCCESS;
             }else {
                 player.sendMessage(Text.translatable("item.justarod.giant_rod.too_big"));

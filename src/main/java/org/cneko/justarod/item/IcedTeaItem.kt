@@ -14,6 +14,9 @@ import net.minecraft.world.World
 import org.cneko.justarod.JRUtil.Companion.rodId
 import org.cneko.justarod.entity.IcedTeaProjectileEntity
 
+/*
+劳大，我想你了[哭泣][哭泣]
+ */
 class IcedTeaItem(settings: Settings) : Item(settings) {
     companion object{
         val MAN_SOUND: SoundEvent = SoundEvent.of(rodId("man"))

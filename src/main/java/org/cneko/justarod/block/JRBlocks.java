@@ -14,7 +14,7 @@ import net.minecraft.util.Identifier;
 import static org.cneko.justarod.Justarod.MODID;
 
 public class JRBlocks {
-
+    // 没吃过，但感觉不好吃
     public static final Block GOLDEN_LEAVES = register(
             new LeavesBlock(AbstractBlock.Settings.create().sounds(BlockSoundGroup.CHERRY_LEAVES).noCollision()),
             "golden_leaves",
@@ -24,11 +24,9 @@ public class JRBlocks {
     }
 
     public static Block register(Block block, String name, boolean shouldRegisterItem) {
-        // Register the block and its item.
+
         Identifier id = Identifier.of(MODID, name);
 
-        // Sometimes, you may not want to register an item for the block.
-        // Eg: if it's a technical block like `minecraft:air` or `minecraft:end_gateway`
         if (shouldRegisterItem) {
             BlockItem blockItem = new BlockItem(block, new Item.Settings());
             Registry.register(Registries.ITEM, id, blockItem);

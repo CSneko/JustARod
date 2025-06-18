@@ -8,6 +8,7 @@ import net.minecraft.util.Identifier;
 
 import static org.cneko.justarod.Justarod.MODID;
 
+// 对方向你发送了一个交配请求，你可以接受或接受
 public record MatePayload(String nekoUuid, double amount, int time) implements CustomPayload {
     public static final CustomPayload.Id<MatePayload> ID = new CustomPayload.Id<>(Identifier.of(MODID, "mate"));
     public static final PacketCodec<RegistryByteBuf,MatePayload> CODEC = PacketCodec.tuple(

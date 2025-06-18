@@ -12,6 +12,7 @@ import org.cneko.toneko.common.mod.api.EntityPoseManager
 import org.cneko.toneko.common.mod.effects.ExcitingEffect
 import org.cneko.toneko.common.mod.packets.EntityPosePayload
 
+// 虽然但是，晕乎乎的还是不舒服对吧
 class FaintEffect: StatusEffect(StatusEffectCategory.BENEFICIAL, 0x3c3c3c)  {
     init {
         this.addAttributeModifier(

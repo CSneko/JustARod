@@ -7,6 +7,7 @@ import org.cneko.justarod.entity.IcedTeaProjectileEntity
 import software.bernie.geckolib.model.GeoModel
 import software.bernie.geckolib.renderer.GeoEntityRenderer
 
+// Man! What can I say?
 class IcedTeaRenderer(renderManager: EntityRendererFactory.Context?): GeoEntityRenderer<IcedTeaProjectileEntity>(renderManager,RodModel()) {
     class RodModel : GeoModel<IcedTeaProjectileEntity>() {
         override fun getModelResource(animatable: IcedTeaProjectileEntity): Identifier {

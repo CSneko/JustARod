@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+// 你不会闲到连mixin的注释都要看吧
 @Mixin(DefaultAttributeRegistry.class)
 public class DefaultAttributeRegistryMixin {
     @Inject(method = "get",at = @At("HEAD"), cancellable = true)

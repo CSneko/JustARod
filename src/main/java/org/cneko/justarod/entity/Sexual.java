@@ -2,6 +2,9 @@ package org.cneko.justarod.entity;
 
 import net.minecraft.entity.LivingEntity;
 
+/*
+写这个的时候起星雨了
+ */
 public interface Sexual {
     int getSexualDesire();
     void setSexualDesire(int sexualDesire);

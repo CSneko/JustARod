@@ -14,6 +14,9 @@ import net.minecraft.util.TypedActionResult
 import net.minecraft.world.World
 import org.cneko.toneko.common.mod.misc.ToNekoComponents
 
+/*
+被别人远控会怎么样呢... 虽然咱没有过...
+ */
 class RemoteControlItem(settings: Settings): Item(settings.maxCount(1)) {
     override fun onClicked(
         stack: ItemStack?,

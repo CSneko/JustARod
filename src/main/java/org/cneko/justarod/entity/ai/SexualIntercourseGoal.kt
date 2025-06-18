@@ -7,6 +7,9 @@ import org.cneko.justarod.JRUtil.Companion.getPlayerInRange
 import org.cneko.justarod.entity.SeeeeexNekoEntity
 import org.cneko.toneko.common.mod.entities.INeko
 
+/*
+和你交配，同意一下
+ */
 class SexualIntercourseGoal(private val neko: SeeeeexNekoEntity) : Goal() {
     private var target: PlayerEntity? = null
 

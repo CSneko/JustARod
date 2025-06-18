@@ -9,6 +9,7 @@ import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import org.cneko.justarod.entity.Insertable
 
+// 取出来，再插回去
 class RetrieverItem:Item(Settings()) {
     override fun useOnEntity(stack: ItemStack?, user: PlayerEntity?, entity: LivingEntity?, hand: Hand?): ActionResult {
         if (entity == null || entity !is Insertable){

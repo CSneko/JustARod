@@ -31,6 +31,7 @@
     "fabricloader": "*",
     "fabric": "*",
     "minecraft": ">=${minecraft_version}",
+    "fabric-language-kotlin": "*",
     "toneko": ">=1.7.0"
   },
   "mixins": [

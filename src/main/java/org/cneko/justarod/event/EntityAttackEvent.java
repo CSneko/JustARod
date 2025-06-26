@@ -1,6 +1,7 @@
 package org.cneko.justarod.event;
 
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
+import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -9,12 +10,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
+import org.cneko.justarod.JRCriteria;
 import org.cneko.justarod.effect.JREffects;
 import org.cneko.justarod.item.GiantRodItem;
 
@@ -22,6 +25,12 @@ import org.cneko.justarod.item.GiantRodItem;
 public class EntityAttackEvent {
     public static void init(){
         AttackEntityCallback.EVENT.register(EntityAttackEvent::onAttack);
+        UseEntityCallback.EVENT.register((playerEntity, world, hand, entity, entityHitResult) -> {
+            if (playerEntity instanceof ServerPlayerEntity sp) {
+                JRCriteria.ITEM_USED_ON_ENTITY_CRITERION.trigger(sp, playerEntity.getStackInHand(hand), entity);
+            }
+            return ActionResult.PASS;
+        });
     }
 
     public static ActionResult onAttack(PlayerEntity player, World world, Hand hand, Entity entity, EntityHitResult entityHitResult) {

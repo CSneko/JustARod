@@ -23,24 +23,12 @@ import static org.cneko.justarod.JRAttributes.Companion;
 
 @SuppressWarnings({"AddedMixinMembersNamePattern", "ConstantValue", "DataFlowIssue"})
 @Mixin(PlayerEntity.class)
-public abstract class PlayerMixin implements Insertable, Powerable {
+public abstract class PlayerMixin implements Powerable {
 
-    @Unique
-    private ItemStack rodInside = ItemStack.EMPTY;
     @Unique
     private double power = 0;
     @Unique
     private short slowTick = 10;
-
-    @Override
-    public ItemStack getRodInside() {
-        return rodInside;
-    }
-
-    @Override
-    public void setRodInside(@NotNull ItemStack rodInside) {
-        this.rodInside = rodInside;
-    }
 
     @Override
     public double getPower() {
@@ -61,30 +49,18 @@ public abstract class PlayerMixin implements Insertable, Powerable {
     @Inject(method = "readCustomDataFromNbt", at = @At("HEAD"))
     public void readCustomDataFromNbt(NbtCompound nbt, CallbackInfo ci) {
         if (!((Object) this instanceof ServerPlayerEntity player)) return;
-        if (nbt.contains("rodInside")) {
-            var rod = ItemStack.fromNbt(player.getServerWorld().getRegistryManager(),nbt.getCompound("rodInside"));
-            rod.ifPresent(this::setRodInside);
-        }
         power = this.readPowerFromNbt(nbt);
     }
 
     @Inject(method = "writeCustomDataToNbt", at = @At("HEAD"))
     public void writeCustomDataToNbt(NbtCompound nbt, CallbackInfo ci) {
         if (!((Object) this instanceof ServerPlayerEntity player)) return;
-        if (!getRodInside().isEmpty()) {
-            nbt.put("rodInside", getRodInside().encode(
-                    player.getRegistryManager()
-            ));
-        }
         this.writePowerToNbt(nbt);
     }
 
     @Inject(method = "tick",at = @At("HEAD"))
     public void tick(CallbackInfo ci) {
         PlayerEntity player = (PlayerEntity) (Object) this;
-        if (!getRodInside().isEmpty()) {
-            this.tickInside(player);
-        }
         Powerable.tickPower(player);
         if (slowTick++ >= 10){
             if (player instanceof ServerPlayerEntity sp) {

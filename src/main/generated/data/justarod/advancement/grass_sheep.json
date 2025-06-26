@@ -1,0 +1,30 @@
+{
+  "criteria": {
+    "grass_sheep": {
+      "conditions": {
+        "entity": {
+          "type": "minecraft:sheep"
+        },
+        "item": {
+          "items": "justarod:insertion_pedestal"
+        }
+      },
+      "trigger": "justarod:item_used_on_entity"
+    }
+  },
+  "display": {
+    "background": "minecraft:textures/gui/advancements/backgrounds/adventure.png",
+    "description": "对羊使用插入底座",
+    "icon": {
+      "count": 1,
+      "id": "justarod:insertion_pedestal"
+    },
+    "title": "草羊机"
+  },
+  "requirements": [
+    [
+      "grass_sheep"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

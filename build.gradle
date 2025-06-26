@@ -40,6 +40,7 @@ dependencies {
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
+
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     // kotlin
@@ -63,6 +64,12 @@ dependencies {
 
 loom {
     accessWidenerPath = file("src/main/resources/justarod.accessWideners.accessWidener")
+}
+
+fabricApi {
+    configureDataGeneration() {
+        client = true
+    }
 }
 
 processResources {

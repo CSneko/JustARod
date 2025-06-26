@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel target="21" />
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="JustARod" options="-AoutRefMapFile=$PROJECT_DIR$/build/classes/java/main/JustARod-refmap.json -AdefaultObfuscationEnv=named:intermediary -Aquiet=true -AoutMapFileNamedIntermediary=$PROJECT_DIR$/build/loom-cache/mixin-map-net.fabricmc.yarn.1_21.1.21+build.9-v2.main.tiny -AinMapFileNamedIntermediary=$USER_HOME$/.gradle/caches/fabric-loom/1.21/net.fabricmc.yarn.1_21.1.21+build.9-v2/mappings.tiny" />
+      <module name="JustARod.test" options="-AoutRefMapFile=$PROJECT_DIR$/build/classes/java/test/test-JustARod-refmap.json -AdefaultObfuscationEnv=named:intermediary -Aquiet=true -AoutMapFileNamedIntermediary=$PROJECT_DIR$/build/loom-cache/mixin-map-net.fabricmc.yarn.1_21.1.21+build.9-v2.test.tiny -AinMapFileNamedIntermediary=$USER_HOME$/.gradle/caches/fabric-loom/1.21/net.fabricmc.yarn.1_21.1.21+build.9-v2/mappings.tiny" />
+      <module name="org.cneko.JustARod.main" options="-AoutRefMapFile=$PROJECT_DIR$/build/classes/java/main/JustARod-refmap.json -AdefaultObfuscationEnv=named:intermediary -Aquiet=true -AoutMapFileNamedIntermediary=$PROJECT_DIR$/build/loom-cache/mixin-map-net.fabricmc.yarn.1_21.1.21+build.9-v2.main.tiny -AinMapFileNamedIntermediary=$USER_HOME$/.gradle/caches/fabric-loom/1.21/net.fabricmc.yarn.1_21.1.21+build.9-v2/mappings.tiny" />
+    </option>
+  </component>
+</project>

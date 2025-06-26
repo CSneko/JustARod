@@ -35,6 +35,7 @@ import org.cneko.justarod.quirks.JRQuirks;
 
 public class Justarod implements ModInitializer {
     public static final String MODID = "justarod";
+
     @Override
     public void onInitialize() {
         NetWorkingRodData.Companion.init();
@@ -50,6 +51,7 @@ public class Justarod implements ModInitializer {
         JRCommands.init();
         JRPackets.init();
         JRNetWorkingEvents.init();
+        JRCriteria.init();
 
         EntityDeathEvent.init();
         EntityRespawnEvent.init();

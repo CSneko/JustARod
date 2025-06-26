@@ -4,7 +4,9 @@
   "version": "0.1.1",
   "name": "JustARod",
   "description": "meow",
-  "authors": [],
+  "authors": [
+    "CrystalNeko"
+  ],
   "contributors": [
     "IgnoreLicensesCN",
     "cleep5564",
@@ -20,13 +22,15 @@
     ],
     "main": [
       "org.cneko.justarod.Justarod"
+    ],
+    "fabric-datagen": [
+      "org.cneko.justarod.datagen.JRDataGen"
     ]
   },
   "depends": {
     "fabricloader": "*",
     "fabric": "*",
     "minecraft": ">=1.21",
-    "fabric-language-kotlin": "*",
     "toneko": ">=1.7.0"
   },
   "mixins": [
@@ -35,10 +39,11 @@
   "custom": {
     "loom:injected_interfaces": {
       "net/minecraft/class_1657": [
-        "org/cneko/justarod/entity/Insertable","org/cneko/justarod/entity/Powerable"
+        "org/cneko/justarod/entity/Powerable"
       ],
       "org/cneko/toneko/common/mod/entities/NekoEntity": ["org/cneko/justarod/entity/Insertable"],
-      "net/minecraft/class_1297": ["org/cneko/justarod/entity/Fallible"]
+      "net/minecraft/class_1297": ["org/cneko/justarod/entity/Fallible"],
+      "net/minecraft/class_1309": ["org/cneko/justarod/entity/Insertable"]
     }
   }
 }

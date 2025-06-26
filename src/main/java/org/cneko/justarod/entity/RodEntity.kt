@@ -127,7 +127,7 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
         }
         tickAnger()
         // 如果头上有生物，给予orgasm
-        if (firstPassenger != null && firstPassenger is LivingEntity) {
+        if (firstPassenger is LivingEntity) {
             (firstPassenger as LivingEntity).addEffect(JREffects.ORGASM_EFFECT, 100, 0)
         }
         if (slowTickCount++> 20) {

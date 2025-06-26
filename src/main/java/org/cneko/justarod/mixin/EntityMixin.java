@@ -3,9 +3,12 @@ package org.cneko.justarod.mixin;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import org.cneko.justarod.damage.JRDamageTypes;
 import org.cneko.justarod.entity.Fallible;
+import org.cneko.justarod.entity.Insertable;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Arrays;
 
 @Mixin(Entity.class)
-public class EntityMixin implements Fallible {
+public class EntityMixin implements Fallible, Insertable {
     @Unique
     private Entity fallenBy;
     @Unique
@@ -24,6 +27,7 @@ public class EntityMixin implements Fallible {
     private double startFallHeight;
     @Unique
     private Boolean justARod$originalNoClip = null; // 记录原始noClip状态
+
 
     @Override
     public Entity justARod$getFallenBy() {
@@ -109,4 +113,6 @@ public class EntityMixin implements Fallible {
             }
         }
     }
+
+
 }

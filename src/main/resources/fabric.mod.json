@@ -40,7 +40,8 @@
   "custom": {
     "loom:injected_interfaces": {
       "net/minecraft/class_1657": [
-        "org/cneko/justarod/entity/Powerable"
+        "org/cneko/justarod/entity/Powerable",
+        "org/cneko/justarod/entity/Pregnant"
       ],
       "org/cneko/toneko/common/mod/entities/NekoEntity": ["org/cneko/justarod/entity/Insertable"],
       "net/minecraft/class_1297": ["org/cneko/justarod/entity/Fallible"],

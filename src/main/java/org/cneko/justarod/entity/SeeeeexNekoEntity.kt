@@ -1,15 +1,16 @@
 package org.cneko.justarod.entity
 
-import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityPose
 import net.minecraft.entity.EntityType
-import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.data.DataTracker
 import net.minecraft.entity.data.TrackedData
 import net.minecraft.entity.data.TrackedDataHandlerRegistry
+import net.minecraft.entity.effect.StatusEffectInstance
+import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.tag.FluidTags
 import net.minecraft.server.world.ServerWorld
+import net.minecraft.text.Text
 import net.minecraft.world.World
 import org.cneko.justarod.entity.ai.SexualIntercourseGoal
 import org.cneko.toneko.common.mod.entities.INeko
@@ -25,11 +26,11 @@ import software.bernie.geckolib.constant.DefaultAnimations
  */
 open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, world: World): NekoEntity(type, world),Sexual {
     companion object{
-        val SKIN:String = "shiuri_neko"
+        const val SKIN:String = "shiuri_neko"
         val SEXUAL_DESIRE_ID:TrackedData<Int> = DataTracker.registerData(SeeeeexNekoEntity::class.java, TrackedDataHandlerRegistry.INTEGER)
     }
     var isMasturbation = false
-    var sexualIntercourseGoal: SexualIntercourseGoal? = null;
+    var sexualIntercourseGoal: SexualIntercourseGoal? = null
 
     override fun getBreedOffspring(world: ServerWorld?, neko: INeko?): NekoEntity? {
         return world?.let { SeeeeexNekoEntity(this.type, it) }
@@ -47,8 +48,27 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
     }
 
     override fun canMate(other: INeko?): Boolean {
+        if (other is Pregnant && other.isPregnant){
+            return false
+        }
         return super.canMate(other) && this.sexualDesire >= 40
     }
+
+    override fun breed(level: ServerWorld?, mate: INeko?) {
+        if (mate is Pregnant){
+            // 怀孕280天
+            mate.pregnant = 280*20*60*20
+            this.nekoLevel = this.nekoLevel + 0.1f
+            mate.nekoLevel = this.nekoLevel + 0.1f
+            this.spawnChildFromBreeding(level, mate)
+            this.addStatusEffect(StatusEffectInstance(StatusEffects.WEAKNESS, 3000, 0))
+            mate.entity.addStatusEffect(StatusEffectInstance(StatusEffects.WEAKNESS, 3000, 0))
+            mate.entity.sendMessage(Text.of("§a你怀孕了！"))
+        }else{
+            super.breed(level, mate)
+        }
+    }
+
 
     override fun writeCustomDataToNbt(compound: NbtCompound) {
         super.writeCustomDataToNbt(compound)

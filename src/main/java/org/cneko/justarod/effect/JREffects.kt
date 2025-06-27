@@ -33,6 +33,11 @@ class JREffects {
             Identifier.of(MODID, "faint"),
             FaintEffect()
         )
+        var PREGNANT_EFFECT: StatusEffect? = Registry.register(
+            Registries.STATUS_EFFECT,
+            Identifier.of(MODID, "pregnant"),
+            PregnantEffect()
+        )
         fun init(){
         }
     }

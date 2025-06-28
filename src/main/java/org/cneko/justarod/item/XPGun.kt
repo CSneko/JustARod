@@ -14,6 +14,10 @@ import net.minecraft.world.World
 /*
 动漫量
  */
+
+/*
+嗯~啊~出来了...
+ */
 class XPGun : Item(Settings().maxCount(1)) {
     override fun use(world: World?, user: PlayerEntity?, hand: Hand?): TypedActionResult<ItemStack> {
         user ?: return super.use(world, user, hand)

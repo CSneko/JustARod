@@ -10,6 +10,11 @@ import net.minecraft.text.Text
 /*
 事实上想要被爽死其实没那么容易的，毕竟这个快感是让大脑兴奋，很难造成实际的伤害（也不排除过于兴奋的可能性）
  */
+
+/*
+ emmm 有心血管疾病的话更容易死的
+ 虽然你没有...对吧...?
+ */
 class SexualExcitement(type: RegistryEntry<DamageType>?, attacker: Entity?) :
     DamageSource(type, attacker) {
     override fun getDeathMessage(killed: LivingEntity?): Text {

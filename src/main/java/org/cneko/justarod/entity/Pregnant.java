@@ -11,6 +11,11 @@ import net.minecraft.util.Identifier;
 import org.cneko.justarod.effect.JREffects;
 
 public interface Pregnant{
+
+    /*
+    插的太深了...
+     */
+
     default void setPregnant(int time) {
     }
 

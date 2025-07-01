@@ -108,7 +108,7 @@ public class Questions {
                     Text.of("3/8"),
                     Text.of("9/16")
             ),
-                        new QuestionScreen.Question(Text.of("函数 f(x)=x^2−4x+3的最小值是（ ）"),
+            new QuestionScreen.Question(Text.of("函数 f(x)=x^2−4x+3的最小值是（ ）"),
                     1,
                     Text.of("-1"),
                     Text.of("0"),

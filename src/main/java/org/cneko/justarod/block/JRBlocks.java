@@ -15,6 +15,7 @@ import static org.cneko.justarod.Justarod.MODID;
 
 public class JRBlocks {
     // 没吃过，但感觉不好吃
+    // 所以猫猫一直在自娱自乐 炫压抑是吧~ -NT
     public static final Block GOLDEN_LEAVES = register(
             new LeavesBlock(AbstractBlock.Settings.create().sounds(BlockSoundGroup.CHERRY_LEAVES).noCollision()),
             "golden_leaves",

@@ -18,6 +18,10 @@ import org.spongepowered.asm.mixin.Unique
 /*
 萝莉控别看了，对，说的就是你！变态一只！
  */
+
+/*
+我才不是呢~
+ */
 class LoliNekoEntity(private val type: EntityType<LoliNekoEntity>, world: World): NekoEntity(type, world) {
     companion object{
         val SHOWING_AGE: TrackedData<Int?> = DataTracker.registerData(LoliNekoEntity::class.java, TrackedDataHandlerRegistry.INTEGER)

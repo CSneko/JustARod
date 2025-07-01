@@ -2,7 +2,10 @@ package org.cneko.justarod.mixin;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -34,6 +37,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     private int pregnant = 0;
     @Unique
     private short slowTick = 10;
+    @Unique
+    private EntityType<? > childrenType = null;
 
     @Override
     public double getPower() {
@@ -62,12 +67,26 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     }
 
     @Override
-    public Entity getBaby() {
+    public EntityType<?> getChildrenType() {
+        return childrenType;
+    }
+
+    @Override
+    public void setChildrenType(EntityType<?> childrenType) {
+        this.childrenType = childrenType;
+    }
+
+    @Override
+    public Entity createBaby() {
         PlayerEntity player = (PlayerEntity) (Object) this;
-        var baby = new SeeeeexNekoEntity(JREntities.SEEEEEX_NEKO, player.getWorld());
-        baby.setBaby(true);
-        baby.age = -48000;
-        baby.addOwner(player.getUuid(),new INeko.Owner(new ArrayList<>(),0));
+        var baby = (Entity) getChildrenType().create(player.getWorld());
+        if (baby instanceof MobEntity mob) {
+            mob.setBaby(true);
+            mob.age = -48000;
+            if (baby instanceof INeko neko) {
+                neko.addOwner(player.getUuid(), new INeko.Owner(new ArrayList<>(), 0));
+            }
+        }
         baby.setPos(player.getX(), player.getY(), player.getZ());
         return baby;
     }

@@ -1,0 +1,30 @@
+package org.cneko.justarod.item
+
+import net.minecraft.entity.LivingEntity
+import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.item.Item
+import net.minecraft.item.ItemStack
+import net.minecraft.text.Text
+import net.minecraft.util.ActionResult
+import net.minecraft.util.Hand
+
+class FreeMatingItem(settings: Settings): Item(settings) {
+    override fun useOnEntity(
+        stack: ItemStack?,
+        user: PlayerEntity?,
+        entity: LivingEntity?,
+        hand: Hand?
+    ): ActionResult? {
+        if (user?.world?.isClient == false) {
+            if (user.isPregnant) {
+                user.sendMessage(Text.of("§c你已经怀上了哦"))
+            } else {
+                user.pregnant = 20 * 60 * 20 * 5 // 5天
+                user.childrenType = entity?.type
+                user.sendMessage(Text.of("§a交配完成"))
+                user.sendMessage(Text.of("§b你怀上了${Text.translatable(entity?.type?.translationKey).string}的宝宝哦~"))
+            }
+        }
+        return super.useOnEntity(stack, user, entity, hand)
+    }
+}

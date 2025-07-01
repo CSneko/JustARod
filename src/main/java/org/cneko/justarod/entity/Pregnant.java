@@ -1,11 +1,13 @@
 package org.cneko.justarod.entity;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.cneko.justarod.effect.JREffects;
 
 public interface Pregnant{
@@ -20,13 +22,19 @@ public interface Pregnant{
         return getPregnant() > 0;
     }
 
+    default void setChildrenType(EntityType<?> type){}
+
+    default EntityType<?> getChildrenType() {
+        throw new RuntimeException("getChildrenType() is not implemented in " + this.getClass().getName());
+    }
+
     default void updatePregnant() {
         if (getPregnant() > 0) {
             setPregnant(getPregnant() - 1);
             if (getPregnant() == 0) {
                 if (this instanceof LivingEntity liv){
                     liv.sendMessage(Text.of("§a分娩完成！"));
-                    liv.damage(liv.getDamageSources().generic(),2.0f);
+                    liv.damage(liv.getDamageSources().generic(),6.0f);
                 }
                 makeBaby();
             }
@@ -43,7 +51,7 @@ public interface Pregnant{
     }
 
     default void makeBaby() {
-        Entity baby = getBaby();
+        Entity baby = createBaby();
         if (baby != null) {
             // 产仔
             baby.getWorld().spawnEntity(baby);
@@ -56,15 +64,23 @@ public interface Pregnant{
 
     default void writePregnantToNbt(NbtCompound nbt) {
         nbt.putInt("Pregnant", getPregnant());
+        nbt.putString("ChildrenType", EntityType.getId(getChildrenType()).toString());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         if (nbt.contains("Pregnant")) {
             setPregnant(nbt.getInt("Pregnant"));
         }
+        if (nbt.contains("ChildrenType")) {
+            Identifier id = Identifier.tryParse(nbt.getString("ChildrenType"));
+            if (id != null) {
+                EntityType<?> childrenType = Registries.ENTITY_TYPE.get(id);
+                setChildrenType(childrenType);
+            }
+        }
     }
 
-    default Entity getBaby() {
-        throw new RuntimeException("getBaby() is not implemented in " + this.getClass().getName());
+    default Entity createBaby() {
+        throw new RuntimeException("createBaby() is not implemented in " + this.getClass().getName());
     }
 
     static <T extends LivingEntity&Pregnant> void pregnantTick(T pregnant) {

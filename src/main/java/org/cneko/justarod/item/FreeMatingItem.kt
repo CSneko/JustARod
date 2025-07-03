@@ -16,8 +16,8 @@ class FreeMatingItem(settings: Settings): Item(settings) {
         hand: Hand?
     ): ActionResult? {
         if (user?.world?.isClient == false) {
-            if (user.isPregnant) {
-                user.sendMessage(Text.of("§c你已经怀上了哦"))
+            if (!user.canPregnant()) {
+                user.sendMessage(Text.of("§c你目前还不能怀孕哦"))
             } else {
                 user.pregnant = 20 * 60 * 20 * 5 // 5天
                 user.childrenType = entity?.type

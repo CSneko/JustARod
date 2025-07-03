@@ -7,10 +7,13 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.BuiltinRegistries;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.cneko.justarod.effect.JREffects;
+import org.cneko.toneko.common.mod.effects.ToNekoEffects;
+import org.cneko.toneko.common.mod.entities.INeko;
 
 public interface Pregnant{
 
@@ -77,23 +80,32 @@ public interface Pregnant{
         int menstruation = getMenstruation();
         if (menstruation <=0){
             return MenstruationCycle.NONE;
-        }else if(menstruation <= 20*60*20*3){
+        }else if(menstruation <= 20*60*20*2){
             return MenstruationCycle.MENSTRUATION;
-        } else if (menstruation <= 20*60*20*10) {
+        } else if (menstruation <= 20*60*20*7) {
             return MenstruationCycle.FOLLICLE;
-        } else if (menstruation <= 20*60*20*12) {
+        } else if (menstruation <= 20*60*20*8) {
             return MenstruationCycle.OVULATION;
-        } else if (menstruation <=20*60*20*17) {
+        } else if (menstruation <=20*60*20*11) {
             return MenstruationCycle.LUTEINIZATION;
         }
         return MenstruationCycle.NONE;
     }
 
+    default void setMenstruationComfort(int time){
+    }
+    default int getMenstruationComfort(){
+        return 0;
+    }
+
     default void updateMenstruation() {
-        if (!isPregnant() && getMenstruation() <= 20*60*20*17) {
+        if (!isPregnant() && getMenstruation() <= 20*60*20*11) {
             setMenstruation(getMenstruation() + 1);
         }else {
             setMenstruation(0);
+        }
+        if (getMenstruationComfort() > 0){
+            setMenstruationComfort(getMenstruationComfort()-1);
         }
     }
     default boolean canPregnant(){
@@ -104,6 +116,7 @@ public interface Pregnant{
         nbt.putInt("Pregnant", getPregnant());
         nbt.putString("ChildrenType", EntityType.getId(getChildrenType()).toString());
         nbt.putInt("Menstruation", getMenstruation());
+        nbt.putInt("MenstruationComfort", getMenstruationComfort());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         if (nbt.contains("Pregnant")) {
@@ -118,6 +131,9 @@ public interface Pregnant{
         }
         if (nbt.contains("Menstruation")) {
             setMenstruation(nbt.getInt("Menstruation"));
+        }
+        if (nbt.contains("MenstruationComfort")) {
+            setMenstruationComfort(nbt.getInt("MenstruationComfort"));
         }
     }
 
@@ -147,44 +163,64 @@ public interface Pregnant{
     static <T extends LivingEntity&Pregnant> void menstruationTick(T pregnant) {
         pregnant.updateMenstruation();
         MenstruationCycle cycle = pregnant.getMenstruationCycle();
-        // 1/4000的几率获得效果
-        if (pregnant.getRandom().nextInt(4000) == 0) {
+        // 1/3000的几率获得效果
+        if (pregnant.getRandom().nextInt(3000) == 0) {
             if (cycle == MenstruationCycle.MENSTRUATION){
-                // 缓慢效果（100s）
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20*100, 0));
+                // 缓慢效果（60s）
+                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20*60, 0));
+                // 虚弱效果（30s）
+                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20*30, 0));
             } else if (cycle == MenstruationCycle.FOLLICLE) {
-                // 速度效果（100s）
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 20*100, 0));
+                // 速度效果（60s）
+                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 20*60, 0));
+                // 跳跃提升（30s）
+                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.JUMP_BOOST, 20*30, 0));
             } else if (cycle == MenstruationCycle.OVULATION) {
-                // 生命恢复(100s)
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 20*100, 0));
+                // 生命恢复(60s)
+                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 20*60, 0));
+                // 兴奋效果(30s)
+                if (pregnant instanceof INeko neko && neko.isNeko()){
+                    neko.getEntity().addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(ToNekoEffects.NEKO_EFFECT), 20*30, 0));
+                }
             } else if (cycle == MenstruationCycle.LUTEINIZATION) {
                 // 饥饿效果
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 20*100, 0));
+                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 20*60, 0));
+                // 挖掘疲劳
+                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20*30, 0));
             }
         }
-        // 1/800的几率附加
-        if (pregnant.getRandom().nextInt(800) == 0) {
+        // 1/400的几率附加
+        if (pregnant.getRandom().nextInt(400) == 0) {
             if (cycle == MenstruationCycle.MENSTRUATION){
-                // 扣血
-                pregnant.damage(pregnant.getDamageSources().magic(), 1.0f);
+                if (pregnant.getMenstruationComfort()>0){
+                    if (pregnant.getRandom().nextBoolean()){
+                        // 扣血
+                        pregnant.damage(pregnant.getDamageSources().magic(), 1.0f);
+                    }
+                }else {
+                    // 扣血
+                    pregnant.damage(pregnant.getDamageSources().magic(), 1.0f);
+                }
             }
         }
     }
 
     @Getter
     enum MenstruationCycle{
-        NONE(0), //  无
-        MENSTRUATION(20*60*20*3), // 月经期
-        FOLLICLE(20*60*20*7), // 卵泡期
-        OVULATION(20*60*20*2), // 排卵期
-        LUTEINIZATION(20*60*20*5) // 黄体期
+        NONE(0,"无"), //  无
+        MENSTRUATION(20*60*20*2,"月经期"), // 月经期
+        FOLLICLE(20*60*20*5,"卵泡期"), // 卵泡期
+        OVULATION(20*60*2,"排卵期"), // 排卵期
+        LUTEINIZATION(20*60*20*3,"黄体期") // 黄体期
         ;
 
         private final int duration;
-        MenstruationCycle(int duration) {
+        public final String text;
+        MenstruationCycle(int duration,String name) {
             this.duration = duration;
+            this.text = name;
         }
+
     }
 
 

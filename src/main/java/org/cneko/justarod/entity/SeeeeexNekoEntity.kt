@@ -48,7 +48,7 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
     }
 
     override fun canMate(other: INeko?): Boolean {
-        if (other is Pregnant && other.isPregnant){
+        if (other is Pregnant && !other.canPregnant()){
             return false
         }
         return super.canMate(other) && this.sexualDesire >= 40
@@ -56,11 +56,10 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
 
     override fun breed(level: ServerWorld?, mate: INeko?) {
         if (mate is Pregnant){
-            // 怀孕280天
-            mate.pregnant = 280*20*60*20
+            // 怀孕10天
+            mate.pregnant = 10*20*60*20
             this.nekoLevel = this.nekoLevel + 0.1f
             mate.nekoLevel = this.nekoLevel + 0.1f
-            this.spawnChildFromBreeding(level, mate)
             this.addStatusEffect(StatusEffectInstance(StatusEffects.WEAKNESS, 3000, 0))
             mate.entity.addStatusEffect(StatusEffectInstance(StatusEffects.WEAKNESS, 3000, 0))
             mate.entity.sendMessage(Text.of("§a你怀孕了！"))

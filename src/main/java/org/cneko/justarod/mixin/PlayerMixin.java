@@ -39,6 +39,10 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     private short slowTick = 10;
     @Unique
     private EntityType<? > childrenType = null;
+    @Unique
+    private int menstruation = 0;
+    @Unique
+    private int menstruationComfort = 0;
 
     @Override
     public double getPower() {
@@ -74,6 +78,26 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     @Override
     public void setChildrenType(EntityType<?> childrenType) {
         this.childrenType = childrenType;
+    }
+
+    @Override
+    public int getMenstruation() {
+        return menstruation;
+    }
+
+    @Override
+    public void setMenstruation(int menstruation) {
+        this.menstruation = menstruation;
+    }
+
+    @Override
+    public void setMenstruationComfort(int time) {
+        this.menstruationComfort = time;
+    }
+
+    @Override
+    public int getMenstruationComfort() {
+        return menstruationComfort;
     }
 
     @Override
@@ -116,6 +140,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
             }
         }
         Pregnant.pregnantTick(player);
+        Pregnant.menstruationTick(player);
     }
 
     @Inject(method = "createPlayerAttributes", at = @At("RETURN"))

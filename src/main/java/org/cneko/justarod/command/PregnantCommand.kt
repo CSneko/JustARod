@@ -21,7 +21,7 @@ class PregnantCommand {
                     }
                     .then(literal("set")
                         .then(argument("time",IntegerArgumentType.integer(0, Int.MAX_VALUE))
-                            .requires { source -> source.isExecutedByPlayer&&source.player?.isCreative==true }
+                            .requires { source -> source.hasPermissionLevel(4) }
                             .executes { ctx->
                                 val source = ctx.source.entity
                                 if (source is Pregnant) {
@@ -30,6 +30,37 @@ class PregnantCommand {
                                 return@executes 1
                             }
                         )
+                    )
+                )
+
+                dispatcher.register(literal("menstruation")
+                    .executes { context ->
+                        val source = context.source.entity
+                        if (source is Pregnant){
+                            source.sendMessage(Text.of("当前处于${source.menstruationCycle.text}"))
+                        }
+                        return@executes 0
+                    }
+                    .then(literal("set")
+                        .requires { source -> source.hasPermissionLevel(4) }
+                        .then(argument("time", IntegerArgumentType.integer(0, Int.MAX_VALUE))
+                            .executes {ctx ->
+                                val source = ctx.source.entity
+                                if (source is Pregnant) {
+                                    source.menstruation = IntegerArgumentType.getInteger(ctx,"time")
+                                }
+                                return@executes 1
+                            }
+                        )
+                    )
+                    .then(literal("comfort")
+                        .executes { context ->
+                            val source = context.source.entity
+                            if (source is Pregnant) {
+                                source.sendMessage(Text.of("卫生巾剩余有效时间：${source.menstruationComfort/20}秒"))
+                            }
+                            return@executes 1
+                        }
                     )
                 )
             }

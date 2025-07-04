@@ -1,5 +1,6 @@
 package org.cneko.justarod.command
 
+import com.mojang.brigadier.arguments.BoolArgumentType
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.server.command.CommandManager.argument
@@ -61,6 +62,28 @@ class PregnantCommand {
                             }
                             return@executes 1
                         }
+                    )
+                )
+
+                dispatcher.register(literal("sterilization")
+                    .executes {context ->
+                        val source = context.source.entity
+                        if (source is Pregnant){
+                            source.sendMessage(Text.of("绝育状态：${source.isSterilization}"))
+                        }
+                        return@executes 1
+                    }
+                    .then(literal("set")
+                        .requires { source -> source.hasPermissionLevel(4) }
+                        .then(argument("is", BoolArgumentType.bool())
+                            .executes {ctx ->
+                                val source = ctx.source.entity
+                                if (source is Pregnant) {
+                                    source.isSterilization = BoolArgumentType.getBool(ctx,"is")
+                                }
+                                return@executes 1
+                            }
+                        )
                     )
                 )
             }

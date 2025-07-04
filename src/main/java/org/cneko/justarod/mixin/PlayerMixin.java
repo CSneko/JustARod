@@ -43,6 +43,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     private int menstruation = 0;
     @Unique
     private int menstruationComfort = 0;
+    @Unique
+    private boolean sterilization = false;
 
     @Override
     public double getPower() {
@@ -98,6 +100,16 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     @Override
     public int getMenstruationComfort() {
         return menstruationComfort;
+    }
+
+    @Override
+    public boolean isSterilization() {
+        return sterilization;
+    }
+
+    @Override
+    public void setSterilization(boolean sterilization) {
+        this.sterilization = sterilization;
     }
 
     @Override

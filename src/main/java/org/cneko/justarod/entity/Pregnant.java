@@ -7,7 +7,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.BuiltinRegistries;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -109,7 +108,7 @@ public interface Pregnant{
         }
     }
     default boolean canPregnant(){
-        return getMenstruationCycle() == MenstruationCycle.OVULATION && !this.isPregnant();
+        return getMenstruationCycle() == MenstruationCycle.OVULATION && !this.isPregnant() && !this.isSterilization();
     }
 
     default void writePregnantToNbt(NbtCompound nbt) {
@@ -117,6 +116,7 @@ public interface Pregnant{
         nbt.putString("ChildrenType", EntityType.getId(getChildrenType()).toString());
         nbt.putInt("Menstruation", getMenstruation());
         nbt.putInt("MenstruationComfort", getMenstruationComfort());
+        nbt.putBoolean("Sterilization", isSterilization());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         if (nbt.contains("Pregnant")) {
@@ -135,10 +135,19 @@ public interface Pregnant{
         if (nbt.contains("MenstruationComfort")) {
             setMenstruationComfort(nbt.getInt("MenstruationComfort"));
         }
+        if (nbt.contains("Sterilization")) {
+            setSterilization(nbt.getBoolean("Sterilization"));
+        }
     }
 
     default Entity createBaby() {
         throw new RuntimeException("createBaby() is not implemented in " + this.getClass().getName());
+    }
+
+    default void setSterilization(boolean sterilization){}
+    // 是否绝育
+    default boolean isSterilization(){
+        return false;
     }
 
     static <T extends LivingEntity&Pregnant> void pregnantTick(T pregnant) {

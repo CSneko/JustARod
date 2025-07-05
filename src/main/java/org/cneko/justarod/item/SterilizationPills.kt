@@ -10,10 +10,12 @@ import net.minecraft.util.TypedActionResult
 import net.minecraft.world.World
 
 class SterilizationPills(settings: Settings): Item(settings) {
-    override fun appendTooltip(stack: ItemStack?, context: TooltipContext?, tooltip: List<Text?>?, type: TooltipType?) {
-        tooltip?.plus(Text.of("§c请谨慎使用！！！"))
+    override fun appendTooltip(stack: ItemStack?, context: TooltipContext?, tooltip: MutableList<Text?>?, type: TooltipType?) {
         super.appendTooltip(stack, context, tooltip, type)
+        tooltip?.add(Text.of("§c请谨慎使用！！！"))
+        tooltip?.add(Text.of("§c你没有悔改的机会！！！"))
     }
+
 
     override fun use(world: World?, user: PlayerEntity?, hand: Hand?): TypedActionResult<ItemStack?>? {
         if (user != null && !user.world.isClient){

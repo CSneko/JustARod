@@ -69,7 +69,11 @@ class PregnantCommand {
                     .executes {context ->
                         val source = context.source.entity
                         if (source is Pregnant){
-                            source.sendMessage(Text.of("绝育状态：${source.isSterilization}"))
+                            if (source.isSterilization){
+                                source.sendMessage(Text.of("§c当前处于绝育状态中"))
+                            }else{
+                                source.sendMessage(Text.of("§a当前处于非绝育状态"))
+                            }
                         }
                         return@executes 1
                     }

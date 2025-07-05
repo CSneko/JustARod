@@ -8,7 +8,8 @@
     "EntityMixin",
     "LivingEntityMixin",
     "NekoEntityMixin",
-    "PlayerMixin"
+    "PlayerMixin",
+    "ServerPlayerMixin"
   ],
   "server": [],
   "injectors": {

@@ -9,7 +9,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 import org.cneko.justarod.client.screen.FrictionScreen;
 import org.cneko.justarod.packet.FrictionPayload;
-import org.cneko.justarod.packet.PowerSyncPayload;
+import org.cneko.justarod.packet.JRSyncPayload;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
@@ -22,8 +22,9 @@ public class JRClientNetworkingEvents {
         ClientPlayNetworking.registerGlobalReceiver(FrictionPayload.ID,((payload, context) -> {
             getInstance().setScreen(new FrictionScreen());
         }));
-        ClientPlayNetworking.registerGlobalReceiver(PowerSyncPayload.ID, (payload, context) -> {
+        ClientPlayNetworking.registerGlobalReceiver(JRSyncPayload.ID, (payload, context) -> {
             getInstance().player.setPower(payload.power());
+            getInstance().player.setPregnant(payload.pregnant());
         });
     }
 

@@ -1,18 +1,13 @@
 package org.cneko.justarod.mixin;
 
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.cneko.justarod.JRAttributes;
 import org.cneko.justarod.entity.Insertable;
-import org.cneko.justarod.entity.Powerable;
 import org.cneko.justarod.entity.Pregnant;
-import org.cneko.justarod.packet.PowerSyncPayload;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;

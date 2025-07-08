@@ -4,18 +4,25 @@ import lombok.Getter;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 import org.cneko.justarod.effect.JREffects;
 import org.cneko.toneko.common.mod.effects.ToNekoEffects;
 import org.cneko.toneko.common.mod.entities.INeko;
 
-public interface Pregnant{
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
+public interface Pregnant{
+    List<UUID> FOREVER_BABY = new ArrayList<>();
     /*
     插的太深了...
      */
@@ -66,7 +73,13 @@ public interface Pregnant{
             baby.getWorld().spawnEntity(baby);
             // 受伤
             if (this instanceof LivingEntity pregnantEntity) {
-                pregnantEntity.damage(pregnantEntity.getDamageSources().generic(), 2.0F);
+                if (baby instanceof EnderDragonEntity){
+                    // 玩家爆炸
+                    pregnantEntity.getWorld().createExplosion(baby, pregnantEntity.getX(), pregnantEntity.getY(), pregnantEntity.getZ(), 10.0F, World.ExplosionSourceType.MOB);
+                    FOREVER_BABY.add(baby.getUuid());
+                }else {
+                    pregnantEntity.damage(pregnantEntity.getDamageSources().generic(), 2.0F);
+                }
             }
         }
     }

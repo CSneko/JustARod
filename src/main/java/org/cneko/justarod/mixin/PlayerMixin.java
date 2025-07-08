@@ -3,20 +3,16 @@ package org.cneko.justarod.mixin;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import org.cneko.justarod.entity.*;
-import org.cneko.justarod.packet.PowerSyncPayload;
+import org.cneko.justarod.packet.JRSyncPayload;
 import org.cneko.toneko.common.mod.entities.INeko;
-import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -148,7 +144,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
         if (slowTick++ >= 10){
             if (player instanceof ServerPlayerEntity sp) {
                 // 同步power
-                ServerPlayNetworking.send(sp, new PowerSyncPayload(getPower()));
+                ServerPlayNetworking.send(sp, new JRSyncPayload(getPower(),getPregnant()));
             }
         }
         if (player.getWorld() instanceof ServerWorld) {

@@ -4,6 +4,8 @@ import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.boss.dragon.EnderDragonEntity;
+import net.minecraft.entity.boss.dragon.EnderDragonPart;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -20,6 +22,7 @@ import net.minecraft.world.World;
 import org.cneko.justarod.JRCriteria;
 import org.cneko.justarod.effect.JREffects;
 import org.cneko.justarod.item.GiantRodItem;
+import org.cneko.justarod.item.JRItems;
 
 
 public class EntityAttackEvent {
@@ -28,6 +31,10 @@ public class EntityAttackEvent {
         UseEntityCallback.EVENT.register((playerEntity, world, hand, entity, entityHitResult) -> {
             if (playerEntity instanceof ServerPlayerEntity sp) {
                 JRCriteria.ITEM_USED_ON_ENTITY_CRITERION.trigger(sp, playerEntity.getStackInHand(hand), entity);
+                ItemStack stack = playerEntity.getStackInHand(hand);
+                if (entity instanceof EnderDragonPart ede&& stack.isOf(JRItems.Companion.getFREE_MATING())){
+                    JRItems.Companion.getFREE_MATING().useOnEntity(stack,playerEntity,ede.owner,hand);
+                }
             }
             return ActionResult.PASS;
         });

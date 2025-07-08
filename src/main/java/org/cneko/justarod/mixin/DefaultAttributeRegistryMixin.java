@@ -21,7 +21,7 @@ public class DefaultAttributeRegistryMixin {
         } else if (type == JREntities.SEEEEEX_NEKO) {
             cir.setReturnValue(SeeeeexNekoEntity.createNekoAttributes().build());
         } else if (type == JREntities.ROD) {
-            cir.setReturnValue(RodEntity.createMobAttributes().build());
+            cir.setReturnValue(RodEntity.Companion.createRodAttribute().build());
         }
     }
 }

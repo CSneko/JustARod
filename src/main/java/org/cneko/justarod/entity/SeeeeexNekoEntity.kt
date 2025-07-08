@@ -61,8 +61,15 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
             this.nekoLevel = this.nekoLevel + 0.1f
             mate.nekoLevel = this.nekoLevel + 0.1f
             this.addStatusEffect(StatusEffectInstance(StatusEffects.WEAKNESS, 3000, 0))
-            mate.entity.addStatusEffect(StatusEffectInstance(StatusEffects.WEAKNESS, 3000, 0))
             mate.entity.sendMessage(Text.of("§a你怀孕了！"))
+            // 获取自己的效果
+            val effects = this.statusEffects.filter { !it.effectType.value().isBeneficial }
+            if (effects.isNotEmpty()) {
+                // 添加到对方的
+                for (effect in effects) {
+                    mate.entity.addStatusEffect(effect)
+                }
+            }
         }else{
             super.breed(level, mate)
         }

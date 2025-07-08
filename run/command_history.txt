@@ -1,2 +1,0 @@
-/kill @e[type=justarod:seeeeeex_neko]
-/summon justarod:seeeeeex_neko

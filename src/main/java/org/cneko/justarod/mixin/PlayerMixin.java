@@ -151,8 +151,10 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
                 ServerPlayNetworking.send(sp, new PowerSyncPayload(getPower()));
             }
         }
-        Pregnant.pregnantTick(player);
-        Pregnant.menstruationTick(player);
+        if (player.getWorld() instanceof ServerWorld) {
+            Pregnant.pregnantTick(player);
+            Pregnant.menstruationTick(player);
+        }
     }
 
     @Inject(method = "createPlayerAttributes", at = @At("RETURN"))

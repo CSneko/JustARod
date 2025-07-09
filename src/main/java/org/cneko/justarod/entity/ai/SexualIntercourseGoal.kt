@@ -21,8 +21,6 @@ class SexualIntercourseGoal(private val neko: SeeeeexNekoEntity) : Goal() {
         val world = neko.world
 
         if (world is ServerWorld) {
-
-
             target = when {
                 target != null && neko.canMate(target as INeko) -> {
                     if (neko.nekoMateGoal.target == null) {

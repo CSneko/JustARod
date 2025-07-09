@@ -7,12 +7,15 @@ import net.minecraft.entity.data.TrackedData
 import net.minecraft.entity.data.TrackedDataHandlerRegistry
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
+import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.tag.FluidTags
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.world.World
 import org.cneko.justarod.entity.ai.SexualIntercourseGoal
+import org.cneko.justarod.item.JRItems.Companion.BYT
 import org.cneko.toneko.common.mod.entities.INeko
 import org.cneko.toneko.common.mod.entities.NekoEntity
 import software.bernie.geckolib.animation.AnimatableManager
@@ -20,6 +23,7 @@ import software.bernie.geckolib.animation.AnimationController
 import software.bernie.geckolib.animation.PlayState
 import software.bernie.geckolib.animation.RawAnimation
 import software.bernie.geckolib.constant.DefaultAnimations
+import java.util.function.Predicate
 
 /*
 小猫娘~~ 可可爱爱
@@ -56,6 +60,19 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
 
     override fun breed(level: ServerWorld?, mate: INeko?) {
         if (mate is Pregnant){
+            if (mate is PlayerEntity){
+                if (mate.getInventory().offHand.stream()
+                    .anyMatch(Predicate { item: ItemStack? -> item!!.isOf(BYT) })
+                    ){
+                    this.nekoLevel = this.nekoLevel + 0.1f
+                    mate.nekoLevel = this.nekoLevel + 0.1f
+                    this.addStatusEffect(StatusEffectInstance(StatusEffects.WEAKNESS, 3000, 0))
+                    mate.addStatusEffect(StatusEffectInstance(StatusEffects.WEAKNESS, 3000, 0))
+                    mate.entity.sendMessage(Text.of("§b你没有怀孕！"))
+                    mate.entity.sendMessage(Text.of("§d好感度+10，等级+0.1"))
+                    return
+                }
+            }
             // 怀孕10天
             mate.tryPregnant()
             this.nekoLevel = this.nekoLevel + 0.1f

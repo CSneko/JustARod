@@ -9,12 +9,14 @@ import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import org.cneko.justarod.effect.JREffects;
+import org.cneko.justarod.item.JRItems;
 import org.cneko.toneko.common.mod.effects.ToNekoEffects;
 import org.cneko.toneko.common.mod.entities.INeko;
 
@@ -33,7 +35,6 @@ public interface Pregnant{
         if (((Entity)this).getRandom().nextFloat() < getEctopicPregnancyProbability()) {
             this.setEctopicPregnancy(true);
         }
-        this.setPregnant(20 * 60 * 20 * 10 );
     }
 
     default void setPregnant(int time) {

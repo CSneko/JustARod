@@ -63,6 +63,7 @@ class JRItems {
         val FREE_MATING = FreeMatingItem(Item.Settings())
         val SANITARY_TOWEL = SanitaryTowel(Item.Settings())
         val STERILIZATION_PILLS = SterilizationPills(Item.Settings())
+        val BYT = Item(Item.Settings())
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -97,6 +98,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "free_mating"), FREE_MATING)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "sanitary_towel"), SANITARY_TOWEL)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "sterilization_pills"), STERILIZATION_PILLS)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "byt"), BYT)
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
             JR_ITEM_GROUP = FabricItemGroup.builder()
@@ -136,6 +138,7 @@ class JRItems {
                 entries.add(FREE_MATING)
                 entries.add(SANITARY_TOWEL)
                 entries.add(STERILIZATION_PILLS)
+                entries.add(BYT)
             }
         }
     }

@@ -19,7 +19,7 @@ class FreeMatingItem(settings: Settings): Item(settings) {
             if (!user.canPregnant()) {
                 user.sendMessage(Text.of("§c你目前还不能怀孕哦"))
             } else {
-                user.pregnant = 20 * 60 * 20 * 5 // 5天
+                user.tryPregnant()
                 user.childrenType = entity?.type
                 user.sendMessage(Text.of("§a交配完成"))
                 user.sendMessage(Text.of("§b你怀上了${Text.translatable(entity?.type?.translationKey).string}的宝宝哦~"))

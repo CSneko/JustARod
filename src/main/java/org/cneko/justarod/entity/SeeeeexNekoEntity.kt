@@ -57,7 +57,7 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
     override fun breed(level: ServerWorld?, mate: INeko?) {
         if (mate is Pregnant){
             // 怀孕10天
-            mate.pregnant = 10*20*60*20
+            mate.tryPregnant()
             this.nekoLevel = this.nekoLevel + 0.1f
             mate.nekoLevel = this.nekoLevel + 0.1f
             this.addStatusEffect(StatusEffectInstance(StatusEffects.WEAKNESS, 3000, 0))

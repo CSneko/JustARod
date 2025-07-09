@@ -32,6 +32,31 @@ class PregnantCommand {
                             }
                         )
                     )
+                    .then(literal("ectopic")
+                        .requires { source -> source.hasPermissionLevel(4) }
+                        .executes { ctx ->
+                            val source = ctx.source.entity
+                            if (source is Pregnant) {
+                                if (source.isEctopicPregnancy){
+                                    source.sendMessage(Text.of("§c当前怀孕状态为宫外孕！"))
+                                }else{
+                                    source.sendMessage(Text.of("§a当前怀孕状态正常"))
+                                }
+                            }
+                            return@executes 1
+                        }
+                        .then(literal("set")
+                            .then(argument("is", BoolArgumentType.bool())
+                                .executes { context ->
+                                    val source = context.source.entity
+                                    if (source is Pregnant) {
+                                        source.isEctopicPregnancy = BoolArgumentType.getBool(context,"is")
+                                    }
+                                    return@executes 1
+                                }
+                            )
+                        )
+                    )
                 )
 
                 dispatcher.register(literal("menstruation")

@@ -70,7 +70,7 @@ public class LivingEntityMixin implements Insertable {
     @Inject(method = "damage", at = @At("HEAD"))
     public void onDamage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         LivingEntity self = (LivingEntity) (Object) this;
-        if (self instanceof Pregnant pregnant && amount >=4 && pregnant.isPregnant()){
+        if (self instanceof Pregnant pregnant && amount >=7 && pregnant.isPregnant()){
             // 流产
             pregnant.miscarry();
         }

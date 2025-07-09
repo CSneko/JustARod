@@ -8,6 +8,7 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
@@ -26,6 +27,14 @@ public interface Pregnant{
     /*
     插的太深了...
      */
+
+    default void tryPregnant() {
+        // 是否会宫外孕
+        if (((Entity)this).getRandom().nextFloat() < getEctopicPregnancyProbability()) {
+            this.setEctopicPregnancy(true);
+        }
+        this.setPregnant(20 * 60 * 20 * 10 );
+    }
 
     default void setPregnant(int time) {
     }
@@ -130,6 +139,7 @@ public interface Pregnant{
         nbt.putInt("Menstruation", getMenstruation());
         nbt.putInt("MenstruationComfort", getMenstruationComfort());
         nbt.putBoolean("Sterilization", isSterilization());
+        nbt.putBoolean("EctopicPregnancy", isEctopicPregnancy());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         if (nbt.contains("Pregnant")) {
@@ -151,6 +161,9 @@ public interface Pregnant{
         if (nbt.contains("Sterilization")) {
             setSterilization(nbt.getBoolean("Sterilization"));
         }
+        if (nbt.contains("EctopicPregnancy")) {
+            setEctopicPregnancy(nbt.getBoolean("EctopicPregnancy"));
+        }
     }
 
     default Entity createBaby() {
@@ -163,10 +176,40 @@ public interface Pregnant{
         return false;
     }
 
+    default float getEctopicPregnancyProbability(){
+        float probability = 0.02f;
+        if (this instanceof LivingEntity entity){
+            if (entity.getAttributeValue(EntityAttributes.GENERIC_SCALE) < 1){
+                probability += 0.1f;
+            }
+            if (entity.getStatusEffects().stream().anyMatch(effect -> !effect.getEffectType().value().isBeneficial())){
+                probability += 0.1f;
+            }
+            var luck = entity.getAttributeInstance(EntityAttributes.GENERIC_LUCK);
+            if (luck != null){
+                probability -= (float) (luck.getValue() * 0.01f);
+            }
+        }
+        if (this instanceof MobEntity mob){
+            if (mob.isBaby()){
+                probability += 0.1f;
+            }
+        }
+        return Math.max(probability, 0.01f);
+    }
+
+    default void setEctopicPregnancy(boolean ectopicPregnancy){
+    }
+
+    default boolean isEctopicPregnancy(){
+        return false;
+    }
+
     static <T extends LivingEntity&Pregnant> void pregnantTick(T pregnant) {
         pregnant.updatePregnant();
         if (!pregnant.isPregnant()) {
             // 清除怀孕效果（如果有的话）
+            pregnant.setEctopicPregnancy(false);
             pregnant.removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getPREGNANT_EFFECT()));
         }else {
             // 设置怀孕效果
@@ -179,6 +222,33 @@ public interface Pregnant{
                         false,
                         true
                 ));
+            }
+            if (pregnant.isEctopicPregnancy()) {
+                int time = pregnant.getPregnant();
+                if (20 * 60 * 20 * 8 > time && time > 20 * 60 * 20 * 7) {
+                    // 怀孕2~3天时1/1000概率掉血
+                    if (pregnant.getRandom().nextInt(1000) == 0) {
+                        pregnant.damage(pregnant.getDamageSources().generic(), 1.0F);
+                    }
+                    // 1/2000概率反胃
+                    if (pregnant.getRandom().nextInt(2000) == 0) {
+                        pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20*10, 0));
+                    }
+                }else if (20 * 60 * 20 * 7 > time && time > 20 * 60 * 20 * 6){
+                    // 怀孕3~4天时1/200概率掉血
+                    if (pregnant.getRandom().nextInt(200) == 0) {
+                        pregnant.damage(pregnant.getDamageSources().generic(), 2.0F);
+                    }
+                } else if (20 * 60 * 20 * 6 > time) {
+                    // 怀孕4~5天时1/50概率掉血
+                    if (pregnant.getRandom().nextInt(50) == 0) {
+                        pregnant.damage(pregnant.getDamageSources().generic(), 6.0F);
+                    }
+                    // 1/400概率昏迷
+                    if (pregnant.getRandom().nextInt(400) == 0) {
+                        pregnant.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getFAINT_EFFECT()), 20*60, 0));
+                    }
+                }
             }
         }
     }

@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents
 import net.minecraft.component.type.FoodComponent
 import net.minecraft.entity.effect.StatusEffect
 import net.minecraft.entity.effect.StatusEffectInstance
+import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.Item
 import net.minecraft.item.ItemGroup
 import net.minecraft.item.ItemStack
@@ -64,6 +65,8 @@ class JRItems {
         val SANITARY_TOWEL = SanitaryTowel(Item.Settings())
         val STERILIZATION_PILLS = SterilizationPills(Item.Settings())
         val BYT = Item(Item.Settings())
+        val MOLE = Item(Item.Settings().food(FoodComponent.Builder().nutrition(1)
+            .statusEffect(StatusEffectInstance(StatusEffects.NAUSEA,10,0),1f).build()))
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -99,6 +102,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "sanitary_towel"), SANITARY_TOWEL)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "sterilization_pills"), STERILIZATION_PILLS)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "byt"), BYT)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "mole"), MOLE)
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
             JR_ITEM_GROUP = FabricItemGroup.builder()
@@ -139,6 +143,7 @@ class JRItems {
                 entries.add(SANITARY_TOWEL)
                 entries.add(STERILIZATION_PILLS)
                 entries.add(BYT)
+                entries.add(MOLE)
             }
         }
     }

@@ -2,7 +2,9 @@ package org.cneko.justarod.command
 
 import com.mojang.brigadier.arguments.BoolArgumentType
 import com.mojang.brigadier.arguments.IntegerArgumentType
+import com.mojang.brigadier.arguments.StringArgumentType
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
+import net.minecraft.command.argument.TextArgumentType
 import net.minecraft.server.command.CommandManager.argument
 import net.minecraft.server.command.CommandManager.literal
 import net.minecraft.text.Text
@@ -32,28 +34,57 @@ class PregnantCommand {
                             }
                         )
                     )
-                    .then(literal("ectopic")
+                    .then(literal("status")
                         .requires { source -> source.hasPermissionLevel(4) }
                         .executes { ctx ->
                             val source = ctx.source.entity
                             if (source is Pregnant) {
                                 if (source.isEctopicPregnancy){
                                     source.sendMessage(Text.of("§c当前怀孕状态为宫外孕！"))
-                                }else{
+                                } else if (source.isHydatidiformMole){
+                                    source.sendMessage(Text.of("§c当前怀孕状态为葡萄胎！"))
+                                } else{
                                     source.sendMessage(Text.of("§a当前怀孕状态正常"))
                                 }
                             }
                             return@executes 1
                         }
                         .then(literal("set")
-                            .then(argument("is", BoolArgumentType.bool())
-                                .executes { context ->
-                                    val source = context.source.entity
-                                    if (source is Pregnant) {
-                                        source.isEctopicPregnancy = BoolArgumentType.getBool(context,"is")
+                            .then(argument("type", StringArgumentType.word())
+                                .then(argument("is", BoolArgumentType.bool())
+                                    .executes { context ->
+                                        val source = context.source.entity
+                                        if (source is Pregnant) {
+                                            val type = StringArgumentType.getString(context,"type")
+                                            if (type.contains("ect")) {
+                                                source.isEctopicPregnancy = BoolArgumentType.getBool(context, "is")
+                                            }else if (type.contains("hyd") || type.contains("mole")){
+                                                source.isHydatidiformMole = BoolArgumentType.getBool(context, "is")
+                                            }
+                                        }
+                                        return@executes 1
                                     }
-                                    return@executes 1
+                                )
+                            )
+                        )
+                        .then(literal("count")
+                            .executes { context ->
+                                val source = context.source.entity
+                                if (source is Pregnant && source.isPregnant) {
+                                    source.sendMessage(Text.of("§a你怀了${source.babyCount}胞胎！"))
                                 }
+                                return@executes 1
+                            }
+                            .then(literal("set")
+                                .then(argument("count", IntegerArgumentType.integer(0, Int.MAX_VALUE))
+                                    .executes { context ->
+                                        val source = context.source.entity
+                                        if (source is Pregnant) {
+                                            source.babyCount = IntegerArgumentType.getInteger(context, "count")
+                                        }
+                                        return@executes 1
+                                    }
+                                )
                             )
                         )
                     )
@@ -109,6 +140,27 @@ class PregnantCommand {
                                 val source = ctx.source.entity
                                 if (source is Pregnant) {
                                     source.isSterilization = BoolArgumentType.getBool(ctx,"is")
+                                }
+                                return@executes 1
+                            }
+                        )
+                    )
+                )
+                dispatcher.register(literal("aids")
+                    .executes { ctx ->
+                        val source = ctx.source.entity
+                        if (source is Pregnant){
+                            source.sendMessage(Text.of("当前AIDS状态：${if (source.aids > 0) "已经感染${source.aids}" else "没有感染艾滋哦"}"))
+                        }
+                        return@executes 1
+                    }
+                    .then(literal("set")
+                        .requires { source -> source.hasPermissionLevel(4) }
+                        .then(argument("time", IntegerArgumentType.integer(0, Int.MAX_VALUE))
+                            .executes {ctx ->
+                                val source = ctx.source.entity
+                                if (source is Pregnant) {
+                                    source.aids = IntegerArgumentType.getInteger(ctx,"time")
                                 }
                                 return@executes 1
                             }

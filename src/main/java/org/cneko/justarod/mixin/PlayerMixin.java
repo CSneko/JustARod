@@ -43,6 +43,12 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     private boolean sterilization = false;
     @Unique
     private boolean ectopicPregnancy = false;
+    @Unique
+    private int aids = 0;
+    @Unique
+    private boolean hydatidiformMole = false;
+    @Unique
+    private int babyCount = 0;
 
     @Override
     public double getPower() {
@@ -121,6 +127,36 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     }
 
     @Override
+    public int getAids() {
+        return aids;
+    }
+
+    @Override
+    public void setAids(int aids) {
+        this.aids = aids;
+    }
+
+    @Override
+    public boolean isHydatidiformMole() {
+        return hydatidiformMole;
+    }
+
+    @Override
+    public void setHydatidiformMole(boolean hydatidiformMole) {
+        this.hydatidiformMole = hydatidiformMole;
+    }
+
+    @Override
+    public int getBabyCount() {
+        return babyCount;
+    }
+
+    @Override
+    public void setBabyCount(int babyCount) {
+        this.babyCount = babyCount;
+    }
+
+    @Override
     public Entity createBaby() {
         PlayerEntity player = (PlayerEntity) (Object) this;
         var baby = (Entity) getChildrenType().create(player.getWorld());
@@ -162,6 +198,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
         if (player.getWorld() instanceof ServerWorld) {
             Pregnant.pregnantTick(player);
             Pregnant.menstruationTick(player);
+            Pregnant.aidsTick(player);
         }
     }
 

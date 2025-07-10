@@ -2,6 +2,7 @@ package org.cneko.justarod.entity;
 
 import lombok.Getter;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -9,7 +10,6 @@ import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
@@ -31,6 +31,12 @@ public interface Pregnant{
      */
 
     default void tryPregnant() {
+        this.setPregnant(20*60*20*10);
+        // 是否会葡萄胎
+        if (((Entity)this).getRandom().nextFloat() < getHydatidiformMoleProbability()) {
+            this.setHydatidiformMole(true);
+            return;
+        }
         // 是否会宫外孕
         if (((Entity)this).getRandom().nextFloat() < getEctopicPregnancyProbability()) {
             this.setEctopicPregnancy(true);
@@ -57,7 +63,7 @@ public interface Pregnant{
     default void updatePregnant() {
         if (getPregnant() > 0) {
             setPregnant(getPregnant() - 1);
-            if (getPregnant() == 0) {
+            if (getPregnant() == 0 && !isEctopicPregnancy() && !isHydatidiformMole()) {
                 if (this instanceof LivingEntity liv){
                     liv.sendMessage(Text.of("§a分娩完成！"));
                     liv.damage(liv.getDamageSources().generic(),6.0f);
@@ -77,18 +83,20 @@ public interface Pregnant{
     }
 
     default void makeBaby() {
-        Entity baby = createBaby();
-        if (baby != null) {
-            // 产仔
-            baby.getWorld().spawnEntity(baby);
-            // 受伤
-            if (this instanceof LivingEntity pregnantEntity) {
-                if (baby instanceof EnderDragonEntity){
-                    // 玩家爆炸
-                    pregnantEntity.getWorld().createExplosion(baby, pregnantEntity.getX(), pregnantEntity.getY(), pregnantEntity.getZ(), 10.0F, World.ExplosionSourceType.MOB);
-                    FOREVER_BABY.add(baby.getUuid());
-                }else {
-                    pregnantEntity.damage(pregnantEntity.getDamageSources().generic(), 2.0F);
+        for (int i = 0; i < getBabyCount(); i++) {
+            Entity baby = createBaby();
+            if (baby != null) {
+                // 产仔
+                baby.getWorld().spawnEntity(baby);
+                // 受伤
+                if (this instanceof LivingEntity pregnantEntity) {
+                    if (baby instanceof EnderDragonEntity){
+                        // 玩家爆炸
+                        pregnantEntity.getWorld().createExplosion(baby, pregnantEntity.getX(), pregnantEntity.getY(), pregnantEntity.getZ(), 10.0F, World.ExplosionSourceType.MOB);
+                        FOREVER_BABY.add(baby.getUuid());
+                    }else {
+                        pregnantEntity.damage(pregnantEntity.getDamageSources().generic(), 2.0F);
+                    }
                 }
             }
         }
@@ -141,6 +149,9 @@ public interface Pregnant{
         nbt.putInt("MenstruationComfort", getMenstruationComfort());
         nbt.putBoolean("Sterilization", isSterilization());
         nbt.putBoolean("EctopicPregnancy", isEctopicPregnancy());
+        nbt.putInt("AIDS", getAids());
+        nbt.putBoolean("HydatidiformMole", isHydatidiformMole());
+        nbt.putInt("BabyCount", getBabyCount());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         if (nbt.contains("Pregnant")) {
@@ -164,6 +175,15 @@ public interface Pregnant{
         }
         if (nbt.contains("EctopicPregnancy")) {
             setEctopicPregnancy(nbt.getBoolean("EctopicPregnancy"));
+        }
+        if (nbt.contains("AIDS")) {
+            setAids(nbt.getInt("AIDS"));
+        }
+        if (nbt.contains("HydatidiformMole")) {
+            setHydatidiformMole(nbt.getBoolean("HydatidiformMole"));
+        }
+        if (nbt.contains("BabyCount")) {
+            setBabyCount(nbt.getInt("BabyCount"));
         }
     }
 
@@ -198,6 +218,36 @@ public interface Pregnant{
         }
         return Math.max(probability, 0.01f);
     }
+    default float getHydatidiformMoleProbability(){
+        float probability = 0.01f;
+        if (this instanceof LivingEntity entity){
+            if (entity.getAttributeValue(EntityAttributes.GENERIC_SCALE) < 1){
+                probability += 0.1f;
+            }
+            if (entity.getStatusEffects().stream().anyMatch(effect -> !effect.getEffectType().value().isBeneficial())){
+                probability += 0.05f;
+            }
+        }
+        return Math.max(probability, 0.01f);
+    }
+    default int calculateBabyCount(LivingEntity target){
+        // 获取对方目前的体型
+        double targetScale = target.getAttributeBaseValue(EntityAttributes.GENERIC_SCALE);
+        // 计算对方真实体积
+        EntityDimensions targetDimensions = target.getDimensions(target.getPose());
+        double targetVolume = targetDimensions.width() * targetDimensions.height() * targetDimensions.height();
+        // 真实体积
+        double targetRealVolume = targetScale * targetVolume;
+        // 获取自己目前的体型
+        double selfScale = ((LivingEntity)this).getAttributeValue(EntityAttributes.GENERIC_SCALE);
+        // 自己的体型与(对方体积除以4)相除
+        double r = selfScale*selfScale*selfScale / (targetRealVolume / 4);
+        // 向上取整
+        int baseBabyCount = (int)Math.ceil(r);
+        // 随机上下2个波动（必须大于等于1）
+        int babyCount = baseBabyCount + (int)(Math.random() * 3) - 1;
+        return Math.max(babyCount, 1);
+    }
 
     default void setEctopicPregnancy(boolean ectopicPregnancy){
     }
@@ -205,12 +255,35 @@ public interface Pregnant{
     default boolean isEctopicPregnancy(){
         return false;
     }
+    
+    default void setAids(int time){
+    }
+    
+    default int getAids(){
+        return 0;
+    }
+    default void updateAids() {
+        if (getAids() > 0){
+            setAids(getAids()+1);
+        }
+    }
+
+    default void setHydatidiformMole(boolean hydatidiformMole){}
+    default boolean isHydatidiformMole(){
+        return false;
+    }
+
+    default void setBabyCount(int count){}
+    default int getBabyCount(){
+        return 0;
+    }
 
     static <T extends LivingEntity&Pregnant> void pregnantTick(T pregnant) {
         pregnant.updatePregnant();
         if (!pregnant.isPregnant()) {
             // 清除怀孕效果（如果有的话）
             pregnant.setEctopicPregnancy(false);
+            pregnant.setHydatidiformMole(false);
             pregnant.removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getPREGNANT_EFFECT()));
         }else {
             // 设置怀孕效果
@@ -223,6 +296,20 @@ public interface Pregnant{
                         false,
                         true
                 ));
+            }
+            if (pregnant.isHydatidiformMole()) {
+                // 1/200的概率随机掉1~3血
+                if (pregnant.getRandom().nextInt(200) == 0) {
+                    pregnant.damage(pregnant.getDamageSources().generic(), pregnant.getRandom().nextInt(3) + 1);
+                }
+                // 1/400的概率反胃
+                if (pregnant.getRandom().nextInt(400) == 0) {
+                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20*20, 0));
+                }
+                // 1/600的概率掉落奇怪物品
+                if (pregnant.getRandom().nextInt(600) == 0) {
+                    pregnant.dropItem(JRItems.Companion.getMOLE());
+                }
             }
             if (pregnant.isEctopicPregnancy()) {
                 int time = pregnant.getPregnant();
@@ -293,6 +380,35 @@ public interface Pregnant{
                 }else {
                     // 扣血
                     pregnant.damage(pregnant.getDamageSources().magic(), 1.0f);
+                }
+            }
+        }
+    }
+    
+    static <T extends LivingEntity&Pregnant> void aidsTick(T pregnant) {
+        pregnant.updateAids();
+        int aids = pregnant.getAids();
+        if (aids > 0){
+            // 给予效果
+            pregnant.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getAIDS_EFFECT()), pregnant.getAids(), 0));
+            if (aids < 20 * 60 * 20){
+                // 1~2天内1/500反胃，缓慢，失明，虚弱
+                if (pregnant.getRandom().nextInt(500) == 0) {
+                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20*10, 0));
+                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20*10, 0));
+                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 20*10, 0));
+                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20*10, 0));
+                }
+            }
+            if (aids > 20*60*20*10){
+                // 大于10天后1/20随机凋零，缓慢，失明，虚弱，剧毒，反胃
+                if (pregnant.getRandom().nextInt(20) == 0) {
+                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 20*10, 2));
+                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20*10, 2));
+                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 20*10, 2));
+                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20*10, 2));
+                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, 20*10, 2));
+                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20*10, 2));
                 }
             }
         }

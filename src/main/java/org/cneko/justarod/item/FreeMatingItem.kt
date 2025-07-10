@@ -25,6 +25,7 @@ class FreeMatingItem(settings: Settings): Item(settings) {
                         .anyMatch(Predicate { item: ItemStack? -> item!!.isOf(BYT) })
                 ) {
                     user.tryPregnant()
+                    user.babyCount = user.calculateBabyCount(entity)
                     user.childrenType = entity?.type
                     user.sendMessage(Text.of("§a交配完成！"))
                     user.sendMessage(Text.of("§b你怀上了${Text.translatable(entity?.type?.translationKey).string}的宝宝哦~"))

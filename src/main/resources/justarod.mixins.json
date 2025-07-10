@@ -16,7 +16,6 @@
     "defaultRequire": 1
   },
   "client": [
-    "client.EnderDragonRendererMixin",
-    "client.PlayerRendererMixin"
+    "client.EnderDragonRendererMixin"
   ]
 }

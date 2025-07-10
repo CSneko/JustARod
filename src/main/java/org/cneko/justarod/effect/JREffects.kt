@@ -38,6 +38,11 @@ class JREffects {
             Identifier.of(MODID, "pregnant"),
             PregnantEffect()
         )
+        var AIDS_EFFECT: StatusEffect? = Registry.register(
+            Registries.STATUS_EFFECT,
+            Identifier.of(MODID, "aids"),
+            AIDSEffect()
+        )
         fun init(){
         }
     }

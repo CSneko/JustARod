@@ -1,5 +1,6 @@
 package org.cneko.justarod.entity
 
+import kotlinx.coroutines.flow.merge
 import net.minecraft.entity.EntityPose
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.data.DataTracker
@@ -14,6 +15,7 @@ import net.minecraft.registry.tag.FluidTags
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.world.World
+import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.entity.ai.SexualIntercourseGoal
 import org.cneko.justarod.item.JRItems.Companion.BYT
 import org.cneko.toneko.common.mod.entities.INeko
@@ -75,6 +77,7 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
             }
             // 怀孕10天
             mate.tryPregnant()
+            mate.babyCount = mate.calculateBabyCount(this)
             this.nekoLevel = this.nekoLevel + 0.1f
             mate.nekoLevel = this.nekoLevel + 0.1f
             this.addStatusEffect(StatusEffectInstance(StatusEffects.WEAKNESS, 3000, 0))
@@ -85,6 +88,12 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
                 // 添加到对方的
                 for (effect in effects) {
                     mate.entity.addStatusEffect(effect)
+                }
+            }
+            // 如果自己有艾滋，就添加到对方
+            if (effects.stream().anyMatch { it -> it.effectType.value().equals(JREffects.AIDS_EFFECT) }){
+                if (mate.aids <= 0){
+                    mate.aids = 1
                 }
             }
         }else{

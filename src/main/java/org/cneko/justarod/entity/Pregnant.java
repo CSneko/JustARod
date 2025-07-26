@@ -152,6 +152,8 @@ public interface Pregnant{
         nbt.putInt("AIDS", getAids());
         nbt.putBoolean("HydatidiformMole", isHydatidiformMole());
         nbt.putInt("BabyCount", getBabyCount());
+        nbt.putInt("HPV", getHPV());
+        nbt.putBoolean("Immune2HPV", isImmune2HPV());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         if (nbt.contains("Pregnant")) {
@@ -184,6 +186,12 @@ public interface Pregnant{
         }
         if (nbt.contains("BabyCount")) {
             setBabyCount(nbt.getInt("BabyCount"));
+        }
+        if (nbt.contains("HPV")) {
+            setHPV(nbt.getInt("HPV"));
+        }
+        if (nbt.contains("Immune2HPV")){
+            setImmune2HPV(nbt.getBoolean("Immune2HPV"));
         }
     }
 
@@ -276,6 +284,21 @@ public interface Pregnant{
     default void setBabyCount(int count){}
     default int getBabyCount(){
         return 0;
+    }
+
+    default void setHPV(int time){}
+    default int getHPV(){
+        return 0;
+    }
+    default void updateHPV() {
+        if (getHPV() > 0){
+            setHPV(getHPV()+1);
+        }
+    }
+    default void setImmune2HPV(boolean bl){
+    }
+    default boolean isImmune2HPV(){
+        return false;
     }
 
     static <T extends LivingEntity&Pregnant> void pregnantTick(T pregnant) {
@@ -410,6 +433,45 @@ public interface Pregnant{
                     pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, 20*10, 2));
                     pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20*10, 2));
                 }
+            }
+        }
+    }
+
+    static <T extends LivingEntity&Pregnant> void HPVTick(T pregnant) {
+        pregnant.updateHPV();
+        int hpv = pregnant.getHPV();
+        if (20 * 60 * 20 * 3 <= hpv){
+            // 设置效果
+            pregnant.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getHPV_EFFECT()), hpv, 0));
+        }
+        if (20 * 60 * 20 * 3 <= hpv && hpv < 20 * 60 * 20 * 6){
+            // 4~6天内1/40低级挖掘疲劳
+            if (pregnant.getRandom().nextInt(40) == 0) {
+                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20*10, 0));
+            }
+        }else if (hpv >= 20 * 60 * 20 * 6 && hpv < 20 * 60 * 20 * 10){
+            // 7~10天内1/80低级挖掘疲劳+掉血
+            if (pregnant.getRandom().nextInt(80) == 0) {
+                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20*20, 0));
+                pregnant.damage(pregnant.getDamageSources().generic(), 1);
+            }
+        }else if (hpv >= 20 * 60 * 20 * 10){
+            // 10~12天内1/10高级挖掘疲劳+缓慢
+            if (pregnant.getRandom().nextInt(10) == 0) {
+                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20*20, 1));
+                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20*20, 1));
+            }
+            // 1/400晕倒
+            if (pregnant.getRandom().nextInt(400) == 0) {
+                pregnant.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getFAINT_EFFECT()), 20*30, 0));
+            }
+            // 1/40掉血
+            if (pregnant.getRandom().nextInt(40) == 0) {
+                pregnant.damage(pregnant.getDamageSources().magic(), 1.0F);
+            }
+            // 大于12天直接死亡
+            if (hpv > 20 * 60 *20 *12){
+                pregnant.kill();
             }
         }
     }

@@ -96,6 +96,12 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
                     mate.aids = 1
                 }
             }
+            // 如果有HPV，对方无免疫就添加
+            if (effects.stream().anyMatch { it -> it.effectType.value().equals(JREffects.HPV_EFFECT) }){
+                if (!mate.isImmune2HPV){
+                    mate.isImmune2HPV = true
+                }
+            }
         }else{
             super.breed(level, mate)
         }

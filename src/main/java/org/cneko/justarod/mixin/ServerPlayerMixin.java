@@ -12,5 +12,6 @@ public class ServerPlayerMixin {
     public void copyFrom(ServerPlayerEntity oldPlayer, boolean alive, CallbackInfo ci) {
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
         player.setSterilization(oldPlayer.isSterilization());
+        player.setImmune2HPV(oldPlayer.isImmune2HPV());
     }
 }

@@ -167,6 +167,48 @@ class PregnantCommand {
                         )
                     )
                 )
+                dispatcher.register(literal("hpv")
+                    .executes { ctx ->
+                        val source = ctx.source.entity
+                        if (source is Pregnant){
+                            source.sendMessage(Text.of("当前HPV状态：${if (source.hpv > 0) "已经感染${source.hpv}" else "没有感染HPV哦"}"))
+                        }
+                        return@executes 1
+                    }
+                    .then(literal("set")
+                        .requires { source -> source.hasPermissionLevel(4) }
+                        .then(argument("time", IntegerArgumentType.integer(0, Int.MAX_VALUE))
+                            .executes {ctx ->
+                                val source = ctx.source.entity
+                                if (source is Pregnant) {
+                                    source.hpv = IntegerArgumentType.getInteger(ctx,"time")
+                                }
+                                return@executes 1
+                            }
+                        )
+                        .then(literal("immune")
+                            .executes { ctx ->
+                                val source = ctx.source.entity
+                                if (source is Pregnant) {
+                                    source.sendMessage(Text.of("当前HPV免疫状态：${if (source.isImmune2HPV) "已免疫" else "没有免疫"}"))
+                                }
+                                return@executes 1
+                            }
+                            .then(literal("set")
+                                .requires { source -> source.hasPermissionLevel(4) }
+                                .then(argument("is", BoolArgumentType.bool())
+                                    .executes {ctx ->
+                                        val source = ctx.source.entity
+                                        if (source is Pregnant) {
+                                            source.isImmune2HPV = BoolArgumentType.getBool(ctx,"is")
+                                        }
+                                        return@executes 1
+                                    }
+                                )
+                            )
+                        )
+                    )
+                )
             }
         }
     }

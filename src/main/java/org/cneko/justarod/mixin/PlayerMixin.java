@@ -1,14 +1,21 @@
 package org.cneko.justarod.mixin;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.World;
+import org.cneko.justarod.effect.JREffects;
 import org.cneko.justarod.entity.*;
 import org.cneko.justarod.packet.JRSyncPayload;
 import org.cneko.toneko.common.mod.entities.INeko;
@@ -49,6 +56,10 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     private boolean hydatidiformMole = false;
     @Unique
     private int babyCount = 0;
+    @Unique
+    private int hpv = 0;
+    @Unique
+    private boolean immune2HPV = false;
 
     @Override
     public double getPower() {
@@ -157,6 +168,26 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     }
 
     @Override
+    public void setHPV(int time) {
+        this.hpv = time;
+    }
+
+    @Override
+    public int getHPV() {
+        return hpv;
+    }
+
+    @Override
+    public boolean isImmune2HPV() {
+        return immune2HPV;
+    }
+
+    @Override
+    public void setImmune2HPV(boolean immune2HPV) {
+        this.immune2HPV = immune2HPV;
+    }
+
+    @Override
     public Entity createBaby() {
         PlayerEntity player = (PlayerEntity) (Object) this;
         var baby = (Entity) getChildrenType().create(player.getWorld());
@@ -199,6 +230,26 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
             Pregnant.pregnantTick(player);
             Pregnant.menstruationTick(player);
             Pregnant.aidsTick(player);
+            Pregnant.HPVTick(player);
+        }
+    }
+
+    @Inject(method = "eatFood",at = @At("HEAD"))
+    public void eatFood(World world, ItemStack stack, FoodComponent foodComponent, CallbackInfoReturnable<ItemStack> cir) {
+        if (stack.isOf(Items.MILK_BUCKET)){
+            // 如果有HPV且在3天内
+            if (this.getHPV() > 0 && this.getHPV() < 20*60*20*3) {
+                this.setHPV(0);
+                // 移除HPV效果
+                ((PlayerEntity)(Object)this).removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getHPV_EFFECT()));
+            }
+        }
+        if (stack.isOf(Items.ENCHANTED_GOLDEN_APPLE)){
+            // 如果有HPV且在6天内
+            if (this.getHPV() > 0 && this.getHPV() < 20*60*20*6) {
+                this.setHPV(0);
+                ((PlayerEntity)(Object)this).removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getHPV_EFFECT()));
+            }
         }
     }
 

@@ -68,6 +68,7 @@ class JRItems {
         val MOLE = Item(Item.Settings().food(FoodComponent.Builder().nutrition(1)
             .statusEffect(StatusEffectInstance(StatusEffects.NAUSEA,10,0),1f).build()))
         val HPV_VACCINE = Item(Item.Settings())
+        val COTTON_SWAB = CottonSwabItem(Item.Settings().maxCount(1))
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -105,6 +106,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "byt"), BYT)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "mole"), MOLE)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "hpv_vaccine"), HPV_VACCINE)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "cotton_swab"), COTTON_SWAB)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
@@ -148,6 +150,7 @@ class JRItems {
                 entries.add(BYT)
                 entries.add(MOLE)
                 entries.add(HPV_VACCINE)
+                entries.add(COTTON_SWAB)
             }
         }
     }

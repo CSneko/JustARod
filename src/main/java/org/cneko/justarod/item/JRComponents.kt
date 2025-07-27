@@ -38,5 +38,10 @@ class JRComponents{
             Identifier.of(MODID, "rod_inside"),
             ComponentType.builder<ItemStack>().codec(ItemStack.CODEC).build()
         )
+        val SECRETIONS_APPEARANCE: ComponentType<String> = Registry.register(
+            Registries.DATA_COMPONENT_TYPE,
+            Identifier.of(MODID, "secretions_appearance"),
+            ComponentType.builder<String>().codec(Codec.STRING).build()
+        )
     }
 }

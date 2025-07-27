@@ -83,11 +83,26 @@ public interface Pregnant{
     }
 
     default void makeBaby() {
+        makeBaby(false);
+    }
+    default void makeBaby(boolean pretermBirth) {
         for (int i = 0; i < getBabyCount(); i++) {
             Entity baby = createBaby();
             if (baby != null) {
                 // 产仔
                 baby.getWorld().spawnEntity(baby);
+                if (baby instanceof LivingEntity b && pretermBirth){
+                    // 永久性的缓慢
+                    b.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, Integer.MAX_VALUE, 1));
+                    // 1/10几率死亡
+                    if (b.getRandom().nextInt(10) == 0) {
+                        b.kill();
+                    }
+                    // 1/4的概率中毒
+                    if (b.getRandom().nextInt(4) == 0) {
+                        b.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, 20*60, 0));
+                    }
+                }
                 // 受伤
                 if (this instanceof LivingEntity pregnantEntity) {
                     if (baby instanceof EnderDragonEntity){
@@ -301,6 +316,7 @@ public interface Pregnant{
         return false;
     }
 
+
     static <T extends LivingEntity&Pregnant> void pregnantTick(T pregnant) {
         pregnant.updatePregnant();
         if (!pregnant.isPregnant()) {
@@ -359,6 +375,14 @@ public interface Pregnant{
                     if (pregnant.getRandom().nextInt(400) == 0) {
                         pregnant.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getFAINT_EFFECT()), 20*60, 0));
                     }
+                }
+            }
+            if (pregnant.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getVAGINITIS_EFFECT())) && pregnant.getPregnant() < 20*60*20*3){
+                // 阴道炎&小于3天，有几率早产
+                pregnant.setPregnant(pregnant.getPregnant() + 1);
+                if (pregnant.getRandom().nextInt(500) == 0) {
+                    pregnant.setPregnant(0);
+                    pregnant.makeBaby(true);
                 }
             }
         }

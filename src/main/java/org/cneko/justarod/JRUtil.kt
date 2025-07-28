@@ -1,14 +1,18 @@
 package org.cneko.justarod
 
+import net.minecraft.enchantment.Enchantment
 import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.item.ItemStack
+import net.minecraft.registry.RegistryKey
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.Box
 import net.minecraft.world.World
 import org.cneko.justarod.Justarod.MODID
 import org.cneko.toneko.common.mod.entities.INeko
+import kotlin.jvm.optionals.getOrElse
 
 class JRUtil {
     companion object {
@@ -39,6 +43,15 @@ class JRUtil {
         }
         fun rodId(path:String): Identifier{
             return Identifier.of(MODID, path)
+        }
+
+        fun ItemStack.containsEnchantment(enchantment: RegistryKey<Enchantment>): Boolean{
+            return this.hasEnchantments() && this.enchantments.enchantments.any { e ->
+                if(e.key.isPresent){
+                    return e.key.get().value.equals(enchantment.value)
+                }
+                return false
+            }
         }
 
     }

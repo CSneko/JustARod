@@ -209,6 +209,27 @@ class PregnantCommand {
                         )
                     )
                 )
+                dispatcher.register(literal("hysterectomy")
+                    .executes {context ->
+                        val source = context.source.entity
+                        if (source is Pregnant){
+                            source.sendMessage(Text.of("§a子宫切除状态：${if (source.isHysterectomy) "§c已切除" else "§b未切除"}"))
+                        }
+                        return@executes 1
+                    }
+                    .then(literal("set")
+                        .requires { source -> source.hasPermissionLevel(4) }
+                        .then(argument("is", BoolArgumentType.bool())
+                            .executes {ctx ->
+                                val source = ctx.source.entity
+                                if (source is Pregnant) {
+                                    source.isHysterectomy = BoolArgumentType.getBool(ctx,"is")
+                                }
+                                return@executes 1
+                            }
+                        )
+                    )
+                )
             }
         }
     }

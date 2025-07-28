@@ -60,6 +60,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     private int hpv = 0;
     @Unique
     private boolean immune2HPV = false;
+    @Unique
+    private boolean isHysterectomy = false;
 
     @Override
     public double getPower() {
@@ -185,6 +187,16 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     @Override
     public void setImmune2HPV(boolean immune2HPV) {
         this.immune2HPV = immune2HPV;
+    }
+
+    @Override
+    public boolean isHysterectomy() {
+        return isHysterectomy;
+    }
+
+    @Override
+    public void setHysterectomy(boolean hysterectomy) {
+        isHysterectomy = hysterectomy;
     }
 
     @Override

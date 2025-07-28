@@ -154,7 +154,7 @@ public interface Pregnant{
         }
     }
     default boolean canPregnant(){
-        return getMenstruationCycle() == MenstruationCycle.OVULATION && !this.isPregnant() && !this.isSterilization();
+        return getMenstruationCycle() == MenstruationCycle.OVULATION && !this.isPregnant() && !this.isSterilization() && !this.isHysterectomy();
     }
 
     default void writePregnantToNbt(NbtCompound nbt) {
@@ -169,6 +169,7 @@ public interface Pregnant{
         nbt.putInt("BabyCount", getBabyCount());
         nbt.putInt("HPV", getHPV());
         nbt.putBoolean("Immune2HPV", isImmune2HPV());
+        nbt.putBoolean("Hysterectomy",isHysterectomy());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         if (nbt.contains("Pregnant")) {
@@ -208,6 +209,9 @@ public interface Pregnant{
         if (nbt.contains("Immune2HPV")){
             setImmune2HPV(nbt.getBoolean("Immune2HPV"));
         }
+        if (nbt.contains("Hysterectomy")){
+            setHysterectomy(nbt.getBoolean("Hysterectomy"));
+        }
     }
 
     default Entity createBaby() {
@@ -217,6 +221,11 @@ public interface Pregnant{
     default void setSterilization(boolean sterilization){}
     // 是否绝育
     default boolean isSterilization(){
+        return false;
+    }
+
+    default void setHysterectomy(boolean hysterectomy){}
+    default boolean isHysterectomy(){
         return false;
     }
 
@@ -318,6 +327,13 @@ public interface Pregnant{
 
 
     static <T extends LivingEntity&Pregnant> void pregnantTick(T pregnant) {
+        if (pregnant.isHysterectomy()){
+            // 清除怀孕效果（如果有的话）
+            pregnant.setEctopicPregnancy(false);
+            pregnant.setHydatidiformMole(false);
+            pregnant.removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getPREGNANT_EFFECT()));
+            return;
+        }
         pregnant.updatePregnant();
         if (!pregnant.isPregnant()) {
             // 清除怀孕效果（如果有的话）
@@ -388,6 +404,9 @@ public interface Pregnant{
         }
     }
     static <T extends LivingEntity&Pregnant> void menstruationTick(T pregnant) {
+        if (pregnant.isHysterectomy()){
+            return;
+        }
         pregnant.updateMenstruation();
         MenstruationCycle cycle = pregnant.getMenstruationCycle();
         // 1/3000的几率获得效果
@@ -416,8 +435,8 @@ public interface Pregnant{
                 pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20*30, 0));
             }
         }
-        // 1/400的几率附加
-        if (pregnant.getRandom().nextInt(400) == 0) {
+        // /1000的几率附加
+        if (pregnant.getRandom().nextInt(1000) == 0) {
             if (cycle == MenstruationCycle.MENSTRUATION){
                 if (pregnant.getMenstruationComfort()>0){
                     if (pregnant.getRandom().nextBoolean()){
@@ -462,6 +481,9 @@ public interface Pregnant{
     }
 
     static <T extends LivingEntity&Pregnant> void HPVTick(T pregnant) {
+        if (pregnant.isHysterectomy()){
+            return;
+        }
         pregnant.updateHPV();
         int hpv = pregnant.getHPV();
         if (20 * 60 * 20 * 3 <= hpv){

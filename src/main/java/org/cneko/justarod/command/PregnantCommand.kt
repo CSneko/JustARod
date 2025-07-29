@@ -67,24 +67,24 @@ class PregnantCommand {
                                 )
                             )
                         )
-                        .then(literal("count")
-                            .executes { context ->
-                                val source = context.source.entity
-                                if (source is Pregnant && source.isPregnant) {
-                                    source.sendMessage(Text.of("§a你怀了${source.babyCount}胞胎！"))
-                                }
-                                return@executes 1
+                    )
+                    .then(literal("count")
+                        .executes { context ->
+                            val source = context.source.entity
+                            if (source is Pregnant && source.isPregnant) {
+                                source.sendMessage(Text.of("§a你怀了${source.babyCount}胞胎！"))
                             }
-                            .then(literal("set")
-                                .then(argument("count", IntegerArgumentType.integer(0, Int.MAX_VALUE))
-                                    .executes { context ->
-                                        val source = context.source.entity
-                                        if (source is Pregnant) {
-                                            source.babyCount = IntegerArgumentType.getInteger(context, "count")
-                                        }
-                                        return@executes 1
+                            return@executes 1
+                        }
+                        .then(literal("set")
+                            .then(argument("count", IntegerArgumentType.integer(0, Int.MAX_VALUE))
+                                .executes { context ->
+                                    val source = context.source.entity
+                                    if (source is Pregnant) {
+                                        source.babyCount = IntegerArgumentType.getInteger(context, "count")
                                     }
-                                )
+                                    return@executes 1
+                                }
                             )
                         )
                     )

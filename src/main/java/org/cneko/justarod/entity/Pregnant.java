@@ -405,6 +405,7 @@ public interface Pregnant{
     }
     static <T extends LivingEntity&Pregnant> void menstruationTick(T pregnant) {
         if (pregnant.isHysterectomy()){
+            pregnant.setMenstruation(0);
             return;
         }
         pregnant.updateMenstruation();
@@ -482,6 +483,7 @@ public interface Pregnant{
 
     static <T extends LivingEntity&Pregnant> void HPVTick(T pregnant) {
         if (pregnant.isHysterectomy()){
+            pregnant.setHPV(0);
             return;
         }
         pregnant.updateHPV();

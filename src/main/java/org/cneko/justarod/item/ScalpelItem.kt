@@ -25,6 +25,8 @@ class ScalpelItem(settings: Settings): Item(settings.maxCount(1).maxDamage(4)) {
             if (it.containsEnchantment(JREnchantments.HYSTERECTOMY)){
                 tooltip?.add(Text.of("§c使用它可进行子宫切除"))
                 tooltip?.add(Text.of("§c此操作会永久切除子宫，请谨慎使用！"))
+            }else if (it.containsEnchantment(JREnchantments.UTERUS_INSTALLATION)){
+                tooltip?.add(Text.of("§a使用它可以安装子宫"))
             }
         }
     }
@@ -32,6 +34,7 @@ class ScalpelItem(settings: Settings): Item(settings.maxCount(1).maxDamage(4)) {
     override fun use(world: World?, user: PlayerEntity?, hand: Hand?): TypedActionResult<ItemStack?>? {
         if (user != null && world?.isClient == false){
             val stack = user.getStackInHand(hand)
+            val offHandStack = user.getStackInHand(if (hand == Hand.MAIN_HAND) Hand.OFF_HAND else Hand.MAIN_HAND)
             if (stack.damage >= stack.maxDamage){
                 return TypedActionResult.fail(stack)
             }
@@ -51,9 +54,26 @@ class ScalpelItem(settings: Settings): Item(settings.maxCount(1).maxDamage(4)) {
                     // 掉落子宫
                     user.dropStack(ItemStack(JRItems.UTERUS))
                     user.sendMessage(Text.of("已进行子宫切除！"))
-                    // 减少一点耐久
-                    stack.damage--
                     return TypedActionResult.success(stack)
+                }
+            }else if (stack.containsEnchantment(JREnchantments.UTERUS_INSTALLATION)){
+                if (!user.isHysterectomy){
+                    user.sendMessage(Text.of("§c不可以同时安装多个子宫！"))
+                }else if (!offHandStack.isOf(JRItems.UTERUS)){
+                    user.sendMessage(Text.of("§c副手必须拿着子宫哦"))
+                }else{
+                    // 扣血
+                    user.damage(user.world.damageSources.generic(), 10f)
+                    // 缓慢
+                    user.addStatusEffect(StatusEffectInstance(StatusEffects.SLOWNESS, 600, 1))
+                    // 挖掘疲劳
+                    user.addStatusEffect(StatusEffectInstance(StatusEffects.MINING_FATIGUE, 600, 1))
+                    // 晕倒
+                    user.addStatusEffect(StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(JREffects.FAINT_EFFECT), 300, 1))
+                    // 减少一个子宫
+                    offHandStack.decrement(1)
+                    user.isHysterectomy = false
+                    user.sendMessage(Text.of("已安装子宫！"))
                 }
             }
         }

@@ -5,6 +5,7 @@
   "entity.justarod.loli_neko": "萝莉猫娘",
   "entity.justarod.loli_neko.des": "永远是萝莉形态的猫娘（已成年）",
   "enchantment.justarod.hysterectomy": "子宫切除",
+  "enchantment.justarod.uterus_installation": "子宫安装",
   "command.justarod.rod.get.success": "§a在你里面的末地烛是%s",
   "command.justarod.rod.get.failure": "§c你没有末地烛",
   "command.justarod.rod.set.success": "§a你已成功设置末地烛%s",

@@ -154,7 +154,7 @@ public interface Pregnant{
         }
     }
     default boolean canPregnant(){
-        return getMenstruationCycle() == MenstruationCycle.OVULATION && !this.isPregnant() && !this.isSterilization() && !this.isHysterectomy();
+        return getMenstruationCycle() == MenstruationCycle.OVULATION && !this.isPregnant() && !this.isSterilization() && !this.isHysterectomy() && !this.isPCOS();
     }
 
     default void writePregnantToNbt(NbtCompound nbt) {
@@ -170,6 +170,7 @@ public interface Pregnant{
         nbt.putInt("HPV", getHPV());
         nbt.putBoolean("Immune2HPV", isImmune2HPV());
         nbt.putBoolean("Hysterectomy",isHysterectomy());
+        nbt.putBoolean("PCOS",isPCOS());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         if (nbt.contains("Pregnant")) {
@@ -211,6 +212,9 @@ public interface Pregnant{
         }
         if (nbt.contains("Hysterectomy")){
             setHysterectomy(nbt.getBoolean("Hysterectomy"));
+        }
+        if (nbt.contains("PCOS")){
+            setPCOS(nbt.getBoolean("PCOS"));
         }
     }
 
@@ -324,6 +328,10 @@ public interface Pregnant{
     default boolean isImmune2HPV(){
         return false;
     }
+    default void setPCOS(boolean bl){}
+    default boolean isPCOS(){
+        return false;
+    }
 
 
     static <T extends LivingEntity&Pregnant> void pregnantTick(T pregnant) {
@@ -404,7 +412,7 @@ public interface Pregnant{
         }
     }
     static <T extends LivingEntity&Pregnant> void menstruationTick(T pregnant) {
-        if (pregnant.isHysterectomy()){
+        if (pregnant.isHysterectomy() || pregnant.isPCOS()){
             pregnant.setMenstruation(0);
             return;
         }

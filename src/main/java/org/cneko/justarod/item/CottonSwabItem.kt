@@ -26,7 +26,10 @@ class CottonSwabItem(settings: Settings): Item(settings.maxCount(1)) {
                     stack.set(JRComponents.SECRETIONS_APPEARANCE, "§c鲜红色，轻微金属味")
                 }else if (user.hpv >= 20*60*20*3){
                     stack.set(JRComponents.SECRETIONS_APPEARANCE, "§6褐色，恶臭味")
-                } else{
+                }else if (user.isPCOS){
+                    stack.set(JRComponents.SECRETIONS_APPEARANCE, "§o量过少，难以观察")
+                }
+                else{
                     stack.set(JRComponents.SECRETIONS_APPEARANCE, "§f乳白色半透明，无明显异味")
                 }
             }

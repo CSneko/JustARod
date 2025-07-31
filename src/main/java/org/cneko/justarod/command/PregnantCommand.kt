@@ -230,6 +230,27 @@ class PregnantCommand {
                         )
                     )
                 )
+                dispatcher.register(literal("PCOS")
+                    .executes { context ->
+                        val source = context.source.entity
+                        if (source is Pregnant){
+                            source.sendMessage(Text.of("当前多囊卵巢综合征状态：${if (source.isPCOS) "§c已感染" else "§a没有感染"}"))
+                        }
+                        return@executes 1
+                    }
+                    .then(literal("set")
+                        .requires { source -> source.hasPermissionLevel(4) }
+                        .then(argument("is", BoolArgumentType.bool())
+                            .executes {ctx ->
+                                val source = ctx.source.entity
+                                if (source is Pregnant) {
+                                    source.isPCOS = BoolArgumentType.getBool(ctx,"is")
+                                }
+                                return@executes 1
+                            }
+                        )
+                    )
+                )
             }
         }
     }

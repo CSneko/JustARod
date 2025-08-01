@@ -64,6 +64,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     private boolean isHysterectomy = false;
     @Unique
     private boolean isPCOS = false;
+    @Unique
+    private int brithControlling = 0;
 
     @Override
     public double getPower() {
@@ -209,6 +211,16 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     @Override
     public void setPCOS(boolean PCOS) {
         isPCOS = PCOS;
+    }
+
+    @Override
+    public int getBrithControlling() {
+        return brithControlling;
+    }
+
+    @Override
+    public void setBrithControlling(int brithControlling) {
+        this.brithControlling = brithControlling;
     }
 
     @Override

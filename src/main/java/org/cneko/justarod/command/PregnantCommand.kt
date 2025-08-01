@@ -234,7 +234,7 @@ class PregnantCommand {
                     .executes { context ->
                         val source = context.source.entity
                         if (source is Pregnant){
-                            source.sendMessage(Text.of("当前多囊卵巢综合征状态：${if (source.isPCOS) "§c已感染" else "§a没有感染"}"))
+                            source.sendMessage(Text.of("当前多囊卵巢综合征状态：${if (source.isPCOS) "§c已患上" else "§a没有患上"}"))
                         }
                         return@executes 1
                     }
@@ -245,6 +245,29 @@ class PregnantCommand {
                                 val source = ctx.source.entity
                                 if (source is Pregnant) {
                                     source.isPCOS = BoolArgumentType.getBool(ctx,"is")
+                                }
+                                return@executes 1
+                            }
+                        )
+                    )
+                )
+
+                dispatcher.register(literal("BrithControlling")
+                    .executes { context ->
+                        val source = context.source.entity
+                        if (source is Pregnant){
+                            source.sendMessage(Text.of("剩余避孕有效期：${source.brithControlling}"))
+                        }
+                        return@executes 1
+                    }
+
+                    .then(literal("set")
+                        .requires { source -> source.hasPermissionLevel(4) }
+                        .then(argument("time", IntegerArgumentType.integer(0, Int.MAX_VALUE))
+                            .executes {ctx ->
+                                val source = ctx.source.entity
+                                if (source is Pregnant) {
+                                    source.brithControlling = IntegerArgumentType.getInteger(ctx,"time")
                                 }
                                 return@executes 1
                             }

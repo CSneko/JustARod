@@ -154,7 +154,8 @@ public interface Pregnant{
         }
     }
     default boolean canPregnant(){
-        return getMenstruationCycle() == MenstruationCycle.OVULATION && !this.isPregnant() && !this.isSterilization() && !this.isHysterectomy() && !this.isPCOS();
+        return getMenstruationCycle() == MenstruationCycle.OVULATION && !this.isPregnant() && !this.isSterilization() && !this.isHysterectomy() && !this.isPCOS()
+                && !(this.getBrithControlling() > 0 && ((Entity)this).getRandom().nextInt(10) != 0);
     }
 
     default void writePregnantToNbt(NbtCompound nbt) {
@@ -171,6 +172,7 @@ public interface Pregnant{
         nbt.putBoolean("Immune2HPV", isImmune2HPV());
         nbt.putBoolean("Hysterectomy",isHysterectomy());
         nbt.putBoolean("PCOS",isPCOS());
+        nbt.putInt("BrithControlling",getBrithControlling());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         if (nbt.contains("Pregnant")) {
@@ -215,6 +217,9 @@ public interface Pregnant{
         }
         if (nbt.contains("PCOS")){
             setPCOS(nbt.getBoolean("PCOS"));
+        }
+        if (nbt.contains("BrithControlling")){
+            setBrithControlling(nbt.getInt("BrithControlling"));
         }
     }
 
@@ -332,9 +337,19 @@ public interface Pregnant{
     default boolean isPCOS(){
         return false;
     }
+    default void setBrithControlling(int time){}
+    default int getBrithControlling(){
+        return 0;
+    }
+    default void updateBrithControlling() {
+        if (getBrithControlling() > 0){
+            setBrithControlling(getBrithControlling()-1);
+        }
+    }
 
 
     static <T extends LivingEntity&Pregnant> void pregnantTick(T pregnant) {
+        pregnant.updateBrithControlling();
         if (pregnant.isHysterectomy()){
             // 清除怀孕效果（如果有的话）
             pregnant.setEctopicPregnancy(false);

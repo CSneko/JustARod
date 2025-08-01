@@ -71,6 +71,7 @@ class JRItems {
         val COTTON_SWAB = CottonSwabItem(Item.Settings().maxCount(1))
         val SCALPEL = ScalpelItem(Item.Settings())
         val UTERUS = Item(Item.Settings().food(FoodComponent.Builder().nutrition(6).alwaysEdible().build()))
+        val BRITH_CONTROLLING_PILL = BrithControllingPill(Item.Settings())
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -111,6 +112,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "cotton_swab"), COTTON_SWAB)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "scalpel"), SCALPEL)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "uterus"), UTERUS)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "brith_controlling_pill"), BRITH_CONTROLLING_PILL)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
@@ -157,6 +159,7 @@ class JRItems {
                 entries.add(COTTON_SWAB)
                 entries.add(SCALPEL)
                 entries.add(UTERUS)
+                entries.add(BRITH_CONTROLLING_PILL)
             }
         }
     }

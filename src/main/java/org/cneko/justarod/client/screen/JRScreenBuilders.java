@@ -9,12 +9,16 @@ import net.minecraft.text.Text;
 import org.cneko.justarod.entity.LoliNekoEntity;
 import org.cneko.justarod.entity.Sexual;
 import org.cneko.justarod.packet.PassiveMatingPayload;
+import org.cneko.justarod.packet.RavennPassiveMatingPayload;
 import org.cneko.toneko.common.mod.client.screens.InteractionScreen;
 import org.cneko.toneko.common.mod.client.screens.NekoScreenBuilder;
 import org.cneko.toneko.common.mod.client.screens.NekoScreenBuilder.ButtonFactory;
 import org.cneko.toneko.common.mod.client.screens.NekoScreenBuilder.TooltipFactory;
+import org.cneko.toneko.common.mod.client.screens.NekoScreenRegistry;
 import org.cneko.toneko.common.mod.client.screens.factories.ButtonFactories;
 import org.cneko.toneko.common.mod.client.screens.factories.ScreenBuilders;
+import org.cneko.toneko.common.mod.entities.RavennEntity;
+import org.cneko.toneko.common.mod.entities.ToNekoEntities;
 import org.cneko.toneko.common.mod.packets.interactives.NekoMatePayload;
 import java.util.Random;
 
@@ -40,12 +44,14 @@ public class JRScreenBuilders {
             .addButton(ButtonFactories.ACTION_BUTTON)
             .addButton(ButtonFactories.BREED_BUTTON);
 
+
+    public static final  NekoScreenBuilder RAVENN_BREED_SCREEN = ScreenBuilders.COMMON_TOOLTIP.clone()
+            .addButton(JRButtonFactories.RAVENN_BREED_ATTACKING_BUTTON)
+            .addButton(JRButtonFactories.RAVENN_BREED_RECEIVING_BUTTON);
+
     public static final class JRButtonFactories {
         public static final ButtonFactory SEEEEEX_NEKO_BREED_BUTTON = screen -> ButtonWidget.builder(Text.translatable("screen.toneko.seeeeeex_neko_entity_interactive.button.breed"), (btn) -> {
             if (screen.getNeko() instanceof Sexual) {
-//                MinecraftClient.getInstance().setScreen(new QuestionScreen(Questions.randomQuestion(),
-//                        ()-> MinecraftClient.getInstance().setScreen(new InteractionScreen(Text.empty(), screen.getNeko(), screen.lastScreen, SEEEEEX_NEKO_BREED_SCREEN)),
-//                        ()-> getInstance().player.sendMessage(Text.of("§c这都答错了呢~ 杂鱼杂鱼♡~~")), Questions::randomQuestion));
                 MinecraftClient.getInstance().setScreen(new InteractionScreen(Text.empty(), screen.getNeko(), screen.lastScreen, SEEEEEX_NEKO_BREED_SCREEN));
             }
         });
@@ -67,6 +73,22 @@ public class JRScreenBuilders {
                 ClientPlayNetworking.send(new PassiveMatingPayload(screen.getNeko().getEntity().getUuid().toString(), entity.getUuid().toString()));
                 MinecraftClient.getInstance().setScreen(screen.lastScreen);
             }
+        });
+
+        public static final ButtonFactory RAVENN_BREED_BUTTON = screen -> ButtonWidget.builder(Text.translatable("screen.toneko.neko_entity_interactive.button.breed"), (btn) -> {
+            if (screen.getNeko() instanceof RavennEntity) {
+                MinecraftClient.getInstance().setScreen(new InteractionScreen(Text.empty(), screen.getNeko(), screen.lastScreen, RAVENN_BREED_SCREEN));
+            }
+        });
+        public static final ButtonFactory RAVENN_BREED_ATTACKING_BUTTON = screen -> ButtonWidget.builder(Text.translatable("screen.toneko.neko_entity_interactive.button.attacking"), (btn) -> {
+            // 设置为灰色
+            if (getInstance().player.getPower() < 60) {
+                btn.active = false;
+                btn.setTooltip(Tooltip.of(Text.translatable("screen.toneko.neko_entity_interactive.button.attacking.fail"))); // 哼哼~ 不持久我都看不上呢
+            }
+        });
+        public static final ButtonFactory RAVENN_BREED_RECEIVING_BUTTON = screen -> ButtonWidget.builder(Text.translatable("screen.toneko.neko_entity_interactive.button.receiving"), (btn) -> {
+            ClientPlayNetworking.send(new RavennPassiveMatingPayload(screen.getNeko().getEntity().getUuid().toString(), screen.getNeko().getUuid().toString()));
         });
     }
     public static final class JRTooltipFactories{

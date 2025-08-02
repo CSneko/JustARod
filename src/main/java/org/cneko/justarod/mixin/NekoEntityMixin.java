@@ -6,6 +6,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import org.cneko.justarod.JRAttributes;
 import org.cneko.justarod.entity.Insertable;
+import org.cneko.justarod.entity.Pregnant;
 import org.cneko.toneko.common.mod.entities.NekoEntity;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(NekoEntity.class)
-public abstract class NekoEntityMixin implements Insertable {
+public abstract class NekoEntityMixin implements Insertable{
     @Shadow public abstract LivingEntity getEntity();
 
     @Unique
@@ -45,6 +46,9 @@ public abstract class NekoEntityMixin implements Insertable {
             var rod = ItemStack.fromNbt(this.getEntity().getRegistryManager(),nbt.getCompound("rodInside"));
             rod.ifPresent(this::setRodInside);
         }
+        if (this.getEntity() instanceof Pregnant pregnant){
+            pregnant.readPregnantFromNbt(nbt);
+        }
     }
 
     @Inject(method = "writeCustomDataToNbt", at = @At("HEAD"))
@@ -53,6 +57,9 @@ public abstract class NekoEntityMixin implements Insertable {
             nbt.put("rodInside", getRodInside().encode(
                     this.getEntity().getRegistryManager()
             ));
+        }
+        if (this.getEntity() instanceof Pregnant pregnant){
+            pregnant.writePregnantToNbt(nbt);
         }
     }
     @Inject(method = "createNekoAttributes",at = @At("RETURN"))

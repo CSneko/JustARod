@@ -9,5 +9,6 @@ public class JRPackets {
         PayloadTypeRegistry.playS2C().register(JRSyncPayload.ID, JRSyncPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(MatePayload.ID, MatePayload.CODEC);
         PayloadTypeRegistry.playC2S().register(PassiveMatingPayload.ID, PassiveMatingPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(RavennPassiveMatingPayload.ID,RavennPassiveMatingPayload.CODEC);
     }
 }

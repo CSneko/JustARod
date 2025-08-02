@@ -10,13 +10,18 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import org.cneko.justarod.client.screen.MateScreen;
 import org.cneko.justarod.effect.JREffects;
+import org.cneko.justarod.entity.JREntities;
+import org.cneko.justarod.entity.Pregnant;
 import org.cneko.justarod.mixin.NekoEntityMixin;
 import org.cneko.justarod.packet.FullHeatPayload;
 import org.cneko.justarod.packet.MatePayload;
 import org.cneko.justarod.packet.PassiveMatingPayload;
+import org.cneko.justarod.packet.RavennPassiveMatingPayload;
 import org.cneko.toneko.common.api.TickTasks;
 import org.cneko.toneko.common.mod.entities.INeko;
 import org.cneko.toneko.common.mod.entities.NekoEntity;
+import org.cneko.toneko.common.mod.entities.RavennEntity;
+import org.cneko.toneko.common.mod.entities.ToNekoEntities;
 import org.cneko.toneko.common.mod.events.ToNekoNetworkEvents;
 import org.cneko.toneko.common.mod.util.EntityUtil;
 import org.cneko.toneko.common.mod.util.TickTaskQueue;
@@ -90,5 +95,41 @@ public class JRNetWorkingEvents {
                 }
             }catch (Exception ignored){}
         }));
+
+        ServerPlayNetworking.registerGlobalReceiver(RavennPassiveMatingPayload.ID,(payload,context)->{
+            ServerPlayerEntity player = context.player();
+            try {
+                UUID nekoUuid = UUID.fromString(payload.uuid());
+                NekoEntity neko = ToNekoNetworkEvents.findNearbyNekoByUuid(player, nekoUuid,16);
+                if (neko instanceof RavennEntity ravenn){
+                    Pregnant preRavenn = (Pregnant) ravenn;
+                    if (preRavenn.canPregnant() && player.canPregnant()){
+                        var queue = new TickTaskQueue();
+                        queue.addTask(20,()->{
+                            player.sendMessage(Text.of("§a已发送请求"));
+                        });
+                        queue.addTask(40,()->{
+                            player.sendMessage(Text.of("§a对方已接受请求"));
+                            player.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 1000,4));
+                            preRavenn.tryPregnant();
+                            if (player.getName().getString().equalsIgnoreCase("Crystal_Neko")){
+                                preRavenn.setChildrenType(ToNekoEntities.CRYSTAL_NEKO);
+                            }else {
+                                preRavenn.setChildrenType(JREntities.SEEEEEX_NEKO);
+                            }
+                            player.setChildrenType(ravenn.getType());
+                            player.tryPregnant();
+
+                        });
+                        queue.addTask(60,()->{
+                            player.sendMessage(Text.of("§a双方已怀孕！"));
+                        });
+                        TickTasks.add(queue);
+                    }else {
+                        player.sendMessage(Text.of("§c已尝试交配，但无法怀孕"));
+                    }
+                }
+            }catch (Exception ignored){}
+        });
     }
 }

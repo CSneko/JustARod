@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "justarod",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "name": "JustARod",
   "description": "meow",
   "authors": [
@@ -32,7 +32,7 @@
     "fabric": "*",
     "minecraft": ">=1.21",
     "fabric-language-kotlin": "*",
-    "toneko": ">=1.7.0"
+    "toneko": ">=1.7.2"
   },
   "mixins": [
     "justarod.mixins.json"
@@ -43,6 +43,7 @@
         "org/cneko/justarod/entity/Powerable",
         "org/cneko/justarod/entity/Pregnant"
       ],
+      "org/cneko/toneko/common/mod/entities/RavennEntity": ["org/cneko/justarod/entity/Pregnant","org/cneko/justarod/entity/Sexual","org/cneko/justarod/entity/Intex"],
       "org/cneko/toneko/common/mod/entities/NekoEntity": ["org/cneko/justarod/entity/Insertable"],
       "net/minecraft/class_1297": ["org/cneko/justarod/entity/Fallible"],
       "net/minecraft/class_1309": ["org/cneko/justarod/entity/Insertable"]

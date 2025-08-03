@@ -66,6 +66,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     private boolean isPCOS = false;
     @Unique
     private int brithControlling = 0;
+    @Unique
+    private int ovarianCancer = 0;
 
     @Override
     public double getPower() {
@@ -224,6 +226,16 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     }
 
     @Override
+    public void setOvarianCancer(int ovarianCancer) {
+        this.ovarianCancer = ovarianCancer;
+    }
+
+    @Override
+    public int getOvarianCancer() {
+        return ovarianCancer;
+    }
+
+    @Override
     public Entity createBaby() {
         PlayerEntity player = (PlayerEntity) (Object) this;
         var baby = (Entity) getChildrenType().create(player.getWorld());
@@ -267,6 +279,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
             Pregnant.menstruationTick(player);
             Pregnant.aidsTick(player);
             Pregnant.HPVTick(player);
+            Pregnant.ovarianCancerTick(player);
         }
     }
 

@@ -173,6 +173,7 @@ public interface Pregnant{
         nbt.putBoolean("Hysterectomy",isHysterectomy());
         nbt.putBoolean("PCOS",isPCOS());
         nbt.putInt("BrithControlling",getBrithControlling());
+        nbt.putInt("OvarianCancer",getOvarianCancer());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         if (nbt.contains("Pregnant")) {
@@ -220,6 +221,9 @@ public interface Pregnant{
         }
         if (nbt.contains("BrithControlling")){
             setBrithControlling(nbt.getInt("BrithControlling"));
+        }
+        if (nbt.contains("OvarianCancer")){
+            setPregnant(nbt.getInt("OvarianCancer"));
         }
     }
 
@@ -344,6 +348,16 @@ public interface Pregnant{
     default void updateBrithControlling() {
         if (getBrithControlling() > 0){
             setBrithControlling(getBrithControlling()-1);
+        }
+    }
+
+    default void setOvarianCancer(int time){}
+    default int getOvarianCancer(){
+        return 0;
+    }
+    default void updateOvarianCancer() {
+        if (getOvarianCancer() > 0){
+            setOvarianCancer(getOvarianCancer()-1);
         }
     }
 
@@ -543,6 +557,37 @@ public interface Pregnant{
             // 大于12天直接死亡
             if (hpv > 20 * 60 *20 *12){
                 pregnant.kill();
+            }
+        }
+    }
+
+    static <T extends LivingEntity&Pregnant> void ovarianCancerTick(T pregnant){
+        pregnant.updateOvarianCancer();
+        int oc = pregnant.getOvarianCancer();
+        if (oc >20*60*20*2 && oc <20*60*20*4){
+            // 2～4天1/200出现恶心
+            if (pregnant.getRandom().nextInt(200) == 0) {
+                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20*30));
+            }
+            // 1/200扣血0.1
+            if (pregnant.getRandom().nextInt(200) == 0) {
+                pregnant.damage(pregnant.getDamageSources().magic(),0.1f);
+            }
+            // 1/200挖掘疲劳
+            if (pregnant.getRandom().nextInt(200) == 0) {
+                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20*30));
+            }
+        }else if (oc >= 20 * 60 * 20 *4){
+            // 1/100恶心
+            if (pregnant.getRandom().nextInt(100) == 0) {
+                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 10));
+            }
+            // 1/2呼吸困难
+            if (pregnant.getRandom().nextBoolean()) {
+                int air = pregnant.getAir();
+                if (air > 9) {
+                    pregnant.setAir(air - 9);
+                }
             }
         }
     }

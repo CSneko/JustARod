@@ -562,6 +562,10 @@ public interface Pregnant{
     }
 
     static <T extends LivingEntity&Pregnant> void ovarianCancerTick(T pregnant){
+        if (pregnant.isHysterectomy()){
+            pregnant.setOvarianCancer(0);
+            return;
+        }
         pregnant.updateOvarianCancer();
         int oc = pregnant.getOvarianCancer();
         if (oc >20*60*20*2 && oc <20*60*20*4){

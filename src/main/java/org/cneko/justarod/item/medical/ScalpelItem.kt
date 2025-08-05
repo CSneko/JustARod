@@ -15,6 +15,8 @@ import org.cneko.justarod.item.JRItems
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import org.cneko.justarod.entity.Pregnant
+import org.cneko.justarod.item.addEffect
+import org.cneko.toneko.common.mod.util.TickTaskQueue
 
 // 继承自 MedicalItem
 class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDamage(4)) {
@@ -44,6 +46,8 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
         } else if (stack.containsEnchantment(JREnchantments.UTERUS_INSTALLATION)) {
             val offHandStack = user.getStackInHand(if (hand == Hand.MAIN_HAND) Hand.OFF_HAND else Hand.MAIN_HAND)
             return target.isHysterectomy && offHandStack.isOf(JRItems.UTERUS) // 目标需要安装，且使用者副手持有子宫
+        }else if (stack.containsEnchantment(JREnchantments.ARTIFICIAL_ABORTION)){
+            return target.pregnant >0
         }
 
         return false // 没有对应附魔，无法使用
@@ -63,6 +67,8 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
             // canApply已经检查过副手，这里为了更明确的消息再次检查
             val offHandStack = user.getStackInHand(Hand.OFF_HAND) // 假设主手是手术刀
             if (!offHandStack.isOf(JRItems.UTERUS)) return Text.of("§c你的副手必须持有子宫才能执行此操作！")
+        }else if (stack.containsEnchantment(JREnchantments.ARTIFICIAL_ABORTION)){
+            return if (user == target) Text.of("§c你没有怀孕！") else Text.of("§c对方没有怀孕")
         }
 
         return Text.of("§c不满足使用条件。") // 默认失败消息
@@ -93,6 +99,35 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
             if (offHandStack.isOf(JRItems.UTERUS)) {
                 offHandStack.decrement(1)
             }
+        }else if (stack.containsEnchantment(JREnchantments.ARTIFICIAL_ABORTION)){
+            val pre = target.pregnant
+            if (pre > 20*60*20*5) {
+                val task = TickTaskQueue()
+                target.damage(target.world.damageSources.generic(), 2f) // 初始伤害
+
+                // 安排持续伤害模拟大出血
+                for (i in 1..10) { // 从1开始产生延迟
+                    task.addTask(20 * i) {
+                        if (!target.isDead) {
+                            target.damage(target.world.damageSources.generic(), 2f)
+                        }
+                    }
+                }
+                // 有20%概率因并发症导致永久绝育和恶心
+                if (target.random.nextInt(5) == 0) {
+                    target.isSterilization = true
+                    target.addEffect(StatusEffects.NAUSEA, 0, 20 * 15) // 恶心效果持续15秒
+
+                    // 通知玩家出现并发症
+                    val complicationMsg = "§c并发症！手术对你造成了永久性损伤！"
+                    if (user != target) {
+                        user.sendMessage(Text.of("§e并发症发生了..."), false)
+                    }
+                    target.sendMessage(Text.of(complicationMsg))
+                }
+            }
+            target.pregnant = 0
+            target.dropStack(JRItems.MOLE.defaultStack)
         }
     }
 

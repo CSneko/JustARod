@@ -53,8 +53,7 @@ class AbortionPillItem(settings: Settings) : MedicalItem(settings) {
 
         } else {
             // 早/中期：更危险，伴随大出血和绝育风险
-            val task = TickTaskQueue() // 假设每次使用都应新建实例
-            target.damage(target.world.damageSources.generic(), 2f) // 初始伤害
+            val task = TickTaskQueue()
 
             // 安排持续伤害模拟大出血
             for (i in 1..10) { // 从1开始产生延迟
@@ -70,7 +69,7 @@ class AbortionPillItem(settings: Settings) : MedicalItem(settings) {
                 target.addEffect(StatusEffects.NAUSEA, 0, 20 * 15) // 恶心效果持续15秒
 
                 // 通知玩家出现并发症
-                val complicationMsg = "§c并发症！手术对你造成了永久性损伤！"
+                val complicationMsg = "§c并发症！对你造成了永久性损伤！"
                 if (user != target) {
                     user.sendMessage(Text.of("§e并发症发生了..."), false)
                 }

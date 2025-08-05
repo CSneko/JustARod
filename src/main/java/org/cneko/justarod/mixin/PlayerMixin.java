@@ -252,14 +252,12 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
 
     @Inject(method = "readCustomDataFromNbt", at = @At("HEAD"))
     public void readCustomDataFromNbt(NbtCompound nbt, CallbackInfo ci) {
-        if (!((Object) this instanceof ServerPlayerEntity player)) return;
         power = this.readPowerFromNbt(nbt);
         this.readPregnantFromNbt(nbt);
     }
 
     @Inject(method = "writeCustomDataToNbt", at = @At("HEAD"))
     public void writeCustomDataToNbt(NbtCompound nbt, CallbackInfo ci) {
-        if (!((Object) this instanceof ServerPlayerEntity player)) return;
         this.writePowerToNbt(nbt);
         this.writePregnantToNbt(nbt);
     }

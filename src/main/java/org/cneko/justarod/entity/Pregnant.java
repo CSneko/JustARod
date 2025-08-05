@@ -564,10 +564,15 @@ public interface Pregnant{
     static <T extends LivingEntity&Pregnant> void ovarianCancerTick(T pregnant){
         if (pregnant.isHysterectomy()){
             pregnant.setOvarianCancer(0);
-            return;
         }
         pregnant.updateOvarianCancer();
         int oc = pregnant.getOvarianCancer();
+        if (oc <= 0){
+            pregnant.removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getOVARIAN_CANCER_EFFECT()));
+        }
+        if (oc > 20*60*20*2){
+            pregnant.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getOVARIAN_CANCER_EFFECT()), oc, 0));
+        }
         if (oc >20*60*20*2 && oc <20*60*20*4){
             // 2～4天1/200出现恶心
             if (pregnant.getRandom().nextInt(200) == 0) {

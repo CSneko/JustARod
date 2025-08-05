@@ -25,6 +25,13 @@ import org.cneko.justarod.item.electric.BasicElectricRodItem
 import org.cneko.justarod.item.electric.IndustrialElectricRodItem
 import org.cneko.justarod.item.electric.RemoteControlItem
 import org.cneko.justarod.item.electric.TribochargingRod
+import org.cneko.justarod.item.medical.AbortionPillItem
+import org.cneko.justarod.item.medical.BrithControllingPill
+import org.cneko.justarod.item.medical.CottonSwabItem
+import org.cneko.justarod.item.medical.HPVVaccine
+import org.cneko.justarod.item.medical.SanitaryTowel
+import org.cneko.justarod.item.medical.ScalpelItem
+import org.cneko.justarod.item.medical.SterilizationPills
 import org.cneko.justarod.item.syringe.BremelanotideItem
 import org.cneko.justarod.item.syringe.GrowthAgentItem
 import org.cneko.justarod.item.syringe.ReverseGrowthAgentItem
@@ -67,11 +74,12 @@ class JRItems {
         val BYT = Item(Item.Settings())
         val MOLE = Item(Item.Settings().food(FoodComponent.Builder().nutrition(1)
             .statusEffect(StatusEffectInstance(StatusEffects.NAUSEA,10,0),1f).build()))
-        val HPV_VACCINE = Item(Item.Settings())
+        val HPV_VACCINE = HPVVaccine(Item.Settings())
         val COTTON_SWAB = CottonSwabItem(Item.Settings().maxCount(1))
         val SCALPEL = ScalpelItem(Item.Settings())
         val UTERUS = Item(Item.Settings().food(FoodComponent.Builder().nutrition(6).alwaysEdible().build()))
         val BRITH_CONTROLLING_PILL = BrithControllingPill(Item.Settings())
+        val ABORtiON_PILL = AbortionPillItem(Item.Settings())
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -113,6 +121,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "scalpel"), SCALPEL)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "uterus"), UTERUS)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "brith_controlling_pill"), BRITH_CONTROLLING_PILL)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "abortion_pill"), ABORtiON_PILL)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
@@ -160,6 +169,7 @@ class JRItems {
                 entries.add(SCALPEL)
                 entries.add(UTERUS)
                 entries.add(BRITH_CONTROLLING_PILL)
+                entries.add(ABORtiON_PILL)
             }
         }
     }

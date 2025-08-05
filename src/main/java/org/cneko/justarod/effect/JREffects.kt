@@ -53,6 +53,11 @@ class JREffects {
             Identifier.of(MODID, "vaginitis"),
             VaginitisEffect()
         )
+        val OVARIAN_CANCER_EFFECT: StatusEffect? = Registry.register(
+            Registries.STATUS_EFFECT,
+            Identifier.of(MODID, "ovarian_cancer"),
+            OvarianCancerEffect()
+        )
         fun init(){
         }
     }

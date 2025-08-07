@@ -1,9 +1,6 @@
 package org.cneko.justarod.entity
 
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityStatuses
-import net.minecraft.entity.EntityType
-import net.minecraft.entity.LivingEntity
+import net.minecraft.entity.*
 import net.minecraft.entity.ai.goal.*
 import net.minecraft.entity.attribute.DefaultAttributeContainer
 import net.minecraft.entity.attribute.EntityAttributes
@@ -20,6 +17,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.particle.ParticleTypes
+import net.minecraft.registry.tag.FluidTags
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
@@ -34,6 +32,11 @@ import org.cneko.toneko.common.mod.misc.mixininterface.SlowTickable
 import software.bernie.geckolib.animatable.GeoEntity
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache
 import software.bernie.geckolib.animation.AnimatableManager
+import software.bernie.geckolib.animation.AnimationController
+import software.bernie.geckolib.animation.AnimationController.AnimationStateHandler
+import software.bernie.geckolib.animation.AnimationState
+import software.bernie.geckolib.animation.RawAnimation
+import software.bernie.geckolib.constant.DefaultAnimations
 import software.bernie.geckolib.util.GeckoLibUtil
 import java.util.*
 
@@ -106,6 +109,23 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
     }
 
     override fun registerControllers(controllers: AnimatableManager.ControllerRegistrar?) {
+        controllers!!.add(AnimationController<RodEntity>(this, 20, AnimationStateHandler { state: AnimationState<*>? ->
+            if (this.pose == EntityPose.SWIMMING && !this.isInFluid) {
+                return@AnimationStateHandler state!!.setAndContinue(DefaultAnimations.CRAWL)
+            } else if (this.isInFluid && this.isSubmergedIn(FluidTags.WATER)) {
+                return@AnimationStateHandler if (state!!.isMoving) state.setAndContinue(DefaultAnimations.SWIM) else state.setAndContinue(
+                    DefaultAnimations.CRAWL
+                )
+            } else if (!state!!.isMoving) {
+                return@AnimationStateHandler if (this.isSitting) state.setAndContinue(
+                    RawAnimation.begin().thenLoop("misc.sit")
+                ) else state.setAndContinue(DefaultAnimations.IDLE)
+            } else {
+                return@AnimationStateHandler if (this.velocity.length() > 0.2) state.setAndContinue(
+                    DefaultAnimations.RUN
+                ) else state.setAndContinue(DefaultAnimations.WALK)
+            }
+        }))
     }
 
     override fun getAnimatableInstanceCache(): AnimatableInstanceCache {

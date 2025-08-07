@@ -28,6 +28,7 @@ import org.cneko.justarod.item.electric.TribochargingRod
 import org.cneko.justarod.item.medical.AbortionPillItem
 import org.cneko.justarod.item.medical.BrithControllingPill
 import org.cneko.justarod.item.medical.CottonSwabItem
+import org.cneko.justarod.item.medical.EstrogenItem
 import org.cneko.justarod.item.medical.HPVVaccine
 import org.cneko.justarod.item.medical.SanitaryTowel
 import org.cneko.justarod.item.medical.ScalpelItem
@@ -80,6 +81,7 @@ class JRItems {
         val UTERUS = Item(Item.Settings().food(FoodComponent.Builder().nutrition(6).alwaysEdible().build()))
         val BRITH_CONTROLLING_PILL = BrithControllingPill(Item.Settings())
         val ABORtiON_PILL = AbortionPillItem(Item.Settings())
+        val ESTROGEN = EstrogenItem(Item.Settings())
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -122,6 +124,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "uterus"), UTERUS)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "brith_controlling_pill"), BRITH_CONTROLLING_PILL)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "abortion_pill"), ABORtiON_PILL)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "estrogen"), ESTROGEN)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
@@ -170,6 +173,7 @@ class JRItems {
                 entries.add(UTERUS)
                 entries.add(BRITH_CONTROLLING_PILL)
                 entries.add(ABORtiON_PILL)
+                entries.add(ESTROGEN)
             }
         }
     }

@@ -552,6 +552,47 @@ class PregnantCommand {
                     )
                 )
 
+                dispatcher.register(literal("BreastCancer")
+                    .executes { context ->
+                        val source = context.source.entity
+                        if (source is Pregnant){
+                            source.sendMessage(Text.of("当前乳腺癌状态：${if (source.breastCancer>0) "§c已患上" else "§a没有患上"}"))
+                        }
+                        return@executes 1
+                    }
+                    .then(argument("target", EntityArgumentType.entity())
+                        .executes { context ->
+                            val source = context.source
+                            val target = EntityArgumentType.getEntity(context, "target")
+                            if (target is Pregnant){
+                                source.sendMessage(Text.of("当前乳腺癌状态：${if (target.breastCancer>0) "§c已患上" else "§a没有患上"}"))
+                            }
+                            return@executes 1
+                        }
+                    )
+                    .then(literal("set")
+                        .requires { source -> source.hasPermissionLevel(4) }
+                        .then(argument("time", IntegerArgumentType.integer(0, Int.MAX_VALUE))
+                            .executes {ctx ->
+                                val source = ctx.source.entity
+                                if (source is Pregnant) {
+                                    source.breastCancer = IntegerArgumentType.getInteger(ctx,"time")
+                                }
+                                return@executes 1
+                            }
+                            .then(argument("target", EntityArgumentType.entity())
+                                .executes {ctx ->
+                                    val target = EntityArgumentType.getEntity(ctx, "target")
+                                    if (target is Pregnant) {
+                                        target.breastCancer = IntegerArgumentType.getInteger(ctx,"time")
+                                    }
+                                    return@executes 1
+                                }
+                            )
+                        )
+                    )
+                )
+
             }
         }
     }

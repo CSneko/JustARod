@@ -14,6 +14,7 @@ import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.item.JRItems
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
+import net.minecraft.item.Items
 import org.cneko.justarod.entity.Pregnant
 import org.cneko.justarod.item.addEffect
 import org.cneko.toneko.common.mod.util.TickTaskQueue
@@ -29,6 +30,8 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
             tooltip.add(Text.of("§c此操作会永久切除子宫，请谨慎使用！"))
         } else if (stack.containsEnchantment(JREnchantments.UTERUS_INSTALLATION)) {
             tooltip.add(Text.of("§a使用它可以安装子宫"))
+        }else if (stack.containsEnchantment(JREnchantments.MASTECTOMY)){
+            tooltip.add(Text.of("§c使用它可以进行乳房切除"))
         }
     }
 
@@ -48,6 +51,8 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
             return target.isHysterectomy && offHandStack.isOf(JRItems.UTERUS) // 目标需要安装，且使用者副手持有子宫
         }else if (stack.containsEnchantment(JREnchantments.ARTIFICIAL_ABORTION)){
             return target.pregnant >0
+        }else if (stack.containsEnchantment(JREnchantments.MASTECTOMY)) {
+            return true
         }
 
         return false // 没有对应附魔，无法使用
@@ -128,6 +133,9 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
             }
             target.pregnant = 0
             target.dropStack(JRItems.MOLE.defaultStack)
+        }else if (stack.containsEnchantment(JREnchantments.MASTECTOMY)){
+            target.breastCancer = 0
+            target.dropStack(Items.CHICKEN.defaultStack)
         }
     }
 
@@ -154,6 +162,11 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
             return ActionMessages(
                 userSuccessMessage = if (isSelf) Text.of("§a你成功为自己安装了子宫！") else Text.of("§a已为对方安装子宫！"),
                 targetSuccessMessage = if (isSelf) null else Text.of("§a你被安装了子宫！")
+            )
+        }else if (stack.containsEnchantment(JREnchantments.MASTECTOMY)){
+            return ActionMessages(
+                userSuccessMessage = if (isSelf) Text.of("§a你成功切除了你自己的乳房") else Text.of("§a已为对方进行乳房切除"),
+                targetSuccessMessage = if (isSelf) null else Text.of("§a你被进行了乳房切除！")
             )
         }
         // 不应该到达这里，但作为安全措施

@@ -7,6 +7,7 @@
   "enchantment.justarod.hysterectomy": "子宫切除",
   "enchantment.justarod.uterus_installation": "子宫安装",
   "enchantment.justarod.artificial_abortion": "人工流产",
+  "enchantment.justarod.mastectomy": "乳房切除术",
   "command.justarod.rod.get.success": "§a在你里面的末地烛是%s",
   "command.justarod.rod.get.failure": "§c你没有末地烛",
   "command.justarod.rod.set.success": "§a你已成功设置末地烛%s",

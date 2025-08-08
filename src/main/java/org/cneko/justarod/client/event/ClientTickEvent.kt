@@ -39,8 +39,44 @@ class ClientTickEvent {
 
                 // 渲染体力条
                 renderPowerBar(context)
+
+                renderSexText(context)
             }
         }
+
+        private fun renderSexText(context: DrawContext) {
+            val client = MinecraftClient.getInstance()
+            if (client.options.hudHidden) return
+
+            val text = Text.literal("♀")
+
+            // 获取屏幕尺寸
+            val screenWidth = context.scaledWindowWidth
+
+            // 设置文字大小（通过矩阵缩放）
+            val scale = 2.0f // 2倍大小
+            context.matrices.push()
+            context.matrices.scale(scale, scale, 1.0f)
+
+            // 计算文字位置（右上角）
+            val scaledScreenWidth = screenWidth / scale
+            val textWidth = client.textRenderer.getWidth(text)
+            val x = (scaledScreenWidth - textWidth - 10) // 右边距10像素
+            val y = 10 // 上边距10像素
+
+            // 绘制文字（带背景）
+            context.drawTextWithShadow(
+                client.textRenderer,
+                text,
+                x.toInt(),
+                y,
+                0xFFC0CB // 白色文字
+            )
+
+            // 恢复矩阵
+            context.matrices.pop()
+        }
+
 
         private val POWER_ICON = Identifier.of("textures/item/diamond_sword.png")
         private fun renderPowerBar(context: DrawContext) {

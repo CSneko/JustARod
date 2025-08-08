@@ -174,6 +174,7 @@ public interface Pregnant{
         nbt.putBoolean("PCOS",isPCOS());
         nbt.putInt("BrithControlling",getBrithControlling());
         nbt.putInt("OvarianCancer",getOvarianCancer());
+        nbt.putInt("BreastCancer",getBreastCancer());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         if (nbt.contains("Pregnant")) {
@@ -224,6 +225,9 @@ public interface Pregnant{
         }
         if (nbt.contains("OvarianCancer")){
             setPregnant(nbt.getInt("OvarianCancer"));
+        }
+        if (nbt.contains("BreastCancer")){
+            setPregnant(nbt.getInt("BreastCancer"));
         }
     }
 
@@ -357,7 +361,17 @@ public interface Pregnant{
     }
     default void updateOvarianCancer() {
         if (getOvarianCancer() > 0){
-            setOvarianCancer(getOvarianCancer()-1);
+            setOvarianCancer(getOvarianCancer()+1);
+        }
+    }
+
+    default void setBreastCancer(int time){}
+    default int getBreastCancer(){
+        return 0;
+    }
+    default void updateBreastCancer() {
+        if (getBreastCancer() > 0){
+            setBreastCancer(getBreastCancer()+1);
         }
     }
 
@@ -597,6 +611,33 @@ public interface Pregnant{
                 if (air > 9) {
                     pregnant.setAir(air - 9);
                 }
+            }
+        }
+    }
+
+    static <T extends LivingEntity&Pregnant> void breastCancerTick(T pregnant){
+        pregnant.updateBreastCancer();
+        int bc = pregnant.getBreastCancer();
+        if (bc>20*60*20*2 && bc<20*60*20*4){
+            // 1/200分泌物
+            if (pregnant.getRandom().nextInt(200) == 0) {
+                pregnant.dropStack(JRItems.Companion.getMOLE().getDefaultStack());
+            }
+        }else if (bc>=20*60*20*4){
+            // 1/100缓慢
+            if (pregnant.getRandom().nextInt(100) == 0) {
+                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20*30));
+            }
+            // 1/2呼吸困难
+            if (pregnant.getRandom().nextBoolean()) {
+                int air = pregnant.getAir();
+                if (air > 9) {
+                    pregnant.setAir(air - 9);
+                }
+            }
+            // 1/100挖掘疲劳
+            if (pregnant.getRandom().nextInt(100) == 0) {
+                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20*30));
             }
         }
     }

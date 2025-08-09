@@ -26,11 +26,20 @@ import java.util.UUID;
 
 public interface Pregnant{
     List<UUID> FOREVER_BABY = new ArrayList<>();
-    /*
-    插的太深了...
-     */
+
+    default boolean isMale() {
+        return false;
+    }
+    default void setMale(boolean male){
+    }
+    default boolean isFemale(){
+        return false;
+    }
+    default void setFemale(boolean female){
+    }
 
     default void tryPregnant() {
+        if (!isFemale()) return;
         this.setPregnant(20*60*20*10);
         // 是否会葡萄胎
         if (((Entity)this).getRandom().nextFloat() < getHydatidiformMoleProbability()) {
@@ -61,6 +70,7 @@ public interface Pregnant{
     }
 
     default void updatePregnant() {
+        if (!isFemale()) return;
         if (getPregnant() > 0) {
             setPregnant(getPregnant() - 1);
             if (getPregnant() == 0 && !isEctopicPregnancy() && !isHydatidiformMole()) {
@@ -74,6 +84,7 @@ public interface Pregnant{
     }
 
     default void miscarry() {
+        if (!isFemale()) return;
         // 流产
         if (this instanceof LivingEntity pregnantEntity) {
             pregnantEntity.setHealth(pregnantEntity.getHealth()-10);
@@ -86,6 +97,7 @@ public interface Pregnant{
         makeBaby(false);
     }
     default void makeBaby(boolean pretermBirth) {
+        if (!isFemale()) return;
         for (int i = 0; i < getBabyCount(); i++) {
             Entity baby = createBaby();
             if (baby != null) {
@@ -122,6 +134,7 @@ public interface Pregnant{
     }
     default void setMenstruation(int time){}
     default MenstruationCycle getMenstruationCycle(){
+        if (!isFemale()) return MenstruationCycle.NONE;
         int menstruation = getMenstruation();
         if (menstruation <=0){
             return MenstruationCycle.NONE;
@@ -144,6 +157,7 @@ public interface Pregnant{
     }
 
     default void updateMenstruation() {
+        if (!isFemale()) return;
         if (!isPregnant() && getMenstruation() <= 20*60*20*11) {
             setMenstruation(getMenstruation() + 1);
         }else {
@@ -154,11 +168,14 @@ public interface Pregnant{
         }
     }
     default boolean canPregnant(){
+        if (!isFemale()) return false;
         return getMenstruationCycle() == MenstruationCycle.OVULATION && !this.isPregnant() && !this.isSterilization() && !this.isHysterectomy() && !this.isPCOS()
                 && !(this.getBrithControlling() > 0 && ((Entity)this).getRandom().nextInt(10) != 0);
     }
 
     default void writePregnantToNbt(NbtCompound nbt) {
+        nbt.putBoolean("Female", isFemale());
+        nbt.putBoolean("Male", isMale());
         nbt.putInt("Pregnant", getPregnant());
         nbt.putString("ChildrenType", EntityType.getId(getChildrenType()).toString());
         nbt.putInt("Menstruation", getMenstruation());
@@ -175,8 +192,11 @@ public interface Pregnant{
         nbt.putInt("BrithControlling",getBrithControlling());
         nbt.putInt("OvarianCancer",getOvarianCancer());
         nbt.putInt("BreastCancer",getBreastCancer());
+        nbt.putInt("Syphilis",getSyphilis());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
+        setFemale(nbt.getBoolean("Female"));
+        setMale(nbt.getBoolean("Male"));
         if (nbt.contains("Pregnant")) {
             setPregnant(nbt.getInt("Pregnant"));
         }
@@ -224,10 +244,13 @@ public interface Pregnant{
             setBrithControlling(nbt.getInt("BrithControlling"));
         }
         if (nbt.contains("OvarianCancer")){
-            setPregnant(nbt.getInt("OvarianCancer"));
+            setOvarianCancer(nbt.getInt("OvarianCancer"));
         }
         if (nbt.contains("BreastCancer")){
-            setPregnant(nbt.getInt("BreastCancer"));
+            setBreastCancer(nbt.getInt("BreastCancer"));
+        }
+        if (nbt.contains("Syphilis")){
+            setSyphilis(nbt.getInt("Syphilis"));
         }
     }
 
@@ -375,8 +398,19 @@ public interface Pregnant{
         }
     }
 
+    default void setSyphilis(int time){}
+    default int getSyphilis(){
+        return 0;
+    }
+    default void updateSyphilis() {
+        if (getSyphilis() > 0){
+            setSyphilis(getSyphilis()+1);
+        }
+    }
+
 
     static <T extends LivingEntity&Pregnant> void pregnantTick(T pregnant) {
+        if (!pregnant.isFemale()) return;
         pregnant.updateBrithControlling();
         if (pregnant.isHysterectomy()){
             // 清除怀孕效果（如果有的话）
@@ -455,6 +489,7 @@ public interface Pregnant{
         }
     }
     static <T extends LivingEntity&Pregnant> void menstruationTick(T pregnant) {
+        if (!pregnant.isFemale()) return;
         if (pregnant.isHysterectomy() || pregnant.isPCOS()){
             pregnant.setMenstruation(0);
             return;
@@ -533,6 +568,7 @@ public interface Pregnant{
     }
 
     static <T extends LivingEntity&Pregnant> void HPVTick(T pregnant) {
+        if (!pregnant.isFemale()) return;
         if (pregnant.isHysterectomy()){
             pregnant.setHPV(0);
             return;
@@ -576,6 +612,7 @@ public interface Pregnant{
     }
 
     static <T extends LivingEntity&Pregnant> void ovarianCancerTick(T pregnant){
+        if (!pregnant.isFemale()) return;
         if (pregnant.isHysterectomy()){
             pregnant.setOvarianCancer(0);
         }
@@ -616,6 +653,7 @@ public interface Pregnant{
     }
 
     static <T extends LivingEntity&Pregnant> void breastCancerTick(T pregnant){
+        if (!pregnant.isFemale()) return;
         pregnant.updateBreastCancer();
         int bc = pregnant.getBreastCancer();
         if (bc>20*60*20*2 && bc<20*60*20*4){
@@ -641,6 +679,37 @@ public interface Pregnant{
             }
         }
     }
+
+    static <T extends LivingEntity & Pregnant> void syphilisTick(T pregnant) {
+        if (!pregnant.isFemale()) return;
+        pregnant.updateSyphilis();
+        int syphilis = pregnant.getSyphilis();
+
+        // 中期阈值（4 小时 tick 数）
+        int midStage = 20 * 60 * 20 * 4;
+        // 晚期阈值（8 小时 tick 数）
+        int lateStage = 20 * 60 * 20 * 8;
+
+        if (syphilis > midStage) {
+            // 中期及以上：每隔一段时间轻微伤害
+            if (pregnant.getRandom().nextInt(200) == 0) { // 大约每10秒触发一次
+                pregnant.damage(pregnant.getDamageSources().magic(), 1.0F);
+            }
+        }
+
+        if (syphilis > lateStage) {
+            // 晚期：持续掉血
+            if (pregnant.age % 40 == 0) { // 每2秒掉一次
+                pregnant.damage(pregnant.getDamageSources().magic(), 1.0F);
+            }
+
+            // 晚期并怀孕，有小概率流产
+            if (pregnant.isPregnant() && pregnant.getRandom().nextInt(1000) == 0) {
+                pregnant.miscarry();
+            }
+        }
+    }
+
 
     @Getter
     enum MenstruationCycle{

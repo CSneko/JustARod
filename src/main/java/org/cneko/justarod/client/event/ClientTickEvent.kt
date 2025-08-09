@@ -48,7 +48,8 @@ class ClientTickEvent {
             val client = MinecraftClient.getInstance()
             if (client.options.hudHidden) return
 
-            val text = Text.literal("♀")
+            val isFemale = client.player!!.isFemale
+            val isMale = client.player!!.isMale
 
             // 获取屏幕尺寸
             val screenWidth = context.scaledWindowWidth
@@ -58,24 +59,42 @@ class ClientTickEvent {
             context.matrices.push()
             context.matrices.scale(scale, scale, 1.0f)
 
-            // 计算文字位置（右上角）
+            // 计算基准宽度
             val scaledScreenWidth = screenWidth / scale
-            val textWidth = client.textRenderer.getWidth(text)
-            val x = (scaledScreenWidth - textWidth - 10) // 右边距10像素
-            val y = 10 // 上边距10像素
+            val textRenderer = client.textRenderer
 
-            // 绘制文字（带背景）
-            context.drawTextWithShadow(
-                client.textRenderer,
-                text,
-                x.toInt(),
-                y,
-                0xFFC0CB // 白色文字
-            )
+            // 符号和颜色准备
+            val femaleSymbol = Text.literal("♀")
+            val maleSymbol = Text.literal("♂")
 
-            // 恢复矩阵
+            val pinkColor = 0xFFC0CB // 粉色
+            val blueColor = 0x0000FF // 蓝色
+
+            // 先定义绘制起始x位置
+            var x = scaledScreenWidth - 10 // 右边距10像素，后面会往左推
+
+            // 如果同时是男性和女性，两个符号都显示，女性符号在右，男性符号在左
+            if (isFemale && isMale) {
+                val femaleWidth = textRenderer.getWidth(femaleSymbol)
+                val maleWidth = textRenderer.getWidth(maleSymbol)
+
+                // 先绘制女性符号（右边）
+                context.drawTextWithShadow(textRenderer, femaleSymbol, (x - femaleWidth).toInt(), 10, pinkColor)
+
+                // 再绘制男性符号，向左推一个女性符号宽度和间距（比如5像素）
+                x -= (femaleWidth + 5)
+                context.drawTextWithShadow(textRenderer, maleSymbol, (x - maleWidth).toInt(), 10, blueColor)
+            } else if (isFemale) {
+                val femaleWidth = textRenderer.getWidth(femaleSymbol)
+                context.drawTextWithShadow(textRenderer, femaleSymbol, (x - femaleWidth).toInt(), 10, pinkColor)
+            } else if (isMale) {
+                val maleWidth = textRenderer.getWidth(maleSymbol)
+                context.drawTextWithShadow(textRenderer, maleSymbol, (x - maleWidth).toInt(), 10, blueColor)
+            }
+
             context.matrices.pop()
         }
+
 
 
         private val POWER_ICON = Identifier.of("textures/item/diamond_sword.png")

@@ -45,14 +45,14 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
 
         // 根据附魔检查特定条件
         if (stack.containsEnchantment(JREnchantments.HYSTERECTOMY)) {
-            return !target.isHysterectomy // 目标尚未切除子宫
+            return !target.isHysterectomy && target.isFemale // 目标尚未切除子宫
         } else if (stack.containsEnchantment(JREnchantments.UTERUS_INSTALLATION)) {
             val offHandStack = user.getStackInHand(if (hand == Hand.MAIN_HAND) Hand.OFF_HAND else Hand.MAIN_HAND)
-            return target.isHysterectomy && offHandStack.isOf(JRItems.UTERUS) // 目标需要安装，且使用者副手持有子宫
+            return target.isHysterectomy && offHandStack.isOf(JRItems.UTERUS) && target.isFemale // 目标需要安装，且使用者副手持有子宫
         }else if (stack.containsEnchantment(JREnchantments.ARTIFICIAL_ABORTION)){
-            return target.pregnant >0
+            return target.pregnant >0 && target.isFemale
         }else if (stack.containsEnchantment(JREnchantments.MASTECTOMY)) {
-            return true
+            return target.isFemale
         }
 
         return false // 没有对应附魔，无法使用

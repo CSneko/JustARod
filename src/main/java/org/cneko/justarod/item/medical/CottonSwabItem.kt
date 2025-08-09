@@ -29,8 +29,7 @@ class CottonSwabItem(settings: Settings) : MedicalItem(settings.maxCount(1)) {
      * @return 当目标是玩家且棉签未被使用过时返回true
      */
     override fun canApply(user: PlayerEntity, target: LivingEntity, stack: ItemStack, hand: Hand): Boolean {
-        // 目标必须是玩家且棉签未被使用
-        return target is Pregnant && !stack.contains(JRComponents.SECRETIONS_APPEARANCE)
+        return target is Pregnant && target.isFemale && !stack.contains(JRComponents.SECRETIONS_APPEARANCE)
     }
 
     /**
@@ -51,7 +50,8 @@ class CottonSwabItem(settings: Settings) : MedicalItem(settings.maxCount(1)) {
      * 读取目标状态但不修改
      */
     override fun applyEffect(user: PlayerEntity, target: LivingEntity, stack: ItemStack, hand: Hand) {
-        target as Pregnant // 根据canApply可知目标是
+        target as Pregnant
+        if (!target.isFemale) return
 
         // 使用when语句比长if-else-if链更清晰
         val appearance = when {

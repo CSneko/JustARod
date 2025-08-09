@@ -15,6 +15,74 @@ class PregnantCommand {
     companion object{
         fun init(){
             CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
+
+                dispatcher.register(literal("sex")
+                    .executes { context ->
+                        val source = context.source.entity
+                        if (source is Pregnant){
+                            val isMale = source.isMale
+                            val isFemale = source.isFemale
+                            source.sendMessage(Text.of("§a你的性别为：${if (isMale && isFemale) "§b男§d女" else if (isMale) "§b男" else if(isFemale) "§d女" else "无"}"))
+                        }
+                        return@executes 1
+                    }
+                    .then(argument("target", EntityArgumentType.entity())
+                        .executes { context ->
+                            val source = context.source
+                            val target = EntityArgumentType.getEntity(context, "target")
+                            if (target is Pregnant){
+                                val isMale = target.isMale
+                                val isFemale = target.isFemale
+                                source.sendMessage(Text.of("§a对方性别为：${if (isMale && isFemale) "§b男§d女" else if (isMale) "§b男" else if(isFemale) "§d女" else "无"}"))
+                            }
+                            return@executes 1
+                        }
+                    )
+                    .then(literal("male")
+                        .then(argument("is",BoolArgumentType.bool())
+                            .executes { ctx ->
+                                val source = ctx.source.entity
+                                if (source is Pregnant){
+                                    val isMale = BoolArgumentType.getBool(ctx,"is")
+                                    source.isMale = isMale
+                                }
+                                return@executes 1
+                            }
+                        )
+                        .then(argument("target", EntityArgumentType.entity())
+                            .executes { ctx ->
+                                val target = EntityArgumentType.getEntity(ctx, "target")
+                                if (target is Pregnant){
+                                    val isMale = BoolArgumentType.getBool(ctx,"is")
+                                    target.isMale = isMale
+                                }
+                                return@executes 1
+                            }
+                        )
+                    )
+                    .then(literal("female")
+                        .then(argument("is",BoolArgumentType.bool())
+                            .executes { ctx ->
+                                val source = ctx.source.entity
+                                if (source is Pregnant){
+                                    val isFemale = BoolArgumentType.getBool(ctx,"is")
+                                    source.isFemale = isFemale
+                                }
+                                return@executes 1
+                            }
+                        )
+                        .then(argument("target", EntityArgumentType.entity())
+                            .executes { ctx ->
+                                val target = EntityArgumentType.getEntity(ctx, "target")
+                                if (target is Pregnant){
+                                    val isFemale = BoolArgumentType.getBool(ctx,"is")
+                                    target.isFemale = isFemale
+                                }
+                                return@executes 1
+                            }
+                        )
+                    )
+                )
                 dispatcher.register(literal("pregnant")
                     .executes {ctx ->
                         val source = ctx.source.entity
@@ -585,6 +653,47 @@ class PregnantCommand {
                                     val target = EntityArgumentType.getEntity(ctx, "target")
                                     if (target is Pregnant) {
                                         target.breastCancer = IntegerArgumentType.getInteger(ctx,"time")
+                                    }
+                                    return@executes 1
+                                }
+                            )
+                        )
+                    )
+                )
+
+                dispatcher.register(literal("syphilis")
+                    .executes { context ->
+                        val source = context.source.entity
+                        if (source is Pregnant){
+                            source.sendMessage(Text.of("当前梅毒状态：${if (source.syphilis>0) "§c已患上" else "§a没有患上"}"))
+                        }
+                        return@executes 1
+                    }
+                    .then(argument("target", EntityArgumentType.entity())
+                        .executes { context ->
+                            val source = context.source
+                            val target = EntityArgumentType.getEntity(context, "target")
+                            if (target is Pregnant){
+                                source.sendMessage(Text.of("当前梅毒状态：${if (target.syphilis>0) "§c已患上" else "§a没有患上"}"))
+                            }
+                            return@executes 1
+                        }
+                    )
+                    .then(literal("set")
+                        .requires { source -> source.hasPermissionLevel(4) }
+                        .then(argument("time", IntegerArgumentType.integer(0, Int.MAX_VALUE))
+                            .executes {ctx ->
+                                val source = ctx.source.entity
+                                if (source is Pregnant) {
+                                    source.syphilis = IntegerArgumentType.getInteger(ctx,"time")
+                                }
+                                return@executes 1
+                            }
+                            .then(argument("target", EntityArgumentType.entity())
+                                .executes {ctx ->
+                                    val target = EntityArgumentType.getEntity(ctx, "target")
+                                    if (target is Pregnant) {
+                                        target.syphilis = IntegerArgumentType.getInteger(ctx,"time")
                                     }
                                     return@executes 1
                                 }

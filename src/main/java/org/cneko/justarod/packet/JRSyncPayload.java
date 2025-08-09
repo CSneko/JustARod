@@ -8,11 +8,14 @@ import net.minecraft.util.Identifier;
 
 import static org.cneko.justarod.Justarod.MODID;
 
-public record JRSyncPayload(double power,int pregnant) implements CustomPayload {
+public record JRSyncPayload(double power,boolean isFemale,boolean isMale,int pregnant,int syphilis) implements CustomPayload {
     public static final CustomPayload.Id<JRSyncPayload> ID = new CustomPayload.Id<>(Identifier.of(MODID, "sync"));
     public static final PacketCodec<RegistryByteBuf, JRSyncPayload> CODEC = PacketCodec.tuple(
             PacketCodecs.DOUBLE,  JRSyncPayload::power,
+            PacketCodecs.BOOL, JRSyncPayload::isFemale,
+            PacketCodecs.BOOL, JRSyncPayload::isMale,
             PacketCodecs.INTEGER,  JRSyncPayload::pregnant,
+            PacketCodecs.INTEGER,  JRSyncPayload::syphilis,
             JRSyncPayload::new
     );
 

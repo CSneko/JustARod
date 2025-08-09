@@ -17,7 +17,7 @@ class SanitaryTowel(settings: Settings) : MedicalItem(settings) {
      */
     override fun canApply(user: PlayerEntity, target: LivingEntity, stack: ItemStack, hand: Hand): Boolean {
         // 目标必须是处于正确周期阶段的玩家
-        return target is Pregnant &&
+        return target is Pregnant && target.isFemale &&
                 target.menstruationCycle == Pregnant.MenstruationCycle.MENSTRUATION
     }
 

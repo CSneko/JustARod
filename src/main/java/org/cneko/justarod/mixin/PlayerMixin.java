@@ -30,12 +30,17 @@ import java.util.ArrayList;
 
 import static org.cneko.justarod.JRAttributes.Companion;
 
-@SuppressWarnings({"AddedMixinMembersNamePattern", "ConstantValue", "DataFlowIssue"})
+@SuppressWarnings({"AddedMixinMembersNamePattern", "DataFlowIssue"})
 @Mixin(PlayerEntity.class)
 public abstract class PlayerMixin implements Powerable, Pregnant {
 
     @Unique
     private double power = 0;
+
+    @Unique
+    private boolean male = false;
+    @Unique
+    private boolean female = true;
     @Unique
     private int pregnant = 0;
     @Unique
@@ -70,6 +75,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     private int ovarianCancer = 0;
     @Unique
     private int breastCancer = 0;
+    @Unique
+    private int syphilis = 0;
 
     @Override
     public double getPower() {
@@ -85,6 +92,26 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     public boolean canPowerUp() {
         PlayerEntity player = (PlayerEntity) (Object) this;
         return player.getHungerManager().getFoodLevel() >= 3;
+    }
+
+    @Override
+    public boolean isFemale() {
+        return female;
+    }
+
+    @Override
+    public void setFemale(boolean female) {
+        this.female = female;
+    }
+
+    @Override
+    public boolean isMale() {
+        return male;
+    }
+
+    @Override
+    public void setMale(boolean male) {
+        this.male = male;
     }
 
     @Override
@@ -248,6 +275,16 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     }
 
     @Override
+    public void setSyphilis(int syphilis) {
+        this.syphilis = syphilis;
+    }
+
+    @Override
+    public int getSyphilis() {
+        return syphilis;
+    }
+
+    @Override
     public Entity createBaby() {
         PlayerEntity player = (PlayerEntity) (Object) this;
         var baby = (Entity) getChildrenType().create(player.getWorld());
@@ -281,7 +318,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
         if (slowTick++ >= 10){
             if (player instanceof ServerPlayerEntity sp) {
                 // 同步power
-                ServerPlayNetworking.send(sp, new JRSyncPayload(getPower(),getPregnant()));
+                ServerPlayNetworking.send(sp, new JRSyncPayload(getPower(),isFemale(),isMale(),getPregnant(),getSyphilis()));
             }
         }
         if (player.getWorld() instanceof ServerWorld) {
@@ -291,6 +328,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
             Pregnant.HPVTick(player);
             Pregnant.ovarianCancerTick(player);
             Pregnant.breastCancerTick(player);
+            Pregnant.syphilisTick(player);
         }
     }
 

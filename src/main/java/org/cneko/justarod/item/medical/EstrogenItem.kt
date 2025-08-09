@@ -34,7 +34,9 @@ class EstrogenItem(settings: Settings): MedicalItem(settings) {
         hand: Hand
     ) {
         target as Pregnant
-        target.menstruation+=12000 // 调节月经是吗，不会喵！
+        if (target.isFemale) {
+            target.menstruation += 12000 // 调节月经是吗，不会喵！
+        }
         if (target.random.nextBoolean()){
             // 稍微恶心
             target.addStatusEffect(StatusEffectInstance(StatusEffects.NAUSEA,120,0))

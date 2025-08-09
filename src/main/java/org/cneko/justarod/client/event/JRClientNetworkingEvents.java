@@ -5,6 +5,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 import org.cneko.justarod.client.screen.FrictionScreen;
@@ -23,8 +24,12 @@ public class JRClientNetworkingEvents {
             getInstance().setScreen(new FrictionScreen());
         }));
         ClientPlayNetworking.registerGlobalReceiver(JRSyncPayload.ID, (payload, context) -> {
-            getInstance().player.setPower(payload.power());
-            getInstance().player.setPregnant(payload.pregnant());
+            PlayerEntity player = getInstance().player;
+            player.setPower(payload.power());
+            player.setFemale(payload.isFemale());
+            player.setMale(payload.isMale());
+            player.setPregnant(payload.pregnant());
+            player.setSyphilis(payload.syphilis());
         });
     }
 

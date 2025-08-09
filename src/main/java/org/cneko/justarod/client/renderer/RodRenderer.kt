@@ -10,6 +10,7 @@ import org.cneko.justarod.entity.RodEntity
 import software.bernie.geckolib.model.GeoModel
 import software.bernie.geckolib.renderer.GeoEntityRenderer
 import org.cneko.justarod.JRUtil.Companion.rodId
+import org.cneko.toneko.common.mod.util.ResourceLocationUtil.toNekoLoc
 import software.bernie.geckolib.cache.`object`.BakedGeoModel
 
 class RodRenderer(renderManager: EntityRendererFactory.Context?): GeoEntityRenderer<RodEntity>(renderManager,RodModel()) {
@@ -55,7 +56,7 @@ class RodModel : GeoModel<RodEntity>() {
     }
 
     override fun getAnimationResource(animatable: RodEntity): Identifier {
-        return rodId("animations/entity/rod.animation.json")
+        return toNekoLoc("animations/neko/common.animation.json")
     }
 
 }

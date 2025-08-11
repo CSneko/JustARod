@@ -681,7 +681,6 @@ public interface Pregnant{
     }
 
     static <T extends LivingEntity & Pregnant> void syphilisTick(T pregnant) {
-        if (!pregnant.isFemale()) return;
         pregnant.updateSyphilis();
         int syphilis = pregnant.getSyphilis();
 
@@ -690,6 +689,13 @@ public interface Pregnant{
         // 晚期阈值（8 小时 tick 数）
         int lateStage = 20 * 60 * 20 * 8;
 
+        if (syphilis > 0){
+            // 给予效果
+            pregnant.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSYPHILIS_EFFECT()), syphilis, 0));
+        }else {
+            // 移除效果
+            pregnant.removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSYPHILIS_EFFECT()));
+        }
         if (syphilis > midStage) {
             // 中期及以上：每隔一段时间轻微伤害
             if (pregnant.getRandom().nextInt(200) == 0) { // 大约每10秒触发一次
@@ -699,7 +705,7 @@ public interface Pregnant{
 
         if (syphilis > lateStage) {
             // 晚期：持续掉血
-            if (pregnant.age % 40 == 0) { // 每2秒掉一次
+            if (pregnant.getRandom().nextInt(40) == 0) { // 每2秒掉一次
                 pregnant.damage(pregnant.getDamageSources().magic(), 1.0F);
             }
 

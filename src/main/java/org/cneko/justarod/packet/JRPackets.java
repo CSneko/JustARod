@@ -10,5 +10,6 @@ public class JRPackets {
         PayloadTypeRegistry.playC2S().register(MatePayload.ID, MatePayload.CODEC);
         PayloadTypeRegistry.playC2S().register(PassiveMatingPayload.ID, PassiveMatingPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(RavennPassiveMatingPayload.ID,RavennPassiveMatingPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(BallMouthPayload.ID, BallMouthPayload.CODEC);
     }
 }

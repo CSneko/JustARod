@@ -11,5 +11,7 @@ public class JRCommands {
         ImpartCommand.Companion.init();
         MateCommand.Companion.init();
         PregnantCommand.Companion.init();
+        BallMouthCommand.Companion.init();
+
     }
 }

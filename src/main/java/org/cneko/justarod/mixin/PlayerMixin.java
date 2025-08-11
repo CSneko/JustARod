@@ -32,10 +32,13 @@ import static org.cneko.justarod.JRAttributes.Companion;
 
 @SuppressWarnings({"AddedMixinMembersNamePattern", "DataFlowIssue"})
 @Mixin(PlayerEntity.class)
-public abstract class PlayerMixin implements Powerable, Pregnant {
+public abstract class PlayerMixin implements Powerable, Pregnant, BallMouthable {
 
     @Unique
     private double power = 0;
+
+    @Unique
+    private int ballMouth = 0;
 
     @Unique
     private boolean male = false;
@@ -46,7 +49,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     @Unique
     private short slowTick = 10;
     @Unique
-    private EntityType<? > childrenType = null;
+    private EntityType<?> childrenType = null;
     @Unique
     private int menstruation = 0;
     @Unique
@@ -92,6 +95,16 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     public boolean canPowerUp() {
         PlayerEntity player = (PlayerEntity) (Object) this;
         return player.getHungerManager().getFoodLevel() >= 3;
+    }
+
+    @Override
+    public int getBallMouth() {
+        return ballMouth;
+    }
+
+    @Override
+    public void setBallMouth(int ballMouth) {
+        this.ballMouth = ballMouth;
     }
 
     @Override
@@ -303,18 +316,19 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
     public void readCustomDataFromNbt(NbtCompound nbt, CallbackInfo ci) {
         power = this.readPowerFromNbt(nbt);
         this.readPregnantFromNbt(nbt);
+        this.readBallMouthFromNbt(nbt);
     }
 
     @Inject(method = "writeCustomDataToNbt", at = @At("HEAD"))
     public void writeCustomDataToNbt(NbtCompound nbt, CallbackInfo ci) {
         this.writePowerToNbt(nbt);
         this.writePregnantToNbt(nbt);
+        this.writeBallMouthToNbt(nbt);
     }
 
     @Inject(method = "tick",at = @At("HEAD"))
     public void tick(CallbackInfo ci) {
         PlayerEntity player = (PlayerEntity) (Object) this;
-        Powerable.tickPower(player);
         if (slowTick++ >= 10){
             if (player instanceof ServerPlayerEntity sp) {
                 // 同步power
@@ -322,6 +336,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
             }
         }
         if (player.getWorld() instanceof ServerWorld) {
+            Powerable.tickPower(player);
             Pregnant.pregnantTick(player);
             Pregnant.menstruationTick(player);
             Pregnant.aidsTick(player);
@@ -329,6 +344,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant {
             Pregnant.ovarianCancerTick(player);
             Pregnant.breastCancerTick(player);
             Pregnant.syphilisTick(player);
+            BallMouthable.ballMouthTick(player);
         }
     }
 

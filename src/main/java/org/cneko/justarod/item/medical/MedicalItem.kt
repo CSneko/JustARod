@@ -24,7 +24,7 @@ abstract class MedicalItem(settings: Settings) : Item(settings) {
      * @param targetExtraMessage 给目标的额外可选消息
      */
     data class ActionMessages(
-        val userSuccessMessage: Text,
+        val userSuccessMessage: Text?,
         val targetSuccessMessage: Text?,
         val userExtraMessage: Text? = null,
         val targetExtraMessage: Text? = null,
@@ -48,7 +48,7 @@ abstract class MedicalItem(settings: Settings) : Item(settings) {
      * @param stack 使用的物品堆栈
      * @return 失败消息的Text对象
      */
-    abstract fun getFailureMessage(user: PlayerEntity, target: LivingEntity, stack: ItemStack): Text
+    abstract fun getFailureMessage(user: PlayerEntity, target: LivingEntity, stack: ItemStack): Text?
 
     /**
      * 对目标执行物品的核心效果
@@ -76,9 +76,9 @@ abstract class MedicalItem(settings: Settings) : Item(settings) {
      * @param stack 使用的物品堆栈
      * @return 包含相关消息的[ActionMessages]对象
      */
-    abstract fun getSuccessMessages(user: PlayerEntity, target: LivingEntity, stack: ItemStack): ActionMessages
+    abstract fun getSuccessMessages(user: PlayerEntity, target: LivingEntity, stack: ItemStack): ActionMessages?
 
-    // 以下是提供共享逻辑的final方法
+
 
     final override fun use(world: World, user: PlayerEntity, hand: Hand): TypedActionResult<ItemStack> {
         val stack = user.getStackInHand(hand)
@@ -116,20 +116,21 @@ abstract class MedicalItem(settings: Settings) : Item(settings) {
             consumeItem(user, target, stack, hand)
 
             // 发送消息
-            val messages = getSuccessMessages(user, target, stack)
-            user.sendMessage(messages.userSuccessMessage, false)
-            messages.userExtraMessage?.let { user.sendMessage(it, false) }
+            getSuccessMessages(user, target, stack)?.let { messages ->
+                messages.userSuccessMessage?.let { user.sendMessage(it, false) }
+                messages.userExtraMessage?.let { user.sendMessage(it, false) }
 
-            // 如果目标是其他玩家，也给他们发送消息
-            if (target != user && target is PlayerEntity) {
-                messages.targetSuccessMessage?.let { target.sendMessage(it, false) }
-                messages.targetExtraMessage?.let { target.sendMessage(it, false) }
+                // 如果目标是其他玩家，也给他们发送消息
+                if (target != user && target is PlayerEntity) {
+                    messages.targetSuccessMessage?.let { target.sendMessage(it, false) }
+                    messages.targetExtraMessage?.let { target.sendMessage(it, false) }
+                }
             }
 
             return ActionResult.SUCCESS
         } else {
             // 发送失败消息
-            user.sendMessage(getFailureMessage(user, target, stack), true)
+            getFailureMessage(user, target, stack)?.let { user.sendMessage(it, true) }
             return ActionResult.FAIL
         }
     }

@@ -49,6 +49,10 @@ public class RavennEntityMixin implements Pregnant {
     private int brithControlling = 0;
     @Unique
     private int ovarianCancer = 0;
+    @Unique
+    private int breastCancer = 0;
+    @Unique
+    private int syphilis = 0;
 
     @Override
     public int getPregnant() {
@@ -201,6 +205,26 @@ public class RavennEntityMixin implements Pregnant {
     }
 
     @Override
+    public int getBreastCancer() {
+        return breastCancer;
+    }
+
+    @Override
+    public void setBreastCancer(int breastCancer) {
+        this.breastCancer = breastCancer;
+    }
+
+    @Override
+    public void setSyphilis(int syphilis) {
+        this.syphilis = syphilis;
+    }
+
+    @Override
+    public int getSyphilis() {
+        return syphilis;
+    }
+
+    @Override
     public Entity createBaby() {
         RavennEntity ravenn = (RavennEntity) (Object) this;
         var baby = (Entity) getChildrenType().create(ravenn.getWorld());
@@ -223,6 +247,8 @@ public class RavennEntityMixin implements Pregnant {
         Pregnant.aidsTick((LivingEntity & Pregnant)ravenn);
         Pregnant.HPVTick((LivingEntity & Pregnant)ravenn);
         Pregnant.ovarianCancerTick((LivingEntity & Pregnant)ravenn);
+        Pregnant.breastCancerTick((LivingEntity & Pregnant)ravenn);
+        Pregnant.syphilisTick((LivingEntity & Pregnant)ravenn);
     }
 
 }

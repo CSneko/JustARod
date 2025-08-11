@@ -9,6 +9,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 import org.cneko.justarod.client.screen.FrictionScreen;
+import org.cneko.justarod.entity.BallMouthable;
+import org.cneko.justarod.packet.BallMouthPayload;
 import org.cneko.justarod.packet.FrictionPayload;
 import org.cneko.justarod.packet.JRSyncPayload;
 import org.jetbrains.annotations.Nullable;
@@ -30,6 +32,24 @@ public class JRClientNetworkingEvents {
             player.setMale(payload.isMale());
             player.setPregnant(payload.pregnant());
             player.setSyphilis(payload.syphilis());
+        });
+        ClientPlayNetworking.registerGlobalReceiver(BallMouthPayload.ID,(payload,contextt)->{
+           UUID uuid = UUID.fromString(payload.uuid());
+           if (getInstance().player.getUuid().equals(uuid)){
+               int time = 0;
+               if (payload.status()){
+                   time = 2;
+               }
+               getInstance().player.setBallMouth(time);
+           }
+           LivingEntity entity = findNearbyEntityByUuid(uuid,10);
+           if (entity instanceof BallMouthable bm){
+               int time = 0;
+               if (payload.status()){
+                   time = 2;
+               }
+               bm.setBallMouth(time);
+           }
         });
     }
 

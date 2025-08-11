@@ -48,17 +48,18 @@ class PregnantCommand {
                                 }
                                 return@executes 1
                             }
-                        )
-                        .then(argument("target", EntityArgumentType.entity())
-                            .executes { ctx ->
-                                val target = EntityArgumentType.getEntity(ctx, "target")
-                                if (target is Pregnant){
-                                    val isMale = BoolArgumentType.getBool(ctx,"is")
-                                    target.isMale = isMale
+                            .then(argument("target", EntityArgumentType.entity())
+                                .executes { ctx ->
+                                    val target = EntityArgumentType.getEntity(ctx, "target")
+                                    if (target is Pregnant){
+                                        val isMale = BoolArgumentType.getBool(ctx,"is")
+                                        target.isMale = isMale
+                                    }
+                                    return@executes 1
                                 }
-                                return@executes 1
-                            }
+                            )
                         )
+
                     )
                     .then(literal("female")
                         .then(argument("is",BoolArgumentType.bool())
@@ -70,17 +71,18 @@ class PregnantCommand {
                                 }
                                 return@executes 1
                             }
-                        )
-                        .then(argument("target", EntityArgumentType.entity())
-                            .executes { ctx ->
-                                val target = EntityArgumentType.getEntity(ctx, "target")
-                                if (target is Pregnant){
-                                    val isFemale = BoolArgumentType.getBool(ctx,"is")
-                                    target.isFemale = isFemale
+                            .then(argument("target", EntityArgumentType.entity())
+                                .executes { ctx ->
+                                    val target = EntityArgumentType.getEntity(ctx, "target")
+                                    if (target is Pregnant){
+                                        val isFemale = BoolArgumentType.getBool(ctx,"is")
+                                        target.isFemale = isFemale
+                                    }
+                                    return@executes 1
                                 }
-                                return@executes 1
-                            }
+                            )
                         )
+
                     )
                 )
                 dispatcher.register(literal("pregnant")

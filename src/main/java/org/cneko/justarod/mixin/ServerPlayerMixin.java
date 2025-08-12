@@ -2,7 +2,7 @@ package org.cneko.justarod.mixin;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.network.ServerPlayerEntity;
-import org.cneko.justarod.packet.BallMouthPayload;
+import org.cneko.justarod.packet.BDSMPayload;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -22,8 +22,8 @@ public class ServerPlayerMixin {
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
         // 寻找周围的玩家
         player.getWorld().getEntitiesByClass(ServerPlayerEntity.class, player.getBoundingBox().expand(10), (e) -> true).forEach(e -> {
-            ServerPlayNetworking.send(e, new BallMouthPayload(player.getUuidAsString(), player.getBallMouth() > 0));
+            ServerPlayNetworking.send(e, new BDSMPayload(player.getUuidAsString(), player.getBallMouth() > 0, player.getElectricShock()>0));
         });
-        ServerPlayNetworking.send(player, new BallMouthPayload(player.getUuidAsString(), player.getBallMouth() > 0));
+        ServerPlayNetworking.send(player, new BDSMPayload(player.getUuidAsString(), player.getBallMouth() > 0, player.getElectricShock()>0));
     }
 }

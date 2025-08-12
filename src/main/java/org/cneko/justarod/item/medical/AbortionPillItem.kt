@@ -8,7 +8,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Hand
 import org.cneko.justarod.entity.Pregnant
 import org.cneko.justarod.item.JRItems
-import org.cneko.justarod.item.addEffect
+import org.cneko.justarod.item.rod.addEffect
 import org.cneko.toneko.common.mod.util.TickTaskQueue
 
 class AbortionPillItem(settings: Settings) : MedicalItem(settings) {

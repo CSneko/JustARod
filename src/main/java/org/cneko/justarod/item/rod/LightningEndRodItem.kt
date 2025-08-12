@@ -1,4 +1,4 @@
-package org.cneko.justarod.item
+package org.cneko.justarod.item.rod
 
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.LightningEntity
@@ -10,11 +10,12 @@ import net.minecraft.item.tooltip.TooltipType
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.world.World
+import org.cneko.justarod.item.JRComponents
 
 /*
 毕竟是铜做的，多少带点毒吧
  */
-class LightningEndRodItem: SelfUsedItem(Settings().maxCount(1).maxDamage(2000).component(JRComponents.USED_TIME_MARK,0)) {
+class LightningEndRodItem: SelfUsedItem(Settings().maxCount(1).maxDamage(2000).component(JRComponents.Companion.USED_TIME_MARK,0)) {
     override fun useOnSelf(
         stack: ItemStack,
         world: World?,

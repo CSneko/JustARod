@@ -34,6 +34,16 @@ import org.cneko.justarod.item.medical.PenicillinItem
 import org.cneko.justarod.item.medical.SanitaryTowel
 import org.cneko.justarod.item.medical.ScalpelItem
 import org.cneko.justarod.item.medical.SterilizationPills
+import org.cneko.justarod.item.rod.CactusRodItem
+import org.cneko.justarod.item.rod.EatableRodItem
+import org.cneko.justarod.item.rod.FirecrackerRodItem
+import org.cneko.justarod.item.rod.GiantRodItem
+import org.cneko.justarod.item.rod.LightningEndRodItem
+import org.cneko.justarod.item.rod.LongRodItem
+import org.cneko.justarod.item.rod.LongerRodItem
+import org.cneko.justarod.item.rod.NetWorkingRodItem
+import org.cneko.justarod.item.rod.RedstoneEndRod
+import org.cneko.justarod.item.rod.SlimeRodItem
 import org.cneko.justarod.item.syringe.BremelanotideItem
 import org.cneko.justarod.item.syringe.GrowthAgentItem
 import org.cneko.justarod.item.syringe.ReverseGrowthAgentItem
@@ -85,6 +95,8 @@ class JRItems {
         val ESTROGEN = EstrogenItem(Item.Settings())
         val PENICILLIN = PenicillinItem(Item.Settings())
         val BALL_MOUTH = BallMouthItem(Item.Settings())
+        val ELECTRIC_SHOCK_DEVICE = ElectricShockDeviceItem(Item.Settings())
+        val ELECTRIC_SHOCK_CONTROLLER = ElectricShockController(Item.Settings())
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -130,6 +142,8 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "estrogen"), ESTROGEN)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "penicillin"), PENICILLIN)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "ball_mouth"), BALL_MOUTH)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "electric_shock_device"), ELECTRIC_SHOCK_DEVICE)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "electric_shock_controller"), ELECTRIC_SHOCK_CONTROLLER)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
@@ -181,6 +195,8 @@ class JRItems {
                 entries.add(ESTROGEN)
                 entries.add(PENICILLIN)
                 entries.add(BALL_MOUTH)
+                entries.add(ELECTRIC_SHOCK_DEVICE)
+                entries.add(ELECTRIC_SHOCK_CONTROLLER)
             }
         }
     }

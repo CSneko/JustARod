@@ -9,7 +9,7 @@ import net.minecraft.util.Hand
 import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.entity.Pregnant
 import org.cneko.justarod.item.JRComponents
-import org.cneko.justarod.item.hasEffect
+import org.cneko.justarod.item.rod.hasEffect
 
 /**
  * 棉签物品类，用于医疗采样

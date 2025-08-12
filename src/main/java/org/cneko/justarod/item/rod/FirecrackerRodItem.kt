@@ -1,4 +1,4 @@
-package org.cneko.justarod.item
+package org.cneko.justarod.item.rod
 
 import net.minecraft.entity.LivingEntity
 import net.minecraft.item.ItemStack

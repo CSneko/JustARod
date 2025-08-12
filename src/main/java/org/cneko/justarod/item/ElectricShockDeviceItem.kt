@@ -9,7 +9,7 @@ import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import org.cneko.justarod.entity.BDSMable
 
-class BallMouthItem(settings: Item.Settings): Item(settings) {
+class ElectricShockDeviceItem(settings: Settings): Item(settings) {
     override fun useOnEntity(
         stack: ItemStack?,
         user: PlayerEntity?,
@@ -17,12 +17,12 @@ class BallMouthItem(settings: Item.Settings): Item(settings) {
         hand: Hand?
     ): ActionResult? {
         if (entity is BDSMable){
-            if (entity.ballMouth>0){
-                user?.sendMessage(Text.of("§c对方已经有禁言口罩了哦~"))
+            if (entity.electricShock>0){
+                user?.sendMessage(Text.of("§c对方已经有电击器了哦~"))
                 return ActionResult.FAIL
             }else{
-                entity.ballMouth = 20*60*5
-                user?.sendMessage(Text.of("§a成功插入禁言口罩~"))
+                entity.electricShock = 20*60*20
+                user?.sendMessage(Text.of("§a成功插入电击器~"))
                 return ActionResult.SUCCESS
             }
         }

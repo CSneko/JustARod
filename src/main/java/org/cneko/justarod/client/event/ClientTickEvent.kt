@@ -6,36 +6,65 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.*
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.nbt.NbtCompound
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.cneko.justarod.JRAttributes
+import org.cneko.justarod.JRUtil.Companion.rodId
 import org.cneko.justarod.effect.JREffects
-import org.cneko.justarod.item.hasEffect
+import org.cneko.justarod.item.rod.hasEffect
 import java.util.*
+import kotlin.math.hypot
 
 class ClientTickEvent {
     companion object{
         fun init(){
             HudRenderCallback.EVENT.register {context,_->
                 val client = MinecraftClient.getInstance()
-                if (client.player != null && client.player!!.hasEffect(JREffects.ESTRUS_EFFECT) || client.player!!.hasEffect(JREffects.ORGASM_EFFECT)) {
+                val player = client.player ?: return@register
+                if (player.hasEffect(JREffects.ESTRUS_EFFECT) || client.player!!.hasEffect(JREffects.ORGASM_EFFECT)) {
                     // 粉嫩粉嫩的
                     renderPinkGUI()
                     renderPinkOverlay(context)
                 }
-                if (client.player!!.hasEffect(JREffects.ORGASM_EFFECT)){
+                if (player.hasEffect(JREffects.ORGASM_EFFECT)){
                     // 抖起来！！！
                     val intensity = client.window.scaledWidth * (0.00f + Random().nextFloat() * 0.005f)
                     applyScreenShake(context, intensity)
                     applyViewShake(client.player!!, intensity)
                 }
-                if (client.player!!.hasEffect(JREffects.FAINT_EFFECT)){
+                if (player.hasEffect(JREffects.FAINT_EFFECT)){
                     // 晕了
                     renderFaintEffect(context)
                 }else {
                     faintAlpha = 0f
                 }
+                if (player.electricShock > 0) {
+                    val time = client.world!!.time
+
+                    // 轻微屏幕抖动
+                    if (time % 3L == 0L) {
+                        val intensity = client.window.scaledWidth * (0.0008f + Random().nextFloat() * 0.0012f)
+                        applyScreenShake(context, intensity)
+                        applyViewShake(player, intensity * 0.4f)
+                    }
+
+                    // 残影
+                    renderAfterimageWithNoise(context, time)
+
+                    // 渲染波纹（会同步触发闪光）
+                    renderElectricRipple(context, time)
+
+                    // 渐入渐出闪光
+                    if (flashAlpha < targetFlashAlpha) {
+                        flashAlpha = (flashAlpha + 0.005f).coerceAtMost(targetFlashAlpha)
+                    } else {
+                        flashAlpha = (flashAlpha - 0.004f).coerceAtLeast(0f)
+                    }
+                    if (flashAlpha > 0f) {
+                        renderSoftFlash(context, flashAlpha)
+                    }
+                }
+
 
                 // 渲染体力条
                 renderPowerBar(context)
@@ -43,6 +72,107 @@ class ClientTickEvent {
                 renderSexText(context)
             }
         }
+
+        private var flashAlpha = 0f
+        private var targetFlashAlpha = 0f
+        // 淡蓝色柔光闪
+        private fun renderSoftFlash(context: DrawContext, alpha: Float) {
+            RenderSystem.enableBlend()
+            RenderSystem.defaultBlendFunc()
+            RenderSystem.setShaderTexture(0, RIPPLE_TEXTURE) // 用波纹贴图
+            RenderSystem.setShaderColor(0.8f, 0.95f, 1f, alpha) // 柔和蓝色
+
+            val client = MinecraftClient.getInstance()
+            val width = client.window.scaledWidth
+            val height = client.window.scaledHeight
+
+            // 放大到覆盖全屏
+            val size = (hypot(width.toDouble(), height.toDouble()) * 2).toInt()
+            val x = width / 2 - size / 2
+            val y = height / 2 - size / 2
+
+            context.drawTexture(RIPPLE_TEXTURE, x, y, 0f, 0f, size, size, size, size)
+
+            RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
+            RenderSystem.disableBlend()
+        }
+
+
+        // 残影 + 噪声干扰
+        private fun renderAfterimageWithNoise(context: DrawContext, time: Long) {
+            val client = MinecraftClient.getInstance()
+            val width = client.window.scaledWidth
+            val height = client.window.scaledHeight
+
+            // 残影透明度随时间衰减
+            val alpha = 0.1f + 0.05f * kotlin.math.sin(time / 2.0).toFloat()
+
+            RenderSystem.enableBlend()
+            RenderSystem.defaultBlendFunc()
+
+            // 轻微蓝色调
+            RenderSystem.setShaderColor(0.8f, 0.9f, 1f, alpha)
+
+            // 噪声纹理
+            val noiseTex = Identifier.of("minecraft", "textures/block/obsidian.png")
+            RenderSystem.setShaderTexture(0, noiseTex)
+
+            val offsetX = (time % 8) / 8f
+            val offsetY = ((time * 2) % 8) / 8f
+
+            context.drawTexture(
+                noiseTex,
+                0, 0,
+                offsetX * width,
+                offsetY * height,
+                width, height,
+                width, height
+            )
+
+            RenderSystem.disableBlend()
+            RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
+        }
+
+        // 电流波纹（淡蓝色）
+        private val RIPPLE_TEXTURE = rodId("textures/misc/circle_ripple.png")
+        private fun renderElectricRipple(context: DrawContext, time: Long) {
+            val client = MinecraftClient.getInstance()
+            val width = client.window.scaledWidth
+            val height = client.window.scaledHeight
+
+            RenderSystem.enableBlend()
+            RenderSystem.defaultBlendFunc()
+            RenderSystem.setShaderTexture(0, RIPPLE_TEXTURE)
+
+            val rippleCount = 2
+            val rippleMaxRadius = (hypot(width.toDouble(), height.toDouble()) / 2).toFloat()
+            val rippleSpeed = 1.5f
+
+            for (i in 0 until rippleCount) {
+                val progress = ((time * rippleSpeed + i * (rippleMaxRadius / rippleCount)) % rippleMaxRadius) / rippleMaxRadius
+                val radius = rippleMaxRadius * progress
+
+                // 当第一圈波纹刚开始时触发闪光
+                if (i == 0 && progress < 0.02f) {
+                    targetFlashAlpha = 0.08f + Random().nextFloat() * 0.08f
+                }
+
+                val alpha = (1f - progress).coerceIn(0f, 1f) * 0.25f
+                RenderSystem.setShaderColor(0.6f, 0.9f, 1f, alpha)
+
+                val size = (radius * 2).toInt().coerceAtLeast(width.coerceAtLeast(height))
+                val x = width / 2 - size / 2
+                val y = height / 2 - size / 2
+
+                context.drawTexture(RIPPLE_TEXTURE, x, y, 0f, 0f, size, size, size, size)
+            }
+
+            RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
+            RenderSystem.disableBlend()
+        }
+
+
+
 
         private fun renderSexText(context: DrawContext) {
             val client = MinecraftClient.getInstance()

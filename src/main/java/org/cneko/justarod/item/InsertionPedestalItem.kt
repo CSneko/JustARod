@@ -13,9 +13,9 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.*
 import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
 import org.cneko.justarod.damage.JRDamageTypes
 import org.cneko.justarod.entity.Insertable
+import org.cneko.justarod.item.rod.SelfUsedItemInterface
 import org.cneko.toneko.common.mod.items.BazookaItem.Ammunition
 
 /*

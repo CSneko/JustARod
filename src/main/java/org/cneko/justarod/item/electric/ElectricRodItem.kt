@@ -7,9 +7,9 @@ import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.Hand
 import net.minecraft.world.World
-import org.cneko.justarod.item.EndRodInstructions
-import org.cneko.justarod.item.EndRodItem
-import org.cneko.justarod.item.SelfUsedItemInterface
+import org.cneko.justarod.item.rod.EndRodInstructions
+import org.cneko.justarod.item.rod.EndRodItem
+import org.cneko.justarod.item.rod.SelfUsedItemInterface
 import team.reborn.energy.api.base.SimpleEnergyItem
 
 /*

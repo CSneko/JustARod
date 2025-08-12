@@ -1,4 +1,4 @@
-package org.cneko.justarod.item
+package org.cneko.justarod.item.rod
 
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
@@ -13,11 +13,12 @@ import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
 import net.minecraft.world.World
 import org.cneko.justarod.effect.JREffects
+import org.cneko.justarod.item.JRComponents
 
 /*
 事实上没人可以把这个塞进去，哪怕扩张有多厉害
  */
-class GiantRodItem: OtherUsedItem(Settings().maxCount(1).maxDamage(1000).component(JRComponents.USED_TIME_MARK, 0)) {
+class GiantRodItem: OtherUsedItem(Settings().maxCount(1).maxDamage(1000).component(JRComponents.Companion.USED_TIME_MARK, 0)) {
     override fun canAcceptEntity(stack: ItemStack, entity: Entity): Boolean {
         return entity.type.equals(EntityType.ENDER_DRAGON)
     }

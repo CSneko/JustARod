@@ -1,9 +1,8 @@
-package org.cneko.justarod.item
+package org.cneko.justarod.item.rod
 
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.mob.SlimeEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.Registries
@@ -12,11 +11,12 @@ import net.minecraft.util.ActionResult
 import net.minecraft.util.math.random.Random
 import net.minecraft.world.World
 import org.cneko.justarod.effect.JREffects
+import org.cneko.justarod.item.JRComponents
 
 /*
 黏黏糊糊的呢
  */
-class SlimeRodItem : SelfUsedItem(Settings().maxCount(1).maxDamage(1000).component(JRComponents.USED_TIME_MARK, 0)){
+class SlimeRodItem : SelfUsedItem(Settings().maxCount(1).maxDamage(1000).component(JRComponents.Companion.USED_TIME_MARK, 0)){
     override fun useOnSelf(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean): ActionResult {
         // 如果成功使用，就1/500的几率生成一只可爱的小史莱姆
         if(super.useOnSelf(stack, world, entity, slot, selected) == ActionResult.SUCCESS){

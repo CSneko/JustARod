@@ -25,7 +25,7 @@ import net.minecraft.util.TimeHelper
 import net.minecraft.world.World
 import org.cneko.justarod.block.JRBlocks
 import org.cneko.justarod.effect.JREffects
-import org.cneko.justarod.item.addEffect
+import org.cneko.justarod.item.rod.addEffect
 import org.cneko.toneko.common.mod.entities.NekoEntity
 import org.cneko.toneko.common.mod.items.ToNekoItems
 import org.cneko.toneko.common.mod.misc.mixininterface.SlowTickable

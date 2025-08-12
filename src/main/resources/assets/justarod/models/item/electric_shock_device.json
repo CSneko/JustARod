@@ -1,0 +1,24 @@
+{
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "justarod:item/electric_shock_device",
+		"particle": "justarod:item/electric_shock_device"
+	},
+	"elements": [
+		{
+			"from": [5, 0, 6],
+			"to": [11, 12, 7],
+			"rotation": {"angle": 0, "axis": "y", "origin": [6, 0, 6]},
+			"faces": {
+				"north": {"uv": [1, 1, 7, 13], "texture": "#0"},
+				"east": {"uv": [0, 1, 1, 13], "texture": "#0"},
+				"south": {"uv": [8, 1, 14, 13], "texture": "#0"},
+				"west": {"uv": [7, 1, 8, 13], "texture": "#0"},
+				"up": {"uv": [7, 1, 1, 0], "texture": "#0"},
+				"down": {"uv": [13, 0, 7, 1], "texture": "#0"}
+			}
+		}
+	],
+	"display": {}
+}

@@ -4,7 +4,6 @@ import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonPart;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
@@ -21,7 +20,7 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import org.cneko.justarod.JRCriteria;
 import org.cneko.justarod.effect.JREffects;
-import org.cneko.justarod.item.GiantRodItem;
+import org.cneko.justarod.item.rod.GiantRodItem;
 import org.cneko.justarod.item.JRItems;
 
 

@@ -16,7 +16,7 @@ import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.item.Items
 import org.cneko.justarod.entity.Pregnant
-import org.cneko.justarod.item.addEffect
+import org.cneko.justarod.item.rod.addEffect
 import org.cneko.toneko.common.mod.util.TickTaskQueue
 
 // 继承自 MedicalItem

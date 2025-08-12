@@ -1,10 +1,9 @@
-package org.cneko.justarod.item
+package org.cneko.justarod.item.rod
 
 import net.minecraft.component.type.FoodComponent
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.passive.FoxEntity
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundCategory
@@ -14,11 +13,13 @@ import net.minecraft.util.math.MathHelper
 import net.minecraft.world.World
 import net.minecraft.world.event.GameEvent
 import net.minecraft.world.event.GameEvent.Emitter
+import org.cneko.justarod.item.JRComponents
 
 /*
 其实用过之后味道是有点酸的，也会有点咸咸的，你要喜欢可以舔舔，虽然可能有点细菌，不过不是不能接受
  */
-class EatableRodItem: SelfUsedItem(Settings().food(FoodComponent.Builder().nutrition(1).saturationModifier(0.2f).build()).component(JRComponents.USED_TIME_MARK, 0).maxDamage(200)){
+class EatableRodItem: SelfUsedItem(Settings().food(FoodComponent.Builder().nutrition(1).saturationModifier(0.2f).build()).component(
+    JRComponents.Companion.USED_TIME_MARK, 0).maxDamage(200)){
     override fun finishUsing(stack: ItemStack?, world: World, user: LivingEntity): ItemStack {
         val itemStack = super.finishUsing(stack, world, user)
         if (!world.isClient) {

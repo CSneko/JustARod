@@ -5,7 +5,6 @@ import net.minecraft.component.type.FoodComponent;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -32,13 +31,15 @@ import static org.cneko.justarod.JRAttributes.Companion;
 
 @SuppressWarnings({"AddedMixinMembersNamePattern", "DataFlowIssue"})
 @Mixin(PlayerEntity.class)
-public abstract class PlayerMixin implements Powerable, Pregnant, BallMouthable {
+public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
 
     @Unique
     private double power = 0;
 
     @Unique
     private int ballMouth = 0;
+    @Unique
+    private int electricShock = 0;
 
     @Unique
     private boolean male = false;
@@ -105,6 +106,16 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BallMouthable 
     @Override
     public void setBallMouth(int ballMouth) {
         this.ballMouth = ballMouth;
+    }
+
+    @Override
+    public int getElectricShock() {
+        return electricShock;
+    }
+
+    @Override
+    public void setElectricShock(int electricShock) {
+        this.electricShock = electricShock;
     }
 
     @Override
@@ -344,7 +355,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BallMouthable 
             Pregnant.ovarianCancerTick(player);
             Pregnant.breastCancerTick(player);
             Pregnant.syphilisTick(player);
-            BallMouthable.ballMouthTick(player);
+            BDSMable.ballMouthTick(player);
+            BDSMable.electricShockTick(player);
         }
     }
 

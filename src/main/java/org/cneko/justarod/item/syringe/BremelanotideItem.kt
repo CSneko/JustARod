@@ -3,7 +3,7 @@ package org.cneko.justarod.item.syringe
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.effect.StatusEffects
 import org.cneko.justarod.effect.JREffects
-import org.cneko.justarod.item.addEffect
+import org.cneko.justarod.item.rod.addEffect
 
 /*
 这个的话呢.... 怎么说呢....

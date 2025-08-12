@@ -42,7 +42,7 @@
       "net/minecraft/class_1657": [
         "org/cneko/justarod/entity/Powerable",
         "org/cneko/justarod/entity/Pregnant",
-        "org/cneko/justarod/entity/BallMouthable"
+        "org/cneko/justarod/entity/BDSMable"
       ],
       "org/cneko/toneko/common/mod/entities/RavennEntity": ["org/cneko/justarod/entity/Pregnant","org/cneko/justarod/entity/Sexual","org/cneko/justarod/entity/Intex"],
       "org/cneko/toneko/common/mod/entities/NekoEntity": ["org/cneko/justarod/entity/Insertable"],

@@ -6,7 +6,7 @@ import net.minecraft.server.world.ServerWorld
 import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.entity.JREntities
 import org.cneko.justarod.entity.RodEntity
-import org.cneko.justarod.item.addEffect
+import org.cneko.justarod.item.rod.addEffect
 import org.cneko.toneko.common.mod.entities.NekoEntity
 
 class RodAgentItem:BaseSyringeItem(Settings()) {

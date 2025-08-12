@@ -11,9 +11,8 @@ import net.minecraft.util.Hand
 import net.minecraft.util.hit.EntityHitResult
 import net.minecraft.world.World
 import org.cneko.justarod.effect.JREffects
-import org.cneko.justarod.item.addEffect
+import org.cneko.justarod.item.rod.addEffect
 import org.cneko.toneko.common.mod.entities.INeko
-import org.cneko.toneko.common.mod.quirks.Quirk
 
 // 不好吃
 class CCBQuirk() : JRDefaultQuirk("ccb") {

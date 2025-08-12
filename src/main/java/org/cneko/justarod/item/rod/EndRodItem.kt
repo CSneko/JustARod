@@ -1,4 +1,4 @@
-package org.cneko.justarod.item
+package org.cneko.justarod.item.rod
 
 import net.minecraft.component.DataComponentTypes
 import net.minecraft.enchantment.Enchantments
@@ -25,15 +25,15 @@ import org.cneko.justarod.JRAttributes
 import org.cneko.justarod.damage.JRDamageTypes
 import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.entity.Powerable
+import org.cneko.justarod.item.JRComponents
 import org.cneko.toneko.common.mod.items.BazookaItem.Ammunition
-import kotlin.math.hypot
 import kotlin.math.sqrt
 
 abstract class EndRodItem(settings: Settings) : Item(settings), EndRodItemInterface {
     override fun onUse(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean,times: Int) : ActionResult{
         // 添加计数
-        val count = stack.getOrDefault(JRComponents.USED_TIME_MARK, 0)
-        stack.set(JRComponents.USED_TIME_MARK, count + times)
+        val count = stack.getOrDefault(JRComponents.Companion.USED_TIME_MARK, 0)
+        stack.set(JRComponents.Companion.USED_TIME_MARK, count + times)
 
         return ActionResult.SUCCESS
     }
@@ -41,14 +41,14 @@ abstract class EndRodItem(settings: Settings) : Item(settings), EndRodItemInterf
     override fun appendTooltip(stack: ItemStack?, context: TooltipContext?, tooltip: MutableList<Text>?, type: TooltipType?) {
         super.appendTooltip(stack, context, tooltip, type)
         // 将使用次数添加到tooltip中
-        val markedCount: Int = stack?.getOrDefault(JRComponents.USED_TIME_MARK, 0)!!
+        val markedCount: Int = stack?.getOrDefault(JRComponents.Companion.USED_TIME_MARK, 0)!!
         tooltip?.add(Text.translatable("item.justarod.end_rod.used_count", markedCount).formatted(Formatting.GREEN))
-        tooltip?.add(Text.translatable("item.justarod.end_rod.owner", stack.getOrDefault(JRComponents.OWNER,"无")).formatted(Formatting.YELLOW))
+        tooltip?.add(Text.translatable("item.justarod.end_rod.owner", stack.getOrDefault(JRComponents.Companion.OWNER,"无")).formatted(Formatting.YELLOW))
     }
 
     override fun onCraftByPlayer(stack: ItemStack?, world: World?, player: PlayerEntity?) {
         super.onCraftByPlayer(stack, world, player)
-        stack?.set(JRComponents.OWNER, player?.name?.string)
+        stack?.set(JRComponents.Companion.OWNER, player?.name?.string)
     }
     abstract fun getInstruction(): EndRodInstructions
 
@@ -250,7 +250,7 @@ interface SelfUsedItemInterface : EndRodItemInterface{
         return ActionResult.SUCCESS
     }
     fun getRodSpeed(stack: ItemStack?):Int{
-        if (stack != null) return stack.components.getOrDefault(JRComponents.SPEED,1)
+        if (stack != null) return stack.components.getOrDefault(JRComponents.Companion.SPEED,1)
         return 1
     }
 }

@@ -5,18 +5,18 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.Text;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 import org.cneko.justarod.client.screen.FrictionScreen;
-import org.cneko.justarod.entity.BallMouthable;
-import org.cneko.justarod.packet.BallMouthPayload;
+import org.cneko.justarod.entity.BDSMable;
+import org.cneko.justarod.packet.BDSMPayload;
 import org.cneko.justarod.packet.FrictionPayload;
 import org.cneko.justarod.packet.JRSyncPayload;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static net.minecraft.client.MinecraftClient.getInstance;
 
@@ -33,23 +33,25 @@ public class JRClientNetworkingEvents {
             player.setPregnant(payload.pregnant());
             player.setSyphilis(payload.syphilis());
         });
-        ClientPlayNetworking.registerGlobalReceiver(BallMouthPayload.ID,(payload,contextt)->{
-           UUID uuid = UUID.fromString(payload.uuid());
-           if (getInstance().player.getUuid().equals(uuid)){
-               int time = 0;
-               if (payload.status()){
-                   time = 2;
-               }
-               getInstance().player.setBallMouth(time);
-           }
-           LivingEntity entity = findNearbyEntityByUuid(uuid,10);
-           if (entity instanceof BallMouthable bm){
-               int time = 0;
-               if (payload.status()){
-                   time = 2;
-               }
-               bm.setBallMouth(time);
-           }
+        ClientPlayNetworking.registerGlobalReceiver(BDSMPayload.ID, (payload, context) -> {
+            UUID uuid = UUID.fromString(payload.uuid());
+            PlayerEntity player = MinecraftClient.getInstance().player;
+
+            Consumer<BDSMable> processBDSM = bdsmEntity -> {
+                int ballMouth = payload.ballMouth() ? 2 : 0;
+                int electricShock = payload.electricShock() ? 2 : 0;
+                bdsmEntity.setBallMouth(ballMouth);
+                bdsmEntity.setElectricShock(electricShock);
+            };
+
+            if (player.getUuid().equals(uuid)) {
+                processBDSM.accept(player);
+            }
+
+            LivingEntity entity = findNearbyEntityByUuid(uuid, 10);
+            if (entity instanceof BDSMable bm) {
+                processBDSM.accept(bm);
+            }
         });
     }
 

@@ -7,7 +7,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.text.Text
 import net.minecraft.util.Hand
 import org.cneko.justarod.entity.Pregnant
-import org.cneko.justarod.item.addEffect
+import org.cneko.justarod.item.rod.addEffect
 
 private const val BIRTH_CONTROL_DURATION_TICKS = 20 * 60 * 20
 

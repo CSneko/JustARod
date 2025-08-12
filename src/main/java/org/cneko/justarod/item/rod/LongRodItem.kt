@@ -1,19 +1,19 @@
-package org.cneko.justarod.item
+package org.cneko.justarod.item.rod
 
 import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.tooltip.TooltipType
 import net.minecraft.text.Text
 import net.minecraft.util.ActionResult
-import net.minecraft.util.Hand
 import net.minecraft.world.World
 import org.cneko.justarod.damage.JRDamageTypes
+import org.cneko.justarod.item.JRComponents
+
 /*
 其实可以插到顶了
  */
-class LongRodItem : BothUsedItem(Settings().component(JRComponents.USED_TIME_MARK, 0).maxDamage(2000).maxCount(1)){
+class LongRodItem : BothUsedItem(Settings().component(JRComponents.Companion.USED_TIME_MARK, 0).maxDamage(2000).maxCount(1)){
     override fun getInstruction(): EndRodInstructions {
         return EndRodInstructions.USE_ON_OTHER_INSERT
     }

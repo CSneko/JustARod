@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IRI",
+    "IDI",
+    "IRI"
+  ],
+  "key": {
+    "I": {
+        "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "D": {
+        "item": "minecraft:diamond"
+    }
+  },
+  "result": {
+    "id": "justarod:electric_shock_device",
+    "count": 1
+  }
+}

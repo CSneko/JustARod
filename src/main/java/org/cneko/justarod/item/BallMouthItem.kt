@@ -16,7 +16,7 @@ class BallMouthItem(settings: Item.Settings): Item(settings) {
         entity: LivingEntity?,
         hand: Hand?
     ): ActionResult? {
-        if (entity is BDSMable){
+        if (entity is BDSMable && !entity.world.isClient) {
             if (entity.ballMouth>0){
                 user?.sendMessage(Text.of("§c对方已经有禁言口罩了哦~"))
                 return ActionResult.FAIL

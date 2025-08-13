@@ -23,6 +23,9 @@ class BallMouthItem(settings: Item.Settings): Item(settings) {
             }else{
                 entity.ballMouth = 20*60*5
                 user?.sendMessage(Text.of("§a成功插入禁言口罩~"))
+                if (user?.isCreative == false){
+                    stack?.decrement(1)
+                }
                 return ActionResult.SUCCESS
             }
         }

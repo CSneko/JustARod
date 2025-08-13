@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "WC"
+  ],
+  "key": {
+    "W": {
+      "item": "justarod:whip"
+    },
+    "C": {
+      "item": "justarod:contract"
+    }
+  },
+  "result": {
+    "id": "justarod:contract_whip",
+    "count": 1
+  }
+}

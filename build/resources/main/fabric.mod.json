@@ -37,6 +37,7 @@
   "mixins": [
     "justarod.mixins.json"
   ],
+  "accessWidener" : "justarod.accessWideners.accessWidener",
   "custom": {
     "loom:injected_interfaces": {
       "net/minecraft/class_1657": [

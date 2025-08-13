@@ -97,6 +97,8 @@ class JRItems {
         val BALL_MOUTH = BallMouthItem(Item.Settings())
         val ELECTRIC_SHOCK_DEVICE = ElectricShockDeviceItem(Item.Settings())
         val ELECTRIC_SHOCK_CONTROLLER = ElectricShockController(Item.Settings())
+        val WHIP = WhipItem(Item.Settings())
+        val CONTRACT_WHIP = ContractWhipItem(Item.Settings())
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -144,6 +146,8 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "ball_mouth"), BALL_MOUTH)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "electric_shock_device"), ELECTRIC_SHOCK_DEVICE)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "electric_shock_controller"), ELECTRIC_SHOCK_CONTROLLER)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "whip"), WHIP)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "contract_whip"), CONTRACT_WHIP)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
@@ -197,6 +201,8 @@ class JRItems {
                 entries.add(BALL_MOUTH)
                 entries.add(ELECTRIC_SHOCK_DEVICE)
                 entries.add(ELECTRIC_SHOCK_CONTROLLER)
+                entries.add(WHIP)
+                entries.add(CONTRACT_WHIP)
             }
         }
     }

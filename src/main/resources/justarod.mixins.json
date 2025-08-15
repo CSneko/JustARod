@@ -19,6 +19,7 @@
   },
   "client": [
     "client.EnderDragonRendererMixin",
+    "client.PlayerEntityModelMixin",
     "client.PlayerRendererMixin"
   ]
 }

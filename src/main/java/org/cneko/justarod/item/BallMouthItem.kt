@@ -9,7 +9,7 @@ import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import org.cneko.justarod.entity.BDSMable
 
-class BallMouthItem(settings: Item.Settings): Item(settings) {
+class BallMouthItem(settings: Settings): Item(settings) {
     override fun useOnEntity(
         stack: ItemStack?,
         user: PlayerEntity?,

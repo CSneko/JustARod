@@ -1,0 +1,20 @@
+{
+  "replace": false,
+  "values": [
+    "justarod:slime_rod",
+    "justarod:giant_rod",
+    "justarod:redstone_rod",
+    "justarod:cactus_rod",
+    "justarod:eatable_rod",
+    "justarod:long_rod",
+    "justarod:longer_rod",
+    "justarod:lightning_end_rod",
+    "justarod:networking_rod",
+    "justarod:basic_electric_rod",
+    "justarod:advanced_electric_rod",
+    "justarod:industrial_electric_rod",
+    "justarod:firecracker_rod",
+    "justarod:fireworks_rod",
+    "justarod:tribocharging_rod",
+  ]
+}

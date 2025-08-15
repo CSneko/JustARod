@@ -2,11 +2,13 @@ package org.cneko.justarod.entity;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import org.cneko.justarod.effect.JREffects;
 import org.cneko.toneko.common.mod.effects.ToNekoEffects;
 
 public interface BDSMable {
@@ -30,14 +32,27 @@ public interface BDSMable {
         }
     }
 
+    default void setBundled(int time){
+    }
+    default int getBundled(){
+        return 0;
+    }
+    default void updateBundled(){
+        if (getBundled() > 1){
+            setBundled(getBundled()-1);
+        }
+    }
+
     default void writeBallMouthToNbt(NbtCompound nbt){
         nbt.putInt("BallMouth", getBallMouth());
         nbt.putInt("ElectricShock", getElectricShock());
+        nbt.putInt("Bundled", getBundled());
     }
 
     default void readBallMouthFromNbt(NbtCompound nbt){
         setBallMouth(nbt.getInt("BallMouth"));
         setElectricShock(nbt.getInt("ElectricShock"));
+        setBundled(nbt.getInt("Bundled"));
     }
 
     static <T extends LivingEntity & BDSMable> void ballMouthTick(T ballMouthable) {
@@ -107,6 +122,53 @@ public interface BDSMable {
         if (electricShockable.getElectricShock() == 1 && electricShockable.isSneaking()) {
             electricShockable.setElectricShock(0);
             electricShockable.sendMessage(Text.of("§a已解除电击器"));
+        }
+    }
+
+    static <T extends LivingEntity & BDSMable> void bundledTick(T bundled) {
+        bundled.updateBundled();
+        if (bundled.getBundled() == 1 && bundled.isSneaking()) {
+            bundled.setBundled(0);
+            bundled.sendMessage(Text.of("§a已解除束缚"));
+        }
+        if (bundled.getBundled() > 0) {
+            // 添加束缚状态效果
+            bundled.addStatusEffect(
+                    new StatusEffectInstance(
+                            StatusEffects.SLOWNESS,
+                            20,
+                            10,
+                            true,
+                            false
+                    )
+            );
+            bundled.addStatusEffect(
+                    new StatusEffectInstance(
+                            StatusEffects.WEAKNESS,
+                            20,
+                            10,
+                            true,
+                            false
+                    )
+            );
+            bundled.addStatusEffect(
+                    new StatusEffectInstance(
+                            StatusEffects.MINING_FATIGUE,
+                            20,
+                            10,
+                            true,
+                            false
+                    )
+            );
+            bundled.addStatusEffect(
+                    new StatusEffectInstance(
+                            Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getJUMP_NERF_EFFECT()),
+                            20,
+                            10, // 1秒刷新一次
+                            true,
+                            false
+                    )
+            );
         }
     }
 

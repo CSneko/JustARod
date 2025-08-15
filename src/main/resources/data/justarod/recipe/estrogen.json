@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key":{
+    "A":{
+      "item":"minecraft:glowstone_dust"
+    },
+    "B":{
+      "item":"justarod:golden_leaves"
+    },
+    "C":{
+      "item":"minecraft:nether_wart"
+    },
+    "D":{
+      "item":"minecraft:redstone"
+    },
+    "E":{
+      "item":"minecraft:lilac"
+    }
+  },
+  "pattern":[
+    "BCB",
+    "AEA",
+    "BDB"
+    ],
+    "result":{
+      "count":2,
+      "id":"justarod:estrogen"
+    }
+}

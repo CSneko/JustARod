@@ -40,6 +40,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     private int ballMouth = 0;
     @Unique
     private int electricShock = 0;
+    @Unique
+    private int bundled = 0;
 
     @Unique
     private boolean male = false;
@@ -116,6 +118,16 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     @Override
     public void setElectricShock(int electricShock) {
         this.electricShock = electricShock;
+    }
+
+    @Override
+    public int getBundled() {
+        return bundled;
+    }
+
+    @Override
+    public void setBundled(int bundled) {
+        this.bundled = bundled;
     }
 
     @Override
@@ -357,6 +369,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
             Pregnant.syphilisTick(player);
             BDSMable.ballMouthTick(player);
             BDSMable.electricShockTick(player);
+            BDSMable.bundledTick(player);
         }
     }
 

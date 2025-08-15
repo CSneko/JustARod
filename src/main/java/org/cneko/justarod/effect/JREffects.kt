@@ -63,6 +63,11 @@ class JREffects {
             Identifier.of(MODID, "syphilis"),
             SyphilisEffect()
         )
+        val JUMP_NERF_EFFECT: StatusEffect? = Registry.register(
+            Registries.STATUS_EFFECT,
+            Identifier.of(MODID, "jump_nerf"),
+            JumpNerfEffect()
+        )
         fun init(){
         }
     }

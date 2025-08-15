@@ -42,6 +42,7 @@ public class JRClientNetworkingEvents {
                 int electricShock = payload.electricShock() ? 2 : 0;
                 bdsmEntity.setBallMouth(ballMouth);
                 bdsmEntity.setElectricShock(electricShock);
+                bdsmEntity.setBundled(payload.bundled() ? 2 : 0);
             };
 
             if (player.getUuid().equals(uuid)) {

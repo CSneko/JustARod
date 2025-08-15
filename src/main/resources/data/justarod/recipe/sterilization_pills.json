@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key":{
+    "A":{
+      "item":"minecraft:sugar"
+    },
+    "B":{
+      "item":"justarod:golden_leaves"
+    },
+    "C":{
+      "item":"minecraft:fire_charge"
+    },
+    "D":{
+      "item":"minecraft:gold_nugget"
+    }
+  },
+  "pattern":[
+    "ABA",
+    "BCB",
+    "BDB"
+    ],
+    "result":{
+      "count":1,
+      "id":"justarod:sterilization_pills"
+    }
+}

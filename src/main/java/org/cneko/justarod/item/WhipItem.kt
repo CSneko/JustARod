@@ -28,10 +28,11 @@ import kotlin.math.sin
 open class WhipItem(settings: Settings) : Item(settings.maxCount(1).maxDamage(1000)) {
 
     override fun postHit(stack: ItemStack, target: LivingEntity, attacker: LivingEntity): Boolean {
-        // 左键普通攻击：主目标满伤，其他目标半伤
-        applyWhipEffect(attacker, 4.0, 0.4, 40, 1, fullDamage = false, charged = false)
+        // 左键普通攻击：主目标满伤（4点），其他目标半伤（2点）
+        applyWhipEffect(attacker, 4.0, 0.4, 40, 1, 2.0f, charged = false)
         return super.postHit(stack, target, attacker)
     }
+
     override fun inventoryTick(stack: ItemStack, world: World, entity: net.minecraft.entity.Entity, slot: Int, selected: Boolean) {
         super.inventoryTick(stack, world, entity, slot, selected)
 
@@ -40,9 +41,7 @@ open class WhipItem(settings: Settings) : Item(settings.maxCount(1).maxDamage(10
             val chargeRatio =
                 min((getMaxUseTime(stack, entity) - useTicks).toDouble() / getMaxUseTime(stack, entity), 1.0)
 
-            // 粒子密度随蓄力增加
             val particleCount = (2 + 4 * chargeRatio).toInt()
-
             val yawRad = Math.toRadians(entity.yaw.toDouble())
 
             for (i in 0 until particleCount) {
@@ -54,12 +53,9 @@ open class WhipItem(settings: Settings) : Item(settings.maxCount(1).maxDamage(10
                 val y = entity.eyeY - 0.3 + offsetY
                 val z = entity.z + cos(yawRad) * 0.5 + offsetZ
 
-                // 粒子颜色从淡蓝到亮蓝
                 val r = 0.2f * (1 - chargeRatio).toFloat()
                 val g = 0.6f * (1 - chargeRatio).toFloat()
                 val b = (0.5 + 0.5 * chargeRatio).toFloat()
-
-                // 粒子大小随蓄力增加
                 val size = 0.1f + 0.2f * chargeRatio.toFloat()
 
                 world.addParticle(
@@ -81,45 +77,31 @@ open class WhipItem(settings: Settings) : Item(settings.maxCount(1).maxDamage(10
     }
 
     override fun getUseAction(stack: ItemStack): UseAction {
-        return UseAction.BOW // 播放拉弓动作
+        return UseAction.BOW
     }
 
     override fun getMaxUseTime(stack: ItemStack?, user: LivingEntity?): Int {
-        return 30 // 蓄力最长 1.5 秒（30 tick）
+        return 30
     }
 
     override fun onStoppedUsing(stack: ItemStack, world: World, user: LivingEntity, remainingUseTicks: Int) {
         if (user !is PlayerEntity) return
 
         val chargedTicks = getMaxUseTime(stack, user) - remainingUseTicks
-        val chargeRatio = min(chargedTicks / getMaxUseTime(stack, user).toDouble(), 1.0) // 0 ~ 1
+        val chargeRatio = min(chargedTicks / getMaxUseTime(stack, user).toDouble(), 1.0)
 
-        // 蓄力效果计算
-        val range = 4.0 + 4.0 * chargeRatio // 4~8格
-        val knockback = 0.4 + 0.6 * chargeRatio // 0.4~1.0
-        val duration = 40 + (20 * chargeRatio).toInt() // 2~3秒缓慢
+        val range = 4.0 + 4.0 * chargeRatio
+        val knockback = 0.4 + 0.6 * chargeRatio
+        val duration = 40 + (20 * chargeRatio).toInt()
 
-        applyWhipEffect(user, range, knockback, duration, 2, fullDamage = true, charged = true)
+        // 伤害随蓄力增加：4.0 ~ 8.0
+        val damage = (4.0f + 4.0f * chargeRatio).toFloat()
 
-        // 播放甩鞭音效（音调随蓄力变化）
-        world.playSound(
-            null,
-            user.blockPos,
-            SoundEvents.ENTITY_FISHING_BOBBER_RETRIEVE,
-            SoundCategory.PLAYERS,
-            1.0f,
-            0.8f + 0.4f * chargeRatio.toFloat()
-        )
-        world.playSound(
-            null,
-            user.blockPos,
-            SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP,
-            SoundCategory.PLAYERS,
-            0.8f,
-            1.0f
-        )
+        applyWhipEffect(user, range, knockback, duration, 2, damage, charged = true)
 
-        // 耐久消耗（蓄力用多一点）
+        world.playSound(null, user.blockPos, SoundEvents.ENTITY_FISHING_BOBBER_RETRIEVE, SoundCategory.PLAYERS, 1.0f, 0.8f + 0.4f * chargeRatio.toFloat())
+        world.playSound(null, user.blockPos, SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, SoundCategory.PLAYERS, 0.8f, 1.0f)
+
         stack.damage(2 + (chargeRatio * 2).toInt(), user, EquipmentSlot.MAINHAND)
     }
 
@@ -129,7 +111,7 @@ open class WhipItem(settings: Settings) : Item(settings.maxCount(1).maxDamage(10
         knockbackStrength: Double,
         slownessDuration: Int,
         slownessLevel: Int,
-        fullDamage: Boolean,
+        damage: Float,
         charged: Boolean
     ) {
         val world = attacker.world
@@ -151,25 +133,13 @@ open class WhipItem(settings: Settings) : Item(settings.maxCount(1).maxDamage(10
             val angle = acos(dot.coerceIn(-1.0, 1.0))
 
             if (angle <= angleRange / 2) {
-                world.addParticle(
-                    ParticleTypes.CRIT,
-                    entity.x,
-                    entity.eyeY,
-                    entity.z,
-                    0.0, 0.0, 0.0
-                )
+                world.addParticle(ParticleTypes.CRIT, entity.x, entity.eyeY, entity.z, 0.0, 0.0, 0.0)
 
                 entity.addStatusEffect(StatusEffectInstance(StatusEffects.SLOWNESS, slownessDuration, slownessLevel))
-                entity.addVelocity(
-                    -sin(attackerYaw) * knockbackStrength,
-                    0.1,
-                    cos(attackerYaw) * knockbackStrength
-                )
+                entity.addVelocity(-sin(attackerYaw) * knockbackStrength, 0.1, cos(attackerYaw) * knockbackStrength)
                 entity.velocityModified = true
 
-                // 调用抽象方法
-                val damageAmount = if (fullDamage) 4.0f else 2.0f
-                hitTarget(attacker, entity, damageAmount)
+                hitTarget(attacker, entity, damage)
             }
         }
     }
@@ -179,12 +149,10 @@ open class WhipItem(settings: Settings) : Item(settings.maxCount(1).maxDamage(10
         target.damage(damageSource, amount)
     }
 
-
-
     private fun spawnWhipArcParticles(world: World, attacker: LivingEntity, range: Double, angleRange: Double, particle: ParticleEffect) {
         val yawRad = Math.toRadians(attacker.yaw.toDouble())
-        val steps = 10 // 粒子密度
-        val arcSteps = 6 // 横向分段
+        val steps = 10
+        val arcSteps = 6
 
         for (r in 1..steps) {
             val radius = (r / steps.toDouble()) * range
@@ -194,29 +162,8 @@ open class WhipItem(settings: Settings) : Item(settings.maxCount(1).maxDamage(10
                 val z = attacker.z + cos(yawRad + angleOffset) * radius
                 val y = attacker.eyeY - 0.3
 
-                world.addParticle(
-                    particle,
-                    x,
-                    y,
-                    z,
-                    0.0, 0.0, 0.0
-                )
+                world.addParticle(particle, x, y, z, 0.0, 0.0, 0.0)
             }
         }
-    }
-
-
-
-
-    override fun appendTooltip(
-        stack: ItemStack?,
-        context: TooltipContext?,
-        tooltip: MutableList<Text?>?,
-        type: TooltipType?
-    ) {
-        tooltip?.add(Text.literal("§7左键：4格横扫，缓慢II（2秒）"))
-        tooltip?.add(Text.literal("§7右键蓄力：最大8格，缓慢III（3秒），击退更强"))
-        tooltip?.add(Text.literal("§7命中有粒子与音效反馈"))
-        super.appendTooltip(stack, context, tooltip, type)
     }
 }

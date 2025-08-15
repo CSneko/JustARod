@@ -1,6 +1,9 @@
 package org.cneko.justarod.mixin.client;
 
+import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
+import net.minecraft.client.util.math.MatrixStack;
 import org.cneko.justarod.client.feature.BallMouthFeatureRenderer;
 import org.cneko.justarod.client.feature.ElectricShockFeatureRenderer;
 import org.cneko.justarod.client.feature.RashFeatureRenderer;

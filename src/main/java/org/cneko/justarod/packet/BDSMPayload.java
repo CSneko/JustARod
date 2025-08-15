@@ -8,12 +8,13 @@ import net.minecraft.util.Identifier;
 
 import static org.cneko.justarod.Justarod.MODID;
 
-public record BDSMPayload(String uuid, boolean ballMouth, boolean electricShock) implements CustomPayload{
+public record BDSMPayload(String uuid, boolean ballMouth, boolean electricShock,boolean bundled) implements CustomPayload{
     public static final CustomPayload.Id<BDSMPayload> ID = new CustomPayload.Id<>(Identifier.of(MODID, "bdsm"));
     public static final PacketCodec<RegistryByteBuf, BDSMPayload> CODEC = PacketCodec.tuple(
             PacketCodecs.STRING, BDSMPayload::uuid,
             PacketCodecs.BOOL, BDSMPayload::ballMouth,
             PacketCodecs.BOOL, BDSMPayload::electricShock,
+            PacketCodecs.BOOL, BDSMPayload::bundled,
             BDSMPayload::new
     );
 

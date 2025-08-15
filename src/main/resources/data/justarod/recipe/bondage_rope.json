@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key":{
+    "A":{
+      "item":"minecraft:string"
+    },    
+    "B":{
+      "item":"minecraft:lead"
+    }
+  },
+  "pattern":[
+    "BA ",
+    "A A",
+    " AA"
+    ],
+    "result":{
+      "count":1,
+      "id":"justarod:bondage_rope"
+    }
+}

@@ -1,8 +1,8 @@
 package org.cneko.justarod.mixin.client;
 
-import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,31 +17,47 @@ public abstract class PlayerEntityModelMixin {
             at = @At("TAIL")
     )
     private void onSetAngles(Entity entity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch, CallbackInfo ci) {
-        PlayerEntity player = (PlayerEntity) entity;
+        if (!(entity instanceof PlayerEntity player)) return;
+
         if (player.getBundled() > 0) {
             PlayerEntityModel<?> self = (PlayerEntityModel<?>) (Object) this;
 
-            // 锁定手臂
+            boolean sitting = player.hasVehicle() || player.getPose() == EntityPose.SITTING;
+
             self.rightArm.pitch = 0.0F;
             self.leftArm.pitch = 0.0F;
+            if (!sitting) {
+                // 普通站立：手脚全部锁死
+                self.rightLeg.pitch = 0.0F;
+                self.leftLeg.pitch = 0.0F;
+            } else {
+                // 坐姿：手臂依然锁死，腿并拢
+
+                // 腿的 pitch 保留坐姿角度（大约 -1.5708F）但 yaw 归零，避免岔开
+                self.rightLeg.yaw = 0.0F;
+                self.leftLeg.yaw = 0.0F;
+            }
+
+            // 手臂 yaw/roll 固定
             self.rightArm.yaw = 0.0F;
             self.leftArm.yaw = 0.0F;
             self.rightArm.roll = 0.0F;
             self.leftArm.roll = 0.0F;
 
-            // 锁定腿
-            self.rightLeg.pitch = 0.0F;
-            self.leftLeg.pitch = 0.0F;
-            self.rightLeg.yaw = 0.0F;
-            self.leftLeg.yaw = 0.0F;
-            self.rightLeg.roll = 0.0F;
-            self.leftLeg.roll = 0.0F;
+            if (!sitting) {
+                self.rightLeg.yaw = 0.0F;
+                self.leftLeg.yaw = 0.0F;
+                self.rightLeg.roll = 0.0F;
+                self.leftLeg.roll = 0.0F;
+            } else {
+                // 坐姿时腿的 roll 也归零，防止外翻
+                self.rightLeg.roll = 0.0F;
+                self.leftLeg.roll = 0.0F;
+            }
 
-            // 同步锁定袖子
+            // 同步外层
             self.rightSleeve.copyTransform(self.rightArm);
             self.leftSleeve.copyTransform(self.leftArm);
-
-            // 同步锁定裤子
             self.rightPants.copyTransform(self.rightLeg);
             self.leftPants.copyTransform(self.leftLeg);
         }

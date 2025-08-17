@@ -43,16 +43,28 @@ public interface BDSMable {
         }
     }
 
-    default void writeBallMouthToNbt(NbtCompound nbt){
+    default void setEyePatch(int time){}
+    default int getEyePatch(){
+        return 0;
+    }
+    default void updateEyePatch(){
+        if (getEyePatch() > 1){
+            setEyePatch(getEyePatch()-1);
+        }
+    }
+
+    default void writeBDSMToNbt(NbtCompound nbt){
         nbt.putInt("BallMouth", getBallMouth());
         nbt.putInt("ElectricShock", getElectricShock());
         nbt.putInt("Bundled", getBundled());
+        nbt.putInt("EyePatch", getEyePatch());
     }
 
-    default void readBallMouthFromNbt(NbtCompound nbt){
+    default void readBDSMFromNbt(NbtCompound nbt){
         setBallMouth(nbt.getInt("BallMouth"));
         setElectricShock(nbt.getInt("ElectricShock"));
         setBundled(nbt.getInt("Bundled"));
+        setEyePatch(nbt.getInt("EyePatch"));
     }
 
     static <T extends LivingEntity & BDSMable> void ballMouthTick(T ballMouthable) {
@@ -165,6 +177,25 @@ public interface BDSMable {
                             Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getJUMP_NERF_EFFECT()),
                             20,
                             10, // 1秒刷新一次
+                            true,
+                            false
+                    )
+            );
+        }
+    }
+
+    static <T extends LivingEntity & BDSMable> void eyePatchTick(T eyePatchable) {
+        eyePatchable.updateEyePatch();
+        if (eyePatchable.getEyePatch() == 1 && eyePatchable.isSneaking()) {
+            eyePatchable.setEyePatch(0);
+            eyePatchable.sendMessage(Text.of("§a已摘除眼罩"));
+        }
+        if (eyePatchable.getEyePatch() > 0) {
+            // 添加眼罩状态效果
+            eyePatchable.addStatusEffect(
+                    new StatusEffectInstance(
+                            StatusEffects.BLINDNESS, 40, // 2秒刷新一次
+                            0,
                             true,
                             false
                     )

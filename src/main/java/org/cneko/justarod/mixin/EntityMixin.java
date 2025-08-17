@@ -3,8 +3,10 @@ package org.cneko.justarod.mixin;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
+import org.cneko.justarod.client.JustarodClient;
 import org.cneko.justarod.damage.JRDamageTypes;
 import org.cneko.justarod.entity.Fallible;
 import org.cneko.justarod.entity.Insertable;
@@ -14,6 +16,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Arrays;
 
@@ -110,6 +113,17 @@ public class EntityMixin implements Fallible, Insertable {
                     self.noClip = justARod$originalNoClip;
                     justARod$originalNoClip = null;
                 }
+            }
+        }
+    }
+
+    @Inject(method = "isGlowing", at = @At("RETURN"), cancellable = true)
+    private void justARod$isGlowing(CallbackInfoReturnable<Boolean> cir) {
+        Entity self = (Entity) (Object) this;
+        if (self.getWorld().isClient){
+            PlayerEntity clientPlayer = JustarodClient.getClientPlayer();
+            if (clientPlayer.getEyePatch() >0 && self.distanceTo(clientPlayer) < 22){
+                cir.setReturnValue(true);
             }
         }
     }

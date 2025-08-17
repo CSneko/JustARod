@@ -43,6 +43,7 @@ public class JRClientNetworkingEvents {
                 bdsmEntity.setBallMouth(ballMouth);
                 bdsmEntity.setElectricShock(electricShock);
                 bdsmEntity.setBundled(payload.bundled() ? 2 : 0);
+                bdsmEntity.setEyePatch(payload.eyePatch() ?2 : 0);
             };
 
             if (player.getUuid().equals(uuid)) {

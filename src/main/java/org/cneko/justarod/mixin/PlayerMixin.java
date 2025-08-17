@@ -42,6 +42,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     private int electricShock = 0;
     @Unique
     private int bundled = 0;
+    @Unique
+    private int eyePatch = 0;
 
     @Unique
     private boolean male = false;
@@ -128,6 +130,16 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     @Override
     public void setBundled(int bundled) {
         this.bundled = bundled;
+    }
+
+    @Override
+    public int getEyePatch() {
+        return eyePatch;
+    }
+
+    @Override
+    public void setEyePatch(int eyePatch) {
+        this.eyePatch = eyePatch;
     }
 
     @Override
@@ -339,14 +351,14 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     public void readCustomDataFromNbt(NbtCompound nbt, CallbackInfo ci) {
         power = this.readPowerFromNbt(nbt);
         this.readPregnantFromNbt(nbt);
-        this.readBallMouthFromNbt(nbt);
+        this.readBDSMFromNbt(nbt);
     }
 
     @Inject(method = "writeCustomDataToNbt", at = @At("HEAD"))
     public void writeCustomDataToNbt(NbtCompound nbt, CallbackInfo ci) {
         this.writePowerToNbt(nbt);
         this.writePregnantToNbt(nbt);
-        this.writeBallMouthToNbt(nbt);
+        this.writeBDSMToNbt(nbt);
     }
 
     @Inject(method = "tick",at = @At("HEAD"))
@@ -370,6 +382,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
             BDSMable.ballMouthTick(player);
             BDSMable.electricShockTick(player);
             BDSMable.bundledTick(player);
+            BDSMable.eyePatchTick(player);
         }
     }
 

@@ -2,9 +2,12 @@ package org.cneko.justarod.client.event
 
 import com.mojang.blaze3d.systems.RenderSystem
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.*
+import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
@@ -17,8 +20,8 @@ import kotlin.math.hypot
 
 class ClientTickEvent {
     companion object{
-        fun init(){
-            HudRenderCallback.EVENT.register {context,_->
+        fun init() {
+            HudRenderCallback.EVENT.register { context, _ ->
                 val client = MinecraftClient.getInstance()
                 val player = client.player ?: return@register
                 if (player.hasEffect(JREffects.ESTRUS_EFFECT) || client.player!!.hasEffect(JREffects.ORGASM_EFFECT)) {
@@ -26,16 +29,16 @@ class ClientTickEvent {
                     renderPinkGUI()
                     renderPinkOverlay(context)
                 }
-                if (player.hasEffect(JREffects.ORGASM_EFFECT)){
+                if (player.hasEffect(JREffects.ORGASM_EFFECT)) {
                     // 抖起来！！！
                     val intensity = client.window.scaledWidth * (0.00f + Random().nextFloat() * 0.005f)
                     applyScreenShake(context, intensity)
                     applyViewShake(client.player!!, intensity)
                 }
-                if (player.hasEffect(JREffects.FAINT_EFFECT)){
+                if (player.hasEffect(JREffects.FAINT_EFFECT)) {
                     // 晕了
                     renderFaintEffect(context)
-                }else {
+                } else {
                     faintAlpha = 0f
                 }
                 if (player.electricShock > 0) {
@@ -55,10 +58,10 @@ class ClientTickEvent {
                     renderElectricRipple(context, time)
 
                     // 渐入渐出闪光
-                    if (flashAlpha < targetFlashAlpha) {
-                        flashAlpha = (flashAlpha + 0.005f).coerceAtMost(targetFlashAlpha)
+                    flashAlpha = if (flashAlpha < targetFlashAlpha) {
+                        (flashAlpha + 0.005f).coerceAtMost(targetFlashAlpha)
                     } else {
-                        flashAlpha = (flashAlpha - 0.004f).coerceAtLeast(0f)
+                        (flashAlpha - 0.004f).coerceAtLeast(0f)
                     }
                     if (flashAlpha > 0f) {
                         renderSoftFlash(context, flashAlpha)
@@ -71,7 +74,11 @@ class ClientTickEvent {
 
                 renderSexText(context)
             }
+
         }
+
+
+
 
         private var flashAlpha = 0f
         private var targetFlashAlpha = 0f

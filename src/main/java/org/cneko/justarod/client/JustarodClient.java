@@ -2,6 +2,7 @@ package org.cneko.justarod.client;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.minecraft.entity.player.PlayerEntity;
 import org.cneko.justarod.client.event.ClientTickEvent;
 import org.cneko.justarod.client.event.JRClientNetworkingEvents;
 import org.cneko.justarod.client.renderer.IcedTeaRenderer;
@@ -11,9 +12,7 @@ import org.cneko.justarod.client.screen.JRScreenBuilders;
 import org.cneko.justarod.entity.JREntities;
 import org.cneko.toneko.common.api.TickTasks;
 import org.cneko.toneko.common.mod.client.renderers.NekoRenderer;
-import org.cneko.toneko.common.mod.client.screens.NekoScreenBuilder;
 import org.cneko.toneko.common.mod.client.screens.NekoScreenRegistry;
-import org.cneko.toneko.common.mod.client.screens.factories.ScreenBuilders;
 import org.cneko.toneko.common.mod.entities.ToNekoEntities;
 import org.cneko.toneko.common.mod.util.TickTaskQueue;
 
@@ -39,5 +38,9 @@ public class JustarodClient implements ClientModInitializer {
         queen.addTask(20,task);
         TickTasks.addClient(queen);
 
+    }
+
+    public static PlayerEntity getClientPlayer() {
+        return net.minecraft.client.MinecraftClient.getInstance().player;
     }
 }

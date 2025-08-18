@@ -1,10 +1,7 @@
 package org.cneko.justarod.mixin.client;
 
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
-import org.cneko.justarod.client.feature.BallMouthFeatureRenderer;
-import org.cneko.justarod.client.feature.BundledFeatureRenderer;
-import org.cneko.justarod.client.feature.ElectricShockFeatureRenderer;
-import org.cneko.justarod.client.feature.RashFeatureRenderer;
+import org.cneko.justarod.client.feature.*;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -20,6 +17,7 @@ public abstract class PlayerRendererMixin {
         self.addFeature(new BallMouthFeatureRenderer(self));
         self.addFeature(new ElectricShockFeatureRenderer(self));
         self.addFeature(new BundledFeatureRenderer(self));
+        self.addFeature(new EyePatchFeatureRenderer(self));
     }
 
 }

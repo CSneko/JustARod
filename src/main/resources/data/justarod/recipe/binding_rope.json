@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SLS",
+    "LSL",
+    "SLS"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:string"
+    },
+    "L": {
+      "item": "minecraft:leather"
+    }
+  },
+  "result": {
+    "id": "justarod:binding_rope",
+    "count": 1
+  }
+}

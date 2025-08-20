@@ -177,6 +177,48 @@ class BDSMCommand {
                         )
                     )
 
+                    .then(literal("earplug")
+                        .executes { context ->
+                            val entity = context.source.entity
+                            if (entity is BDSMable){
+                                entity.sendMessage(Text.of("§a耳塞剩余时间：${entity.earplug/20}秒~"))
+                            }
+                            return@executes 1
+                        }
+                        .then(argument("target", EntityArgumentType.entity())
+                            .executes { context ->
+                                val target = EntityArgumentType.getEntity(context, "target")
+                                if (target is BDSMable){
+                                    target.sendMessage(Text.of("§a耳塞剩余时间：${target.earplug/20}秒~"))
+                                }
+                                return@executes 1
+                            }
+                        )
+                        .then(literal("set")
+                            .then(argument("time", IntegerArgumentType.integer())
+                                .executes { context ->
+                                    val source = context.source.entity
+                                    if (source is BDSMable){
+                                        val time = IntegerArgumentType.getInteger(context, "time")
+                                        source.earplug = time
+                                    }
+                                    return@executes 1
+                                }
+                                .then(argument("target", EntityArgumentType.entity())
+                                    .executes { context ->
+                                        val target = EntityArgumentType.getEntity(context, "target")
+                                        if (target is BDSMable){
+                                            val time = IntegerArgumentType.getInteger(context, "time")
+                                            target.earplug = time
+                                        }
+                                        return@executes 1
+                                    }
+                                )
+                            )
+                        )
+
+                    )
+
                 )
             }
         }

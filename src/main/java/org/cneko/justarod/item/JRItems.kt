@@ -101,6 +101,7 @@ class JRItems {
         val CONTRACT_WHIP = ContractWhipItem(Item.Settings())
         val BINDING_ROPE = BindingRopeItem(Item.Settings())
         val EYE_PATCH = EyePatchItem(Item.Settings())
+        val EARPLUG = EarplugItem(Item.Settings())
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -152,6 +153,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "contract_whip"), CONTRACT_WHIP)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "binding_rope"), BINDING_ROPE)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "eye_patch"), EYE_PATCH)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "earplug"), EARPLUG)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
@@ -209,6 +211,7 @@ class JRItems {
                 entries.add(CONTRACT_WHIP)
                 entries.add(BINDING_ROPE)
                 entries.add(EYE_PATCH)
+                entries.add(EARPLUG)
             }
         }
     }

@@ -122,7 +122,7 @@ public class EntityMixin implements Fallible, Insertable {
         Entity self = (Entity) (Object) this;
         if (self.getWorld().isClient){
             PlayerEntity clientPlayer = JustarodClient.getClientPlayer();
-            if (clientPlayer.getEyePatch() >0 && self.distanceTo(clientPlayer) < 22){
+            if (clientPlayer.getEyePatch() >0 && clientPlayer.getEarplug() < 0 && self.distanceTo(clientPlayer) < 22){
                 cir.setReturnValue(true);
             }
         }

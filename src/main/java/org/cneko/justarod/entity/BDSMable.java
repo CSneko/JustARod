@@ -53,11 +53,23 @@ public interface BDSMable {
         }
     }
 
+    default void setEarplug(int time){
+    }
+    default int getEarplug(){
+        return 0;
+    }
+    default void updateEarplug(){
+        if (getEarplug() > 1){
+            setEarplug(getEarplug()-1);
+        }
+    }
+
     default void writeBDSMToNbt(NbtCompound nbt){
         nbt.putInt("BallMouth", getBallMouth());
         nbt.putInt("ElectricShock", getElectricShock());
         nbt.putInt("Bundled", getBundled());
         nbt.putInt("EyePatch", getEyePatch());
+        nbt.putInt("Earplug", getEarplug());
     }
 
     default void readBDSMFromNbt(NbtCompound nbt){
@@ -65,6 +77,7 @@ public interface BDSMable {
         setElectricShock(nbt.getInt("ElectricShock"));
         setBundled(nbt.getInt("Bundled"));
         setEyePatch(nbt.getInt("EyePatch"));
+        setEarplug(nbt.getInt("Earplug"));
     }
 
     static <T extends LivingEntity & BDSMable> void ballMouthTick(T ballMouthable) {
@@ -200,6 +213,14 @@ public interface BDSMable {
                             false
                     )
             );
+        }
+    }
+
+    static <T extends LivingEntity & BDSMable> void earplugTick(T earplugable) {
+        earplugable.updateEarplug();
+        if (earplugable.getEarplug() == 1 && earplugable.isSneaking()) {
+            earplugable.setEarplug(0);
+            earplugable.sendMessage(Text.of("§a已摘除耳塞"));
         }
     }
 

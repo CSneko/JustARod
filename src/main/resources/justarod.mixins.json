@@ -11,7 +11,8 @@
     "NekoEntityMixin",
     "PlayerMixin",
     "RavennEntityMixin",
-    "ServerPlayerMixin"
+    "ServerPlayerMixin",
+    "ServerPlayNetworkingHandlerMixin"
   ],
   "server": [],
   "injectors": {
@@ -20,6 +21,7 @@
   "client": [
     "client.EnderDragonRendererMixin",
     "client.PlayerEntityModelMixin",
-    "client.PlayerRendererMixin"
+    "client.PlayerRendererMixin",
+    "client.SoundManagerMixin"
   ]
 }

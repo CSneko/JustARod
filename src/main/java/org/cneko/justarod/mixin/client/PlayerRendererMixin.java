@@ -18,6 +18,7 @@ public abstract class PlayerRendererMixin {
         self.addFeature(new ElectricShockFeatureRenderer(self));
         self.addFeature(new BundledFeatureRenderer(self));
         self.addFeature(new EyePatchFeatureRenderer(self));
+        self.addFeature(new EarplugFeatureRenderer(self));
     }
 
 }

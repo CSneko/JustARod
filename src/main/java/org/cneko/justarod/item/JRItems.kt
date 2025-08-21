@@ -102,6 +102,9 @@ class JRItems {
         val BINDING_ROPE = BindingRopeItem(Item.Settings())
         val EYE_PATCH = EyePatchItem(Item.Settings())
         val EARPLUG = EarplugItem(Item.Settings())
+        val HANDCUFFES = HandcuffesItem(Item.Settings())
+        val HANDCUFFES_RING = Item(Item.Settings())
+        val HANDCUFFES_CHAIN = Item(Item.Settings())
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -154,6 +157,9 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "binding_rope"), BINDING_ROPE)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "eye_patch"), EYE_PATCH)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "earplug"), EARPLUG)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "handcuffes"), HANDCUFFES)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "handcuffes_ring"), HANDCUFFES_RING)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "handcuffes_chain"), HANDCUFFES_CHAIN)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
@@ -212,6 +218,9 @@ class JRItems {
                 entries.add(BINDING_ROPE)
                 entries.add(EYE_PATCH)
                 entries.add(EARPLUG)
+                entries.add(HANDCUFFES)
+                entries.add(HANDCUFFES_RING)
+                entries.add(HANDCUFFES_CHAIN)
             }
         }
     }

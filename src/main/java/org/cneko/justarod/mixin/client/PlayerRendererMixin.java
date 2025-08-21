@@ -1,5 +1,6 @@
 package org.cneko.justarod.mixin.client;
 
+import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import org.cneko.justarod.client.feature.*;
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class PlayerRendererMixin {
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    private void onInit(CallbackInfo ci) {
+    private void onInit(EntityRendererFactory.Context ctx, boolean slim, CallbackInfo ci) {
         PlayerEntityRenderer self = (PlayerEntityRenderer) (Object) this;
         self.addFeature(new RashFeatureRenderer(self));
         self.addFeature(new BallMouthFeatureRenderer(self));
@@ -19,6 +20,7 @@ public abstract class PlayerRendererMixin {
         self.addFeature(new BundledFeatureRenderer(self));
         self.addFeature(new EyePatchFeatureRenderer(self));
         self.addFeature(new EarplugFeatureRenderer(self));
+        self.addFeature(new HandcuffFeatureRenderer(self,ctx.getHeldItemRenderer()));
     }
 
 }

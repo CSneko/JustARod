@@ -61,5 +61,24 @@ public abstract class PlayerEntityModelMixin {
             self.rightPants.copyTransform(self.rightLeg);
             self.leftPants.copyTransform(self.leftLeg);
         }
+
+        if (player.getHandcuffed() > 0) {
+            PlayerEntityModel<?> self = (PlayerEntityModel<?>) (Object) this;
+
+            // 双手靠拢在胸前
+            self.rightArm.pitch = -0.8F; // 手臂抬起
+            self.leftArm.pitch = -0.8F;
+
+            self.rightArm.yaw = -0.3F;   // 向内靠拢
+            self.leftArm.yaw = 0.3F;
+
+            self.rightArm.roll = 0.0F;
+            self.leftArm.roll = 0.0F;
+
+            // 保证袖子同步
+            self.rightSleeve.copyTransform(self.rightArm);
+            self.leftSleeve.copyTransform(self.leftArm);
+        }
+
     }
 }

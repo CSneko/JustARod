@@ -11,14 +11,16 @@
     "NekoEntityMixin",
     "PlayerMixin",
     "RavennEntityMixin",
+    "ServerCommonNetworkingHandlerMixin",
     "ServerPlayerMixin",
-    "ServerPlayNetworkingHandlerMixin"
+    "ServerPlayNetworkHandlerMixin"
   ],
   "server": [],
   "injectors": {
     "defaultRequire": 1
   },
   "client": [
+    "client.ClientPlayerInteractionManagerMixin",
     "client.EnderDragonRendererMixin",
     "client.PlayerEntityModelMixin",
     "client.PlayerRendererMixin",

@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerCommonNetworkHandler.class)
-public class ServerPlayNetworkingHandlerMixin {
+public class ServerCommonNetworkingHandlerMixin {
     @Inject(method = "sendPacket", at = @At("HEAD"), cancellable = true)
     private void onSendPacket(Packet<?> packet, CallbackInfo ci) {
         ServerCommonNetworkHandler handler = (ServerCommonNetworkHandler) (Object) this;

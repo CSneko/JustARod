@@ -37,6 +37,7 @@ public class EntityAttackEvent {
             }
             return ActionResult.PASS;
         });
+
     }
 
     public static ActionResult onAttack(PlayerEntity player, World world, Hand hand, Entity entity, EntityHitResult entityHitResult) {

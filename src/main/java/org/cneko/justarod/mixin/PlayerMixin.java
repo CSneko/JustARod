@@ -46,6 +46,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     private int eyePatch = 0;
     @Unique
     private int earplug = 0;
+    @Unique
+    private int handcuffed = 0;
 
     @Unique
     private boolean male = false;
@@ -152,6 +154,16 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     @Override
     public int getEarplug() {
         return earplug;
+    }
+
+    @Override
+    public void setHandcuffed(int handcuffed) {
+        this.handcuffed = handcuffed;
+    }
+
+    @Override
+    public int getHandcuffed() {
+        return handcuffed;
     }
 
     @Override
@@ -396,6 +408,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
             BDSMable.bundledTick(player);
             BDSMable.eyePatchTick(player);
             BDSMable.earplugTick(player);
+            BDSMable.handcuffedTick(player);
         }
     }
 

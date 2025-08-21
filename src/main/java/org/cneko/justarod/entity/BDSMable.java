@@ -64,12 +64,24 @@ public interface BDSMable {
         }
     }
 
+    default void setHandcuffed(int time){
+    }
+    default int getHandcuffed(){
+        return 0;
+    }
+    default void updateHandcuffed(){
+        if (getHandcuffed() > 1){
+            setHandcuffed(getHandcuffed()-1);
+        }
+    }
+
     default void writeBDSMToNbt(NbtCompound nbt){
         nbt.putInt("BallMouth", getBallMouth());
         nbt.putInt("ElectricShock", getElectricShock());
         nbt.putInt("Bundled", getBundled());
         nbt.putInt("EyePatch", getEyePatch());
         nbt.putInt("Earplug", getEarplug());
+        nbt.putInt("Handcuffed", getHandcuffed());
     }
 
     default void readBDSMFromNbt(NbtCompound nbt){
@@ -78,6 +90,7 @@ public interface BDSMable {
         setBundled(nbt.getInt("Bundled"));
         setEyePatch(nbt.getInt("EyePatch"));
         setEarplug(nbt.getInt("Earplug"));
+        setHandcuffed(nbt.getInt("Handcuffed"));
     }
 
     static <T extends LivingEntity & BDSMable> void ballMouthTick(T ballMouthable) {
@@ -221,6 +234,14 @@ public interface BDSMable {
         if (earplugable.getEarplug() == 1 && earplugable.isSneaking()) {
             earplugable.setEarplug(0);
             earplugable.sendMessage(Text.of("§a已摘除耳塞"));
+        }
+    }
+
+    static <T extends LivingEntity & BDSMable> void handcuffedTick(T handcuffed) {
+        handcuffed.updateHandcuffed();
+        if (handcuffed.getHandcuffed() == 1 && handcuffed.isSneaking()) {
+            handcuffed.setHandcuffed(0);
+            handcuffed.sendMessage(Text.of("§a已解除手铐"));
         }
     }
 

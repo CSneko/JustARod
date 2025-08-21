@@ -12,8 +12,8 @@
     }
   },
   "pattern":[
-    "ICI",
-    "R R"
+    "R R",
+    "ICI"
     ],
     "result":{
       "count":1,

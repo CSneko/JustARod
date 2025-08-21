@@ -6,9 +6,9 @@
     }
   },
   "pattern":[
+    " I ",
     "I I",
-    "I I",
-    " I "
+    "I I"
     ],
     "result":{
       "count":1,

@@ -9,9 +9,9 @@
     }
   },
   "pattern":[
-    " I ",
-    "N N",
-    " I "
+    " N ",
+    "I I",
+    " N "
     ],
     "result":{
       "count":2,

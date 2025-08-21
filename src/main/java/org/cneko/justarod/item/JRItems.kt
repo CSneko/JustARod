@@ -19,35 +19,13 @@ import org.cneko.justarod.Justarod.MODID
 
 import org.cneko.justarod.block.JRBlocks.*
 import org.cneko.justarod.effect.JREffects
-import org.cneko.justarod.item.armor.FireworksRodItem
-import org.cneko.justarod.item.electric.AdvancedElectricRodItem
-import org.cneko.justarod.item.electric.BasicElectricRodItem
-import org.cneko.justarod.item.electric.IndustrialElectricRodItem
-import org.cneko.justarod.item.electric.RemoteControlItem
-import org.cneko.justarod.item.electric.TribochargingRod
-import org.cneko.justarod.item.medical.AbortionPillItem
-import org.cneko.justarod.item.medical.BrithControllingPill
-import org.cneko.justarod.item.medical.CottonSwabItem
-import org.cneko.justarod.item.medical.EstrogenItem
-import org.cneko.justarod.item.medical.HPVVaccine
-import org.cneko.justarod.item.medical.PenicillinItem
-import org.cneko.justarod.item.medical.SanitaryTowel
-import org.cneko.justarod.item.medical.ScalpelItem
-import org.cneko.justarod.item.medical.SterilizationPills
-import org.cneko.justarod.item.rod.CactusRodItem
-import org.cneko.justarod.item.rod.EatableRodItem
-import org.cneko.justarod.item.rod.FirecrackerRodItem
-import org.cneko.justarod.item.rod.GiantRodItem
-import org.cneko.justarod.item.rod.LightningEndRodItem
-import org.cneko.justarod.item.rod.LongRodItem
-import org.cneko.justarod.item.rod.LongerRodItem
-import org.cneko.justarod.item.rod.NetWorkingRodItem
-import org.cneko.justarod.item.rod.RedstoneEndRod
-import org.cneko.justarod.item.rod.SlimeRodItem
-import org.cneko.justarod.item.syringe.BremelanotideItem
-import org.cneko.justarod.item.syringe.GrowthAgentItem
-import org.cneko.justarod.item.syringe.ReverseGrowthAgentItem
-import org.cneko.justarod.item.syringe.RodAgentItem
+import org.cneko.justarod.item.*
+import org.cneko.justarod.item.rod.*
+import org.cneko.justarod.item.armor.*
+import org.cneko.justarod.item.bdsm.*
+import org.cneko.justarod.item.electric.*
+import org.cneko.justarod.item.medical.*
+import org.cneko.justarod.item.syringe.*
 
 
 class JRItems {

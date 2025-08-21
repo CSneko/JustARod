@@ -2,7 +2,7 @@
 	"format_version": "1.9.0",
 	"credit": "I love CrystalNeko",
 	"textures": {
-		"0": "justaord:item/handcuffes_chain",
+		"0": "justarod:item/handcuffes_chain",
 		"particle": "justarod:item/handcuffes_chain"
 	},
 	"elements": [

@@ -1,16 +1,18 @@
-package org.cneko.justarod.item
+package org.cneko.justarod.item.bdsm
 
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
+import net.minecraft.particle.ParticleTypes
 import net.minecraft.server.world.ServerWorld
+import net.minecraft.sound.SoundEvents
 import net.minecraft.util.Hand
 import net.minecraft.util.TypedActionResult
 import net.minecraft.world.World
 import org.cneko.justarod.entity.BDSMable
 
-class ElectricShockController(settings: Item.Settings): Item(settings) {
+class ElectricShockController(settings: Settings): Item(settings) {
     override fun use(world: World?, user: PlayerEntity?, hand: Hand?): TypedActionResult<ItemStack?>? {
         if (user == null || world !is ServerWorld){
             return super.use(world, user, hand)
@@ -32,14 +34,14 @@ class ElectricShockController(settings: Item.Settings): Item(settings) {
                 entity.x,
                 entity.y,
                 entity.z,
-                net.minecraft.sound.SoundEvents.ENTITY_LIGHTNING_BOLT_THUNDER,
+                SoundEvents.ENTITY_LIGHTNING_BOLT_THUNDER,
                 entity.soundCategory,
                 1.0f,
                 1.0f
             )
             // 播放粒子
             world.spawnParticles(
-                net.minecraft.particle.ParticleTypes.ELECTRIC_SPARK,
+                ParticleTypes.ELECTRIC_SPARK,
                 entity.x,
                 entity.y + entity.height / 2.0,
                 entity.z,

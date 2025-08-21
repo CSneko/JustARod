@@ -12,6 +12,7 @@ import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.item.ItemStack;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.util.math.RotationAxis;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import org.cneko.justarod.item.JRItems;
 import org.joml.Vector3f;
@@ -32,6 +33,7 @@ public class HandcuffFeatureRenderer extends FeatureRenderer<AbstractClientPlaye
         if (player.getHandcuffed() <= 0) return;
 
         ItemStack ring = new ItemStack(JRItems.Companion.getHANDCUFFES_RING());
+        ItemStack chain = new ItemStack(JRItems.Companion.getHANDCUFFES_CHAIN());
 
         // 左手
         matrices.push();
@@ -42,14 +44,30 @@ public class HandcuffFeatureRenderer extends FeatureRenderer<AbstractClientPlaye
         heldItemRenderer.renderItem(player, ring, ModelTransformationMode.THIRD_PERSON_LEFT_HAND, true, matrices, vertexConsumers, light);
         matrices.pop();
 
-
-        matrices.push();
         // 右手
+        matrices.push();
         getContextModel().rightArm.rotate(matrices);
-        matrices.translate(0.05, 0.6, 0.1);
+        matrices.translate(-0.05, 0.6, 0.1);
         matrices.scale(0.8f, 0.8f, 0.8f);
         matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90f));
         heldItemRenderer.renderItem(player, ring, ModelTransformationMode.THIRD_PERSON_RIGHT_HAND, false, matrices, vertexConsumers, light);
         matrices.pop();
+
+        // 链条（连接左右手）
+        matrices.push();
+        // 使用玩家模型的手臂位置作为参考
+        Vec3d leftHandPos = new Vec3d(getContextModel().leftArm.pivotX, getContextModel().leftArm.pivotY, getContextModel().leftArm.pivotZ);
+        Vec3d rightHandPos = new Vec3d(getContextModel().rightArm.pivotX, getContextModel().rightArm.pivotY, getContextModel().rightArm.pivotZ);
+
+        // 取两手的中点作为链条位置
+        double midX = (leftHandPos.getX() + rightHandPos.getX()) / 2.0;
+        double midY = (leftHandPos.getY() + rightHandPos.getY()) / 2.0 - 1.5;
+        double midZ = (leftHandPos.getZ() + rightHandPos.getZ()) / 2.0 - 0.33;
+
+        matrices.translate(midX, midY, midZ);
+        matrices.scale(0.7f, 0.7f, 0.7f);
+        heldItemRenderer.renderItem(player, chain, ModelTransformationMode.THIRD_PERSON_RIGHT_HAND, false, matrices, vertexConsumers, light);
+        matrices.pop();
     }
+
 }

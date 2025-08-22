@@ -1,20 +1,20 @@
 {
   "type": "minecraft:crafting_shaped",
   "key":{
-    "A":{
+    "W":{
       "item":"minecraft:white_carpet"
     },
-    "B":{
+    "S":{
       "item":"minecraft:stick"
+    }
   },
   "pattern":[
-    "  A",
-    " B ",
-    "B  "
+    "  W",
+    " S ",
+    "S  "
     ],
     "result":{
       "count":8,
       "id":"justarod:cotton_swab"
     }
-  }
 }

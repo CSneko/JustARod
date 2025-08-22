@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "key":{
     "W":{
-      "item":"#minecraft:wool"
+      "tag":"minecraft:wool"
     }
   },
   "pattern":[
@@ -10,7 +10,7 @@
     "W W"
     ],
     "result":{
-      "count":8,
+      "count":32,
       "id":"justarod:earplug"
     }
 }

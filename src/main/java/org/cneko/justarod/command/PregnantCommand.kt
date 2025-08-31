@@ -10,6 +10,7 @@ import net.minecraft.server.command.CommandManager.argument
 import net.minecraft.server.command.CommandManager.literal
 import net.minecraft.text.Text
 import org.cneko.justarod.entity.Pregnant
+import org.cneko.justarod.item.JRItems
 
 class PregnantCommand {
     companion object{
@@ -696,6 +697,63 @@ class PregnantCommand {
                                     val target = EntityArgumentType.getEntity(ctx, "target")
                                     if (target is Pregnant) {
                                         target.syphilis = IntegerArgumentType.getInteger(ctx,"time")
+                                    }
+                                    return@executes 1
+                                }
+                            )
+                        )
+                    )
+                )
+
+                dispatcher.register(literal("excretion")
+                    .then(literal("release")
+                        .executes { context ->
+                            val source = context.source.entity
+                            if (source is Pregnant){
+                                val exc = source.excretion
+                                if (exc > 20*60*10){
+                                    source.excretion -= 20*60*10
+                                    source.sendMessage(Text.of("你排泄了"))
+                                    source.dropStack(JRItems.EXCREMENT.defaultStack)
+                                }else{
+                                    source.sendMessage(Text.of("你目前无需排泄"))
+                                }
+                            }
+                            return@executes 1
+                        }
+                    )
+                    .executes { context ->
+                        val source = context.source.entity
+                        if (source is Pregnant){
+                            source.sendMessage(Text.of("当前憋粑粑时间：${source.excretion / 20/60}分钟"))
+                        }
+                        return@executes 1
+                    }
+                    .then(argument("target", EntityArgumentType.entity())
+                        .executes { context ->
+                            val source = context.source
+                            val target = EntityArgumentType.getEntity(context, "target")
+                            if (target is Pregnant){
+                                source.sendMessage(Text.of("当前憋粑粑时间：${target.excretion / 20/60}分钟"))
+                            }
+                            return@executes 1
+                        }
+                    )
+                    .then(literal("set")
+                        .requires { source -> source.hasPermissionLevel(4) }
+                        .then(argument("time", IntegerArgumentType.integer(0, Int.MAX_VALUE))
+                            .executes {ctx ->
+                                val source = ctx.source.entity
+                                if (source is Pregnant) {
+                                    source.excretion = IntegerArgumentType.getInteger(ctx,"time")
+                                }
+                                return@executes 1
+                            }
+                            .then(argument("target", EntityArgumentType.entity())
+                                .executes {ctx ->
+                                    val target = EntityArgumentType.getEntity(ctx, "target")
+                                    if (target is Pregnant) {
+                                        target.excretion = IntegerArgumentType.getInteger(ctx,"time")
                                     }
                                     return@executes 1
                                 }

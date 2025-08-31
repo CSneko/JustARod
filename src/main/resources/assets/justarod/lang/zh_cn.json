@@ -1,4 +1,6 @@
 {
+  "key.justarod.category": "只是根棍子",
+  "key.justarod.excrement": "排泄",
   "entity.justarod.rod": "末地烛",
   "entity.justarod.seeeeeex_neko": "涩涩猫娘",
   "entity.justarod.seeeeeex_neko.des": "喜欢涩涩の猫娘",
@@ -91,6 +93,7 @@
   "item.justarod.handcuffes": "手铐",
   "item.justarod.handcuffes_ring": "手铐环",
   "item.justarod.handcuffes_chain": "手铐链",
+  "item.justarod.excrement": "大便",
   "block.justarod.golden_leaves": "金叶",
   "itemGroup.justarod": "只是根棍子",
   "effect.justarod.orgasm": "高潮",

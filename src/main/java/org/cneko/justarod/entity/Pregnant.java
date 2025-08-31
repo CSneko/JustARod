@@ -12,7 +12,10 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.PlainTextContent;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextContent;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import org.cneko.justarod.effect.JREffects;
@@ -193,6 +196,7 @@ public interface Pregnant{
         nbt.putInt("OvarianCancer",getOvarianCancer());
         nbt.putInt("BreastCancer",getBreastCancer());
         nbt.putInt("Syphilis",getSyphilis());
+        nbt.putInt("Excretion",getExcretion());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         setFemale(nbt.getBoolean("Female"));
@@ -251,6 +255,9 @@ public interface Pregnant{
         }
         if (nbt.contains("Syphilis")){
             setSyphilis(nbt.getInt("Syphilis"));
+        }
+        if (nbt.contains("Excretion")){
+            setExcretion(nbt.getInt("Excretion"));
         }
     }
 
@@ -405,6 +412,16 @@ public interface Pregnant{
     default void updateSyphilis() {
         if (getSyphilis() > 0){
             setSyphilis(getSyphilis()+1);
+        }
+    }
+
+    default void setExcretion(int time){}
+    default int getExcretion(){
+        return 0;
+    }
+    default void updateExcretion() {
+        if (getExcretion() > 0){
+            setExcretion(getExcretion()+1);
         }
     }
 
@@ -712,6 +729,46 @@ public interface Pregnant{
             // 晚期并怀孕，有小概率流产
             if (pregnant.isPregnant() && pregnant.getRandom().nextInt(1000) == 0) {
                 pregnant.miscarry();
+            }
+        }
+    }
+
+    static <T extends LivingEntity & Pregnant> void excretionTick(T pregnant) {
+        pregnant.updateExcretion();
+        int excretion = pregnant.getExcretion();
+        if (excretion > 20*60*20*2){
+            // 开始缓慢...
+            pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20*10, 0, false, false, true));
+            if (pregnant.getRandom().nextInt(300) == 0) {
+                pregnant.sendMessage(MutableText.of(new PlainTextContent.Literal("§a提示：按下")).append(Text.keybind("key.justarod.excrement"))
+                        .append(Text.of("§a可以排便哦！")));
+            }
+        }
+        if (excretion > 20*60*20*5){
+            // 开始不适...
+            if (pregnant.getRandom().nextInt(100) == 0) {
+                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20*10, 0));
+            }
+        }
+        if (excretion > 20*60*20*8){
+            // 开始剧烈不适...
+            if (pregnant.getRandom().nextInt(50) == 0) {
+                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20*20, 1));
+            }
+            if (pregnant.getRandom().nextInt(200) == 0) {
+                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20*20, 1));
+            }
+        }
+        if (excretion > 20*60*20*12){
+            // 掉血
+            if (pregnant.getRandom().nextInt(100) == 0) {
+                pregnant.damage(pregnant.getDamageSources().magic(), 1.0F);
+            }
+            // 掉粑粑
+            if (pregnant.getRandom().nextInt(200) == 0) {
+                pregnant.dropItem(JRItems.Companion.getEXCREMENT());
+                // 减少时间
+                pregnant.setExcretion(pregnant.getExcretion() - 20*60*20);
             }
         }
     }

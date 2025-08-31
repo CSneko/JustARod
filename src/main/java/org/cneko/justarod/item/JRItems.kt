@@ -6,6 +6,7 @@ import net.minecraft.component.type.FoodComponent
 import net.minecraft.entity.effect.StatusEffect
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
+import net.minecraft.item.BoneMealItem
 import net.minecraft.item.Item
 import net.minecraft.item.ItemGroup
 import net.minecraft.item.ItemStack
@@ -83,6 +84,8 @@ class JRItems {
         val HANDCUFFES = HandcuffesItem(Item.Settings())
         val HANDCUFFES_RING = Item(Item.Settings())
         val HANDCUFFES_CHAIN = Item(Item.Settings())
+        val EXCREMENT = BoneMealItem(Item.Settings().food(FoodComponent.Builder().alwaysEdible().nutrition(1).statusEffect(
+            StatusEffectInstance(StatusEffects.NAUSEA,200,0),1f).build()))
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -138,6 +141,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "handcuffes"), HANDCUFFES)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "handcuffes_ring"), HANDCUFFES_RING)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "handcuffes_chain"), HANDCUFFES_CHAIN)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "excrement"), EXCREMENT)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
@@ -199,6 +203,7 @@ class JRItems {
                 entries.add(HANDCUFFES)
                 entries.add(HANDCUFFES_RING)
                 entries.add(HANDCUFFES_CHAIN)
+                entries.add(EXCREMENT)
             }
         }
     }

@@ -86,6 +86,8 @@ class JRItems {
         val HANDCUFFES_CHAIN = Item(Item.Settings())
         val EXCREMENT = BoneMealItem(Item.Settings().food(FoodComponent.Builder().alwaysEdible().nutrition(1).statusEffect(
             StatusEffectInstance(StatusEffects.NAUSEA,200,0),1f).build()))
+        val FEMALE_POTION = GenderChangePotionItem(Item.Settings(),GenderChangePotionItem.Gender.FEMALE)
+        val MALE_POTION = GenderChangePotionItem(Item.Settings(), GenderChangePotionItem.Gender.MALE)
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -142,6 +144,8 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "handcuffes_ring"), HANDCUFFES_RING)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "handcuffes_chain"), HANDCUFFES_CHAIN)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "excrement"), EXCREMENT)
+            Registry.register(Registries.ITEM, Identifier.of(MODID,"female_potion"),FEMALE_POTION)
+            Registry.register(Registries.ITEM, Identifier.of(MODID,"male_potion"),MALE_POTION)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
@@ -204,6 +208,8 @@ class JRItems {
                 entries.add(HANDCUFFES_RING)
                 entries.add(HANDCUFFES_CHAIN)
                 entries.add(EXCREMENT)
+                entries.add(FEMALE_POTION)
+                entries.add(MALE_POTION)
             }
         }
     }

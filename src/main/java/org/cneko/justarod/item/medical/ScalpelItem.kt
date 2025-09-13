@@ -32,6 +32,8 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
             tooltip.add(Text.of("§a使用它可以安装子宫"))
         }else if (stack.containsEnchantment(JREnchantments.MASTECTOMY)){
             tooltip.add(Text.of("§c使用它可以进行乳房切除"))
+        }else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)){
+            tooltip.add(Text.of("§a想练此功，必先自宫"))
         }
     }
 
@@ -53,6 +55,8 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
             return target.pregnant >0 && target.isFemale
         }else if (stack.containsEnchantment(JREnchantments.MASTECTOMY)) {
             return target.isFemale
+        }else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)){
+            return target.isMale && !target.isOrchiectomy
         }
 
         return false // 没有对应附魔，无法使用
@@ -74,6 +78,8 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
             if (!offHandStack.isOf(JRItems.UTERUS)) return Text.of("§c你的副手必须持有子宫才能执行此操作！")
         }else if (stack.containsEnchantment(JREnchantments.ARTIFICIAL_ABORTION)){
             return if (user == target) Text.of("§c你没有怀孕！") else Text.of("§c对方没有怀孕")
+        } else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)){
+            if (target.isOrchiectomy) return if (user == target) Text.of("§c你已经切除过了！") else Text.of("§c对方已经切除过了！")
         }
 
         return Text.of("§c不满足使用条件。") // 默认失败消息
@@ -136,6 +142,12 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
         }else if (stack.containsEnchantment(JREnchantments.MASTECTOMY)){
             target.breastCancer = 0
             target.dropStack(Items.CHICKEN.defaultStack)
+        }else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)){
+            target.isOrchiectomy = true
+            val eggs = Items.EGG.defaultStack
+            eggs.count = 2
+            target.dropStack(eggs)
+            target.damage(target.world.damageSources.generic(), 6f)
         }
     }
 
@@ -167,6 +179,12 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
             return ActionMessages(
                 userSuccessMessage = if (isSelf) Text.of("§a你成功切除了你自己的乳房") else Text.of("§a已为对方进行乳房切除"),
                 targetSuccessMessage = if (isSelf) null else Text.of("§a你被进行了乳房切除！")
+            )
+        }
+        else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)){
+            return ActionMessages(
+                userSuccessMessage = if (isSelf) Text.of("§a你成功切除了你自己的魔丸") else Text.of("§a已为对方进行切除魔丸！"),
+                targetSuccessMessage = if (isSelf) null else Text.of("§a你被进行了魔丸切除！")
             )
         }
         // 不应该到达这里，但作为安全措施

@@ -426,6 +426,13 @@ public interface Pregnant{
     }
 
 
+    //  --------------------- MALE --------------------------
+    default void setOrchiectomy(boolean orchiectomy){}
+    default boolean isOrchiectomy(){
+        return false;
+    }
+
+
     static <T extends LivingEntity&Pregnant> void pregnantTick(T pregnant) {
         if (!pregnant.isFemale()) return;
         pregnant.updateBrithControlling();

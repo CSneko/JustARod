@@ -92,6 +92,9 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     @Unique
     private int excretion = 0;
 
+    @Unique
+    private boolean orchiectomy = false;
+
     @Override
     public double getPower() {
         return power;
@@ -366,6 +369,16 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     @Override
     public int getExcretion() {
         return excretion;
+    }
+
+    @Override
+    public boolean isOrchiectomy() {
+        return orchiectomy;
+    }
+
+    @Override
+    public void setOrchiectomy(boolean orchiectomy) {
+        this.orchiectomy = orchiectomy;
     }
 
     @Override

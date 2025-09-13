@@ -16,6 +16,8 @@ public class JREnchantments {
     public static final RegistryKey<Enchantment> ARTIFICIAL_ABORTION = of(ARTIFICIAL_ABORTION_ID);
     public static final Identifier MASTECTOMY_ID = Identifier.of(MODID,"mastectomy");
     public static final RegistryKey<Enchantment> MASTECTOMY = of(MASTECTOMY_ID);
+    public static final Identifier ORCHIECTOMY_ID = Identifier.of(MODID,"orchiectomy");
+    public static final RegistryKey<Enchantment> ORCHIECTOMY = of(ORCHIECTOMY_ID);
 
     public static RegistryKey<Enchantment> of(Identifier id) {
         return RegistryKey.of(RegistryKeys.ENCHANTMENT, id);

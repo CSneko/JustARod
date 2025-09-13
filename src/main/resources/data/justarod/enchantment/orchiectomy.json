@@ -1,0 +1,23 @@
+{
+  "anvil_cost": 1,
+  "weight": 30,
+  "description": {
+    "type": "translatable",
+    "translate": "enchantment.justarod.orchiectomy"
+  },
+  "supported_items": "justarod:scalpel",
+  "primary_items": "justarod:scalpel",
+  "min_cost": {
+    "base": 1,
+    "per_level_above_first": 1
+  },
+  "max_cost": {
+    "base": 1,
+    "per_level_above_first": 1
+  },
+  "max_level": 1,
+  "slots": [
+    "mainhand",
+    "offhand"
+  ]
+}

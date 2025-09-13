@@ -762,6 +762,47 @@ class PregnantCommand {
                     )
                 )
 
+                dispatcher.register(literal("orchiectomy")
+                    .executes {context ->
+                        val source = context.source.entity
+                        if (source is Pregnant){
+                            source.sendMessage(Text.of("§a魔丸切除状态：${if (source.isOrchiectomy) "§c已切除" else "§b未切除"}"))
+                        }
+                        return@executes 1
+                    }
+                    .then(argument("target", EntityArgumentType.entity())
+                        .executes {context ->
+                            val source = context.source
+                            val target = EntityArgumentType.getEntity(context, "target")
+                            if (target is Pregnant){
+                                source.sendMessage(Text.of("§a魔丸切除状态：${if (target.isOrchiectomy) "§c已切除" else "§b未切除"}"))
+                            }
+                            return@executes 1
+                        }
+                    )
+                    .then(literal("set")
+                        .requires { source -> source.hasPermissionLevel(4) }
+                        .then(argument("is", BoolArgumentType.bool())
+                            .executes {ctx ->
+                                val source = ctx.source.entity
+                                if (source is Pregnant) {
+                                    source.isOrchiectomy = BoolArgumentType.getBool(ctx,"is")
+                                }
+                                return@executes 1
+                            }
+                            .then(argument("target", EntityArgumentType.entity())
+                                .executes {ctx ->
+                                    val target = EntityArgumentType.getEntity(ctx, "target")
+                                    if (target is Pregnant) {
+                                        target.isOrchiectomy = BoolArgumentType.getBool(ctx,"is")
+                                    }
+                                    return@executes 1
+                                }
+                            )
+                        )
+                    )
+                )
+
             }
         }
     }

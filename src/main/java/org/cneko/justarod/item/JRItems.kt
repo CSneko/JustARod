@@ -88,6 +88,7 @@ class JRItems {
             StatusEffectInstance(StatusEffects.NAUSEA,200,0),1f).build()))
         val FEMALE_POTION = GenderChangePotionItem(Item.Settings(),GenderChangePotionItem.Gender.FEMALE)
         val MALE_POTION = GenderChangePotionItem(Item.Settings(), GenderChangePotionItem.Gender.MALE)
+        val SPERM_RETRIEVAL_DEVICE = SpermRetrievalDeviceItem(Item.Settings())
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -146,6 +147,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "excrement"), EXCREMENT)
             Registry.register(Registries.ITEM, Identifier.of(MODID,"female_potion"),FEMALE_POTION)
             Registry.register(Registries.ITEM, Identifier.of(MODID,"male_potion"),MALE_POTION)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "sperm_retrieval_device"), SPERM_RETRIEVAL_DEVICE)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
@@ -210,6 +212,7 @@ class JRItems {
                 entries.add(EXCREMENT)
                 entries.add(FEMALE_POTION)
                 entries.add(MALE_POTION)
+                entries.add(SPERM_RETRIEVAL_DEVICE)
             }
         }
     }

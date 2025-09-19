@@ -80,7 +80,7 @@ abstract class MedicalItem(settings: Settings) : Item(settings) {
 
 
 
-    final override fun use(world: World, user: PlayerEntity, hand: Hand): TypedActionResult<ItemStack> {
+    override fun use(world: World, user: PlayerEntity, hand: Hand): TypedActionResult<ItemStack> {
         val stack = user.getStackInHand(hand)
         if (world.isClient) {
             return TypedActionResult.pass(stack)

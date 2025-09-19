@@ -3,6 +3,8 @@ package org.cneko.justarod.item
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
 import net.minecraft.component.ComponentType
+import net.minecraft.entity.Entity
+import net.minecraft.entity.EntityType
 import net.minecraft.item.ItemStack
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
@@ -43,5 +45,19 @@ class JRComponents{
             Identifier.of(MODID, "secretions_appearance"),
             ComponentType.builder<String>().codec(Codec.STRING).build()
         )
+
+        val ENTITY_TYPE: ComponentType<EntityType<*>> = Registry.register(
+            Registries.DATA_COMPONENT_TYPE,
+            Identifier.of(MODID, "entity_type"),
+            ComponentType.builder<EntityType<*>>()
+                .codec(Registries.ENTITY_TYPE.codec)
+                .build()
+        )
+        val COLLECTED_TIME: ComponentType<Int> = Registry.register(
+            Registries.DATA_COMPONENT_TYPE,
+            Identifier.of(MODID, "collected_time"),
+            ComponentType.builder<Int>().codec(Codec.INT).build()
+        )
+
     }
 }

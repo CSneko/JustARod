@@ -30,6 +30,8 @@ import java.util.UUID;
 public interface Pregnant{
     List<UUID> FOREVER_BABY = new ArrayList<>();
 
+    // 可以同时为男性或女性
+
     default boolean isMale() {
         return false;
     }
@@ -197,6 +199,7 @@ public interface Pregnant{
         nbt.putInt("BreastCancer",getBreastCancer());
         nbt.putInt("Syphilis",getSyphilis());
         nbt.putInt("Excretion",getExcretion());
+        nbt.putBoolean("Orchiectomy",isOrchiectomy());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         setFemale(nbt.getBoolean("Female"));
@@ -258,6 +261,9 @@ public interface Pregnant{
         }
         if (nbt.contains("Excretion")){
             setExcretion(nbt.getInt("Excretion"));
+        }
+        if (nbt.contains("Orchiectomy")){
+            setOrchiectomy(nbt.getBoolean("Orchiectomy"));
         }
     }
 

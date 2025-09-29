@@ -6,7 +6,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "minecraft:golden_nugget"
+          "name": "minecraft:gold_nugget"
         }
       ],
       "conditions": [

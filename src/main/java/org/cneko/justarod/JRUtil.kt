@@ -13,7 +13,7 @@ import net.minecraft.world.World
 import org.cneko.justarod.Justarod.MODID
 import org.cneko.toneko.common.mod.entities.INeko
 import kotlin.jvm.optionals.getOrElse
-
+// awa
 class JRUtil {
     companion object {
         fun World.getNekoInRange(entity: Entity, radius: Float): List<INeko> {

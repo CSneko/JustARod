@@ -1,6 +1,5 @@
 package org.cneko.justarod.item.medical
 
-import net.minecraft.client.particle.Particle
 import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.effect.StatusEffects
@@ -9,7 +8,6 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.item.ItemUsage
 import net.minecraft.item.tooltip.TooltipType
-import net.minecraft.particle.ParticleEffect
 import net.minecraft.particle.ParticleTypes
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.sound.SoundEvents
@@ -24,10 +22,7 @@ import org.cneko.justarod.item.JRComponents
 import org.cneko.justarod.item.rod.addEffect
 import java.util.concurrent.TimeUnit
 
-class SpermRetrievalDeviceItem(settings: Settings) : MedicalItem(settings) {
-    companion object {
-        private const val LIFETIME_TICKS = 20 * 60 * 5 // 5分钟 -> 6000 ticks
-    }
+open class SpermRetrievalDeviceItem(val lifeTime: Int, settings: Settings) : MedicalItem(settings) {
 
     override fun inventoryTick(stack: ItemStack, world: World, entity: Entity, slot: Int, selected: Boolean) {
         if (!world.isClient && stack.contains(JRComponents.ENTITY_TYPE)) {
@@ -77,7 +72,7 @@ class SpermRetrievalDeviceItem(settings: Settings) : MedicalItem(settings) {
             // 没有精液 → 只能采集
             when {
                 target is Pregnant && target.isMale -> {
-                    if (target.hasStatusEffect(net.minecraft.entity.effect.StatusEffects.WEAKNESS)) {
+                    if (target.hasStatusEffect(StatusEffects.WEAKNESS)) {
                         user.sendMessage(Text.of("§c目标虚弱，无法采集精液！"), true)
                         false
                     } else {
@@ -181,7 +176,7 @@ class SpermRetrievalDeviceItem(settings: Settings) : MedicalItem(settings) {
                     }else {
                         stack.set(JRComponents.ENTITY_TYPE, target.type)
                     }
-                    stack.set(JRComponents.COLLECTED_TIME, LIFETIME_TICKS)
+                    stack.set(JRComponents.COLLECTED_TIME, lifeTime)
                     user.sendMessage(Text.of("§a成功采集到 ${target.name.string} 的精液！"))
                     target.addEffect(StatusEffects.WEAKNESS,20*60*5,0)
                 }
@@ -191,7 +186,7 @@ class SpermRetrievalDeviceItem(settings: Settings) : MedicalItem(settings) {
                 } else {
                     val stackInHand = user.getStackInHand(hand)
                     stackInHand.set(JRComponents.ENTITY_TYPE, target.type)
-                    stackInHand.set(JRComponents.COLLECTED_TIME, LIFETIME_TICKS)
+                    stackInHand.set(JRComponents.COLLECTED_TIME, lifeTime)
                     user.sendMessage(Text.of("§a成功采集到动物精液！"))
                     target.addEffect(StatusEffects.WEAKNESS,20*60*5,0)
                 }

@@ -1,0 +1,23 @@
+{
+  "anvil_cost": 1,
+  "weight": 30,
+  "description": {
+    "type": "translatable",
+    "translate": "enchantment.justarod.precision"
+  },
+  "supported_items": "justarod:cloner_device",
+  "primary_items": "justarod:cloner_device",
+  "min_cost": {
+    "base": 1,
+    "per_level_above_first": 1
+  },
+  "max_cost": {
+    "base": 1,
+    "per_level_above_first": 1
+  },
+  "max_level": 5,
+  "slots": [
+    "mainhand",
+    "offhand"
+  ]
+}

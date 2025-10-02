@@ -18,6 +18,8 @@ public class JREnchantments {
     public static final RegistryKey<Enchantment> MASTECTOMY = of(MASTECTOMY_ID);
     public static final Identifier ORCHIECTOMY_ID = Identifier.of(MODID,"orchiectomy");
     public static final RegistryKey<Enchantment> ORCHIECTOMY = of(ORCHIECTOMY_ID);
+    public static final Identifier PRECISION_ID = Identifier.of(MODID,"precision");
+    public static final RegistryKey<Enchantment> PRECISION = of(PRECISION_ID);
 
     public static RegistryKey<Enchantment> of(Identifier id) {
         return RegistryKey.of(RegistryKeys.ENCHANTMENT, id);

@@ -12,6 +12,8 @@ import org.cneko.justarod.item.JRItems;
 import org.cneko.justarod.packet.JRPackets;
 import org.cneko.justarod.quirks.JRQuirks;
 
+import java.util.logging.Logger;
+
 /*
 说实话，这个模组其实算不上难做，难的就是呢得把涩涩的感触做进游戏里
 可是吧，涩涩的时候大脑都是被快感给占领了，想要记住细节其实很难的

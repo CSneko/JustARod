@@ -1,18 +1,22 @@
 package org.cneko.justarod
 
 import net.minecraft.enchantment.Enchantment
+import net.minecraft.enchantment.Enchantments
 import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.registry.RegistryKey
+import net.minecraft.registry.RegistryKeys
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.Box
 import net.minecraft.world.World
 import org.cneko.justarod.Justarod.MODID
 import org.cneko.toneko.common.mod.entities.INeko
 import kotlin.jvm.optionals.getOrElse
+import kotlin.text.get
+
 // awa
 class JRUtil {
     companion object {
@@ -53,6 +57,13 @@ class JRUtil {
                 return false
             }
         }
+        fun ItemStack.getEnchantmentLevel(world : World,enchantment: RegistryKey<Enchantment>): Int {
+            val rm = world.registryManager
+            val level = this.enchantments.getLevel(rm?.get(RegistryKeys.ENCHANTMENT)?.entryOf(enchantment))
+
+            return 0
+        }
+
 
 
     }

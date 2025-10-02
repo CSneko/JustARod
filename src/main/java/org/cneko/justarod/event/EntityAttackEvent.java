@@ -20,6 +20,8 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import org.cneko.justarod.JRCriteria;
 import org.cneko.justarod.effect.JREffects;
+import org.cneko.justarod.item.JRComponents;
+import org.cneko.justarod.item.bio.ClonerDevice;
 import org.cneko.justarod.item.rod.GiantRodItem;
 import org.cneko.justarod.item.JRItems;
 
@@ -34,6 +36,16 @@ public class EntityAttackEvent {
                 if (entity instanceof EnderDragonPart ede&& stack.isOf(JRItems.Companion.getFREE_MATING())){
                     JRItems.Companion.getFREE_MATING().useOnEntity(stack,playerEntity,ede.owner,hand);
                 }
+                if (entity instanceof LivingEntity living){
+                    if (stack.getItem() instanceof ClonerDevice cloner) {
+                        boolean hasData = stack.contains(JRComponents.Companion.getENTITY_TYPE());
+                        boolean transferred = stack.getOrDefault(JRComponents.Companion.getCLONER_TRANSFERRED(),false);
+                        if (hasData && transferred) {
+                            return cloner.useOnEntity(stack, playerEntity,living, hand);
+                        }
+                    }
+                }
+
             }
             return ActionResult.PASS;
         });

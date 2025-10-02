@@ -24,6 +24,7 @@ import org.cneko.justarod.item.*
 import org.cneko.justarod.item.rod.*
 import org.cneko.justarod.item.armor.*
 import org.cneko.justarod.item.bdsm.*
+import org.cneko.justarod.item.bio.ClonerDevice
 import org.cneko.justarod.item.electric.*
 import org.cneko.justarod.item.medical.*
 import org.cneko.justarod.item.syringe.*
@@ -90,6 +91,7 @@ class JRItems {
         val MALE_POTION = GenderChangePotionItem(Item.Settings(), GenderChangePotionItem.Gender.MALE)
         val SPERM_RETRIEVAL_DEVICE = SpermRetrievalDeviceItem(5*60*20,Item.Settings())
         val FROZEN_SPERM_RETRIEVAL_DEVICE = FrozenSpermRetrievalDeviceItem(Item.Settings())
+        val CLONER_DEVICE = ClonerDevice()
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -150,6 +152,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID,"male_potion"),MALE_POTION)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "sperm_retrieval_device"), SPERM_RETRIEVAL_DEVICE)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "frozen_sperm_retrieval_device"), FROZEN_SPERM_RETRIEVAL_DEVICE)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "cloner_device"), CLONER_DEVICE)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
@@ -216,6 +219,7 @@ class JRItems {
                 entries.add(MALE_POTION)
                 entries.add(SPERM_RETRIEVAL_DEVICE)
                 entries.add(FROZEN_SPERM_RETRIEVAL_DEVICE)
+                entries.add(CLONER_DEVICE)
             }
         }
     }

@@ -6,6 +6,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import org.cneko.justarod.JRAttributes;
+import org.cneko.justarod.entity.BDSMable;
 import org.cneko.justarod.entity.Insertable;
 import org.cneko.justarod.entity.Pregnant;
 import org.jetbrains.annotations.NotNull;

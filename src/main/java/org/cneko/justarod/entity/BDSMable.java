@@ -75,6 +75,17 @@ public interface BDSMable {
         }
     }
 
+    default void setShackled(int time){
+    }
+    default int getShackled(){
+        return 0;
+    }
+    default void updateShackled(){
+        if (getShackled() > 1){
+            setShackled(getShackled()-1);
+        }
+    }
+
     default void writeBDSMToNbt(NbtCompound nbt){
         nbt.putInt("BallMouth", getBallMouth());
         nbt.putInt("ElectricShock", getElectricShock());
@@ -82,6 +93,7 @@ public interface BDSMable {
         nbt.putInt("EyePatch", getEyePatch());
         nbt.putInt("Earplug", getEarplug());
         nbt.putInt("Handcuffed", getHandcuffed());
+        nbt.putInt("Shackled", getShackled());
     }
 
     default void readBDSMFromNbt(NbtCompound nbt){
@@ -91,6 +103,7 @@ public interface BDSMable {
         setEyePatch(nbt.getInt("EyePatch"));
         setEarplug(nbt.getInt("Earplug"));
         setHandcuffed(nbt.getInt("Handcuffed"));
+        setShackled(nbt.getInt("Shackled"));
     }
 
     static <T extends LivingEntity & BDSMable> void ballMouthTick(T ballMouthable) {
@@ -242,6 +255,34 @@ public interface BDSMable {
         if (handcuffed.getHandcuffed() == 1 && handcuffed.isSneaking()) {
             handcuffed.setHandcuffed(0);
             handcuffed.sendMessage(Text.of("§a已解除手铐"));
+        }
+    }
+
+    static <T extends LivingEntity & BDSMable> void shackledTick(T shackled) {
+        shackled.updateShackled();
+        if (shackled.getShackled() == 1 && shackled.isSneaking()) {
+            shackled.setShackled(0);
+            shackled.sendMessage(Text.of("§a已解除脚镣"));
+        }
+        if (shackled.getShackled()>0){
+            shackled.addStatusEffect(
+                    new StatusEffectInstance(
+                            Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getJUMP_NERF_EFFECT()),
+                            20,
+                            10, // 1秒刷新一次
+                            true,
+                            false
+                    )
+            );
+            shackled.addStatusEffect(
+                    new StatusEffectInstance(
+                            StatusEffects.SLOWNESS,
+                            20,
+                            10,
+                            true,
+                            false
+                    )
+            );
         }
     }
 

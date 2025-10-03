@@ -48,3 +48,11 @@ class HandcuffesItem(settings: Settings) : AbstractBDSMItem(
     "对方已经有手铐了哦~",
     "成功插入手铐~"
 )
+
+class ShacklesItem(settings: Settings) : AbstractBDSMItem(
+    settings,
+    { it.shackled },
+    { e, v -> e.shackled = v },
+    "对方已经有脚镣了哦~",
+    "成功插入脚镣~"
+)

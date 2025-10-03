@@ -259,6 +259,46 @@ class BDSMCommand {
                             )
                         )
                     )
+                    .then(literal("shackled")
+                        .executes { context ->
+                            val entity = context.source.entity
+                            if (entity is BDSMable){
+                                entity.sendMessage(Text.of("§a脚镣剩余时间：${entity.shackled/20}秒~"))
+                            }
+                            return@executes 1
+                        }
+                        .then(argument("target", EntityArgumentType.entity())
+                            .executes { context ->
+                                val target = EntityArgumentType.getEntity(context, "target")
+                                if (target is BDSMable){
+                                    target.sendMessage(Text.of("§a脚镣剩余时间：${target.shackled/20}秒~"))
+                                }
+                                return@executes 1
+                            }
+                        )
+                        .then(literal("set")
+                            .then(argument("time", IntegerArgumentType.integer())
+                                .executes { context ->
+                                    val source = context.source.entity
+                                    if (source is BDSMable){
+                                        val time = IntegerArgumentType.getInteger(context, "time")
+                                        source.shackled = time
+                                    }
+                                    return@executes 1
+                                }
+                                .then(argument("target", EntityArgumentType.entity())
+                                    .executes { context ->
+                                        val target = EntityArgumentType.getEntity(context, "target")
+                                        if (target is BDSMable){
+                                            val time = IntegerArgumentType.getInteger(context, "time")
+                                            target.shackled = time
+                                        }
+                                        return@executes 1
+                                    }
+                                )
+                            )
+                        )
+                    )
 
                 )
             }

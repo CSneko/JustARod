@@ -24,9 +24,9 @@ public class ServerPlayerMixin {
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
         // 寻找周围的玩家
         player.getWorld().getEntitiesByClass(ServerPlayerEntity.class, player.getBoundingBox().expand(10), (e) -> true).forEach(e -> {
-            ServerPlayNetworking.send(e, new BDSMPayload(player.getUuidAsString(), player.getBallMouth() > 0, player.getElectricShock()>0,player.getBundled()>0,player.getEyePatch()>0,player.getEarplug()>0, player.getHandcuffed()>0));
+            ServerPlayNetworking.send(e, new BDSMPayload(player.getUuidAsString(), player.getBallMouth() > 0, player.getElectricShock()>0,player.getBundled()>0,player.getEyePatch()>0,player.getEarplug()>0, player.getHandcuffed()>0, player.getShackled()>0));
         });
-        ServerPlayNetworking.send(player, new BDSMPayload(player.getUuidAsString(), player.getBallMouth() > 0, player.getElectricShock()>0,player.getBundled()>0, player.getEyePatch()>0, player.getEarplug()>0, player.getHandcuffed()>0));
+        ServerPlayNetworking.send(player, new BDSMPayload(player.getUuidAsString(), player.getBallMouth() > 0, player.getElectricShock()>0,player.getBundled()>0, player.getEyePatch()>0, player.getEarplug()>0, player.getHandcuffed()>0, player.getShackled()>0));
     }
 
 }

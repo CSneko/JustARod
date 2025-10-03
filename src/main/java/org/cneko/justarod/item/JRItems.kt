@@ -83,6 +83,7 @@ class JRItems {
         val EYE_PATCH = EyePatchItem(Item.Settings())
         val EARPLUG = EarplugItem(Item.Settings())
         val HANDCUFFES = HandcuffesItem(Item.Settings())
+        val SHACKLES = ShacklesItem(Item.Settings())
         val HANDCUFFES_RING = Item(Item.Settings())
         val HANDCUFFES_CHAIN = Item(Item.Settings())
         val EXCREMENT = BoneMealItem(Item.Settings().food(FoodComponent.Builder().alwaysEdible().nutrition(1).statusEffect(
@@ -145,6 +146,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "eye_patch"), EYE_PATCH)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "earplug"), EARPLUG)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "handcuffes"), HANDCUFFES)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "shackles"), SHACKLES)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "handcuffes_ring"), HANDCUFFES_RING)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "handcuffes_chain"), HANDCUFFES_CHAIN)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "excrement"), EXCREMENT)
@@ -212,6 +214,7 @@ class JRItems {
                 entries.add(EYE_PATCH)
                 entries.add(EARPLUG)
                 entries.add(HANDCUFFES)
+                entries.add(SHACKLES)
                 entries.add(HANDCUFFES_RING)
                 entries.add(HANDCUFFES_CHAIN)
                 entries.add(EXCREMENT)

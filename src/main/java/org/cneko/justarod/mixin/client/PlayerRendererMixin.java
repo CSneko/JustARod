@@ -21,6 +21,7 @@ public abstract class PlayerRendererMixin {
         self.addFeature(new EyePatchFeatureRenderer(self));
         self.addFeature(new EarplugFeatureRenderer(self));
         self.addFeature(new HandcuffFeatureRenderer(self,ctx.getHeldItemRenderer()));
+        self.addFeature(new ShacklesFeatureRenderer(self,ctx.getHeldItemRenderer()));
     }
 
 }

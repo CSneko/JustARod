@@ -9,9 +9,11 @@ import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 import org.cneko.justarod.client.screen.FrictionScreen;
 import org.cneko.justarod.entity.BDSMable;
+import org.cneko.justarod.entity.Pregnant;
 import org.cneko.justarod.packet.BDSMPayload;
 import org.cneko.justarod.packet.FrictionPayload;
 import org.cneko.justarod.packet.JRSyncPayload;
+import org.cneko.justarod.packet.MedicalPayload;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
@@ -58,6 +60,25 @@ public class JRClientNetworkingEvents {
                 processBDSM.accept(bm);
             }
         });
+
+        ClientPlayNetworking.registerGlobalReceiver(MedicalPayload.ID,((payload, context) -> {
+            UUID uuid = UUID.fromString(payload.uuid());
+            PlayerEntity player = MinecraftClient.getInstance().player;
+
+            Consumer<Pregnant> processMedical = medicalEntity -> {
+                boolean amputated = payload.isAmputated();
+                medicalEntity.setAmputated(amputated);
+            };
+
+            if (player.getUuid().equals(uuid)) {
+                processMedical.accept(player);
+            }
+
+            LivingEntity entity = findNearbyEntityByUuid(uuid, 10);
+            if (entity instanceof Pregnant pre) {
+                processMedical.accept(pre);
+            }
+        }));
     }
 
     public static @Nullable LivingEntity findNearbyEntityByUuid(UUID targetUuid, double range) {

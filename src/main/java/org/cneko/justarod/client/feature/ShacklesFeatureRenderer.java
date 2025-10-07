@@ -36,29 +36,29 @@ public class ShacklesFeatureRenderer extends FeatureRenderer<AbstractClientPlaye
         // 左脚
         matrices.push();
         getContextModel().leftLeg.rotate(matrices);
-// 再靠近一点 (0.05 → 0.03)，再往上一点 (0.9 → 0.7)
+
         matrices.translate(0.03, 0.7, 0.1);
         matrices.scale(0.8f, 0.8f, 0.8f);
         matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90f));
         heldItemRenderer.renderItem(player, ring, ModelTransformationMode.THIRD_PERSON_LEFT_HAND, true, matrices, vertexConsumers, light);
         matrices.pop();
 
-// 右脚
+
         matrices.push();
         getContextModel().rightLeg.rotate(matrices);
-// 对称调整 (-0.05 → -0.03)，(0.9 → 0.7)
+
         matrices.translate(-0.03, 0.7, 0.1);
         matrices.scale(0.8f, 0.8f, 0.8f);
         matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90f));
         heldItemRenderer.renderItem(player, ring, ModelTransformationMode.THIRD_PERSON_RIGHT_HAND, false, matrices, vertexConsumers, light);
         matrices.pop();
 
-// 链条
+
         matrices.push();
         Vec3d leftLegPos = new Vec3d(getContextModel().leftLeg.pivotX, getContextModel().leftLeg.pivotY, getContextModel().leftLeg.pivotZ);
         Vec3d rightLegPos = new Vec3d(getContextModel().rightLeg.pivotX, getContextModel().rightLeg.pivotY, getContextModel().rightLeg.pivotZ);
 
-// 链条位置也整体上移 (midY: -0.4 → -0.2)
+
         double midX = (leftLegPos.getX() + rightLegPos.getX()) / 2.0;
         double midY = (leftLegPos.getY() + rightLegPos.getY()) / 2.0 - 0.2;
         double midZ = (leftLegPos.getZ() + rightLegPos.getZ()) / 2.0;

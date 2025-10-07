@@ -34,6 +34,9 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
             tooltip.add(Text.of("§c使用它可以进行乳房切除"))
         }else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)){
             tooltip.add(Text.of("§a想练此功，必先自宫"))
+        }else if (stack.containsEnchantment(JREnchantments.AMPUTATING)){
+            tooltip.add(Text.of("§c使用它可以进行截肢"))
+            tooltip.add(Text.of("§d嗯... 你应该不是病娇吧？"))
         }
     }
 
@@ -57,6 +60,8 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
             return target.isFemale
         }else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)){
             return target.isMale && !target.isOrchiectomy
+        }else if (stack.containsEnchantment(JREnchantments.AMPUTATING)){
+            return !target.isAmputated
         }
 
         return false // 没有对应附魔，无法使用
@@ -80,6 +85,8 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
             return if (user == target) Text.of("§c你没有怀孕！") else Text.of("§c对方没有怀孕")
         } else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)){
             if (target.isOrchiectomy) return if (user == target) Text.of("§c你已经切除过了！") else Text.of("§c对方已经切除过了！")
+        }else if (stack.containsEnchantment(JREnchantments.AMPUTATING)){
+            if (target.isAmputated) return if (user == target) Text.of("§c你已经截肢过了！") else Text.of("§c对方已经截肢过了！")
         }
 
         return Text.of("§c不满足使用条件。") // 默认失败消息
@@ -148,6 +155,10 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
             eggs.count = 2
             target.dropStack(eggs)
             target.damage(target.world.damageSources.generic(), 6f)
+        }else if (stack.containsEnchantment(JREnchantments.AMPUTATING)){
+            target.isAmputated = true
+            target.damage(target.world.damageSources.generic(), 8f)
+            target.dropStack(Items.BONE.defaultStack)
         }
     }
 
@@ -185,6 +196,11 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
             return ActionMessages(
                 userSuccessMessage = if (isSelf) Text.of("§a你成功切除了你自己的魔丸") else Text.of("§a已为对方进行切除魔丸！"),
                 targetSuccessMessage = if (isSelf) null else Text.of("§a你被进行了魔丸切除！")
+            )
+        }else if (stack.containsEnchantment(JREnchantments.AMPUTATING)) {
+            return ActionMessages(
+                userSuccessMessage = if (isSelf) Text.of("§a你成功为自己进行了截肢！") else Text.of("§a已为对方进行截肢！"),
+                targetSuccessMessage = if (isSelf) null else Text.of("§c你被进行了截肢手术！")
             )
         }
         // 不应该到达这里，但作为安全措施

@@ -803,6 +803,47 @@ class PregnantCommand {
                     )
                 )
 
+                dispatcher.register(literal("amputated")
+                    .executes {context ->
+                        val source = context.source.entity
+                        if (source is Pregnant){
+                            source.sendMessage(Text.of("§a截肢状态：${if (source.isAmputated) "§c已截肢" else "§b未截肢"}"))
+                        }
+                        return@executes 1
+                    }
+                    .then(argument("target", EntityArgumentType.entity())
+                        .executes {context ->
+                            val source = context.source
+                            val target = EntityArgumentType.getEntity(context, "target")
+                            if (target is Pregnant){
+                                source.sendMessage(Text.of("§a截肢状态：${if (target.isAmputated) "§c已截肢" else "§b截肢"}"))
+                            }
+                            return@executes 1
+                        }
+                    )
+                    .then(literal("set")
+                        .requires { source -> source.hasPermissionLevel(4) }
+                        .then(argument("is", BoolArgumentType.bool())
+                            .executes {ctx ->
+                                val source = ctx.source.entity
+                                if (source is Pregnant) {
+                                    source.isAmputated = BoolArgumentType.getBool(ctx,"is")
+                                }
+                                return@executes 1
+                            }
+                            .then(argument("target", EntityArgumentType.entity())
+                                .executes {ctx ->
+                                    val target = EntityArgumentType.getEntity(ctx, "target")
+                                    if (target is Pregnant) {
+                                        target.isAmputated = BoolArgumentType.getBool(ctx,"is")
+                                    }
+                                    return@executes 1
+                                }
+                            )
+                        )
+                    )
+                )
+
             }
         }
     }

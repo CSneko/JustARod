@@ -18,9 +18,58 @@ public abstract class PlayerEntityModelMixin {
     )
     private void onSetAngles(Entity entity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch, CallbackInfo ci) {
         if (!(entity instanceof PlayerEntity player)) return;
+        PlayerEntityModel<?> self = (PlayerEntityModel<?>) (Object) this;
+
+
+        boolean amputated = player.isAmputated();
+        boolean riding = player.hasVehicle();
+        boolean sneaking = player.isInSneakingPose();
+        boolean sleeping = player.isSleeping();
+
+        if (amputated) {
+            // 在正常站立/行走时才下移
+            boolean applyOffset = !riding && !sneaking && !sleeping;
+            float offset = applyOffset ? 12.0F : 0.0F;
+
+            self.leftLeg.visible = false;
+            self.rightLeg.visible = false;
+            self.leftPants.visible = false;
+            self.rightPants.visible = false;
+
+            // 上半身整体下移 offset
+            self.body.pivotY = offset;
+            self.jacket.pivotY = offset;
+
+            self.head.pivotY = 0.0F + offset;
+            self.hat.pivotY = 0.0F + offset;
+
+            self.leftArm.pivotY = 2.0F + offset;
+            self.rightArm.pivotY = 2.0F + offset;
+            self.leftSleeve.pivotY = 2.0F + offset;
+            self.rightSleeve.pivotY = 2.0F + offset;
+        } else {
+            // 正常状态恢复
+            self.leftLeg.visible = true;
+            self.rightLeg.visible = true;
+            self.leftPants.visible = true;
+            self.rightPants.visible = true;
+
+            self.body.pivotY = 0F;
+            self.jacket.pivotY = 0F;
+
+            self.head.pivotY = 0.0F;
+            self.hat.pivotY = 0.0F;
+
+            self.leftArm.pivotY = 2.0F;
+            self.rightArm.pivotY = 2.0F;
+            self.leftSleeve.pivotY = 2.0F;
+            self.rightSleeve.pivotY = 2.0F;
+        }
+
+
 
         if (player.getBundled() > 0) {
-            PlayerEntityModel<?> self = (PlayerEntityModel<?>) (Object) this;
+            
 
             boolean sitting = player.hasVehicle() || player.getPose() == EntityPose.SITTING;
 
@@ -63,7 +112,6 @@ public abstract class PlayerEntityModelMixin {
         }
 
         if (player.getHandcuffed() > 0) {
-            PlayerEntityModel<?> self = (PlayerEntityModel<?>) (Object) this;
 
             // 双手靠拢在胸前
             self.rightArm.pitch = -0.8F; // 手臂抬起

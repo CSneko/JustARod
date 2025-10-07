@@ -54,7 +54,7 @@ dependencies {
 
     modImplementation "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
 
-    modCompileOnly "me.lucko:fabric-permissions-api:0.2-SNAPSHOT"
+    modCompileOnly "me.lucko:fabric-permissions-api:0.3.1"
 
     include modApi('teamreborn:energy:4.1.0') {
         exclude(group: "net.fabricmc.fabric-api")

@@ -199,6 +199,7 @@ public interface Pregnant{
         nbt.putInt("BreastCancer",getBreastCancer());
         nbt.putInt("Syphilis",getSyphilis());
         nbt.putInt("Excretion",getExcretion());
+        nbt.putBoolean("Amputated",isAmputated());
         nbt.putBoolean("Orchiectomy",isOrchiectomy());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
@@ -261,6 +262,9 @@ public interface Pregnant{
         }
         if (nbt.contains("Excretion")){
             setExcretion(nbt.getInt("Excretion"));
+        }
+        if (nbt.contains("Amputated")){
+            setAmputated(nbt.getBoolean("Amputated"));
         }
         if (nbt.contains("Orchiectomy")){
             setOrchiectomy(nbt.getBoolean("Orchiectomy"));
@@ -421,6 +425,15 @@ public interface Pregnant{
         }
     }
 
+
+    //  --------------------- MALE --------------------------
+    default void setOrchiectomy(boolean orchiectomy){}
+    default boolean isOrchiectomy(){
+        return false;
+    }
+
+
+    // ----------------------------- COMMON -----------------------------
     default void setExcretion(int time){}
     default int getExcretion(){
         return 0;
@@ -431,12 +444,10 @@ public interface Pregnant{
         }
     }
 
+    default void setAmputated(boolean amputated){}
+    default boolean isAmputated(){return false;}
 
-    //  --------------------- MALE --------------------------
-    default void setOrchiectomy(boolean orchiectomy){}
-    default boolean isOrchiectomy(){
-        return false;
-    }
+
 
 
     static <T extends LivingEntity&Pregnant> void pregnantTick(T pregnant) {
@@ -783,6 +794,29 @@ public interface Pregnant{
                 // 减少时间
                 pregnant.setExcretion(pregnant.getExcretion() - 20*60*20);
             }
+        }
+    }
+
+    static <T extends LivingEntity & Pregnant> void amputatedTick(T entity) {
+        if (entity.isAmputated()){
+            entity.addStatusEffect(
+                    new StatusEffectInstance(
+                            Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getJUMP_NERF_EFFECT()),
+                            20,
+                            10, // 1秒刷新一次
+                            true,
+                            false
+                    )
+            );
+            entity.addStatusEffect(
+                    new StatusEffectInstance(
+                            StatusEffects.SLOWNESS,
+                            20,
+                            10,
+                            true,
+                            false
+                    )
+            );
         }
     }
 

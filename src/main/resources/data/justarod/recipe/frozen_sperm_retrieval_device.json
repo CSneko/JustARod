@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key":{
+    "I":{
+      "item":"minecraft:iron_trapdoor"
+    },
+    "G":{
+      "item":"justarod:golden_leaves"
+    },
+    "B":{
+      "item":"minecraft:glass_bottle"
+    },
+    "E":{
+      "item":"minecraft:end_rod"
+    },
+    "F":{
+      "item":"minecraft:blue_ice"
+    }
+  },
+  "pattern":[
+    "GFG",
+    "GEG",
+    "IBI"
+    ],
+    "result":{
+      "count":1,
+      "id":"justarod:frozen_sperm_retrieval_device"
+    }
+}

@@ -82,27 +82,31 @@ abstract class MedicalItem(settings: Settings) : Item(settings) {
 
     override fun use(world: World, user: PlayerEntity, hand: Hand): TypedActionResult<ItemStack> {
         val stack = user.getStackInHand(hand)
-        if (world.isClient) {
+        if (world.isClient) return TypedActionResult.pass(stack)
+
+        // 只有按下 Shift 时才对自己使用
+        if (!user.isSneaking) {
             return TypedActionResult.pass(stack)
         }
 
-        // 当对自己使用时，用户就是目标
         val result = performAction(user, user, stack, hand)
 
-        return if (result == ActionResult.SUCCESS) {
+        return if (result == ActionResult.SUCCESS)
             TypedActionResult.success(stack)
-        } else {
+        else
             TypedActionResult.fail(stack)
-        }
     }
+
 
     final override fun useOnEntity(stack: ItemStack, user: PlayerEntity, entity: LivingEntity, hand: Hand): ActionResult {
-        if (user.world.isClient) {
-            return ActionResult.PASS
-        }
+        if (user.world.isClient) return ActionResult.PASS
 
-        return performAction(user, entity, stack, hand)
+        val result = performAction(user, entity, stack, hand)
+
+        // 如果对目标失败了，返回 FAIL 防止 fallback 到 use()
+        return if (result == ActionResult.SUCCESS) ActionResult.SUCCESS else ActionResult.FAIL
     }
+
 
     /**
      * 执行操作的核心共享逻辑

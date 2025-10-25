@@ -22,6 +22,8 @@ public class JREnchantments {
     public static final RegistryKey<Enchantment> AMPUTATING = of(AMPUTATING_ID);
     public static final Identifier PRECISION_ID = Identifier.of(MODID,"precision");
     public static final RegistryKey<Enchantment> PRECISION = of(PRECISION_ID);
+    public static final Identifier BEHEADING_ID = Identifier.of(MODID,"beheading");
+    public static final RegistryKey<Enchantment> BEHEADING = of(BEHEADING_ID);
 
     public static RegistryKey<Enchantment> of(Identifier id) {
         return RegistryKey.of(RegistryKeys.ENCHANTMENT, id);

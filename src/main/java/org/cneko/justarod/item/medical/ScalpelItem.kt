@@ -1,5 +1,7 @@
 package org.cneko.justarod.item.medical
 
+import net.minecraft.component.DataComponentTypes
+import net.minecraft.component.type.ProfileComponent
 import net.minecraft.entity.EquipmentSlot
 import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.player.PlayerEntity
@@ -19,6 +21,13 @@ import org.cneko.justarod.entity.Pregnant
 import org.cneko.justarod.item.rod.addEffect
 import org.cneko.toneko.common.mod.util.TickTaskQueue
 
+// 新增实体类导入，用于斩首时判断生物类型并掉落对应头颅
+import net.minecraft.entity.mob.SkeletonEntity
+import net.minecraft.entity.mob.WitherSkeletonEntity
+import net.minecraft.entity.mob.ZombieEntity
+import net.minecraft.entity.mob.CreeperEntity
+import net.minecraft.entity.boss.dragon.EnderDragonEntity
+
 // 继承自 MedicalItem
 class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDamage(4)) {
 
@@ -37,6 +46,9 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
         }else if (stack.containsEnchantment(JREnchantments.AMPUTATING)){
             tooltip.add(Text.of("§c使用它可以进行截肢"))
             tooltip.add(Text.of("§d嗯... 你应该不是病娇吧？"))
+        }else if (stack.containsEnchantment(JREnchantments.BEHEADING)){
+            tooltip.add(Text.of("§c使用它可以进行斩首"))
+            tooltip.add(Text.of("§d这样做的话... 嗯... 小心点哦~"))
         }
     }
 
@@ -44,8 +56,16 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
      * 检查手术刀是否可用的所有先决条件
      */
     override fun canApply(user: PlayerEntity, target: LivingEntity, stack: ItemStack, hand: Hand): Boolean {
-        // 通用检查
+        // 通用检查：物品损坏或目标必须存活
         if (stack.damage >= stack.maxDamage) return false // 物品损坏
+        if (target.isDead || !target.isAlive) return false
+
+        // 如果是斩首，允许对任何存活的实体使用（不必实现 Pregnant）
+        if (stack.containsEnchantment(JREnchantments.BEHEADING)) {
+            return true
+        }
+
+        // 其余手术仍要求目标实现 Pregnant 接口
         if (target !is Pregnant) return false // 目标必须是实现了Pregnant接口
 
         // 根据附魔检查特定条件
@@ -72,21 +92,22 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
      */
     override fun getFailureMessage(user: PlayerEntity, target: LivingEntity, stack: ItemStack): Text {
         if (stack.damage >= stack.maxDamage) return Text.of("§c手术刀已损坏！")
-        if (target !is Pregnant) return Text.of("§c只能对可进行此手术的玩家使用！")
-
-        if (stack.containsEnchantment(JREnchantments.HYSTERECTOMY)) {
-            if (target.isHysterectomy) return if (user == target) Text.of("§c你已经切除过了！") else Text.of("§c对方已经切除过了！")
-        } else if (stack.containsEnchantment(JREnchantments.UTERUS_INSTALLATION)) {
-            if (!target.isHysterectomy) return if (user == target) Text.of("§c你不需要安装子宫！") else Text.of("§c对方不需要安装子宫！")
-            // canApply已经检查过副手，这里为了更明确的消息再次检查
-            val offHandStack = user.getStackInHand(Hand.OFF_HAND) // 假设主手是手术刀
-            if (!offHandStack.isOf(JRItems.UTERUS)) return Text.of("§c你的副手必须持有子宫才能执行此操作！")
-        }else if (stack.containsEnchantment(JREnchantments.ARTIFICIAL_ABORTION)){
-            return if (user == target) Text.of("§c你没有怀孕！") else Text.of("§c对方没有怀孕")
-        } else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)){
-            if (target.isOrchiectomy) return if (user == target) Text.of("§c你已经切除过了！") else Text.of("§c对方已经切除过了！")
-        }else if (stack.containsEnchantment(JREnchantments.AMPUTATING)){
-            if (target.isAmputated) return if (user == target) Text.of("§c你已经截肢过了！") else Text.of("§c对方已经截肢过了！")
+        if (target !is Pregnant && !stack.containsEnchantment(JREnchantments.BEHEADING)) return Text.of("§c只能对可进行此手术的玩家使用！")
+        if (target is Pregnant) {
+            if (stack.containsEnchantment(JREnchantments.HYSTERECTOMY)) {
+                if (target.isHysterectomy) return if (user == target) Text.of("§c你已经切除过了！") else Text.of("§c对方已经切除过了！")
+            } else if (stack.containsEnchantment(JREnchantments.UTERUS_INSTALLATION)) {
+                if (!target.isHysterectomy) return if (user == target) Text.of("§c你不需要安装子宫！") else Text.of("§c对方不需要安装子宫！")
+                // canApply已经检查过副手，这里为了更明确的消息再次检查
+                val offHandStack = user.getStackInHand(Hand.OFF_HAND) // 假设主手是手术刀
+                if (!offHandStack.isOf(JRItems.UTERUS)) return Text.of("§c你的副手必须持有子宫才能执行此操作！")
+            } else if (stack.containsEnchantment(JREnchantments.ARTIFICIAL_ABORTION)) {
+                return if (user == target) Text.of("§c你没有怀孕！") else Text.of("§c对方没有怀孕")
+            } else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)) {
+                if (target.isOrchiectomy) return if (user == target) Text.of("§c你已经切除过了！") else Text.of("§c对方已经切除过了！")
+            } else if (stack.containsEnchantment(JREnchantments.AMPUTATING)) {
+                if (target.isAmputated) return if (user == target) Text.of("§c你已经截肢过了！") else Text.of("§c对方已经截肢过了！")
+            }
         }
 
         return Text.of("§c不满足使用条件。") // 默认失败消息
@@ -96,7 +117,57 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
      * 执行核心效果：改变状态、造成伤害、应用效果等
      */
     override fun applyEffect(user: PlayerEntity, target: LivingEntity, stack: ItemStack, hand: Hand) {
-        // 目标必须是玩家才能设置isHysterectomy等属性
+        // 先处理斩首（该操作不需要 Pregnant）
+        if (stack.containsEnchantment(JREnchantments.BEHEADING)) {
+            // 仅对存活目标有效
+            if (target.isDead || !target.isAlive) return
+
+            // 如果是玩家：直接导致致命伤并决定掉落（50% 头颅 / 50% 骨头）
+            if (target is PlayerEntity) {
+                // 致命伤（使用足够大的伤害值）
+                target.damage(target.world.damageSources.generic(), 1000f)
+
+                // 50% 掉落玩家头颅，否则掉落骨头
+                if (target.random.nextBoolean()) {
+                    // 掉落玩家头颅
+                    val head = Items.PLAYER_HEAD.defaultStack
+                    head.set(DataComponentTypes.PROFILE, ProfileComponent(target.gameProfile))
+                    target.dropStack(head)
+                } else {
+                    target.dropStack(Items.BONE.defaultStack)
+                }
+            } else {
+                // 非玩家实体：尝试根据实体类型掉落对应头颅（如果存在）
+                when {
+                    target is WitherSkeletonEntity -> {
+                        target.dropStack(Items.WITHER_SKELETON_SKULL.defaultStack)
+                    }
+                    target is SkeletonEntity -> {
+                        // 这里排除了凋灵，因为凋灵优先匹配 WitherSkeletonEntity
+                        target.dropStack(Items.SKELETON_SKULL.defaultStack)
+                    }
+                    target is ZombieEntity -> {
+                        target.dropStack(Items.ZOMBIE_HEAD.defaultStack)
+                    }
+                    target is CreeperEntity -> {
+                        target.dropStack(Items.CREEPER_HEAD.defaultStack)
+                    }
+                    target is EnderDragonEntity -> {
+                        target.dropStack(Items.DRAGON_HEAD.defaultStack)
+                    }
+                    else -> {
+                        // 其他实体：没有对应头颅则不掉落（保持安全）
+                    }
+                }
+                // 对实体造成致命伤
+                target.damage(target.world.damageSources.generic(), 1000f)
+            }
+
+            consumeItem(user, target, stack, hand)
+            return
+        }
+
+        // 目标必须实现 Pregnant 接口
         if (target !is Pregnant) return
 
         // 通用效果：扣血和状态效果
@@ -201,6 +272,11 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
             return ActionMessages(
                 userSuccessMessage = if (isSelf) Text.of("§a你成功为自己进行了截肢！") else Text.of("§a已为对方进行截肢！"),
                 targetSuccessMessage = if (isSelf) null else Text.of("§c你被进行了截肢手术！")
+            )
+        } else if (stack.containsEnchantment(JREnchantments.BEHEADING)) {
+            return ActionMessages(
+                userSuccessMessage = if (isSelf) Text.of("§a你成功为自己进行了斩首（……）") else Text.of("§a已为对方进行了斩首！"),
+                targetSuccessMessage = if (isSelf) null else Text.of("§c你被斩首了！")
             )
         }
         // 不应该到达这里，但作为安全措施

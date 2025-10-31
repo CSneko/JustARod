@@ -50,6 +50,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     private int handcuffed = 0;
     @Unique
     private int shackled = 0;
+    @Unique
+    private int noMatingPlz = 0;
 
     @Unique
     private boolean male = false;
@@ -182,6 +184,16 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     @Override
     public int getShackled() {
         return shackled;
+    }
+
+    @Override
+    public void setNoMatingPlz(int noMatingPlz) {
+        this.noMatingPlz = noMatingPlz;
+    }
+
+    @Override
+    public int getNoMatingPlz() {
+        return noMatingPlz;
     }
 
     @Override
@@ -460,6 +472,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
             BDSMable.earplugTick(player);
             BDSMable.handcuffedTick(player);
             BDSMable.shackledTick(player);
+            BDSMable.noMatingPlzTick(player);
         }
     }
 

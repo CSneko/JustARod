@@ -174,8 +174,14 @@ public interface Pregnant{
     }
     default boolean canPregnant(){
         if (!isFemale()) return false;
+        boolean noMatingPlz = false;
+        if (this instanceof BDSMable bm){
+            if (bm.getNoMatingPlz() >0){
+                noMatingPlz = true;
+            }
+        }
         return getMenstruationCycle() == MenstruationCycle.OVULATION && !this.isPregnant() && !this.isSterilization() && !this.isHysterectomy() && !this.isPCOS()
-                && !(this.getBrithControlling() > 0 && ((Entity)this).getRandom().nextInt(10) != 0);
+                && !(this.getBrithControlling() > 0 && ((Entity)this).getRandom().nextInt(10) != 0) && !noMatingPlz;
     }
 
     default void writePregnantToNbt(NbtCompound nbt) {

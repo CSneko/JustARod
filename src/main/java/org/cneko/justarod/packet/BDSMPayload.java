@@ -8,7 +8,7 @@ import net.minecraft.util.Identifier;
 
 import static org.cneko.justarod.Justarod.MODID;
 
-public record BDSMPayload(String uuid, boolean ballMouth, boolean electricShock,boolean bundled,boolean eyePatch,boolean earplug,boolean handcuffed,boolean shackled) implements CustomPayload{
+public record BDSMPayload(String uuid, boolean ballMouth, boolean electricShock,boolean bundled,boolean eyePatch,boolean earplug,boolean handcuffed,boolean shackled,boolean noMatingPlz) implements CustomPayload{
     public static final CustomPayload.Id<BDSMPayload> ID = new CustomPayload.Id<>(Identifier.of(MODID, "bdsm"));
 
     public static final PacketCodec<RegistryByteBuf, BDSMPayload> CODEC = PacketCodec.of(
@@ -24,6 +24,7 @@ public record BDSMPayload(String uuid, boolean ballMouth, boolean electricShock,
                 flags |= (payload.earplug()       ? 1 : 0) << 4;
                 flags |= (payload.handcuffed()    ? 1 : 0) << 5;
                 flags |= (payload.shackled()      ? 1 : 0) << 6;
+                flags |= (payload.noMatingPlz()    ? 1 : 0) << 7;
 
                 buf.writeInt(flags);
             },
@@ -40,7 +41,8 @@ public record BDSMPayload(String uuid, boolean ballMouth, boolean electricShock,
                         (flags >> 3 & 1) == 1,
                         (flags >> 4 & 1) == 1,
                         (flags >> 5 & 1) == 1,
-                        (flags >> 6 & 1) == 1
+                        (flags >> 6 & 1) == 1,
+                        (flags >> 7 & 1) == 1
                 );
             }
     );

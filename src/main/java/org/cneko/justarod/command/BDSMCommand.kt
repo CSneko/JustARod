@@ -299,6 +299,49 @@ class BDSMCommand {
                             )
                         )
                     )
+                    .then(literal("noMatingPlz")
+                        .executes { context ->
+                            val entity = context.source.entity
+                            if (entity is BDSMable){
+                                entity.sendMessage(Text.of("§a禁交剩余时间：${entity.noMatingPlz / 20}秒~"))
+                            }
+                            return@executes 1
+                        }
+                        .then(argument("target", EntityArgumentType.entity())
+                            .executes { context ->
+                                val target = EntityArgumentType.getEntity(context, "target")
+                                if (target is BDSMable){
+                                    context.source.sendMessage(Text.of("§a对方禁交剩余时间：${target.noMatingPlz / 20}秒~"))
+                                }
+                                return@executes 1
+                            }
+                        )
+                        .then(literal("set")
+                            .then(argument("time", IntegerArgumentType.integer())
+                                .executes { context ->
+                                    val source = context.source.entity
+                                    if (source is BDSMable){
+                                        val time = IntegerArgumentType.getInteger(context, "time")
+                                        source.noMatingPlz = time
+                                        source.sendMessage(Text.of("§a已设置禁交时间：${time / 20}秒~"))
+                                    }
+                                    return@executes 1
+                                }
+                                .then(argument("target", EntityArgumentType.entity())
+                                    .executes { context ->
+                                        val target = EntityArgumentType.getEntity(context, "target")
+                                        if (target is BDSMable){
+                                            val time = IntegerArgumentType.getInteger(context, "time")
+                                            target.noMatingPlz = time
+                                            context.source.sendMessage(Text.of("§a已为目标设置禁交时间：${time / 20}秒~"))
+                                        }
+                                        return@executes 1
+                                    }
+                                )
+                            )
+                        )
+                    )
+
 
                 )
             }

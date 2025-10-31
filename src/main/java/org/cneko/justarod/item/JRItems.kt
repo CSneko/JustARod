@@ -86,6 +86,7 @@ class JRItems {
         val SHACKLES = ShacklesItem(Item.Settings())
         val HANDCUFFES_RING = Item(Item.Settings())
         val HANDCUFFES_CHAIN = Item(Item.Settings())
+        val NO_MATING_PLZ = NoMatingPlz(Item.Settings())
         val EXCREMENT = BoneMealItem(Item.Settings().food(FoodComponent.Builder().alwaysEdible().nutrition(1).statusEffect(
             StatusEffectInstance(StatusEffects.NAUSEA,200,0),1f).build()))
         val FEMALE_POTION = GenderChangePotionItem(Item.Settings(),GenderChangePotionItem.Gender.FEMALE)
@@ -149,6 +150,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "shackles"), SHACKLES)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "handcuffes_ring"), HANDCUFFES_RING)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "handcuffes_chain"), HANDCUFFES_CHAIN)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "no_mating_plz"), NO_MATING_PLZ)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "excrement"), EXCREMENT)
             Registry.register(Registries.ITEM, Identifier.of(MODID,"female_potion"),FEMALE_POTION)
             Registry.register(Registries.ITEM, Identifier.of(MODID,"male_potion"),MALE_POTION)
@@ -217,6 +219,7 @@ class JRItems {
                 entries.add(SHACKLES)
                 entries.add(HANDCUFFES_RING)
                 entries.add(HANDCUFFES_CHAIN)
+                entries.add(NO_MATING_PLZ)
                 entries.add(EXCREMENT)
                 entries.add(FEMALE_POTION)
                 entries.add(MALE_POTION)

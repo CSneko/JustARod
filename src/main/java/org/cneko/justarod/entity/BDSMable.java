@@ -86,6 +86,18 @@ public interface BDSMable {
         }
     }
 
+    default void setNoMatingPlz(int time){
+    }
+    default int getNoMatingPlz(){
+        return 0;
+    }
+    default void updateNoMatingPlz(){
+        if (getNoMatingPlz() > 1){
+            setNoMatingPlz(getNoMatingPlz()-1);
+        }
+    }
+
+
     default void writeBDSMToNbt(NbtCompound nbt){
         nbt.putInt("BallMouth", getBallMouth());
         nbt.putInt("ElectricShock", getElectricShock());
@@ -94,6 +106,7 @@ public interface BDSMable {
         nbt.putInt("Earplug", getEarplug());
         nbt.putInt("Handcuffed", getHandcuffed());
         nbt.putInt("Shackled", getShackled());
+        nbt.putInt("NoMatingPlz", getNoMatingPlz());
     }
 
     default void readBDSMFromNbt(NbtCompound nbt){
@@ -104,6 +117,7 @@ public interface BDSMable {
         setEarplug(nbt.getInt("Earplug"));
         setHandcuffed(nbt.getInt("Handcuffed"));
         setShackled(nbt.getInt("Shackled"));
+        setNoMatingPlz(nbt.getInt("NoMatingPlz"));
     }
 
     static <T extends LivingEntity & BDSMable> void ballMouthTick(T ballMouthable) {
@@ -284,6 +298,14 @@ public interface BDSMable {
                     )
             );
         }
+    }
+
+    static <T extends LivingEntity & BDSMable> void noMatingPlzTick(T noMatingPlzAble) {
+        noMatingPlzAble.updateNoMatingPlz();
+        if (noMatingPlzAble.getNoMatingPlz() == 1 && noMatingPlzAble.isSneaking()) {
+            noMatingPlzAble.setNoMatingPlz(0);
+        }
+
     }
 
 }

@@ -1,5 +1,7 @@
 package org.cneko.justarod.item.bdsm
 
+import net.minecraft.item.Item
+
 class BallMouthItem(settings: Settings) : AbstractBDSMItem(
     settings,
     { it.ballMouth },
@@ -55,4 +57,12 @@ class ShacklesItem(settings: Settings) : AbstractBDSMItem(
     { e, v -> e.shackled = v },
     "对方已经有脚镣了哦~",
     "成功插入脚镣~"
+)
+
+class NoMatingPlz(settings: Item.Settings): AbstractBDSMItem(
+    settings,
+    { it.noMatingPlz },
+    { e, v -> e.noMatingPlz = v },
+    "对方已经有繁殖锁定~",
+    "成功插入禁止繁殖锁定~"
 )

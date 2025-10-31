@@ -49,6 +49,7 @@ public class JRClientNetworkingEvents {
                 bdsmEntity.setEarplug(payload.earplug() ? 2 : 0);
                 bdsmEntity.setHandcuffed(payload.handcuffed() ? 2 : 0);
                 bdsmEntity.setShackled(payload.shackled() ? 2 : 0);
+                bdsmEntity.setNoMatingPlz(payload.noMatingPlz() ? 2 : 0);
             };
 
             if (player.getUuid().equals(uuid)) {

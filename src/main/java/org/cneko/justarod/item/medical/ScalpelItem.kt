@@ -70,10 +70,10 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
 
         // 根据附魔检查特定条件
         if (stack.containsEnchantment(JREnchantments.HYSTERECTOMY)) {
-            return !target.isHysterectomy && target.isFemale // 目标尚未切除子宫
+            return target.hasUterus() // 目标尚未切除子宫
         } else if (stack.containsEnchantment(JREnchantments.UTERUS_INSTALLATION)) {
             val offHandStack = user.getStackInHand(if (hand == Hand.MAIN_HAND) Hand.OFF_HAND else Hand.MAIN_HAND)
-            return target.isHysterectomy && offHandStack.isOf(JRItems.UTERUS) && target.isFemale // 目标需要安装，且使用者副手持有子宫
+            return !target.hasUterus() && offHandStack.isOf(JRItems.UTERUS) // 目标需要安装，且使用者副手持有子宫
         }else if (stack.containsEnchantment(JREnchantments.ARTIFICIAL_ABORTION)){
             return target.pregnant >0 && target.isFemale
         }else if (stack.containsEnchantment(JREnchantments.MASTECTOMY)) {
@@ -95,9 +95,9 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
         if (target !is Pregnant && !stack.containsEnchantment(JREnchantments.BEHEADING)) return Text.of("§c只能对可进行此手术的玩家使用！")
         if (target is Pregnant) {
             if (stack.containsEnchantment(JREnchantments.HYSTERECTOMY)) {
-                if (target.isHysterectomy) return if (user == target) Text.of("§c你已经切除过了！") else Text.of("§c对方已经切除过了！")
+                if (!target.hasUterus()) return if (user == target) Text.of("§c你已经切除过了！") else Text.of("§c对方已经切除过了！")
             } else if (stack.containsEnchantment(JREnchantments.UTERUS_INSTALLATION)) {
-                if (!target.isHysterectomy) return if (user == target) Text.of("§c你不需要安装子宫！") else Text.of("§c对方不需要安装子宫！")
+                if (target.hasUterus()) return if (user == target) Text.of("§c你不需要安装子宫！") else Text.of("§c对方不需要安装子宫！")
                 // canApply已经检查过副手，这里为了更明确的消息再次检查
                 val offHandStack = user.getStackInHand(Hand.OFF_HAND) // 假设主手是手术刀
                 if (!offHandStack.isOf(JRItems.UTERUS)) return Text.of("§c你的副手必须持有子宫才能执行此操作！")
@@ -178,11 +178,11 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
 
         // 根据附魔执行特定效果
         if (stack.containsEnchantment(JREnchantments.HYSTERECTOMY)) {
-            target.isHysterectomy = true
+            target.setHasUterus(false)
             // 在目标位置掉落子宫
             target.dropStack(ItemStack(JRItems.UTERUS))
         } else if (stack.containsEnchantment(JREnchantments.UTERUS_INSTALLATION)) {
-            target.isHysterectomy = false
+            target.setHasUterus(true)
             // 消耗副手的子宫
             val offHandStack = user.getStackInHand(if (hand == Hand.MAIN_HAND) Hand.OFF_HAND else Hand.MAIN_HAND)
             if (offHandStack.isOf(JRItems.UTERUS)) {

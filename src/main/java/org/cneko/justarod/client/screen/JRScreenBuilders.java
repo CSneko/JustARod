@@ -5,7 +5,10 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
+import org.cneko.justarod.effect.JREffects;
 import org.cneko.justarod.entity.LoliNekoEntity;
 import org.cneko.justarod.entity.Sexual;
 import org.cneko.justarod.packet.PassiveMatingPayload;
@@ -52,6 +55,9 @@ public class JRScreenBuilders {
     public static final class JRButtonFactories {
         public static final ButtonFactory SEEEEEX_NEKO_BREED_BUTTON = screen -> ButtonWidget.builder(Text.translatable("screen.toneko.seeeeeex_neko_entity_interactive.button.breed"), (btn) -> {
             if (screen.getNeko() instanceof Sexual) {
+                if (getInstance().player.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getKENJA_TIME_EFFECT()))){
+                    getInstance().player.sendMessage(Text.of("§c你现在还不想交配!"));
+                }
                 MinecraftClient.getInstance().setScreen(new InteractionScreen(Text.empty(), screen.getNeko(), screen.lastScreen, SEEEEEX_NEKO_BREED_SCREEN));
             }
         });

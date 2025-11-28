@@ -68,6 +68,16 @@ class JREffects {
             Identifier.of(MODID, "jump_nerf"),
             JumpNerfEffect()
         )
+        val KENJA_TIME_EFFECT: StatusEffect? = Registry.register(
+            Registries.STATUS_EFFECT,
+            Identifier.of(MODID, "kenja_time"),
+            KenjaTimeEffect()
+        )
+        val SMEARY_EFFECT: StatusEffect? = Registry.register(
+            Registries.STATUS_EFFECT,
+            Identifier.of(MODID, "smeary"),
+            SmearyEffect()
+        )
         fun init(){
         }
     }

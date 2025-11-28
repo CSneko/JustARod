@@ -7,6 +7,7 @@ import org.lwjgl.glfw.GLFW;
 
 public class JRKeyBindings {
     public static KeyBinding EXCREMENT_KEY = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.justarod.excrement", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_N, "key.justarod.category"));
+    public static KeyBinding URINATE_KEY = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.justarod.urinate", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_F9, "key.justarod.category"));
     public static void init(){
     }
 }

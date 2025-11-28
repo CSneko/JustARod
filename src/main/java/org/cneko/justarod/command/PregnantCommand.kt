@@ -460,11 +460,11 @@ class PregnantCommand {
                     )
                 )
 
-                dispatcher.register(literal("hysterectomy")
+                dispatcher.register(literal("uterus")
                     .executes {context ->
                         val source = context.source.entity
                         if (source is Pregnant){
-                            source.sendMessage(Text.of("§a子宫切除状态：${if (source.isHysterectomy) "§c已切除" else "§b未切除"}"))
+                            source.sendMessage(Text.of("§a子宫状态：${if (source.hasUterus()) "§b有" else "§c没有"}"))
                         }
                         return@executes 1
                     }
@@ -473,7 +473,7 @@ class PregnantCommand {
                             val source = context.source
                             val target = EntityArgumentType.getEntity(context, "target")
                             if (target is Pregnant){
-                                source.sendMessage(Text.of("§a子宫切除状态：${if (target.isHysterectomy) "§c已切除" else "§b未切除"}"))
+                                source.sendMessage(Text.of("§a子宫状态：${if (target.hasUterus()) "§b有" else "§c没有"}"))
                             }
                             return@executes 1
                         }
@@ -484,7 +484,7 @@ class PregnantCommand {
                             .executes {ctx ->
                                 val source = ctx.source.entity
                                 if (source is Pregnant) {
-                                    source.isHysterectomy = BoolArgumentType.getBool(ctx,"is")
+                                    source.setHasUterus(BoolArgumentType.getBool(ctx,"is"))
                                 }
                                 return@executes 1
                             }
@@ -492,7 +492,7 @@ class PregnantCommand {
                                 .executes {ctx ->
                                     val target = EntityArgumentType.getEntity(ctx, "target")
                                     if (target is Pregnant) {
-                                        target.isHysterectomy = BoolArgumentType.getBool(ctx,"is")
+                                        target.setHasUterus(BoolArgumentType.getBool(ctx,"is"))
                                     }
                                     return@executes 1
                                 }
@@ -754,6 +754,73 @@ class PregnantCommand {
                                     val target = EntityArgumentType.getEntity(ctx, "target")
                                     if (target is Pregnant) {
                                         target.excretion = IntegerArgumentType.getInteger(ctx,"time")
+                                    }
+                                    return@executes 1
+                                }
+                            )
+                        )
+                    )
+                )
+
+                dispatcher.register(literal("urination")
+                    .then(literal("release")
+                        .executes { context ->
+                            val source = context.source.entity
+                            if (source is Pregnant) {
+                                val uri = source.urination
+                                // 阈值设定：20 tick * 60 秒 * 10 分钟
+                                // 必须憋了一定程度才能排尿
+                                if (uri > 20 * 60 * 10) {
+                                    // 排尿通常是排空，所以这里直接设为 0
+                                    source.urination = 0
+
+                                    source.sendMessage(Text.of("你排尿了，感觉一身轻！"))
+
+                                } else {
+                                    source.sendMessage(Text.of("你目前无需排尿"))
+                                }
+                            }
+                            return@executes 1
+                        }
+                    )
+                    .executes { context ->
+                        // 查询自己的状态
+                        val source = context.source.entity
+                        if (source is Pregnant) {
+                            source.sendMessage(Text.of("当前憋尿时间：${source.urination / 20 / 60}分钟"))
+                        }
+                        return@executes 1
+                    }
+                    .then(argument("target", EntityArgumentType.entity())
+                        // 查询目标的状态
+                        .executes { context ->
+                            val source = context.source
+                            val target = EntityArgumentType.getEntity(context, "target")
+                            if (target is Pregnant) {
+                                source.sendMessage(Text.of("当前憋尿时间：${target.urination / 20 / 60}分钟"))
+                            }
+                            return@executes 1
+                        }
+                    )
+                    .then(literal("set")
+                        // 管理员设置数值
+                        .requires { source -> source.hasPermissionLevel(4) }
+                        .then(argument("time", IntegerArgumentType.integer(0, Int.MAX_VALUE))
+                            .executes { ctx ->
+                                val source = ctx.source.entity
+                                if (source is Pregnant) {
+                                    source.urination = IntegerArgumentType.getInteger(ctx, "time")
+                                    ctx.source.sendMessage(Text.of("已设置自身憋尿时间"))
+                                }
+                                return@executes 1
+                            }
+                            .then(argument("target", EntityArgumentType.entity())
+                                .executes { ctx ->
+                                    val target = EntityArgumentType.getEntity(ctx, "target")
+                                    val time = IntegerArgumentType.getInteger(ctx, "time")
+                                    if (target is Pregnant) {
+                                        target.urination = time
+                                        ctx.source.sendMessage(Text.of("已设置目标憋尿时间"))
                                     }
                                     return@executes 1
                                 }

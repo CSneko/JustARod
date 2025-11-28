@@ -42,7 +42,7 @@ public class RavennEntityMixin implements Pregnant {
     @Unique
     private boolean immune2HPV = false;
     @Unique
-    private boolean isHysterectomy = false;
+    private boolean hasUterus = false;
     @Unique
     private boolean isPCOS = false;
     @Unique
@@ -164,14 +164,13 @@ public class RavennEntityMixin implements Pregnant {
         this.immune2HPV = immune2HPV;
     }
 
-    @Override
-    public boolean isHysterectomy() {
-        return isHysterectomy;
+    public boolean hasUterus() {
+        return hasUterus;
     }
 
     @Override
-    public void setHysterectomy(boolean hysterectomy) {
-        isHysterectomy = hysterectomy;
+    public void setHasUterus(boolean hasUterus) {
+        this.hasUterus = hasUterus;
     }
 
     @Override

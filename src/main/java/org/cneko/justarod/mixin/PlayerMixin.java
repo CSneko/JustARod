@@ -82,7 +82,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     @Unique
     private boolean immune2HPV = false;
     @Unique
-    private boolean isHysterectomy = false;
+    private boolean hasUterus = false;
     @Unique
     private boolean isPCOS = false;
     @Unique
@@ -95,6 +95,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     private int syphilis = 0;
     @Unique
     private int excretion = 0;
+    @Unique
+    private int urination = 0;
     @Unique
     private boolean amputated = false;
 
@@ -326,14 +328,13 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
         this.immune2HPV = immune2HPV;
     }
 
-    @Override
-    public boolean isHysterectomy() {
-        return isHysterectomy;
+    public boolean hasUterus() {
+        return hasUterus;
     }
 
     @Override
-    public void setHysterectomy(boolean hysterectomy) {
-        isHysterectomy = hysterectomy;
+    public void setHasUterus(boolean hasUterus) {
+        this.hasUterus = hasUterus;
     }
 
     @Override
@@ -394,6 +395,16 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     @Override
     public int getExcretion() {
         return excretion;
+    }
+
+    @Override
+    public void setUrination(int urination) {
+        this.urination = urination;
+    }
+
+    @Override
+    public int getUrination() {
+        return urination;
     }
 
     @Override
@@ -464,6 +475,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
             Pregnant.breastCancerTick(player);
             Pregnant.syphilisTick(player);
             Pregnant.excretionTick(player);
+            Pregnant.urinationTick(player);
             Pregnant.amputatedTick(player);
             BDSMable.ballMouthTick(player);
             BDSMable.electricShockTick(player);

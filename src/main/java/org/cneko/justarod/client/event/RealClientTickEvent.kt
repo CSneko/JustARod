@@ -10,6 +10,9 @@ class RealClientTickEvent {
                 while (JRKeyBindings.EXCREMENT_KEY.wasPressed()){
                     client.player!!.networkHandler.sendCommand("excretion release")
                 }
+                while (JRKeyBindings.URINATE_KEY.wasPressed()){
+                    client.player!!.networkHandler.sendCommand("urination release")
+                }
             }
         }
     }

@@ -15,7 +15,6 @@ import net.minecraft.registry.Registries;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.PlainTextContent;
 import net.minecraft.text.Text;
-import net.minecraft.text.TextContent;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import org.cneko.justarod.effect.JREffects;
@@ -44,7 +43,6 @@ public interface Pregnant{
     }
 
     default void tryPregnant() {
-        if (!isFemale()) return;
         this.setPregnant(20*60*20*10);
         // 是否会葡萄胎
         if (((Entity)this).getRandom().nextFloat() < getHydatidiformMoleProbability()) {
@@ -75,7 +73,6 @@ public interface Pregnant{
     }
 
     default void updatePregnant() {
-        if (!isFemale()) return;
         if (getPregnant() > 0) {
             setPregnant(getPregnant() - 1);
             if (getPregnant() == 0 && !isEctopicPregnancy() && !isHydatidiformMole()) {
@@ -89,7 +86,6 @@ public interface Pregnant{
     }
 
     default void miscarry() {
-        if (!isFemale()) return;
         // 流产
         if (this instanceof LivingEntity pregnantEntity) {
             pregnantEntity.setHealth(pregnantEntity.getHealth()-10);
@@ -102,7 +98,6 @@ public interface Pregnant{
         makeBaby(false);
     }
     default void makeBaby(boolean pretermBirth) {
-        if (!isFemale()) return;
         for (int i = 0; i < getBabyCount(); i++) {
             Entity baby = createBaby();
             if (baby != null) {
@@ -173,14 +168,17 @@ public interface Pregnant{
         }
     }
     default boolean canPregnant(){
-        if (!isFemale()) return false;
         boolean noMatingPlz = false;
         if (this instanceof BDSMable bm){
             if (bm.getNoMatingPlz() >0){
                 noMatingPlz = true;
             }
         }
-        return getMenstruationCycle() == MenstruationCycle.OVULATION && !this.isPregnant() && !this.isSterilization() && !this.isHysterectomy() && !this.isPCOS()
+        boolean menstruationOk = isMale();
+        if (isFemale()){
+            menstruationOk = getMenstruationCycle() == MenstruationCycle.OVULATION;
+        }
+        return menstruationOk && !this.isPregnant() && !this.isSterilization() && this.hasUterus() && !this.isPCOS()
                 && !(this.getBrithControlling() > 0 && ((Entity)this).getRandom().nextInt(10) != 0) && !noMatingPlz;
     }
 
@@ -198,13 +196,14 @@ public interface Pregnant{
         nbt.putInt("BabyCount", getBabyCount());
         nbt.putInt("HPV", getHPV());
         nbt.putBoolean("Immune2HPV", isImmune2HPV());
-        nbt.putBoolean("Hysterectomy",isHysterectomy());
+        nbt.putBoolean("Uterus",hasUterus());
         nbt.putBoolean("PCOS",isPCOS());
         nbt.putInt("BrithControlling",getBrithControlling());
         nbt.putInt("OvarianCancer",getOvarianCancer());
         nbt.putInt("BreastCancer",getBreastCancer());
         nbt.putInt("Syphilis",getSyphilis());
         nbt.putInt("Excretion",getExcretion());
+        nbt.putInt("Urination",getUrination());
         nbt.putBoolean("Amputated",isAmputated());
         nbt.putBoolean("Orchiectomy",isOrchiectomy());
     }
@@ -248,8 +247,15 @@ public interface Pregnant{
         if (nbt.contains("Immune2HPV")){
             setImmune2HPV(nbt.getBoolean("Immune2HPV"));
         }
-        if (nbt.contains("Hysterectomy")){
-            setHysterectomy(nbt.getBoolean("Hysterectomy"));
+        if (nbt.contains("Uterus")){
+            setHasUterus(nbt.getBoolean("Uterus"));
+        }else {
+            if (this.isMale()){
+                setHasUterus(false);
+            }
+            if (this.isFemale()){
+                setHasUterus(true);
+            }
         }
         if (nbt.contains("PCOS")){
             setPCOS(nbt.getBoolean("PCOS"));
@@ -269,6 +275,9 @@ public interface Pregnant{
         if (nbt.contains("Excretion")){
             setExcretion(nbt.getInt("Excretion"));
         }
+        if (nbt.contains("Urination")){
+            setUrination(nbt.getInt("Urination"));
+        }
         if (nbt.contains("Amputated")){
             setAmputated(nbt.getBoolean("Amputated"));
         }
@@ -287,8 +296,8 @@ public interface Pregnant{
         return false;
     }
 
-    default void setHysterectomy(boolean hysterectomy){}
-    default boolean isHysterectomy(){
+    default void setHasUterus(boolean uterus){}
+    default boolean hasUterus(){
         return false;
     }
 
@@ -450,6 +459,16 @@ public interface Pregnant{
         }
     }
 
+    default void setUrination(int time){}
+    default int getUrination(){
+        return 0;
+    }
+    default void updateUrination() {
+        if (getUrination() > 0){
+            setUrination(getUrination()+1);
+        }
+    }
+
     default void setAmputated(boolean amputated){}
     default boolean isAmputated(){return false;}
 
@@ -457,9 +476,8 @@ public interface Pregnant{
 
 
     static <T extends LivingEntity&Pregnant> void pregnantTick(T pregnant) {
-        if (!pregnant.isFemale()) return;
         pregnant.updateBrithControlling();
-        if (pregnant.isHysterectomy()){
+        if (!pregnant.hasUterus()){
             // 清除怀孕效果（如果有的话）
             pregnant.setEctopicPregnancy(false);
             pregnant.setHydatidiformMole(false);
@@ -537,7 +555,7 @@ public interface Pregnant{
     }
     static <T extends LivingEntity&Pregnant> void menstruationTick(T pregnant) {
         if (!pregnant.isFemale()) return;
-        if (pregnant.isHysterectomy() || pregnant.isPCOS()){
+        if (!pregnant.hasUterus() || pregnant.isPCOS()){
             pregnant.setMenstruation(0);
             return;
         }
@@ -616,7 +634,7 @@ public interface Pregnant{
 
     static <T extends LivingEntity&Pregnant> void HPVTick(T pregnant) {
         if (!pregnant.isFemale()) return;
-        if (pregnant.isHysterectomy()){
+        if (!pregnant.hasUterus()){
             pregnant.setHPV(0);
             return;
         }
@@ -660,7 +678,7 @@ public interface Pregnant{
 
     static <T extends LivingEntity&Pregnant> void ovarianCancerTick(T pregnant){
         if (!pregnant.isFemale()) return;
-        if (pregnant.isHysterectomy()){
+        if (!pregnant.hasUterus()){
             pregnant.setOvarianCancer(0);
         }
         pregnant.updateOvarianCancer();
@@ -799,6 +817,77 @@ public interface Pregnant{
                 pregnant.dropItem(JRItems.Companion.getEXCREMENT());
                 // 减少时间
                 pregnant.setExcretion(pregnant.getExcretion() - 20*60*20);
+            }
+        }
+    }
+
+    static <T extends LivingEntity & Pregnant> void urinationTick(T pregnant) {
+        // 基础更新
+        pregnant.updateUrination();
+
+        // 4. 怀孕加速产生: 基础每tick+1，孕妇有50%几率额外+1，平均速率为1.5倍
+        if (pregnant.isPregnant() && pregnant.getRandom().nextBoolean()) {
+            pregnant.setUrination(pregnant.getUrination() + 1);
+        }
+
+        int urination = pregnant.getUrination();
+        int day = 20 * 60 * 20; // 1个Minecraft天
+
+        // 阶段 1: 轻微尿意 (0.5天) -> 提示
+        if (urination > day * 0.5) {
+            // 5. 需要提示
+            if (pregnant.getRandom().nextInt(300) == 0) {
+                pregnant.sendMessage(MutableText.of(new PlainTextContent.Literal("§e提示：按下"))
+                        .append(Text.keybind("key.justarod.urinate")) // 对应按键
+                        .append(Text.of("§e可以排尿哦！")));
+            }
+        }
+
+        // 阶段 2: 憋不住了 (0.8天) -> 负面效果: 缓慢 & 跳跃降低
+        if (urination > day * 0.8) {
+            // 缓慢 I
+            pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 10, 0, false, false, true));
+            // 2. 跳跃能力降低 (JUMP_NERF)
+            pregnant.addStatusEffect(new StatusEffectInstance(
+                    Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getJUMP_NERF_EFFECT()),
+                    20 * 10,
+                    0,
+                    false,
+                    false,
+                    true
+            ));
+        }
+
+        // 阶段 3: 极度憋尿 (1.2天) -> 负面效果: 强力缓慢 & 中毒
+        if (urination > day * 1.2) {
+            // 剧烈不适，加大缓慢等级
+            if (pregnant.getRandom().nextInt(50) == 0) {
+                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 20, 1));
+            }
+            // 2. 只有毒效果符合尿毒症/膀胱受损的设定
+            if (pregnant.getRandom().nextInt(200) == 0) {
+                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, 20 * 20, 0));
+            }
+        }
+
+        // 阶段 4: 失禁 (1.5天)
+        if (urination > day * 1.5) {
+            // 1/100 几率触发失禁判定
+            if (pregnant.getRandom().nextInt(100) == 0) {
+                pregnant.sendMessage(Text.of("§c你失禁了..."));
+
+                // 好脏♡
+                pregnant.addStatusEffect(new StatusEffectInstance(
+                        Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSMEARY_EFFECT()),
+                        20 * 60 * 5, // 5分钟
+                        0,
+                        false,
+                        false,
+                        true
+                ));
+
+                // 排空膀胱 (失禁后清零)
+                pregnant.setUrination(0);
             }
         }
     }

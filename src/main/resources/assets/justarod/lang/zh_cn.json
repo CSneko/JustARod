@@ -1,6 +1,7 @@
 {
   "key.justarod.category": "只是根棍子",
   "key.justarod.excrement": "排泄",
+  "key.justarod.unrination": "排尿",
   "entity.justarod.rod": "末地烛",
   "entity.justarod.seeeeeex_neko": "涩涩猫娘",
   "entity.justarod.seeeeeex_neko.des": "喜欢涩涩の猫娘",
@@ -119,6 +120,8 @@
   "effect.justarod.ovarian_cancer": "卵巢癌",
   "effect.justarod.syphilis": "梅毒",
   "effect.justarod.jump_nerf": "跳跃削弱",
+  "effect.justarod.kenja_time": "贤者时间",
+  "effect.justarod.smeary": "弄脏了",
   "attribute.name.player.lubricating": "润滑",
   "attribute.name.generic.max_power": "最大体力",
   "death.attack.sexual_excitement": "%s因为过度性奋而死",

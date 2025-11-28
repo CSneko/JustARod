@@ -43,7 +43,7 @@ public interface Pregnant{
     }
 
     default void tryPregnant() {
-        this.setPregnant(20*60*20*10);
+        this.setPregnant(20*60*20*5);
         // 是否会葡萄胎
         if (((Entity)this).getRandom().nextFloat() < getHydatidiformMoleProbability()) {
             this.setHydatidiformMole(true);

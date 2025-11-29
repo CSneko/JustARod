@@ -28,12 +28,47 @@ public class JRClientNetworkingEvents {
             getInstance().setScreen(new FrictionScreen());
         }));
         ClientPlayNetworking.registerGlobalReceiver(JRSyncPayload.ID, (payload, context) -> {
-            PlayerEntity player = getInstance().player;
-            player.setPower(payload.power());
-            player.setFemale(payload.isFemale());
-            player.setMale(payload.isMale());
-            player.setPregnant(payload.pregnant());
-            player.setSyphilis(payload.syphilis());
+            // 获取客户端实例，确保在主线程执行
+            context.client().execute(() -> {
+                var player = context.player();
+
+                if (player == null) return;
+
+                // --- 1. 基础数值直接同步 ---
+                player.setPower(payload.power());
+                player.setPregnant(payload.pregnant());
+                player.setMenstruation(payload.menstruation());
+                player.setMenstruationComfort(payload.menstruationComfort());
+                player.setBabyCount(payload.babyCount());
+                player.setExcretion(payload.excretion());
+                player.setUrination(payload.urination());
+                player.setSyphilis(payload.syphilis()); // 你现在的代码中 syphilis 是直接传 int 的
+
+                // --- 2. 复杂对象处理 ---
+                // Optional 解包：如果有值则设置，没有则设为 null
+                player.setChildrenType(payload.childrenType().orElse(null));
+
+                // --- 3. 纯 Boolean 状态同步 ---
+                player.setMale(payload.male());
+                player.setFemale(payload.female());
+                player.setSterilization(payload.sterilization());
+                player.setEctopicPregnancy(payload.ectopicPregnancy());
+                player.setHydatidiformMole(payload.hydatidiformMole());
+                player.setImmune2HPV(payload.immune2HPV());
+                player.setHasUterus(payload.hasUterus());
+                player.setPCOS(payload.isPCOS());
+                player.setAmputated(payload.amputated());
+                player.setOrchiectomy(payload.orchiectomy());
+
+                // --- 4. Boolean 转 Int (False->0, True->22) ---
+                // 针对 aids, hpv, birthControlling, ovarianCancer, breastCancer
+
+                player.setAids(payload.aids() ? 22 : 0);
+                player.setHPV(payload.hpv() ? 22 : 0);
+                player.setBrithControlling(payload.brithControlling() ? 22 : 0);
+                player.setOvarianCancer(payload.ovarianCancer() ? 22 : 0);
+                player.setBreastCancer(payload.breastCancer() ? 22 : 0);
+            });
         });
         ClientPlayNetworking.registerGlobalReceiver(BDSMPayload.ID, (payload, context) -> {
             UUID uuid = UUID.fromString(payload.uuid());

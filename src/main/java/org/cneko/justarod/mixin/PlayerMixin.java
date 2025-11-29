@@ -26,12 +26,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 import static org.cneko.justarod.JRAttributes.Companion;
 
 @SuppressWarnings({"AddedMixinMembersNamePattern", "DataFlowIssue"})
 @Mixin(PlayerEntity.class)
 public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
+
+    @Unique
+    private short slowTick = 10;
+
 
     @Unique
     private double power = 0;
@@ -59,8 +64,6 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     private boolean female = true;
     @Unique
     private int pregnant = 0;
-    @Unique
-    private short slowTick = 10;
     @Unique
     private EntityType<?> childrenType = null;
     @Unique
@@ -462,7 +465,33 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
         if (slowTick++ >= 10){
             if (player instanceof ServerPlayerEntity sp) {
                 // 同步power
-                ServerPlayNetworking.send(sp, new JRSyncPayload(getPower(),isFemale(),isMale(),getPregnant(),getSyphilis()));
+                ServerPlayNetworking.send(sp, new JRSyncPayload(
+                        power,
+                        pregnant,
+                        Optional.ofNullable(childrenType),
+                        menstruation,
+                        menstruationComfort,
+                        babyCount,
+                        excretion,
+                        urination,
+                        syphilis,
+                        // 下面是 boolean 区域
+                        male,
+                        female,
+                        sterilization,
+                        ectopicPregnancy,
+                        aids > 0,
+                        hydatidiformMole,
+                        hpv > 0,
+                        immune2HPV,
+                        hasUterus,
+                        isPCOS,
+                        brithControlling > 0,
+                        ovarianCancer > 0,
+                        breastCancer > 0,
+                        amputated,
+                        orchiectomy
+                ));
             }
         }
         if (player.getWorld() instanceof ServerWorld) {

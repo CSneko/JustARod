@@ -78,6 +78,11 @@ class JREffects {
             Identifier.of(MODID, "smeary"),
             SmearyEffect()
         )
+        val UTERINE_COLD_EFFECT: StatusEffect? = Registry.register(
+            Registries.STATUS_EFFECT,
+            Identifier.of(MODID, "uterine_cold"),
+            UterineColdEffect()
+        )
         fun init(){
         }
     }

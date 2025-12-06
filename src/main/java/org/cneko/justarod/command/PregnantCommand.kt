@@ -705,6 +705,53 @@ class PregnantCommand {
                     )
                 )
 
+                dispatcher.register(literal("uterine_cold")
+                    .executes { context ->
+                        val source = context.source.entity
+                        if (source is Pregnant){
+                            val value = source.uterineCold
+                            // 如果数值大于0显示红色，否则显示绿色，并显示具体数值
+                            source.sendMessage(Text.of("当前宫寒状态：${if (value > 0) "§c有寒气 (数值: $value)" else "§a健康"}"))
+                        }
+                        return@executes 1
+                    }
+                    .then(argument("target", EntityArgumentType.entity())
+                        .executes { context ->
+                            val source = context.source
+                            val target = EntityArgumentType.getEntity(context, "target")
+                            if (target is Pregnant){
+                                val value = target.uterineCold
+                                source.sendMessage(Text.of("目标宫寒状态：${if (value > 0) "§c有寒气 (数值: $value)" else "§a健康"}"))
+                            }
+                            return@executes 1
+                        }
+                    )
+                    .then(literal("set")
+                        .requires { source -> source.hasPermissionLevel(4) }
+                        .then(argument("value", IntegerArgumentType.integer(0, Int.MAX_VALUE))
+                            .executes {ctx ->
+                                val source = ctx.source.entity
+                                if (source is Pregnant) {
+                                    val value = IntegerArgumentType.getInteger(ctx, "value")
+                                    source.uterineCold = value
+                                }
+                                return@executes 1
+                            }
+                            .then(argument("target", EntityArgumentType.entity())
+                                .executes {ctx ->
+                                    val source = ctx.source
+                                    val target = EntityArgumentType.getEntity(ctx, "target")
+                                    if (target is Pregnant) {
+                                        val value = IntegerArgumentType.getInteger(ctx, "value")
+                                        target.uterineCold = value
+                                    }
+                                    return@executes 1
+                                }
+                            )
+                        )
+                    )
+                )
+
                 dispatcher.register(literal("excretion")
                     .then(literal("release")
                         .executes { context ->

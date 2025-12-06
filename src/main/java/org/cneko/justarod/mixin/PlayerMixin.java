@@ -101,6 +101,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     @Unique
     private int urination = 0;
     @Unique
+    private int uterineCold = 0;
+    @Unique
     private boolean amputated = false;
 
     @Unique
@@ -411,6 +413,16 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     }
 
     @Override
+    public void setUterineCold(int uterineCold) {
+        this.uterineCold = uterineCold;
+    }
+
+    @Override
+    public int getUterineCold() {
+        return uterineCold;
+    }
+
+    @Override
     public boolean isAmputated() {
         return amputated;
     }
@@ -505,6 +517,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
             Pregnant.syphilisTick(player);
             Pregnant.excretionTick(player);
             Pregnant.urinationTick(player);
+            Pregnant.uterineColdTick(player);
             Pregnant.amputatedTick(player);
             BDSMable.ballMouthTick(player);
             BDSMable.electricShockTick(player);

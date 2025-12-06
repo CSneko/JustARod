@@ -178,8 +178,12 @@ public interface Pregnant{
         if (isFemale()){
             menstruationOk = getMenstruationCycle() == MenstruationCycle.OVULATION;
         }
+
+        boolean isSevereUterineCold = getUterineCold() > 20 * 60 * 20 * 2; // 积累超过2天寒气视为严重
+
         return menstruationOk && !this.isPregnant() && !this.isSterilization() && this.hasUterus() && !this.isPCOS()
-                && !(this.getBrithControlling() > 0 && ((Entity)this).getRandom().nextInt(10) != 0) && !noMatingPlz;
+                && !(this.getBrithControlling() > 0 && ((Entity)this).getRandom().nextInt(10) != 0) && !noMatingPlz
+                && !isSevereUterineCold;
     }
 
     default void writePregnantToNbt(NbtCompound nbt) {
@@ -206,6 +210,7 @@ public interface Pregnant{
         nbt.putInt("Urination",getUrination());
         nbt.putBoolean("Amputated",isAmputated());
         nbt.putBoolean("Orchiectomy",isOrchiectomy());
+        nbt.putInt("UterineCold", getUterineCold());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         setFemale(nbt.getBoolean("Female"));
@@ -284,6 +289,9 @@ public interface Pregnant{
         if (nbt.contains("Orchiectomy")){
             setOrchiectomy(nbt.getBoolean("Orchiectomy"));
         }
+        if (nbt.contains("UterineCold")) {
+            setUterineCold(nbt.getInt("UterineCold"));
+        }
     }
 
     default Entity createBaby() {
@@ -313,6 +321,10 @@ public interface Pregnant{
             var luck = entity.getAttributeInstance(EntityAttributes.GENERIC_LUCK);
             if (luck != null){
                 probability -= (float) (luck.getValue() * 0.01f);
+            }
+
+            if (this.isUterineCold()) {
+                probability += 0.15f;
             }
         }
         if (this instanceof MobEntity mob){
@@ -440,6 +452,15 @@ public interface Pregnant{
         }
     }
 
+    default void setUterineCold(int value) {}
+    default int getUterineCold() {
+        return 0;
+    }
+    default boolean isUterineCold() {
+        return getUterineCold() > 20 * 60 * 10;
+    }
+
+
 
     //  --------------------- MALE --------------------------
     default void setOrchiectomy(boolean orchiectomy){}
@@ -471,6 +492,7 @@ public interface Pregnant{
 
     default void setAmputated(boolean amputated){}
     default boolean isAmputated(){return false;}
+
 
 
 
@@ -888,6 +910,95 @@ public interface Pregnant{
 
                 // 排空膀胱 (失禁后清零)
                 pregnant.setUrination(0);
+            }
+        }
+    }
+
+    static <T extends LivingEntity & Pregnant> void uterineColdTick(T entity) {
+        if (!entity.hasUterus()) {
+            entity.setUterineCold(0);
+            return;
+        }
+
+        int currentCold = entity.getUterineCold();
+        World world = entity.getWorld();
+        net.minecraft.util.math.BlockPos pos = entity.getBlockPos();
+
+        // 1. 寒气积累逻辑 (每 Tick 更新)
+        boolean isEnvironmentCold = false;
+
+        // 环境判断：寒冷群系 或 水中
+        if (world.getBiome(pos).value().isCold(pos) || entity.isSubmergedInWater()) {
+            isEnvironmentCold = true;
+            // 基础增加
+            if (entity.getRandom().nextInt(2) == 0) { // 减缓一下增长速度
+                currentCold++;
+            }
+        }
+
+        // 接触判断：脚下是冰、雪、雪块
+        net.minecraft.block.Block blockBelow = world.getBlockState(pos.down()).getBlock();
+        if (blockBelow == net.minecraft.block.Blocks.ICE ||
+                blockBelow == net.minecraft.block.Blocks.PACKED_ICE ||
+                blockBelow == net.minecraft.block.Blocks.BLUE_ICE ||
+                blockBelow == net.minecraft.block.Blocks.SNOW_BLOCK ||
+                blockBelow == net.minecraft.block.Blocks.SNOW ||
+                blockBelow == net.minecraft.block.Blocks.POWDER_SNOW) {
+            isEnvironmentCold = true;
+            currentCold += 2; // 接触寒冷源增加更快
+        }
+
+        // 2. 暖宫/恢复逻辑
+        // 搜索周围小范围是否有热源 (火、岩浆、营火)
+        boolean isWarm = false;
+        if (world.getStatesInBoxIfLoaded(entity.getBoundingBox().expand(2.0)).anyMatch(state ->
+                state.isOf(net.minecraft.block.Blocks.FIRE) ||
+                        state.isOf(net.minecraft.block.Blocks.SOUL_FIRE) ||
+                        state.isOf(net.minecraft.block.Blocks.LAVA) ||
+                        state.isOf(net.minecraft.block.Blocks.CAMPFIRE) ||
+                        state.isOf(net.minecraft.block.Blocks.SOUL_CAMPFIRE) ||
+                        state.isOf(net.minecraft.block.Blocks.MAGMA_BLOCK)
+        )) {
+            isWarm = true;
+            currentCold -= 5; // 恢复速度快于积累速度
+        }
+
+        // 自然代谢：如果环境不冷，身体会慢慢自我调节（很慢）
+        if (!isEnvironmentCold && !isWarm && currentCold > 0) {
+            if (entity.getRandom().nextInt(20) == 0) {
+                currentCold--;
+            }
+        }
+
+        // 限制范围
+        if (currentCold < 0) currentCold = 0;
+        // 限制最大值 (积累上限为5天)
+        if (currentCold > 20 * 60 * 20 * 5) currentCold = 20 * 60 * 20 * 5;
+
+        entity.setUterineCold(currentCold);
+
+        // 3. 状态效果逻辑
+        // 如果寒气值超过阈值（积累了1天），给予宫寒效果
+        if (entity.isUterineCold()) {
+            entity.addStatusEffect(new StatusEffectInstance(
+                    Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getUTERINE_COLD_EFFECT()),
+                    20 * 5, // 持续时间短，保持刷新
+                    0,
+                    false,
+                    false,
+                    true // 显示图标
+            ));
+
+            // 如果寒气非常严重（超过3天），加深效果等级
+            if (currentCold > 20 * 60 * 20 * 3) {
+                entity.addStatusEffect(new StatusEffectInstance(
+                        Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getUTERINE_COLD_EFFECT()),
+                        20 * 5,
+                        1,
+                        false,
+                        false,
+                        true
+                ));
             }
         }
     }

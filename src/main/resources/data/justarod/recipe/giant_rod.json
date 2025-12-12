@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "Q": {
+      "item": "minecraft:quartz_block"
+    },
+    "P": {
+      "item": "minecraft:purpur_block"
+    }
+  },
+  "pattern": [
+    " Q ",
+    " Q ",
+    "PPP"
+  ],
+  "result": {
+    "count": 1,
+    "id": "justarod:giant_rod"
+  }
+}

@@ -11,6 +11,7 @@ import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.minecraft.util.StringIdentifiable
 import org.cneko.justarod.Justarod.MODID
 import java.util.*
 
@@ -59,6 +60,11 @@ class JRComponents{
             Identifier.of(MODID, "collected_time"),
             ComponentType.builder<Int>().codec(Codec.INT).build()
         )
+        val PANTSU_STATE: ComponentType<PantsuState> = Registry.register(
+            Registries.DATA_COMPONENT_TYPE,
+            Identifier.of(MODID, "pantsu_state"),
+            ComponentType.builder<PantsuState>().codec(PantsuState.CODEC).build()
+        )
 
 
         // 实体NBT (用于复制生成幼崽的属性)
@@ -76,5 +82,20 @@ class JRComponents{
             return Registry.register(Registries.DATA_COMPONENT_TYPE, Identifier.of(MODID, id), type)
         }
 
+
+
+    }
+
+    enum class PantsuState(private val id: String, val translationKey: String) : StringIdentifiable {
+        CLEAN("clean", "tooltip.justarod.pantsu.clean"),
+        WET("wet", "tooltip.justarod.pantsu.wet"),          // 尿湿
+        SOILED("soiled", "tooltip.justarod.pantsu.soiled"), // 弄脏(大号)
+        BLOODY("bloody", "tooltip.justarod.pantsu.bloody"); // 血染(经期/其他)
+
+        override fun asString(): String = id
+
+        companion object {
+            val CODEC: Codec<PantsuState> = StringIdentifiable.createCodec { PantsuState.entries.toTypedArray() }
+        }
     }
 }

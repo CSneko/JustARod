@@ -30,6 +30,22 @@ class JRArmorMaterials {
             false
         )
 
+        val PANTSU_MATERIAL:RegistryEntry<ArmorMaterial> = register(
+            "pantsu",
+            mapOf(
+                ArmorItem.Type.BOOTS to 1,
+                ArmorItem.Type.LEGGINGS to 3,
+                ArmorItem.Type.CHESTPLATE to 2,
+                ArmorItem.Type.HELMET to 1
+            ),
+            15,
+            SoundEvents.ITEM_ARMOR_EQUIP_LEATHER,
+            {Ingredient.ofItems(Items.WHITE_WOOL)},
+            0f,
+            0f,
+            true
+        )
+
         fun register(
             id: String,
             defensePoints: Map<ArmorItem.Type?, Int?>?,

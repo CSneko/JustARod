@@ -6,6 +6,7 @@ import net.minecraft.component.type.FoodComponent
 import net.minecraft.entity.effect.StatusEffect
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
+import net.minecraft.item.ArmorItem
 import net.minecraft.item.BoneMealItem
 import net.minecraft.item.Item
 import net.minecraft.item.ItemGroup
@@ -20,11 +21,12 @@ import org.cneko.justarod.Justarod.MODID
 
 import org.cneko.justarod.block.JRBlocks.*
 import org.cneko.justarod.effect.JREffects
-import org.cneko.justarod.item.*
 import org.cneko.justarod.item.rod.*
 import org.cneko.justarod.item.armor.*
 import org.cneko.justarod.item.bdsm.*
 import org.cneko.justarod.item.bio.ClonerDevice
+import org.cneko.justarod.item.custom.PantsuItem
+import org.cneko.justarod.item.custom.PantsuGetterItem
 import org.cneko.justarod.item.electric.*
 import org.cneko.justarod.item.medical.*
 import org.cneko.justarod.item.syringe.*
@@ -94,6 +96,8 @@ class JRItems {
         val SPERM_RETRIEVAL_DEVICE = SpermRetrievalDeviceItem(5*60*20,Item.Settings())
         val FROZEN_SPERM_RETRIEVAL_DEVICE = FrozenSpermRetrievalDeviceItem(Item.Settings())
         val CLONER_DEVICE = ClonerDevice()
+        val PANTSU = PantsuItem(JRArmorMaterials.PANTSU_MATERIAL, ArmorItem.Type.LEGGINGS, Item.Settings().maxCount(1))
+        val PANTSU_GETTER = PantsuGetterItem(Item.Settings().maxCount(1))
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -157,6 +161,8 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "sperm_retrieval_device"), SPERM_RETRIEVAL_DEVICE)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "frozen_sperm_retrieval_device"), FROZEN_SPERM_RETRIEVAL_DEVICE)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "cloner_device"), CLONER_DEVICE)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "pantsu"), PANTSU)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "pantsu_getter"), PANTSU_GETTER)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
@@ -226,6 +232,8 @@ class JRItems {
                 entries.add(SPERM_RETRIEVAL_DEVICE)
                 entries.add(FROZEN_SPERM_RETRIEVAL_DEVICE)
                 entries.add(CLONER_DEVICE)
+                entries.add(PANTSU)
+                entries.add(PANTSU_GETTER)
             }
         }
     }

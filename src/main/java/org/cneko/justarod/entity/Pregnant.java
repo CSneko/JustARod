@@ -1,15 +1,13 @@
 package org.cneko.justarod.entity;
 
 import lombok.Getter;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityDimensions;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.MutableText;
@@ -18,7 +16,9 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import org.cneko.justarod.effect.JREffects;
+import org.cneko.justarod.item.JRComponents;
 import org.cneko.justarod.item.JRItems;
+import org.cneko.justarod.item.custom.PantsuItem;
 import org.cneko.toneko.common.mod.effects.ToNekoEffects;
 import org.cneko.toneko.common.mod.entities.INeko;
 
@@ -836,9 +836,22 @@ public interface Pregnant{
             }
             // 掉粑粑
             if (pregnant.getRandom().nextInt(200) == 0) {
-                pregnant.dropItem(JRItems.Companion.getEXCREMENT());
-                // 减少时间
-                pregnant.setExcretion(pregnant.getExcretion() - 20*60*20);
+                // 检查是否穿着胖次
+                ItemStack legStack = pregnant.getEquippedStack(EquipmentSlot.LEGS);
+                boolean hasPantsu = !legStack.isEmpty() && legStack.getItem() instanceof PantsuItem;
+
+                if (hasPantsu) {
+                    // 如果有胖次，不会掉落物品，而是弄脏胖次
+                    legStack.set(JRComponents.Companion.getPANTSU_STATE(), JRComponents.PantsuState.SOILED);
+
+                    pregnant.sendMessage(Text.of("§c糟糕，把胖次弄脏了..."));
+                    // 给予更严重的恶心/缓慢效果因为身上有脏东西
+                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 60, 2));
+                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 60, 2));
+                } else {
+                    // 没有胖次，正常掉落
+                    pregnant.dropItem(JRItems.Companion.getEXCREMENT());
+                }
             }
         }
     }
@@ -847,7 +860,7 @@ public interface Pregnant{
         // 基础更新
         pregnant.updateUrination();
 
-        // 4. 怀孕加速产生: 基础每tick+1，孕妇有50%几率额外+1，平均速率为1.5倍
+        // 怀孕加速产生: 基础每tick+1，孕妇有50%几率额外+1，平均速率为1.5倍
         if (pregnant.isPregnant() && pregnant.getRandom().nextBoolean()) {
             pregnant.setUrination(pregnant.getUrination() + 1);
         }
@@ -894,21 +907,26 @@ public interface Pregnant{
 
         // 阶段 4: 失禁 (1.5天)
         if (urination > day * 1.5) {
-            // 1/100 几率触发失禁判定
             if (pregnant.getRandom().nextInt(100) == 0) {
                 pregnant.sendMessage(Text.of("§c你失禁了..."));
 
-                // 好脏♡
+                // 检查胖次
+                ItemStack legStack = pregnant.getEquippedStack(EquipmentSlot.LEGS);
+                if (!legStack.isEmpty() && legStack.getItem() instanceof PantsuItem) {
+                    // 如果还没脏，就变成湿的；如果已经脏了，保持脏的状态（假设脏优先级更高）
+                    JRComponents.PantsuState currentState = legStack.get(JRComponents.Companion.getPANTSU_STATE());
+                    if (currentState == null || currentState == JRComponents.PantsuState.CLEAN) {
+                        legStack.set(JRComponents.Companion.getPANTSU_STATE(), JRComponents.PantsuState.WET);
+                        pregnant.sendMessage(Text.of("§c胖次湿透了..."));
+                    }
+                }
                 pregnant.addStatusEffect(new StatusEffectInstance(
                         Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSMEARY_EFFECT()),
-                        20 * 60 * 5, // 5分钟
-                        0,
-                        false,
-                        false,
-                        true
+                        20 * 60 * 5,
+                        0, false, false, true
                 ));
 
-                // 排空膀胱 (失禁后清零)
+                // 排空膀胱
                 pregnant.setUrination(0);
             }
         }
@@ -933,6 +951,16 @@ public interface Pregnant{
             // 基础增加
             if (entity.getRandom().nextInt(2) == 0) { // 减缓一下增长速度
                 currentCold++;
+            }
+        }
+        // 胖次保暖逻辑
+        if (isEnvironmentCold) {
+            ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
+            if (!legStack.isEmpty() && legStack.getItem() instanceof PantsuItem) {
+                // 如果穿着胖次，有几率抵消这次寒气增加
+                if (entity.getRandom().nextInt(4) != 0) {
+                    isEnvironmentCold = false; // 视为不冷
+                }
             }
         }
 

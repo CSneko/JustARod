@@ -1,21 +1,20 @@
 {
   "type": "minecraft:crafting_shaped",
-  "key":{
-    "I":{
-      "item":"minecraft:iron_nugget"
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
     },
-    "H":{
-      "item":"minecraft:heavy_weighted_pressure_plate"
+    "H": {
+      "item": "minecraft:heavy_weighted_pressure_plate"
     }
-    
   },
-  "pattern":[
+  "pattern": [
     "  H",
     " I ",
     "I  "
-    ],
-    "result":{
-      "count":1,
-      "id":"justarod:scalpel"
-    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "justarod:scalpel"
+  }
 }

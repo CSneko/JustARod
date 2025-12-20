@@ -958,6 +958,63 @@ class PregnantCommand {
                     )
                 )
 
+                dispatcher.register(literal("urethritis")
+                    .executes { context ->
+                        val source = context.source.entity
+                        if (source is Pregnant) {
+                            val time = source.urethritis
+                            if (time > 0) {
+                                source.sendMessage(Text.of("§a尿道炎状态：§c已感染 (严重程度/时长: $time)"))
+                            } else {
+                                source.sendMessage(Text.of("§a尿道炎状态：§b健康"))
+                            }
+                        }
+                        return@executes 1
+                    }
+                    .then(argument("target", EntityArgumentType.entity())
+                        .executes { context ->
+                            val source = context.source
+                            val target = EntityArgumentType.getEntity(context, "target")
+                            if (target is Pregnant) {
+                                val time = target.urethritis
+                                if (time > 0) {
+                                    source.sendMessage(Text.of("§a目标尿道炎状态：§c已感染 (严重程度/时长: $time)"))
+                                } else {
+                                    source.sendMessage(Text.of("§a目标尿道炎状态：§b健康"))
+                                }
+                            }
+                            return@executes 1
+                        }
+                    )
+                    .then(literal("set")
+                        .requires { source -> source.hasPermissionLevel(4) }
+                        .then(argument("time", IntegerArgumentType.integer(0)) // 这里使用整数，0代表治愈/无病，数值越大越严重
+                            .executes { ctx ->
+                                val source = ctx.source.entity
+                                val time = IntegerArgumentType.getInteger(ctx, "time")
+                                if (source is Pregnant) {
+                                    source.urethritis = time
+                                }
+                                return@executes 1
+                            }
+                            .then(argument("target", EntityArgumentType.entity())
+                                .executes { ctx ->
+                                    val source = ctx.source
+                                    val target = EntityArgumentType.getEntity(ctx, "target")
+                                    val time = IntegerArgumentType.getInteger(ctx, "time")
+                                    if (target is Pregnant) {
+                                        target.urethritis = time
+                                        source.sendMessage(Text.of("§a已设置目标的尿道炎数值为: $time"))
+                                    }
+                                    return@executes 1
+                                }
+                            )
+                        )
+                    )
+                )
+
+
+
             }
         }
     }

@@ -211,6 +211,7 @@ public interface Pregnant{
         nbt.putBoolean("Amputated",isAmputated());
         nbt.putBoolean("Orchiectomy",isOrchiectomy());
         nbt.putInt("UterineCold", getUterineCold());
+        nbt.putInt("Urethritis", getUrethritis());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         setFemale(nbt.getBoolean("Female"));
@@ -291,6 +292,9 @@ public interface Pregnant{
         }
         if (nbt.contains("UterineCold")) {
             setUterineCold(nbt.getInt("UterineCold"));
+        }
+        if (nbt.contains("Urethritis")){
+            setUrethritis(nbt.getInt("Urethritis"));
         }
     }
 
@@ -492,6 +496,17 @@ public interface Pregnant{
 
     default void setAmputated(boolean amputated){}
     default boolean isAmputated(){return false;}
+
+    // ----------------------------- URETHRITIS (尿道炎) -----------------------------
+    default void setUrethritis(int time){}
+    default int getUrethritis(){
+        return 0;
+    }
+    default void updateUrethritis() {
+        if (getUrethritis() > 0){
+            setUrethritis(getUrethritis()+1);
+        }
+    }
 
 
 
@@ -1027,6 +1042,101 @@ public interface Pregnant{
                         false,
                         true
                 ));
+            }
+        }
+    }
+
+    static <T extends LivingEntity & Pregnant> void urethritisTick(T entity) {
+        entity.updateUrethritis();
+        int time = entity.getUrethritis();
+
+        if (time <= 0) return;
+
+        // 阶段定义
+        int stage1 = 20 * 60 * 20 * 2; // 2天：潜伏期结束，开始有轻微症状
+        int stage2 = 20 * 60 * 20 * 5; // 5天：症状加重，开始有分泌物
+        int stage3 = 20 * 60 * 20 * 8; // 8天：严重感染，伴随疼痛
+
+        // --- 症状 1: 尿频/尿急 (加速 Urination 增长) ---
+        if (time > stage1) {
+            // 基础概率：每tick有 1/10 概率额外增加1点尿意值
+            // 这会让尿意积累速度变成原来的约 1.5 倍到 2 倍
+            if (entity.getRandom().nextInt(10) == 0) {
+                entity.setUrination(entity.getUrination() + 1);
+            }
+            entity.addStatusEffect(
+                    new StatusEffectInstance(
+                            Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getURETHRITIS_EFFECT()),
+                            time,
+                            0,
+                            false,
+                            false,
+                            true
+                    )
+            );
+        }
+
+        // --- 症状 2: 异常分泌物 (弄脏胖次 / 粘腻效果) ---
+        if (time > stage2) {
+            // 每 5~10 分钟一次判定
+            if (entity.getRandom().nextInt(20 * 10 * 5) == 0) {
+                ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
+                boolean hasPantsu = !legStack.isEmpty() && legStack.getItem() instanceof PantsuItem;
+
+                if (hasPantsu) {
+                    // 如果穿着胖次，直接弄脏（模拟脓性分泌物）
+                    JRComponents.PantsuState currentState = legStack.get(JRComponents.Companion.getPANTSU_STATE());
+                    // 只有当胖次是干净的时候才弄脏，避免覆盖更严重的脏污状态
+                    if (currentState == null || currentState == JRComponents.PantsuState.CLEAN) {
+                        legStack.set(JRComponents.Companion.getPANTSU_STATE(), JRComponents.PantsuState.SOILED);
+                    }
+                } else {
+                    // 没穿胖次，分泌物留在大腿上 -> 给予 SMEARY (粘腻) 效果
+                    entity.addStatusEffect(new StatusEffectInstance(
+                            Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSMEARY_EFFECT()),
+                            20 * 60 * 5, // 持续5分钟
+                            0, false, false, true
+                    ));
+                    entity.sendMessage(Text.of("§e流出了奇怪的脓液..."));
+                }
+            }
+        }
+
+        // --- 症状 3: 尿痛 (烧灼感) & 男性额外惩罚 ---
+        if (time > stage3) {
+            // 1. 尿痛：基于当前尿意值判定的疼痛
+            // 尿意越浓，炎症刺激越痛
+            if (entity.getUrination() > 20 * 60 * 10) { // 憋了一点尿的时候
+                if (entity.getRandom().nextInt(200) == 0) {
+                    entity.damage(entity.getDamageSources().magic(), 1.0f);
+                    // 偶尔伴随缓慢（痛得走不动）
+                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 5, 0));
+                }
+            }
+
+            // 2. 男性专属惩罚 (模拟上行感染导致的前列腺炎/附睾炎)
+            if (entity.isMale()) {
+                // 挖掘疲劳 (模拟腹股沟/腰部酸痛)
+                if (!entity.hasStatusEffect(StatusEffects.MINING_FATIGUE)) {
+                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20 * 20, 0, false, false, false));
+                }
+
+                // 虚弱 (由于剧烈疼痛和炎症发热)
+                if (entity.getRandom().nextInt(300) == 0) {
+                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 30, 0));
+                }
+
+                // 受到额外伤害 (男性尿道更长，炎症不仅痛苦且难以痊愈)
+                if (entity.getRandom().nextInt(100) == 0) {
+                    entity.damage(entity.getDamageSources().generic(), 1.0f);
+                }
+            }
+            if (entity.isFemale()){
+                // 女性虽然也有痛感，但通常比男性轻微一点点
+                // 仅仅是偶尔的刺痛
+                if (entity.getRandom().nextInt(300) == 0) {
+                    entity.damage(entity.getDamageSources().magic(), 0.5f);
+                }
             }
         }
     }

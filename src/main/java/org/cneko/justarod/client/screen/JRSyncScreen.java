@@ -100,8 +100,9 @@ public class JRSyncScreen extends Screen {
 
         // === 严重疾病 ===
         addEntry("艾滋病 (AIDS)", formatIntBool(player.getAids()));
+        addEntry("艾滋免疫", formatBool(player.isImmune2Aids()));
         addEntry("梅毒 (Syphilis)", formatIntBool(player.getSyphilis()));
-        addEntry("HPV 感染", formatIntBool(player.getHPV())); // 注意大小写匹配你的getter
+        addEntry("HPV 感染", formatIntBool(player.getHPV()));
         addEntry("HPV 免疫", formatBool(player.isImmune2HPV()));
         addEntry("卵巢癌", formatIntBool(player.getOvarianCancer()));
         addEntry("乳腺癌", formatIntBool(player.getBreastCancer()));

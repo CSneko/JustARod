@@ -77,6 +77,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     @Unique
     private int aids = 0;
     @Unique
+    private boolean immune2Aids = false;
+    @Unique
     private boolean hydatidiformMole = false;
     @Unique
     private int babyCount = 0;
@@ -297,6 +299,16 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     }
 
     @Override
+    public boolean isImmune2Aids() {
+        return immune2Aids;
+    }
+
+    @Override
+    public void setImmune2Aids(boolean immune2Aids) {
+        this.immune2Aids = immune2Aids;
+    }
+
+    @Override
     public boolean isHydatidiformMole() {
         return hydatidiformMole;
     }
@@ -506,6 +518,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
                         sterilization,
                         ectopicPregnancy,
                         aids > 0,
+                        immune2Aids,
                         hydatidiformMole,
                         hpv > 0,
                         immune2HPV,

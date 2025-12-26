@@ -28,6 +28,7 @@ public record JRSyncPayload(
         boolean sterilization,
         boolean ectopicPregnancy,
         boolean aids,
+        boolean immune2Aids,
         boolean hydatidiformMole,
         boolean hpv,
         boolean immune2HPV,
@@ -67,16 +68,17 @@ public record JRSyncPayload(
         if (this.sterilization)    flags |= (1 << 2);
         if (this.ectopicPregnancy) flags |= (1 << 3);
         if (this.aids)             flags |= (1 << 4);
-        if (this.hydatidiformMole) flags |= (1 << 5);
-        if (this.hpv)              flags |= (1 << 6);
-        if (this.immune2HPV)       flags |= (1 << 7);
-        if (this.hasUterus)        flags |= (1 << 8);
-        if (this.isPCOS)           flags |= (1 << 9);
-        if (this.brithControlling) flags |= (1 << 10);
-        if (this.ovarianCancer)    flags |= (1 << 11);
-        if (this.breastCancer)     flags |= (1 << 12);
-        if (this.amputated)        flags |= (1 << 13);
-        if (this.orchiectomy)      flags |= (1 << 14);
+        if (this.immune2Aids)      flags |= (1 << 5);
+        if (this.hydatidiformMole) flags |= (1 << 6);
+        if (this.hpv)              flags |= (1 << 7);
+        if (this.immune2HPV)       flags |= (1 << 8);
+        if (this.hasUterus)        flags |= (1 << 9);
+        if (this.isPCOS)           flags |= (1 << 10);
+        if (this.brithControlling) flags |= (1 << 11);
+        if (this.ovarianCancer)    flags |= (1 << 12);
+        if (this.breastCancer)     flags |= (1 << 13);
+        if (this.amputated)        flags |= (1 << 14);
+        if (this.orchiectomy)      flags |= (1 << 15);
 
         // 3. 写入这个携带了所有开关信息的整数
         buf.writeVarInt(flags);
@@ -106,16 +108,17 @@ public record JRSyncPayload(
                 (flags & (1 << 2)) != 0, // sterilization
                 (flags & (1 << 3)) != 0, // ectopicPregnancy
                 (flags & (1 << 4)) != 0, // aids
-                (flags & (1 << 5)) != 0, // hydatidiformMole
-                (flags & (1 << 6)) != 0, // hpv
-                (flags & (1 << 7)) != 0, // immune2HPV
-                (flags & (1 << 8)) != 0, // hasUterus
-                (flags & (1 << 9)) != 0, // isPCOS
-                (flags & (1 << 10)) != 0, // brithControlling
-                (flags & (1 << 11)) != 0, // ovarianCancer
-                (flags & (1 << 12)) != 0, // breastCancer
-                (flags & (1 << 13)) != 0, // amputated
-                (flags & (1 << 14)) != 0  // orchiectomy
+                (flags & (1 << 5)) != 0, // immune2Aids
+                (flags & (1 << 6)) != 0, // hydatidiformMole
+                (flags & (1 << 7)) != 0, // hpv
+                (flags & (1 << 8)) != 0, // immune2HPV
+                (flags & (1 << 9)) != 0, // hasUterus
+                (flags & (1 << 10)) != 0, // isPCOS
+                (flags & (1 << 11)) != 0, // brithControlling
+                (flags & (1 << 12)) != 0, // ovarianCancer
+                (flags & (1 << 13)) != 0, // breastCancer
+                (flags & (1 << 14)) != 0, // amputated
+                (flags & (1 << 15)) != 0  // orchiectomy
         );
     }
 

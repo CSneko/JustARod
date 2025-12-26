@@ -98,6 +98,7 @@ class JRItems {
         val CLONER_DEVICE = ClonerDevice()
         val PANTSU = PantsuItem(JRArmorMaterials.PANTSU_MATERIAL, ArmorItem.Type.LEGGINGS, Item.Settings().maxCount(1))
         val PANTSU_GETTER = PantsuGetterItem(Item.Settings().maxCount(1))
+        val AIDS_VACCINE = AidsVaccine(Item.Settings())
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -163,6 +164,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "cloner_device"), CLONER_DEVICE)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "pantsu"), PANTSU)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "pantsu_getter"), PANTSU_GETTER)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "aids_vaccine"), AIDS_VACCINE)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
@@ -234,6 +236,7 @@ class JRItems {
                 entries.add(CLONER_DEVICE)
                 entries.add(PANTSU)
                 entries.add(PANTSU_GETTER)
+                entries.add(AIDS_VACCINE)
             }
         }
     }

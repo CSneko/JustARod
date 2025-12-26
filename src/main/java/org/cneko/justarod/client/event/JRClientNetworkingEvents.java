@@ -54,6 +54,7 @@ public class JRClientNetworkingEvents {
                 player.setSterilization(payload.sterilization());
                 player.setEctopicPregnancy(payload.ectopicPregnancy());
                 player.setHydatidiformMole(payload.hydatidiformMole());
+                player.setImmune2Aids(payload.immune2Aids());
                 player.setImmune2HPV(payload.immune2HPV());
                 player.setHasUterus(payload.hasUterus());
                 player.setPCOS(payload.isPCOS());

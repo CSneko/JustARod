@@ -196,6 +196,7 @@ public interface Pregnant{
         nbt.putBoolean("Sterilization", isSterilization());
         nbt.putBoolean("EctopicPregnancy", isEctopicPregnancy());
         nbt.putInt("AIDS", getAids());
+        nbt.putBoolean("Immune2AIDS", isImmune2Aids());
         nbt.putBoolean("HydatidiformMole", isHydatidiformMole());
         nbt.putInt("BabyCount", getBabyCount());
         nbt.putInt("HPV", getHPV());
@@ -240,6 +241,9 @@ public interface Pregnant{
         }
         if (nbt.contains("AIDS")) {
             setAids(nbt.getInt("AIDS"));
+        }
+        if (nbt.contains("Immune2AIDS")){
+            setImmune2Aids(nbt.getBoolean("Immune2AIDS"));
         }
         if (nbt.contains("HydatidiformMole")) {
             setHydatidiformMole(nbt.getBoolean("HydatidiformMole"));
@@ -386,6 +390,11 @@ public interface Pregnant{
         if (getAids() > 0){
             setAids(getAids()+1);
         }
+    }
+    default void setImmune2Aids(boolean bl){
+    }
+    default boolean isImmune2Aids(){
+        return false;
     }
 
     default void setHydatidiformMole(boolean hydatidiformMole){}
@@ -641,6 +650,15 @@ public interface Pregnant{
     }
     
     static <T extends LivingEntity&Pregnant> void aidsTick(T pregnant) {
+        if (pregnant.isImmune2Aids()) {
+            // 如果免疫，且身上有AIDS计数，将其清零（治愈）
+            if (pregnant.getAids() > 0) {
+                pregnant.setAids(0);
+                // 顺便移除已有的药水效果
+                pregnant.removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getAIDS_EFFECT()));
+            }
+            return; // 直接返回，不执行后续 AIDS 逻辑
+        }
         pregnant.updateAids();
         int aids = pregnant.getAids();
         if (aids > 0){

@@ -376,6 +376,46 @@ class PregnantCommand {
                                 }
                             )
                         )
+                        .then(literal("immune")
+                            .executes { ctx ->
+                                val source = ctx.source.entity
+                                if (source is Pregnant) {
+                                    source.sendMessage(Text.of("当前AIDS免疫状态：${if (source.isImmune2Aids) "已免疫" else "没有免疫"}"))
+                                }
+                                return@executes 1
+                            }
+                            .then(argument("target", EntityArgumentType.entity())
+                                .executes { ctx ->
+                                    val source = ctx.source
+                                    val target = EntityArgumentType.getEntity(ctx, "target")
+                                    if (target is Pregnant) {
+                                        source.sendMessage(Text.of("当前AIDS免疫状态：${if (target.isImmune2Aids) "已免疫" else "没有免疫"}"))
+                                    }
+                                    return@executes 1
+                                }
+                            )
+                            .then(literal("set")
+                                .requires { source -> source.hasPermissionLevel(4) }
+                                .then(argument("is", BoolArgumentType.bool())
+                                    .executes {ctx ->
+                                        val source = ctx.source.entity
+                                        if (source is Pregnant) {
+                                            source.isImmune2Aids = BoolArgumentType.getBool(ctx,"is")
+                                        }
+                                        return@executes 1
+                                    }
+                                    .then(argument("target", EntityArgumentType.entity())
+                                        .executes {ctx ->
+                                            val target = EntityArgumentType.getEntity(ctx, "target")
+                                            if (target is Pregnant) {
+                                                target.isImmune2Aids = BoolArgumentType.getBool(ctx,"is")
+                                            }
+                                            return@executes 1
+                                        }
+                                    )
+                                )
+                            )
+                        )
                     )
                 )
 

@@ -106,6 +106,7 @@ public class JRSyncScreen extends Screen {
         addEntry("HPV 免疫", formatBool(player.isImmune2HPV()));
         addEntry("卵巢癌", formatIntBool(player.getOvarianCancer()));
         addEntry("乳腺癌", formatIntBool(player.getBreastCancer()));
+        addEntry("前列腺炎", formatIntBool(player.getProstatitis()));
 
         // === 身体状况 ===
         addEntry("截肢状态", formatBool(player.isAmputated()));

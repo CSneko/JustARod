@@ -88,6 +88,11 @@ class JREffects {
             Identifier.of(MODID, "urethritis"),
             UrethritisEffect()
         )
+        val PROSTATITIS_EFFECT: StatusEffect? = Registry.register(
+            Registries.STATUS_EFFECT,
+            Identifier.of(MODID, "prostatitis"),
+            ProstatitisEffect()
+        )
         fun init(){
         }
     }

@@ -213,6 +213,7 @@ public interface Pregnant{
         nbt.putBoolean("Orchiectomy",isOrchiectomy());
         nbt.putInt("UterineCold", getUterineCold());
         nbt.putInt("Urethritis", getUrethritis());
+        nbt.putInt("Prostatitis", getProstatitis());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         setFemale(nbt.getBoolean("Female"));
@@ -299,6 +300,9 @@ public interface Pregnant{
         }
         if (nbt.contains("Urethritis")){
             setUrethritis(nbt.getInt("Urethritis"));
+        }
+        if (nbt.contains("Prostatitis")){
+            setProstatitis(nbt.getInt("Prostatitis"));
         }
     }
 
@@ -479,6 +483,29 @@ public interface Pregnant{
     default void setOrchiectomy(boolean orchiectomy){}
     default boolean isOrchiectomy(){
         return false;
+    }
+
+    // ----------------------------- PROSTATITIS (前列腺炎) -----------------------------
+    default void setProstatitis(int time){}
+    default int getProstatitis(){
+        return 0;
+    }
+    default void updateProstatitis() {
+        if (getProstatitis() > 0){
+            setProstatitis(getProstatitis()+1);
+        }
+    }
+    default void cureProstatitis(int amount) {
+        int current = getProstatitis();
+        if (current > 0) {
+            int time = Math.max(0, current - amount);
+            setProstatitis(time);
+
+            if (time == 0 && this instanceof LivingEntity entity) {
+                entity.removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getPROSTATITIS_EFFECT()));
+                entity.sendMessage(Text.of("§a你的前列腺不再疼痛了。"));
+            }
+        }
     }
 
 
@@ -1067,7 +1094,6 @@ public interface Pregnant{
     static <T extends LivingEntity & Pregnant> void urethritisTick(T entity) {
         entity.updateUrethritis();
         int time = entity.getUrethritis();
-
         if (time <= 0) return;
 
         // 阶段定义
@@ -1132,16 +1158,14 @@ public interface Pregnant{
                 }
             }
 
-            // 2. 男性专属惩罚 (模拟上行感染导致的前列腺炎/附睾炎)
+            // 2. 男性专属惩罚
             if (entity.isMale()) {
-                // 挖掘疲劳 (模拟腹股沟/腰部酸痛)
-                if (!entity.hasStatusEffect(StatusEffects.MINING_FATIGUE)) {
-                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20 * 20, 0, false, false, false));
-                }
-
-                // 虚弱 (由于剧烈疼痛和炎症发热)
-                if (entity.getRandom().nextInt(300) == 0) {
-                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 30, 0));
+                if (entity.getProstatitis() == 0) {
+                    // 平均每分钟检测一次
+                    if (entity.getRandom().nextInt(1200) == 0) {
+                        entity.setProstatitis(1); // 激活前列腺炎
+                        entity.sendMessage(Text.of("§c你感觉会阴深处传来一阵坠胀感，炎症似乎蔓延了..."));
+                    }
                 }
 
                 // 受到额外伤害 (男性尿道更长，炎症不仅痛苦且难以痊愈)
@@ -1155,6 +1179,87 @@ public interface Pregnant{
                 if (entity.getRandom().nextInt(300) == 0) {
                     entity.damage(entity.getDamageSources().magic(), 0.5f);
                 }
+            }
+        }
+    }
+
+    static <T extends LivingEntity & Pregnant> void prostatitisTick(T entity) {
+        // 只有男性会得前列腺炎
+        if (!entity.isMale()) {
+            if (entity.getProstatitis() > 0) entity.setProstatitis(0);
+            return;
+        }
+
+        entity.updateProstatitis();
+        int time = entity.getProstatitis();
+
+        if (time <= 0) return;
+
+        entity.addStatusEffect(new StatusEffectInstance(
+                Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getPROSTATITIS_EFFECT()),
+                time,
+                0,
+                false,
+                false,
+                true
+        ));
+
+        // 物理治疗 (温水坐浴) ---
+        // 判定条件：身体在水中 (SubmergedInWater) 或者下半身在水中
+        if (entity.isSubmergedInWater() || entity.isTouchingWater()) {
+            // 加速恢复：每 tick 额外减少 5 点病程
+            // 正常情况下病程是增加的 (updateProstatitis)，这里减去更多就能实现“慢慢治愈”
+            entity.setProstatitis(Math.max(0, entity.getProstatitis() - 5));
+
+            // 给予舒适提示 (偶尔)
+            if (entity.getRandom().nextInt(600) == 0) {
+                entity.sendMessage(Text.of("§a温水缓解了你的下半身胀痛..."));
+            }
+            return;
+        }
+
+        // ---------------- 1. 尿频逻辑 (Urination Acceleration) ----------------
+        // 前列腺炎会导致尿意频繁
+        // 基础 tick 增加 1，这里额外增加
+        if (entity.getRandom().nextInt(3) == 0) {
+            // 约增加 33% 的尿意积累速度
+            entity.setUrination(entity.getUrination() + 1);
+        }
+
+        // ---------------- 2. 疼痛逻辑 (Pain) ----------------
+        // 只要膀胱里有尿，前列腺充血就会导致疼痛
+        // 即使尿意不高，也会有不适感
+        if (entity.getUrination() > 20 * 60 * 5) { // 稍微有一点尿意时
+            if (entity.getRandom().nextInt(400) == 0) { // 偶尔刺痛
+                entity.damage(entity.getDamageSources().magic(), 1.0f);
+                // 痛得缩了一下 (瞬间缓慢)
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 2, 1, false, false, false));
+            }
+        }
+
+        // ---------------- 3. Debuffs (挖掘疲劳 & 虚弱) ----------------
+        // 随着患病时间增加，症状加重
+
+        // 阶段 1: 早期 (1天后) - 出现腰酸背痛 (挖掘疲劳)
+        if (time > 20 * 60 * 20) {
+            // 持续给予挖掘疲劳 I
+            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20 * 20, 0, false, false, true));
+        }
+
+        // 阶段 2: 慢性期 (3天后) - 精神萎靡、身体虚弱 (虚弱)
+        if (time > 20 * 60 * 20 * 3) {
+            // 持续给予虚弱 I
+            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 20, 0, false, false, true));
+
+            // 加重挖掘疲劳到 II 级
+            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20 * 20, 1, false, false, true));
+        }
+
+        // 阶段 3: 长期未愈 (7天后) - 严重影响生活
+        if (time > 20 * 60 * 20 * 7) {
+            // 精神衰弱，偶尔反胃
+            if (entity.getRandom().nextInt(600) == 0) {
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 10, 0));
             }
         }
     }

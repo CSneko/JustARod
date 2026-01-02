@@ -42,7 +42,7 @@ public class JRClientNetworkingEvents {
                 player.setBabyCount(payload.babyCount());
                 player.setExcretion(payload.excretion());
                 player.setUrination(payload.urination());
-                player.setSyphilis(payload.syphilis()); // 你现在的代码中 syphilis 是直接传 int 的
+                player.setSyphilis(payload.syphilis());
 
                 // --- 2. 复杂对象处理 ---
                 // Optional 解包：如果有值则设置，没有则设为 null
@@ -69,6 +69,7 @@ public class JRClientNetworkingEvents {
                 player.setBrithControlling(payload.brithControlling() ? 22 : 0);
                 player.setOvarianCancer(payload.ovarianCancer() ? 22 : 0);
                 player.setBreastCancer(payload.breastCancer() ? 22 : 0);
+                player.setProstatitis(payload.prostatitis() ? 22 : 0);
             });
         });
         ClientPlayNetworking.registerGlobalReceiver(BDSMPayload.ID, (payload, context) -> {

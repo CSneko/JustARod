@@ -38,7 +38,8 @@ public record JRSyncPayload(
         boolean ovarianCancer,
         boolean breastCancer,
         boolean amputated,
-        boolean orchiectomy
+        boolean orchiectomy,
+        boolean prostatitis
 ) implements CustomPayload {
 
     public static final CustomPayload.Id<JRSyncPayload> ID = new CustomPayload.Id<>(Identifier.of(MODID, "sync"));
@@ -79,6 +80,7 @@ public record JRSyncPayload(
         if (this.breastCancer)     flags |= (1 << 13);
         if (this.amputated)        flags |= (1 << 14);
         if (this.orchiectomy)      flags |= (1 << 15);
+        if (this.prostatitis)      flags |= (1 << 16);
 
         // 3. 写入这个携带了所有开关信息的整数
         buf.writeVarInt(flags);
@@ -118,7 +120,8 @@ public record JRSyncPayload(
                 (flags & (1 << 12)) != 0, // ovarianCancer
                 (flags & (1 << 13)) != 0, // breastCancer
                 (flags & (1 << 14)) != 0, // amputated
-                (flags & (1 << 15)) != 0  // orchiectomy
+                (flags & (1 << 15)) != 0,  // orchiectomy
+                (flags & (1 << 16)) != 0 // prostatitis
         );
     }
 

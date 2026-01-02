@@ -7,6 +7,7 @@ import net.minecraft.sound.SoundEvent;
 import org.cneko.justarod.packet.BDSMPayload;
 import org.cneko.justarod.packet.MedicalPayload;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -20,14 +21,19 @@ public class ServerPlayerMixin {
         player.setImmune2HPV(oldPlayer.isImmune2HPV());
     }
 
+    @Unique
+    private int slowTick =0;
     @Inject(method = "tick",at = @At("HEAD"))
     public void tick(CallbackInfo ci) {
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-
-        player.getWorld().getEntitiesByClass(ServerPlayerEntity.class, player.getBoundingBox().expand(10), (e) -> true).forEach(e -> {
-            ServerPlayNetworking.send(e, new BDSMPayload(player.getUuidAsString(), player.getBallMouth() > 0, player.getElectricShock()>0,player.getBundled()>0,player.getEyePatch()>0,player.getEarplug()>0, player.getHandcuffed()>0, player.getShackled()>0,player.getNoMatingPlz()>0));
-        });
-        ServerPlayNetworking.send(player, new BDSMPayload(player.getUuidAsString(), player.getBallMouth() > 0, player.getElectricShock()>0,player.getBundled()>0, player.getEyePatch()>0, player.getEarplug()>0, player.getHandcuffed()>0, player.getShackled()>0,player.getNoMatingPlz()>0));
+        slowTick++;
+        if (slowTick >=10){
+            player.getWorld().getEntitiesByClass(ServerPlayerEntity.class, player.getBoundingBox().expand(10), (e) -> true).forEach(e -> {
+                ServerPlayNetworking.send(e, new BDSMPayload(player.getUuidAsString(), player.getBallMouth() > 0, player.getElectricShock() > 0, player.getBundled() > 0, player.getEyePatch() > 0, player.getEarplug() > 0, player.getHandcuffed() > 0, player.getShackled() > 0, player.getNoMatingPlz() > 0));
+            });
+            ServerPlayNetworking.send(player, new BDSMPayload(player.getUuidAsString(), player.getBallMouth() > 0, player.getElectricShock() > 0, player.getBundled() > 0, player.getEyePatch() > 0, player.getEarplug() > 0, player.getHandcuffed() > 0, player.getShackled() > 0, player.getNoMatingPlz() > 0));
+            slowTick = 0;
+        }
     }
 
 }

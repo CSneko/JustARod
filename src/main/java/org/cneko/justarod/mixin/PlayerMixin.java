@@ -107,6 +107,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     @Unique
     private int urethritis = 0;
     @Unique
+    private int prostatitis = 0;
+    @Unique
     private boolean amputated = false;
 
     @Unique
@@ -468,6 +470,16 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     }
 
     @Override
+    public int getProstatitis() {
+        return prostatitis;
+    }
+
+    @Override
+    public void setProstatitis(int prostatitis) {
+        this.prostatitis = prostatitis;
+    }
+
+    @Override
     public Entity createBaby() {
         PlayerEntity player = (PlayerEntity) (Object) this;
         var baby = (Entity) getChildrenType().create(player.getWorld());
@@ -500,6 +512,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     public void tick(CallbackInfo ci) {
         PlayerEntity player = (PlayerEntity) (Object) this;
         if (slowTick++ >= 10){
+            slowTick = 0;
             if (player instanceof ServerPlayerEntity sp) {
                 // 同步power
                 ServerPlayNetworking.send(sp, new JRSyncPayload(
@@ -528,7 +541,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
                         ovarianCancer > 0,
                         breastCancer > 0,
                         amputated,
-                        orchiectomy
+                        orchiectomy,
+                        prostatitis>0
                 ));
             }
         }
@@ -546,6 +560,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
             Pregnant.uterineColdTick(player);
             Pregnant.amputatedTick(player);
             Pregnant.urethritisTick(player);
+            Pregnant.prostatitisTick(player);
             BDSMable.ballMouthTick(player);
             BDSMable.electricShockTick(player);
             BDSMable.bundledTick(player);

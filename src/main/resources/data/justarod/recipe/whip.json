@@ -7,10 +7,10 @@
   ],
   "key": {
     "S": {
-      "item": "minecraft:string"
+      "item": "minecraft:chain"
     },
     "L": {
-      "item": "minecraft:leather"
+      "item": "minecraft:lightning_rod"
     }
   },
   "result": {

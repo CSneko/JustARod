@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "key":{
     "A":{
-      "item":"minecraft:nether_star"
+      "item":"justarod:hpv_vaccine"
     },
     "B":{
       "item":"justarod:golden_leaves"

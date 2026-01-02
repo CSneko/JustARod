@@ -2,16 +2,16 @@
   "type": "minecraft:crafting_shaped",
   "key":{
     "A":{
-      "item":"minecraft:nether_star"
+      "item":"justarod:aids_vaccine"
     },
     "B":{
       "item":"justarod:golden_leaves"
     },
     "C":{
-      "item":"minecraft:golden_carrot"
+      "item":"minecraft:golden_apple"
     },
     "D":{
-      "item":"minecraft:poisonous_potato"
+      "item":"minecraft:pufferfish"
     },
     "E":{
       "item":"minecraft:glass"
@@ -24,6 +24,6 @@
     ],
     "result":{
       "count":2,
-      "id":"justarod:hpv_vaccine"
+      "id":"justarod:aids_vaccine"
     }
 }

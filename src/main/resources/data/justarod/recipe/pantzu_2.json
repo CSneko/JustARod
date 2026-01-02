@@ -8,7 +8,7 @@
       "item": "minecraft:white_carpet"
     },
     "S": {
-      "tag": "minecraft:string"
+      "item": "minecraft:string"
     }
   },
   "pattern": [

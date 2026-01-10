@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "C": {
+      "item": "minecraft:chain"
+    },
+    "B": {
+      "item": "minecraft:iron_bars"
+    }
+  },
+  "pattern": [
+    "ICI",
+    "I I",
+    "CBC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "justarod:no_mating_plz"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "S": {
+      "item": "minecraft:prismarine_shard"
+    },
+    "E": {
+      "item": "minecraft:egg"
+    },
+    "P": {
+      "item": "minecraft:dragon_breath"
+    },
+    "C": {
+      "item": "minecraft:cod"
+    },
+    "G": {
+      "item": "justarod:golden_leaves"
+    }
+  },
+  "pattern": [
+    "GSG",
+    "EPE",
+    "GCG"
+  ],
+  "result": {
+    "count": 1,
+    "id": "justarod:male_potion"
+  }
+}

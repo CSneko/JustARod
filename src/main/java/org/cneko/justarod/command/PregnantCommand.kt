@@ -800,6 +800,7 @@ class PregnantCommand {
                                 val exc = source.excretion
                                 if (exc > 20*60*10){
                                     source.excretion -= 20*60*10
+                                    source.doDefecationPain()
                                     source.sendMessage(Text.of("你排泄了"))
                                     source.dropStack(JRItems.EXCREMENT.defaultStack)
                                 }else{
@@ -1100,6 +1101,67 @@ class PregnantCommand {
                                     if (target is Pregnant) {
                                         target.prostatitis = time
                                         source.sendMessage(Text.of("§a已设置目标的前列腺炎数值为: $time"))
+                                    }
+                                    return@executes 1
+                                }
+                            )
+                        )
+                    )
+                )
+
+                dispatcher.register(literal("hemorrhoids")
+                    .executes { context ->
+                        val source = context.source.entity
+                        if (source is Pregnant) {
+                            val time = source.hemorrhoids
+                            if (time > 0) {
+                                // 简单的状态描述
+                                val status = when {
+                                    time < 20 * 60 * 20 * 3 -> "轻度"
+                                    time < 20 * 60 * 20 * 5 -> "中度 (不适)"
+                                    else -> "重度 (出血/剧痛)"
+                                }
+                                source.sendMessage(Text.of("§a痔疮状态：§c已患病 [$status] (严重程度/时长: $time)"))
+                            } else {
+                                source.sendMessage(Text.of("§a痔疮状态：§b健康"))
+                            }
+                        }
+                        return@executes 1
+                    }
+                    .then(argument("target", EntityArgumentType.entity())
+                        .executes { context ->
+                            val source = context.source
+                            val target = EntityArgumentType.getEntity(context, "target")
+                            if (target is Pregnant) {
+                                val time = target.hemorrhoids
+                                if (time > 0) {
+                                    source.sendMessage(Text.of("§a目标痔疮状态：§c已患病 (严重程度/时长: $time)"))
+                                } else {
+                                    source.sendMessage(Text.of("§a目标痔疮状态：§b健康"))
+                                }
+                            }
+                            return@executes 1
+                        }
+                    )
+                    .then(literal("set")
+                        .requires { source -> source.hasPermissionLevel(4) }
+                        .then(argument("time", IntegerArgumentType.integer(0)) // 0代表康复，数值越大越严重
+                            .executes { ctx ->
+                                val source = ctx.source.entity
+                                val time = IntegerArgumentType.getInteger(ctx, "time")
+                                if (source is Pregnant) {
+                                    source.hemorrhoids = time
+                                }
+                                return@executes 1
+                            }
+                            .then(argument("target", EntityArgumentType.entity())
+                                .executes { ctx ->
+                                    val source = ctx.source
+                                    val target = EntityArgumentType.getEntity(ctx, "target")
+                                    val time = IntegerArgumentType.getInteger(ctx, "time")
+                                    if (target is Pregnant) {
+                                        target.hemorrhoids = time
+                                        source.sendMessage(Text.of("§a已设置目标的痔疮数值为: $time"))
                                     }
                                     return@executes 1
                                 }

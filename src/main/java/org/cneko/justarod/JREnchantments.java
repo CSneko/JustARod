@@ -4,6 +4,7 @@ import net.minecraft.enchantment.Enchantment;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.NotNull;
 
 import static org.cneko.justarod.Justarod.MODID;
 
@@ -24,6 +25,8 @@ public class JREnchantments {
     public static final RegistryKey<Enchantment> PRECISION = of(PRECISION_ID);
     public static final Identifier BEHEADING_ID = Identifier.of(MODID,"beheading");
     public static final RegistryKey<Enchantment> BEHEADING = of(BEHEADING_ID);
+    public static final Identifier HEMORRHOIDECTOMY_ID = Identifier.of(MODID,"hemorrhoidectomy");
+    public static final RegistryKey<Enchantment> HEMORRHOIDECTOMY = of(HEMORRHOIDECTOMY_ID);
 
     public static RegistryKey<Enchantment> of(Identifier id) {
         return RegistryKey.of(RegistryKeys.ENCHANTMENT, id);

@@ -214,6 +214,7 @@ public interface Pregnant{
         nbt.putInt("UterineCold", getUterineCold());
         nbt.putInt("Urethritis", getUrethritis());
         nbt.putInt("Prostatitis", getProstatitis());
+        nbt.putInt("Hemorrhoids", getHemorrhoids());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         setFemale(nbt.getBoolean("Female"));
@@ -303,6 +304,9 @@ public interface Pregnant{
         }
         if (nbt.contains("Prostatitis")){
             setProstatitis(nbt.getInt("Prostatitis"));
+        }
+        if (nbt.contains("Hemorrhoids")) {
+            setHemorrhoids(nbt.getInt("Hemorrhoids"));
         }
     }
 
@@ -541,6 +545,24 @@ public interface Pregnant{
     default void updateUrethritis() {
         if (getUrethritis() > 0){
             setUrethritis(getUrethritis()+1);
+        }
+    }
+
+    // ----------------------------- HEMORRHOIDS (痔疮) -----------------------------
+    default void setHemorrhoids(int time){}
+    default int getHemorrhoids(){
+        return 0;
+    }
+
+    // 手动排便时调用此方法检测是否疼痛
+    default void doDefecationPain() {
+        if (this instanceof LivingEntity entity && getHemorrhoids() > 20 * 60 * 20 * 2) { // 严重程度超过2天
+            entity.damage(entity.getDamageSources().generic(), 2.0f);
+            entity.sendMessage(Text.of("§c肛门像撕裂一样疼痛..."));
+            // 严重的会有流血效果（缓慢+虚弱）
+            if (getHemorrhoids() > 20 * 60 * 20 * 5) {
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 10, 0));
+            }
         }
     }
 
@@ -896,6 +918,7 @@ public interface Pregnant{
             }
             // 掉粑粑
             if (pregnant.getRandom().nextInt(200) == 0) {
+                pregnant.doDefecationPain();
                 // 检查是否穿着胖次
                 ItemStack legStack = pregnant.getEquippedStack(EquipmentSlot.LEGS);
                 boolean hasPantsu = !legStack.isEmpty() && legStack.getItem() instanceof PantsuItem;
@@ -1260,6 +1283,85 @@ public interface Pregnant{
             // 精神衰弱，偶尔反胃
             if (entity.getRandom().nextInt(600) == 0) {
                 entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 10, 0));
+            }
+        }
+    }
+
+    static <T extends LivingEntity & Pregnant> void hemorrhoidsTick(T entity) {
+        int current = entity.getHemorrhoids();
+        boolean isSitting = entity.hasVehicle(); // 检查是否坐在载具上（矿车、船、椅子模组等）
+
+        // 1. 诱因机制：久坐 & 高排便值 & 怀孕压迫
+        int increaseRate = 0;
+
+        // 如果正在坐着，必然增加进度
+        if (isSitting) {
+            increaseRate += 1;
+        }
+
+        // 如果便意很浓 (超过1天)，增加患病风险
+        if (entity.getExcretion() > 20 * 60 * 20) {
+            // 1/10 概率增加（模拟便秘压力）
+            if (entity.getRandom().nextInt(10) == 0) increaseRate += 1;
+        }
+
+        // 怀孕压迫：如果是孕晚期
+        if (entity.isPregnant() && entity.getPregnant() < 20 * 60 * 20 * 2) {
+            if (entity.getRandom().nextInt(5) == 0) increaseRate += 1;
+        }
+
+        // 只有在有诱因时才增加，否则缓慢自然恢复（极慢）
+        if (increaseRate > 0) {
+            entity.setHemorrhoids(current + increaseRate);
+        } else if (current > 0) {
+            // 没有诱因时，非常缓慢的自愈 (每秒减1tick，几乎不可自愈，必须手术)
+            if (entity.getRandom().nextInt(20) == 0) {
+                entity.setHemorrhoids(current - 1);
+            }
+        }
+
+        // 更新当前值用于症状判断
+        current = entity.getHemorrhoids();
+        if (current <= 0) return;
+
+        // 2. 症状机制
+
+        // 阶段 A: 轻微 (积累 > 1天)
+        // 没什么明显症状，偶尔瘙痒
+        if (current > 20 * 60 * 20 && current < 20 * 60 * 20 * 3) {
+            if (entity.getRandom().nextInt(2400*5) == 0) { // 约10分钟一次
+                entity.sendMessage(Text.of("§7感觉后面有些瘙痒..."));
+            }
+        }
+
+        // 阶段 B: 严重 (积累 > 3天) - 坐姿不适
+        if (current >= 20 * 60 * 20 * 3) {
+            // 如果坐着，持续不适
+            if (isSitting) {
+                // 每60秒一次刺痛
+                if (entity.getRandom().nextInt(1200) == 0) {
+                    entity.damage(entity.getDamageSources().generic(), 1.0f);
+                    entity.sendMessage(Text.of("§c坐得太久了，下面好痛！"));
+                    // 站起来的冲动（给予反胃）
+                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 10, 0));
+                }
+            }
+        }
+
+        // 阶段 C: 极度严重 (积累 > 5天) - 出血 & 持续痛苦
+        if (current >= 20 * 60 * 20 * 5) {
+            // 偶尔弄脏胖次 (出血)
+            if (entity.getRandom().nextInt(3000) == 0) { // 约2.5分钟
+                ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
+                if (!legStack.isEmpty() && legStack.getItem() instanceof PantsuItem) {
+                    // 弄脏胖次
+                    legStack.set(JRComponents.Companion.getPANTSU_STATE(), JRComponents.PantsuState.SOILED);
+                    entity.sendMessage(Text.of("§c糟糕，痔疮破裂出血弄脏了胖次..."));
+                } else {
+                    entity.sendMessage(Text.of("§c感觉后面流血了..."));
+                }
+                // 虚弱效果
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 30, 0));
             }
         }
     }

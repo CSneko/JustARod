@@ -109,6 +109,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     @Unique
     private int prostatitis = 0;
     @Unique
+    private int hemorrhoids = 0;
+    @Unique
     private boolean amputated = false;
 
     @Unique
@@ -480,6 +482,16 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     }
 
     @Override
+    public int getHemorrhoids() {
+        return hemorrhoids;
+    }
+
+    @Override
+    public void setHemorrhoids(int hemorrhoids) {
+        this.hemorrhoids = hemorrhoids;
+    }
+
+    @Override
     public Entity createBaby() {
         PlayerEntity player = (PlayerEntity) (Object) this;
         var baby = (Entity) getChildrenType().create(player.getWorld());
@@ -561,6 +573,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
             Pregnant.amputatedTick(player);
             Pregnant.urethritisTick(player);
             Pregnant.prostatitisTick(player);
+            Pregnant.hemorrhoidsTick(player);
             BDSMable.ballMouthTick(player);
             BDSMable.electricShockTick(player);
             BDSMable.bundledTick(player);

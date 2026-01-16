@@ -27,6 +27,8 @@ public class JREnchantments {
     public static final RegistryKey<Enchantment> BEHEADING = of(BEHEADING_ID);
     public static final Identifier HEMORRHOIDECTOMY_ID = Identifier.of(MODID,"hemorrhoidectomy");
     public static final RegistryKey<Enchantment> HEMORRHOIDECTOMY = of(HEMORRHOIDECTOMY_ID);
+    public static final Identifier MEIOSIS_ID = Identifier.of(MODID,"meiosis");
+    public static final RegistryKey<Enchantment> MEIOSIS = of(MEIOSIS_ID);
 
     public static RegistryKey<Enchantment> of(Identifier id) {
         return RegistryKey.of(RegistryKeys.ENCHANTMENT, id);

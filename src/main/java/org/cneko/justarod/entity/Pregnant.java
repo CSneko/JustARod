@@ -2,6 +2,7 @@ package org.cneko.justarod.entity;
 
 import lombok.Getter;
 import net.minecraft.entity.*;
+import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -10,6 +11,7 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.PlainTextContent;
 import net.minecraft.text.Text;
@@ -22,9 +24,7 @@ import org.cneko.justarod.item.custom.PantsuItem;
 import org.cneko.toneko.common.mod.effects.ToNekoEffects;
 import org.cneko.toneko.common.mod.entities.INeko;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public interface Pregnant{
     List<UUID> FOREVER_BABY = new ArrayList<>();
@@ -101,6 +101,33 @@ public interface Pregnant{
         for (int i = 0; i < getBabyCount(); i++) {
             Entity baby = createBaby();
             if (baby != null) {
+                if (baby instanceof LivingEntity babyLiving && getParthenogenesisVariance() > 0) {
+                    float variance = getParthenogenesisVariance();
+                    List<RegistryEntry<EntityAttribute>> attributes = new ArrayList<>();
+
+                    // 始终可选的其他属性
+                    attributes.add(EntityAttributes.GENERIC_ATTACK_DAMAGE);
+                    attributes.add(EntityAttributes.GENERIC_MOVEMENT_SPEED);
+                    attributes.add(EntityAttributes.GENERIC_SCALE);
+
+                    // 随机决定额外选择几个属性（0~3个），总变异数为 1~4（因为生命值必选）
+                    Random random = new Random();
+                    int extraCount = random.nextInt(4); // 0, 1, 2, or 3
+
+                    // 打乱并选取 extraCount 个其他属性
+                    Collections.shuffle(attributes, random);
+                    List<RegistryEntry<EntityAttribute>> selected = new ArrayList<>();
+                    selected.add(EntityAttributes.GENERIC_MAX_HEALTH); // 必选
+                    selected.addAll(attributes.subList(0, extraCount));
+
+                    // 应用变异
+                    for (RegistryEntry<EntityAttribute> attr : selected) {
+                        applyAttributeVariance(babyLiving, attr, variance);
+                    }
+
+                    // 变异后回满血（因为最大生命值可能已变）
+                    babyLiving.setHealth(babyLiving.getMaxHealth());
+                }
                 // 产仔
                 baby.getWorld().spawnEntity(baby);
                 if (baby instanceof LivingEntity b && pretermBirth){
@@ -215,6 +242,7 @@ public interface Pregnant{
         nbt.putInt("Urethritis", getUrethritis());
         nbt.putInt("Prostatitis", getProstatitis());
         nbt.putInt("Hemorrhoids", getHemorrhoids());
+        nbt.putFloat("ParthenogenesisVariance", getParthenogenesisVariance());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         setFemale(nbt.getBoolean("Female"));
@@ -307,6 +335,9 @@ public interface Pregnant{
         }
         if (nbt.contains("Hemorrhoids")) {
             setHemorrhoids(nbt.getInt("Hemorrhoids"));
+        }
+        if (nbt.contains("ParthenogenesisVariance")) {
+            setParthenogenesisVariance(nbt.getFloat("ParthenogenesisVariance"));
         }
     }
 
@@ -563,6 +594,24 @@ public interface Pregnant{
             if (getHemorrhoids() > 20 * 60 * 20 * 5) {
                 entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 10, 0));
             }
+        }
+    }
+
+
+    // ----------------- 孤雌生殖 ------------------------------
+    default void setParthenogenesisVariance(float variance) {}
+    default float getParthenogenesisVariance() {
+        return 0.0f;
+    }
+    private void applyAttributeVariance(LivingEntity entity, RegistryEntry<EntityAttribute> attribute, float variance) {
+        var instance = entity.getAttributeInstance(attribute);
+        if (instance != null) {
+            double base = instance.getBaseValue();
+            // 生成 -1.0 到 1.0 之间的随机数
+            double randomFactor = entity.getRandom().nextDouble() * 2.0 - 1.0;
+            // 计算倍率：例如 variance=0.1, random=-0.5 => multiplier = 1.0 + (-0.05) = 0.95
+            double multiplier = 1.0 + (randomFactor * variance);
+            instance.setBaseValue(base * multiplier);
         }
     }
 

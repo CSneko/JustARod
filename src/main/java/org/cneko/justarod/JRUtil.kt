@@ -61,7 +61,7 @@ class JRUtil {
             val rm = world.registryManager
             val level = this.enchantments.getLevel(rm?.get(RegistryKeys.ENCHANTMENT)?.entryOf(enchantment))
 
-            return 0
+            return level
         }
 
 

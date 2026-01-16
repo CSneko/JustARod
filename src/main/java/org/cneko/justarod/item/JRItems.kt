@@ -25,6 +25,7 @@ import org.cneko.justarod.item.rod.*
 import org.cneko.justarod.item.armor.*
 import org.cneko.justarod.item.bdsm.*
 import org.cneko.justarod.item.bio.ClonerDevice
+import org.cneko.justarod.item.bio.ParthenogenesisCatalystItem
 import org.cneko.justarod.item.custom.PantsuItem
 import org.cneko.justarod.item.custom.PantsuGetterItem
 import org.cneko.justarod.item.electric.*
@@ -100,6 +101,7 @@ class JRItems {
         val PANTSU_GETTER = PantsuGetterItem(Item.Settings().maxCount(1))
         val AIDS_VACCINE = AidsVaccine(Item.Settings())
         val TAMSULOSIN_CAPSULE = TamsulosinCapsuleItem(Item.Settings())
+        val PARTHENOGENESIS_CATALYST = ParthenogenesisCatalystItem(Item.Settings().maxCount(1))
 
         var JR_ITEM_GROUP_KEY: RegistryKey<ItemGroup>? = null
         var JR_ITEM_GROUP: ItemGroup? = null
@@ -167,6 +169,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "pantsu_getter"), PANTSU_GETTER)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "aids_vaccine"), AIDS_VACCINE)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "tamsulosin_capsule"), TAMSULOSIN_CAPSULE)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "parthenogenesis_catalyst"), PARTHENOGENESIS_CATALYST)
 
             // 注册物品组
             JR_ITEM_GROUP_KEY = RegistryKey.of(Registries.ITEM_GROUP.key, Identifier.of(MODID, "item_group"))
@@ -240,6 +243,7 @@ class JRItems {
                 entries.add(PANTSU_GETTER)
                 entries.add(AIDS_VACCINE)
                 entries.add(TAMSULOSIN_CAPSULE)
+                entries.add(PARTHENOGENESIS_CATALYST)
             }
         }
     }

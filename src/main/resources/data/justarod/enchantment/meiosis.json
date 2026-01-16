@@ -1,0 +1,23 @@
+{
+  "anvil_cost": 1,
+  "weight": 30,
+  "description": {
+    "type": "translatable",
+    "translate": "enchantment.justarod.meiosis"
+  },
+  "supported_items": "justarod:parthenogenesis_catalyst",
+  "primary_items": "justarod:parthenogenesis_catalyst",
+  "min_cost": {
+    "base": 1,
+    "per_level_above_first": 1
+  },
+  "max_cost": {
+    "base": 1,
+    "per_level_above_first": 1
+  },
+  "max_level": 3,
+  "slots": [
+    "mainhand",
+    "offhand"
+  ]
+}

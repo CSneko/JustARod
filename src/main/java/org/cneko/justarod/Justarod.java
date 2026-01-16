@@ -21,19 +21,6 @@ import java.util.logging.Logger;
 还有就是，得要阅本量丰富才能做的炉火纯青
  */
 
-/* TODO : 无顺序
- 1. 软体末地烛
- 2. 高级电动末地烛
- 3. 工业末地烛
- 4. 海绵末地烛
- 5. 淫水
- 6. 末地烛处刑机
- 8. 公屏求草
- 10. quirks/SM
- 12. 远控末地烛
- 13. 全服共享末地烛
- 14. 双头末地烛
- */
 
 public class Justarod implements ModInitializer {
     public static final String MODID = "justarod";

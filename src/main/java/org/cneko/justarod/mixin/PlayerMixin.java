@@ -112,6 +112,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     private int hemorrhoids = 0;
     @Unique
     private boolean amputated = false;
+    @Unique
+    private float parthenogenesisVariance = 0;
 
     @Unique
     private boolean orchiectomy = false;
@@ -479,6 +481,16 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     @Override
     public void setProstatitis(int prostatitis) {
         this.prostatitis = prostatitis;
+    }
+
+    @Override
+    public float getParthenogenesisVariance() {
+        return parthenogenesisVariance;
+    }
+
+    @Override
+    public void setParthenogenesisVariance(float parthenogenesisVariance) {
+        this.parthenogenesisVariance = parthenogenesisVariance;
     }
 
     @Override

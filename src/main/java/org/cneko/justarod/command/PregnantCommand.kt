@@ -1,1178 +1,400 @@
 package org.cneko.justarod.command
 
+import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.BoolArgumentType
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
+import com.mojang.brigadier.builder.ArgumentBuilder
+import com.mojang.brigadier.builder.LiteralArgumentBuilder
+import com.mojang.brigadier.context.CommandContext
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.command.argument.EntityArgumentType
-import net.minecraft.nbt.NbtCompound
+import net.minecraft.entity.LivingEntity
 import net.minecraft.server.command.CommandManager.argument
 import net.minecraft.server.command.CommandManager.literal
+import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
 import org.cneko.justarod.entity.Pregnant
 import org.cneko.justarod.item.JRItems
+import javax.swing.text.html.parser.Entity
 
 class PregnantCommand {
-    companion object{
-        fun init(){
+    companion object {
+        fun init() {
             CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
+                registerSex(dispatcher)
+                registerPregnant(dispatcher)
+                registerMenstruation(dispatcher)
+                registerExcretion(dispatcher)
+                registerUrination(dispatcher)
+                registerHymen(dispatcher)
 
-                dispatcher.register(literal("sex")
-                    .executes { context ->
-                        val source = context.source.entity
-                        if (source is Pregnant){
-                            val isMale = source.isMale
-                            val isFemale = source.isFemale
-                            source.sendMessage(Text.of("§a你的性别为：${if (isMale && isFemale) "§b男§d女" else if (isMale) "§b男" else if(isFemale) "§d女" else "无"}"))
-                        }
-                        return@executes 1
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        .executes { context ->
-                            val source = context.source
-                            val target = EntityArgumentType.getEntity(context, "target")
-                            if (target is Pregnant){
-                                val isMale = target.isMale
-                                val isFemale = target.isFemale
-                                source.sendMessage(Text.of("§a对方性别为：${if (isMale && isFemale) "§b男§d女" else if (isMale) "§b男" else if(isFemale) "§d女" else "无"}"))
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .then(literal("male")
-                        .then(argument("is",BoolArgumentType.bool())
-                            .executes { ctx ->
-                                val source = ctx.source.entity
-                                if (source is Pregnant){
-                                    val isMale = BoolArgumentType.getBool(ctx,"is")
-                                    source.isMale = isMale
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes { ctx ->
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    if (target is Pregnant){
-                                        val isMale = BoolArgumentType.getBool(ctx,"is")
-                                        target.isMale = isMale
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                        )
+                // 简单的布尔开关/状态类命令
+                registerSimpleBool(dispatcher, "sterilization", "绝育", { it.isSterilization }, { e, v -> e.isSterilization = v })
+                registerSimpleBool(dispatcher, "uterus", "子宫", { it.hasUterus() }, { e, v -> e.setHasUterus(v) }, trueStr = "有", falseStr = "没有")
+                registerSimpleBool(dispatcher, "PCOS", "多囊卵巢综合征", { it.isPCOS }, { e, v -> e.isPCOS = v }, trueStr = "已患上", falseStr = "没有患上", trueColor = "c", falseColor = "a")
+                registerSimpleBool(dispatcher, "orchiectomy", "魔丸切除", { it.isOrchiectomy }, { e, v -> e.isOrchiectomy = v }, trueStr = "已切除", falseStr = "未切除", trueColor = "c", falseColor = "b")
+                registerSimpleBool(dispatcher, "amputated", "截肢", { it.isAmputated }, { e, v -> e.isAmputated = v }, trueStr = "已截肢", falseStr = "未截肢", trueColor = "c", falseColor = "b")
 
-                    )
-                    .then(literal("female")
-                        .then(argument("is",BoolArgumentType.bool())
-                            .executes { ctx ->
-                                val source = ctx.source.entity
-                                if (source is Pregnant){
-                                    val isFemale = BoolArgumentType.getBool(ctx,"is")
-                                    source.isFemale = isFemale
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes { ctx ->
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    if (target is Pregnant){
-                                        val isFemale = BoolArgumentType.getBool(ctx,"is")
-                                        target.isFemale = isFemale
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                        )
+                // 简单的整数/时间/等级类命令
+                registerSimpleInt(dispatcher, "BrithControlling", "避孕有效期", { it.brithControlling }, { e, v -> e.brithControlling = v })
+                registerSimpleInt(dispatcher, "OvarianCancer", "卵巢癌", { it.ovarianCancer }, { e, v -> e.ovarianCancer = v }, isDisease = true)
+                registerSimpleInt(dispatcher, "BreastCancer", "乳腺癌", { it.breastCancer }, { e, v -> e.breastCancer = v }, isDisease = true)
+                registerSimpleInt(dispatcher, "syphilis", "梅毒", { it.syphilis }, { e, v -> e.syphilis = v }, isDisease = true)
+                registerSimpleInt(dispatcher, "uterine_cold", "宫寒", { it.uterineCold }, { e, v -> e.uterineCold = v }, isDisease = true)
+                registerSimpleInt(dispatcher, "urethritis", "尿道炎", { it.urethritis }, { e, v -> e.urethritis = v }, isDisease = true)
+                registerSimpleInt(dispatcher, "prostatitis", "前列腺炎", { it.prostatitis }, { e, v -> e.prostatitis = v }, isDisease = true)
+                registerSimpleInt(dispatcher, "hemorrhoids", "痔疮", { it.hemorrhoids }, { e, v -> e.hemorrhoids = v }, isDisease = true)
 
-                    )
-                )
-                dispatcher.register(literal("pregnant")
-                    .executes {ctx ->
-                        val source = ctx.source.entity
-                        if (source is Pregnant){
-                            source.sendMessage(Text.of("剩余孕期：${source.pregnant/20/60/20}天"))
-                        }
-                        return@executes 1
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        .executes { ctx ->
-                            val source = ctx.source
-                            val target = EntityArgumentType.getEntity(ctx, "target")
-                            if (target is Pregnant){
-                                source.sendMessage(Text.of("剩余孕期：${target.pregnant/20/60/20}天"))
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .then(literal("set")
-                        .then(argument("time",IntegerArgumentType.integer(0, Int.MAX_VALUE))
-                            .requires { source -> source.hasPermissionLevel(4) }
-                            .executes { ctx->
-                                val source = ctx.source.entity
-                                if (source is Pregnant) {
-                                    source.pregnant = IntegerArgumentType.getInteger(ctx,"time")
-                                }
-                                return@executes 1
-                            }.then(argument("target",EntityArgumentType.entity())
-                                .executes { ctx ->
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    if (target is Pregnant) {
-                                        target.pregnant = IntegerArgumentType.getInteger(ctx,"time")
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                        )
-                    )
-                    .then(literal("status")
-                        .requires { source -> source.hasPermissionLevel(4) }
-                        .executes { ctx ->
-                            val source = ctx.source.entity
-                            if (source is Pregnant) {
-                                if (source.isEctopicPregnancy){
-                                    source.sendMessage(Text.of("§c当前怀孕状态为宫外孕！"))
-                                } else if (source.isHydatidiformMole){
-                                    source.sendMessage(Text.of("§c当前怀孕状态为葡萄胎！"))
-                                } else{
-                                    source.sendMessage(Text.of("§a当前怀孕状态正常"))
-                                }
-                            }
-                            return@executes 1
-                        }
-                        .then(argument("target", EntityArgumentType.entity())
-                            .executes { ctx ->
-                                val source = ctx.source
-                                val target = EntityArgumentType.getEntity(ctx, "target")
-                                if (target is Pregnant) {
-                                    if (target.isEctopicPregnancy){
-                                        source.sendMessage(Text.of("§c当前怀孕状态为宫外孕！"))
-                                    } else if (target.isHydatidiformMole){
-                                        source.sendMessage(Text.of("§c当前怀孕状态为葡萄胎！"))
-                                    } else{
-                                        source.sendMessage(Text.of("§a当前怀孕状态正常"))
-                                    }
-                                }
-                                return@executes 1
-                            }
-                        )
-                        .then(literal("set")
-                            .then(argument("type", StringArgumentType.word())
-                                .then(argument("is", BoolArgumentType.bool())
-                                    .executes { context ->
-                                        val source = context.source.entity
-                                        if (source is Pregnant) {
-                                            val type = StringArgumentType.getString(context,"type")
-                                            if (type.contains("ect")) {
-                                                source.isEctopicPregnancy = BoolArgumentType.getBool(context, "is")
-                                            }else if (type.contains("hyd") || type.contains("mole")){
-                                                source.isHydatidiformMole = BoolArgumentType.getBool(context, "is")
-                                            }
-                                        }
-                                        return@executes 1
-                                    }
-                                    .then(argument("target", EntityArgumentType.entity())
-                                        .executes { context ->
-                                            val target = EntityArgumentType.getEntity(context, "target")
-                                            if (target is Pregnant) {
-                                                val type = StringArgumentType.getString(context,"type")
-                                                if (type.contains("ect")) {
-                                                    target.isEctopicPregnancy = BoolArgumentType.getBool(context, "is")
-                                                }else if (type.contains("hyd") || type.contains("mole")){
-                                                    target.isHydatidiformMole = BoolArgumentType.getBool(context, "is")
-                                                }
-                                            }
-                                            return@executes 1
-                                        }
-                                    )
-                                )
-                            )
-                        )
-                    )
-                    .then(literal("count")
-                        .executes { context ->
-                            val source = context.source.entity
-                            if (source is Pregnant && source.isPregnant) {
-                                source.sendMessage(Text.of("§a你怀了${source.babyCount}胞胎！"))
-                            }
-                            return@executes 1
-                        }
-                        .then(argument("target", EntityArgumentType.entity())
-                            .executes { context ->
-                                val source = context.source
-                                val target = EntityArgumentType.getEntity(context, "target")
-                                if (target is Pregnant && target.isPregnant) {
-                                    source.sendMessage(Text.of("§a目标怀了${target.babyCount}胞胎！"))
-                                }
-                                return@executes 1
-                            }
-                        )
-                        .then(literal("set")
-                            .then(argument("count", IntegerArgumentType.integer(0, Int.MAX_VALUE))
-                                .executes { context ->
-                                    val source = context.source.entity
-                                    if (source is Pregnant) {
-                                        source.babyCount = IntegerArgumentType.getInteger(context, "count")
-                                    }
-                                    return@executes 1
-                                }
-                                .then(argument("target", EntityArgumentType.entity())
-                                    .executes { context ->
-                                        val target = EntityArgumentType.getEntity(context, "target")
-                                        if (target is Pregnant) {
-                                            target.babyCount = IntegerArgumentType.getInteger(context, "count")
-                                        }
-                                        return@executes 1
-                                    }
-                                )
-                            )
-                        )
-                    )
-                )
-
-                dispatcher.register(literal("menstruation")
-                    .executes { context ->
-                        val source = context.source.entity
-                        if (source is Pregnant){
-                            source.sendMessage(Text.of("当前处于${source.menstruationCycle.text}"))
-                        }
-                        return@executes 0
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        .executes { context ->
-                            val source = context.source
-                            val target = EntityArgumentType.getEntity(context, "target")
-                            if (target is Pregnant){
-                                source.sendMessage(Text.of("当前处于${target.menstruationCycle.text}"))
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .then(literal("set")
-                        .requires { source -> source.hasPermissionLevel(4) }
-                        .then(argument("time", IntegerArgumentType.integer(0, Int.MAX_VALUE))
-                            .executes {ctx ->
-                                val source = ctx.source.entity
-                                if (source is Pregnant) {
-                                    source.menstruation = IntegerArgumentType.getInteger(ctx,"time")
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes {ctx ->
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    if (target is Pregnant) {
-                                        target.menstruation = IntegerArgumentType.getInteger(ctx,"time")
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                        )
-                    )
-                    .then(literal("comfort")
-                        .executes { context ->
-                            val source = context.source.entity
-                            if (source is Pregnant) {
-                                source.sendMessage(Text.of("卫生巾剩余有效时间：${source.menstruationComfort/20}秒"))
-                            }
-                            return@executes 1
-                        }
-                        .then(argument("target", EntityArgumentType.entity())
-                            .executes { context ->
-                                val source = context.source
-                                val target = EntityArgumentType.getEntity(context, "target")
-                                if (target is Pregnant) {
-                                    source.sendMessage(Text.of("卫生巾剩余有效时间：${target.menstruationComfort/20}秒"))
-                                }
-                                return@executes 1
-                            }
-                        )
-                    )
-                )
-
-                dispatcher.register(literal("sterilization")
-                    .executes {context ->
-                        val source = context.source.entity
-                        if (source is Pregnant){
-                            if (source.isSterilization){
-                                source.sendMessage(Text.of("§c当前处于绝育状态中"))
-                            }else{
-                                source.sendMessage(Text.of("§a当前处于非绝育状态"))
-                            }
-                        }
-                        return@executes 1
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        .executes {context ->
-                            val source = context.source
-                            val target = EntityArgumentType.getEntity(context, "target")
-                            if (target is Pregnant){
-                                if (target.isSterilization){
-                                    source.sendMessage(Text.of("§c当前处于绝育状态中"))
-                                }else{
-                                    source.sendMessage(Text.of("§a当前处于非绝育状态"))
-                                }
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .then(literal("set")
-                        .requires { source -> source.hasPermissionLevel(4) }
-                        .then(argument("is", BoolArgumentType.bool())
-                            .executes {ctx ->
-                                val source = ctx.source.entity
-                                if (source is Pregnant) {
-                                    source.isSterilization = BoolArgumentType.getBool(ctx,"is")
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes {ctx ->
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    if (target is Pregnant) {
-                                        target.isSterilization = BoolArgumentType.getBool(ctx,"is")
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                        )
-                    )
-                )
-
-                dispatcher.register(literal("aids")
-                    .executes { ctx ->
-                        val source = ctx.source.entity
-                        if (source is Pregnant){
-                            source.sendMessage(Text.of("当前AIDS状态：${if (source.aids > 0) "已经感染${source.aids}" else "没有感染艾滋哦"}"))
-                        }
-                        return@executes 1
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        .executes { ctx ->
-                            val source = ctx.source
-                            val target = EntityArgumentType.getEntity(ctx, "target")
-                            if (target is Pregnant){
-                                source.sendMessage(Text.of("当前AIDS状态：${if (target.aids > 0) "已经感染${target.aids}" else "没有感染艾滋哦"}"))
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .then(literal("set")
-                        .requires { source -> source.hasPermissionLevel(4) }
-                        .then(argument("time", IntegerArgumentType.integer(0, Int.MAX_VALUE))
-                            .executes {ctx ->
-                                val source = ctx.source.entity
-                                if (source is Pregnant) {
-                                    source.aids = IntegerArgumentType.getInteger(ctx,"time")
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes {ctx ->
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    if (target is Pregnant) {
-                                        target.aids = IntegerArgumentType.getInteger(ctx,"time")
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                        )
-                        .then(literal("immune")
-                            .executes { ctx ->
-                                val source = ctx.source.entity
-                                if (source is Pregnant) {
-                                    source.sendMessage(Text.of("当前AIDS免疫状态：${if (source.isImmune2Aids) "已免疫" else "没有免疫"}"))
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes { ctx ->
-                                    val source = ctx.source
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    if (target is Pregnant) {
-                                        source.sendMessage(Text.of("当前AIDS免疫状态：${if (target.isImmune2Aids) "已免疫" else "没有免疫"}"))
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                            .then(literal("set")
-                                .requires { source -> source.hasPermissionLevel(4) }
-                                .then(argument("is", BoolArgumentType.bool())
-                                    .executes {ctx ->
-                                        val source = ctx.source.entity
-                                        if (source is Pregnant) {
-                                            source.isImmune2Aids = BoolArgumentType.getBool(ctx,"is")
-                                        }
-                                        return@executes 1
-                                    }
-                                    .then(argument("target", EntityArgumentType.entity())
-                                        .executes {ctx ->
-                                            val target = EntityArgumentType.getEntity(ctx, "target")
-                                            if (target is Pregnant) {
-                                                target.isImmune2Aids = BoolArgumentType.getBool(ctx,"is")
-                                            }
-                                            return@executes 1
-                                        }
-                                    )
-                                )
-                            )
-                        )
-                    )
-                )
-
-                dispatcher.register(literal("hpv")
-                    .executes { ctx ->
-                        val source = ctx.source.entity
-                        if (source is Pregnant){
-                            source.sendMessage(Text.of("当前HPV状态：${if (source.hpv > 0) "已经感染${source.hpv}" else "没有感染HPV哦"}"))
-                        }
-                        return@executes 1
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        .executes { ctx ->
-                            val source = ctx.source
-                            val target = EntityArgumentType.getEntity(ctx, "target")
-                            if (target is Pregnant){
-                                source.sendMessage(Text.of("当前HPV状态：${if (target.hpv > 0) "已经感染${target.hpv}" else "没有感染HPV哦"}"))
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .then(literal("set")
-                        .requires { source -> source.hasPermissionLevel(4) }
-                        .then(argument("time", IntegerArgumentType.integer(0, Int.MAX_VALUE))
-                            .executes {ctx ->
-                                val source = ctx.source.entity
-                                if (source is Pregnant) {
-                                    source.hpv = IntegerArgumentType.getInteger(ctx,"time")
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes {ctx ->
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    if (target is Pregnant) {
-                                        target.hpv = IntegerArgumentType.getInteger(ctx,"time")
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                        )
-                        .then(literal("immune")
-                            .executes { ctx ->
-                                val source = ctx.source.entity
-                                if (source is Pregnant) {
-                                    source.sendMessage(Text.of("当前HPV免疫状态：${if (source.isImmune2HPV) "已免疫" else "没有免疫"}"))
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes { ctx ->
-                                    val source = ctx.source
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    if (target is Pregnant) {
-                                        source.sendMessage(Text.of("当前HPV免疫状态：${if (target.isImmune2HPV) "已免疫" else "没有免疫"}"))
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                            .then(literal("set")
-                                .requires { source -> source.hasPermissionLevel(4) }
-                                .then(argument("is", BoolArgumentType.bool())
-                                    .executes {ctx ->
-                                        val source = ctx.source.entity
-                                        if (source is Pregnant) {
-                                            source.isImmune2HPV = BoolArgumentType.getBool(ctx,"is")
-                                        }
-                                        return@executes 1
-                                    }
-                                    .then(argument("target", EntityArgumentType.entity())
-                                        .executes {ctx ->
-                                            val target = EntityArgumentType.getEntity(ctx, "target")
-                                            if (target is Pregnant) {
-                                                target.isImmune2HPV = BoolArgumentType.getBool(ctx,"is")
-                                            }
-                                            return@executes 1
-                                        }
-                                    )
-                                )
-                            )
-                        )
-                    )
-                )
-
-                dispatcher.register(literal("uterus")
-                    .executes {context ->
-                        val source = context.source.entity
-                        if (source is Pregnant){
-                            source.sendMessage(Text.of("§a子宫状态：${if (source.hasUterus()) "§b有" else "§c没有"}"))
-                        }
-                        return@executes 1
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        .executes {context ->
-                            val source = context.source
-                            val target = EntityArgumentType.getEntity(context, "target")
-                            if (target is Pregnant){
-                                source.sendMessage(Text.of("§a子宫状态：${if (target.hasUterus()) "§b有" else "§c没有"}"))
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .then(literal("set")
-                        .requires { source -> source.hasPermissionLevel(4) }
-                        .then(argument("is", BoolArgumentType.bool())
-                            .executes {ctx ->
-                                val source = ctx.source.entity
-                                if (source is Pregnant) {
-                                    source.setHasUterus(BoolArgumentType.getBool(ctx,"is"))
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes {ctx ->
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    if (target is Pregnant) {
-                                        target.setHasUterus(BoolArgumentType.getBool(ctx,"is"))
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                        )
-                    )
-                )
-
-                dispatcher.register(literal("PCOS")
-                    .executes { context ->
-                        val source = context.source.entity
-                        if (source is Pregnant){
-                            source.sendMessage(Text.of("当前多囊卵巢综合征状态：${if (source.isPCOS) "§c已患上" else "§a没有患上"}"))
-                        }
-                        return@executes 1
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        .executes { context ->
-                            val source = context.source
-                            val target = EntityArgumentType.getEntity(context, "target")
-                            if (target is Pregnant){
-                                source.sendMessage(Text.of("当前多囊卵巢综合征状态：${if (target.isPCOS) "§c已患上" else "§a没有患上"}"))
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .then(literal("set")
-                        .requires { source -> source.hasPermissionLevel(4) }
-                        .then(argument("is", BoolArgumentType.bool())
-                            .executes {ctx ->
-                                val source = ctx.source.entity
-                                if (source is Pregnant) {
-                                    source.isPCOS = BoolArgumentType.getBool(ctx,"is")
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes {ctx ->
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    if (target is Pregnant) {
-                                        target.isPCOS = BoolArgumentType.getBool(ctx,"is")
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                        )
-                    )
-                )
-
-                dispatcher.register(literal("BrithControlling")
-                    .executes { context ->
-                        val source = context.source.entity
-                        if (source is Pregnant){
-                            source.sendMessage(Text.of("剩余避孕有效期：${source.brithControlling}"))
-                        }
-                        return@executes 1
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        .executes { context ->
-                            val source = context.source
-                            val target = EntityArgumentType.getEntity(context, "target")
-                            if (target is Pregnant){
-                                source.sendMessage(Text.of("剩余避孕有效期：${target.brithControlling}"))
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .then(literal("set")
-                        .requires { source -> source.hasPermissionLevel(4) }
-                        .then(argument("time", IntegerArgumentType.integer(0, Int.MAX_VALUE))
-                            .executes {ctx ->
-                                val source = ctx.source.entity
-                                if (source is Pregnant) {
-                                    source.brithControlling = IntegerArgumentType.getInteger(ctx,"time")
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes {ctx ->
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    if (target is Pregnant) {
-                                        target.brithControlling = IntegerArgumentType.getInteger(ctx,"time")
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                        )
-                    )
-                )
-                dispatcher.register(literal("OvarianCancer")
-                    .executes { context ->
-                        val source = context.source.entity
-                        if (source is Pregnant){
-                            source.sendMessage(Text.of("当前卵巢癌状态：${if (source.ovarianCancer>0) "§c已患上" else "§a没有患上"}"))
-                        }
-                        return@executes 1
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        .executes { context ->
-                            val source = context.source
-                            val target = EntityArgumentType.getEntity(context, "target")
-                            if (target is Pregnant){
-                                source.sendMessage(Text.of("当前卵巢癌状态：${if (target.ovarianCancer>0) "§c已患上" else "§a没有患上"}"))
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .then(literal("set")
-                        .requires { source -> source.hasPermissionLevel(4) }
-                        .then(argument("time", IntegerArgumentType.integer(0, Int.MAX_VALUE))
-                            .executes {ctx ->
-                                val source = ctx.source.entity
-                                if (source is Pregnant) {
-                                    source.ovarianCancer = IntegerArgumentType.getInteger(ctx,"time")
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes {ctx ->
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    if (target is Pregnant) {
-                                        target.ovarianCancer = IntegerArgumentType.getInteger(ctx,"time")
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                        )
-                    )
-                )
-
-                dispatcher.register(literal("BreastCancer")
-                    .executes { context ->
-                        val source = context.source.entity
-                        if (source is Pregnant){
-                            source.sendMessage(Text.of("当前乳腺癌状态：${if (source.breastCancer>0) "§c已患上" else "§a没有患上"}"))
-                        }
-                        return@executes 1
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        .executes { context ->
-                            val source = context.source
-                            val target = EntityArgumentType.getEntity(context, "target")
-                            if (target is Pregnant){
-                                source.sendMessage(Text.of("当前乳腺癌状态：${if (target.breastCancer>0) "§c已患上" else "§a没有患上"}"))
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .then(literal("set")
-                        .requires { source -> source.hasPermissionLevel(4) }
-                        .then(argument("time", IntegerArgumentType.integer(0, Int.MAX_VALUE))
-                            .executes {ctx ->
-                                val source = ctx.source.entity
-                                if (source is Pregnant) {
-                                    source.breastCancer = IntegerArgumentType.getInteger(ctx,"time")
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes {ctx ->
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    if (target is Pregnant) {
-                                        target.breastCancer = IntegerArgumentType.getInteger(ctx,"time")
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                        )
-                    )
-                )
-
-                dispatcher.register(literal("syphilis")
-                    .executes { context ->
-                        val source = context.source.entity
-                        if (source is Pregnant){
-                            source.sendMessage(Text.of("当前梅毒状态：${if (source.syphilis>0) "§c已患上" else "§a没有患上"}"))
-                        }
-                        return@executes 1
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        .executes { context ->
-                            val source = context.source
-                            val target = EntityArgumentType.getEntity(context, "target")
-                            if (target is Pregnant){
-                                source.sendMessage(Text.of("当前梅毒状态：${if (target.syphilis>0) "§c已患上" else "§a没有患上"}"))
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .then(literal("set")
-                        .requires { source -> source.hasPermissionLevel(4) }
-                        .then(argument("time", IntegerArgumentType.integer(0, Int.MAX_VALUE))
-                            .executes {ctx ->
-                                val source = ctx.source.entity
-                                if (source is Pregnant) {
-                                    source.syphilis = IntegerArgumentType.getInteger(ctx,"time")
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes {ctx ->
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    if (target is Pregnant) {
-                                        target.syphilis = IntegerArgumentType.getInteger(ctx,"time")
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                        )
-                    )
-                )
-
-                dispatcher.register(literal("uterine_cold")
-                    .executes { context ->
-                        val source = context.source.entity
-                        if (source is Pregnant){
-                            val value = source.uterineCold
-                            // 如果数值大于0显示红色，否则显示绿色，并显示具体数值
-                            source.sendMessage(Text.of("当前宫寒状态：${if (value > 0) "§c有寒气 (数值: $value)" else "§a健康"}"))
-                        }
-                        return@executes 1
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        .executes { context ->
-                            val source = context.source
-                            val target = EntityArgumentType.getEntity(context, "target")
-                            if (target is Pregnant){
-                                val value = target.uterineCold
-                                source.sendMessage(Text.of("目标宫寒状态：${if (value > 0) "§c有寒气 (数值: $value)" else "§a健康"}"))
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .then(literal("set")
-                        .requires { source -> source.hasPermissionLevel(4) }
-                        .then(argument("value", IntegerArgumentType.integer(0, Int.MAX_VALUE))
-                            .executes {ctx ->
-                                val source = ctx.source.entity
-                                if (source is Pregnant) {
-                                    val value = IntegerArgumentType.getInteger(ctx, "value")
-                                    source.uterineCold = value
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes {ctx ->
-                                    val source = ctx.source
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    if (target is Pregnant) {
-                                        val value = IntegerArgumentType.getInteger(ctx, "value")
-                                        target.uterineCold = value
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                        )
-                    )
-                )
-
-                dispatcher.register(literal("excretion")
-                    .then(literal("release")
-                        .executes { context ->
-                            val source = context.source.entity
-                            if (source is Pregnant){
-                                val exc = source.excretion
-                                if (exc > 20*60*10){
-                                    source.excretion -= 20*60*10
-                                    source.doDefecationPain()
-                                    source.sendMessage(Text.of("你排泄了"))
-                                    source.dropStack(JRItems.EXCREMENT.defaultStack)
-                                }else{
-                                    source.sendMessage(Text.of("你目前无需排泄"))
-                                }
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .executes { context ->
-                        val source = context.source.entity
-                        if (source is Pregnant){
-                            source.sendMessage(Text.of("当前憋粑粑时间：${source.excretion / 20/60}分钟"))
-                        }
-                        return@executes 1
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        .executes { context ->
-                            val source = context.source
-                            val target = EntityArgumentType.getEntity(context, "target")
-                            if (target is Pregnant){
-                                source.sendMessage(Text.of("当前憋粑粑时间：${target.excretion / 20/60}分钟"))
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .then(literal("set")
-                        .requires { source -> source.hasPermissionLevel(4) }
-                        .then(argument("time", IntegerArgumentType.integer(0, Int.MAX_VALUE))
-                            .executes {ctx ->
-                                val source = ctx.source.entity
-                                if (source is Pregnant) {
-                                    source.excretion = IntegerArgumentType.getInteger(ctx,"time")
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes {ctx ->
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    if (target is Pregnant) {
-                                        target.excretion = IntegerArgumentType.getInteger(ctx,"time")
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                        )
-                    )
-                )
-
-                dispatcher.register(literal("urination")
-                    .then(literal("release")
-                        .executes { context ->
-                            val source = context.source.entity
-                            if (source is Pregnant) {
-                                val uri = source.urination
-                                // 阈值设定：20 tick * 60 秒 * 10 分钟
-                                // 必须憋了一定程度才能排尿
-                                if (uri > 20 * 60 * 10) {
-                                    // 排尿通常是排空，所以这里直接设为 0
-                                    source.urination = 0
-
-                                    source.sendMessage(Text.of("你排尿了，感觉一身轻！"))
-
-                                } else {
-                                    source.sendMessage(Text.of("你目前无需排尿"))
-                                }
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .executes { context ->
-                        // 查询自己的状态
-                        val source = context.source.entity
-                        if (source is Pregnant) {
-                            source.sendMessage(Text.of("当前憋尿时间：${source.urination / 20 / 60}分钟"))
-                        }
-                        return@executes 1
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        // 查询目标的状态
-                        .executes { context ->
-                            val source = context.source
-                            val target = EntityArgumentType.getEntity(context, "target")
-                            if (target is Pregnant) {
-                                source.sendMessage(Text.of("当前憋尿时间：${target.urination / 20 / 60}分钟"))
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .then(literal("set")
-                        // 管理员设置数值
-                        .requires { source -> source.hasPermissionLevel(4) }
-                        .then(argument("time", IntegerArgumentType.integer(0, Int.MAX_VALUE))
-                            .executes { ctx ->
-                                val source = ctx.source.entity
-                                if (source is Pregnant) {
-                                    source.urination = IntegerArgumentType.getInteger(ctx, "time")
-                                    ctx.source.sendMessage(Text.of("已设置自身憋尿时间"))
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes { ctx ->
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    val time = IntegerArgumentType.getInteger(ctx, "time")
-                                    if (target is Pregnant) {
-                                        target.urination = time
-                                        ctx.source.sendMessage(Text.of("已设置目标憋尿时间"))
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                        )
-                    )
-                )
-
-                dispatcher.register(literal("orchiectomy")
-                    .executes {context ->
-                        val source = context.source.entity
-                        if (source is Pregnant){
-                            source.sendMessage(Text.of("§a魔丸切除状态：${if (source.isOrchiectomy) "§c已切除" else "§b未切除"}"))
-                        }
-                        return@executes 1
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        .executes {context ->
-                            val source = context.source
-                            val target = EntityArgumentType.getEntity(context, "target")
-                            if (target is Pregnant){
-                                source.sendMessage(Text.of("§a魔丸切除状态：${if (target.isOrchiectomy) "§c已切除" else "§b未切除"}"))
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .then(literal("set")
-                        .requires { source -> source.hasPermissionLevel(4) }
-                        .then(argument("is", BoolArgumentType.bool())
-                            .executes {ctx ->
-                                val source = ctx.source.entity
-                                if (source is Pregnant) {
-                                    source.isOrchiectomy = BoolArgumentType.getBool(ctx,"is")
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes {ctx ->
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    if (target is Pregnant) {
-                                        target.isOrchiectomy = BoolArgumentType.getBool(ctx,"is")
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                        )
-                    )
-                )
-
-                dispatcher.register(literal("amputated")
-                    .executes {context ->
-                        val source = context.source.entity
-                        if (source is Pregnant){
-                            source.sendMessage(Text.of("§a截肢状态：${if (source.isAmputated) "§c已截肢" else "§b未截肢"}"))
-                        }
-                        return@executes 1
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        .executes {context ->
-                            val source = context.source
-                            val target = EntityArgumentType.getEntity(context, "target")
-                            if (target is Pregnant){
-                                source.sendMessage(Text.of("§a截肢状态：${if (target.isAmputated) "§c已截肢" else "§b截肢"}"))
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .then(literal("set")
-                        .requires { source -> source.hasPermissionLevel(4) }
-                        .then(argument("is", BoolArgumentType.bool())
-                            .executes {ctx ->
-                                val source = ctx.source.entity
-                                if (source is Pregnant) {
-                                    source.isAmputated = BoolArgumentType.getBool(ctx,"is")
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes {ctx ->
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    if (target is Pregnant) {
-                                        target.isAmputated = BoolArgumentType.getBool(ctx,"is")
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                        )
-                    )
-                )
-
-                dispatcher.register(literal("urethritis")
-                    .executes { context ->
-                        val source = context.source.entity
-                        if (source is Pregnant) {
-                            val time = source.urethritis
-                            if (time > 0) {
-                                source.sendMessage(Text.of("§a尿道炎状态：§c已感染 (严重程度/时长: $time)"))
-                            } else {
-                                source.sendMessage(Text.of("§a尿道炎状态：§b健康"))
-                            }
-                        }
-                        return@executes 1
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        .executes { context ->
-                            val source = context.source
-                            val target = EntityArgumentType.getEntity(context, "target")
-                            if (target is Pregnant) {
-                                val time = target.urethritis
-                                if (time > 0) {
-                                    source.sendMessage(Text.of("§a目标尿道炎状态：§c已感染 (严重程度/时长: $time)"))
-                                } else {
-                                    source.sendMessage(Text.of("§a目标尿道炎状态：§b健康"))
-                                }
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .then(literal("set")
-                        .requires { source -> source.hasPermissionLevel(4) }
-                        .then(argument("time", IntegerArgumentType.integer(0)) // 这里使用整数，0代表治愈/无病，数值越大越严重
-                            .executes { ctx ->
-                                val source = ctx.source.entity
-                                val time = IntegerArgumentType.getInteger(ctx, "time")
-                                if (source is Pregnant) {
-                                    source.urethritis = time
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes { ctx ->
-                                    val source = ctx.source
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    val time = IntegerArgumentType.getInteger(ctx, "time")
-                                    if (target is Pregnant) {
-                                        target.urethritis = time
-                                        source.sendMessage(Text.of("§a已设置目标的尿道炎数值为: $time"))
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                        )
-                    )
-                )
-
-                dispatcher.register(literal("prostatitis")
-                    .executes { context ->
-                        val source = context.source.entity
-                        if (source is Pregnant) {
-                            val time = source.prostatitis
-                            if (time > 0) {
-                                source.sendMessage(Text.of("§a前列腺炎状态：§c已感染 (严重程度/时长: $time)"))
-                            } else {
-                                source.sendMessage(Text.of("§a前列腺炎状态：§b健康"))
-                            }
-                        }
-                        return@executes 1
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        .executes { context ->
-                            val source = context.source
-                            val target = EntityArgumentType.getEntity(context, "target")
-                            if (target is Pregnant) {
-                                val time = target.prostatitis
-                                if (time > 0) {
-                                    source.sendMessage(Text.of("§a目标前列腺炎状态：§c已感染 (严重程度/时长: $time)"))
-                                } else {
-                                    source.sendMessage(Text.of("§a目标前列腺炎状态：§b健康"))
-                                }
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .then(literal("set")
-                        .requires { source -> source.hasPermissionLevel(4) }
-                        .then(argument("time", IntegerArgumentType.integer(0)) // 这里使用整数，0代表治愈/无病，数值越大越严重
-                            .executes { ctx ->
-                                val source = ctx.source.entity
-                                val time = IntegerArgumentType.getInteger(ctx, "time")
-                                if (source is Pregnant) {
-                                    source.prostatitis = time
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes { ctx ->
-                                    val source = ctx.source
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    val time = IntegerArgumentType.getInteger(ctx, "time")
-                                    if (target is Pregnant) {
-                                        target.prostatitis = time
-                                        source.sendMessage(Text.of("§a已设置目标的前列腺炎数值为: $time"))
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                        )
-                    )
-                )
-
-                dispatcher.register(literal("hemorrhoids")
-                    .executes { context ->
-                        val source = context.source.entity
-                        if (source is Pregnant) {
-                            val time = source.hemorrhoids
-                            if (time > 0) {
-                                // 简单的状态描述
-                                val status = when {
-                                    time < 20 * 60 * 20 * 3 -> "轻度"
-                                    time < 20 * 60 * 20 * 5 -> "中度 (不适)"
-                                    else -> "重度 (出血/剧痛)"
-                                }
-                                source.sendMessage(Text.of("§a痔疮状态：§c已患病 [$status] (严重程度/时长: $time)"))
-                            } else {
-                                source.sendMessage(Text.of("§a痔疮状态：§b健康"))
-                            }
-                        }
-                        return@executes 1
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        .executes { context ->
-                            val source = context.source
-                            val target = EntityArgumentType.getEntity(context, "target")
-                            if (target is Pregnant) {
-                                val time = target.hemorrhoids
-                                if (time > 0) {
-                                    source.sendMessage(Text.of("§a目标痔疮状态：§c已患病 (严重程度/时长: $time)"))
-                                } else {
-                                    source.sendMessage(Text.of("§a目标痔疮状态：§b健康"))
-                                }
-                            }
-                            return@executes 1
-                        }
-                    )
-                    .then(literal("set")
-                        .requires { source -> source.hasPermissionLevel(4) }
-                        .then(argument("time", IntegerArgumentType.integer(0)) // 0代表康复，数值越大越严重
-                            .executes { ctx ->
-                                val source = ctx.source.entity
-                                val time = IntegerArgumentType.getInteger(ctx, "time")
-                                if (source is Pregnant) {
-                                    source.hemorrhoids = time
-                                }
-                                return@executes 1
-                            }
-                            .then(argument("target", EntityArgumentType.entity())
-                                .executes { ctx ->
-                                    val source = ctx.source
-                                    val target = EntityArgumentType.getEntity(ctx, "target")
-                                    val time = IntegerArgumentType.getInteger(ctx, "time")
-                                    if (target is Pregnant) {
-                                        target.hemorrhoids = time
-                                        source.sendMessage(Text.of("§a已设置目标的痔疮数值为: $time"))
-                                    }
-                                    return@executes 1
-                                }
-                            )
-                        )
-                    )
-                )
-
-
-
+                // 带有免疫功能的特殊疾病
+                registerComplexDisease(dispatcher, "aids", "AIDS", { it.aids }, { e, v -> e.aids = v }, { it.isImmune2Aids }, { e, v -> e.isImmune2Aids = v })
+                registerComplexDisease(dispatcher, "hpv", "HPV", { it.hpv }, { e, v -> e.hpv = v }, { it.isImmune2HPV }, { e, v -> e.isImmune2HPV = v })
             }
+        }
+
+        // ==================== 核心 Helper ====================
+
+        /**
+         * 核心执行逻辑：自动处理 self/target，自动检查 Pregnant 类型
+         */
+        private fun run(ctx: CommandContext<ServerCommandSource>, targetName: String? = null, action: (Pregnant, ServerCommandSource) -> Unit): Int {
+            val source = ctx.source
+            val entity = if (targetName != null) EntityArgumentType.getEntity(ctx, targetName) else source.entity
+
+            if (entity is Pregnant) {
+                action(entity, source)
+            } else {
+                // 可选：提示目标不是 Pregnant 实体
+            }
+            return 1
+        }
+
+        /**
+         * 构建通用的 "查看状态" + "针对目标查看状态" 结构
+         */
+        private fun buildSelfAndTarget(
+            builder: LiteralArgumentBuilder<ServerCommandSource>,
+            action: (Pregnant, ServerCommandSource) -> Unit
+        ): LiteralArgumentBuilder<ServerCommandSource> {
+            return builder
+                .executes { run(it, null, action) }
+                .then(argument("target", EntityArgumentType.entity())
+                    .executes { run(it, "target", action) }
+                )
+        }
+
+        /**
+         * 构建通用的 Set 命令 (需要 OP 权限)
+         * 结构: ... set <argName> (Self) -> optional target
+         */
+        private fun <T> buildSetter(
+            argName: String,
+            argType: com.mojang.brigadier.arguments.ArgumentType<T>,
+            getter: (CommandContext<ServerCommandSource>, String) -> T,
+            setterAction: (Pregnant, T) -> Unit
+        ): LiteralArgumentBuilder<ServerCommandSource> {
+            return literal("set")
+                .requires { s -> s.hasPermissionLevel(4) }
+                .then(argument(argName, argType)
+                    .executes { ctx ->
+                        val value = getter(ctx, argName)
+                        run(ctx, null) { p, _ -> setterAction(p, value) }
+                    }
+                    .then(argument("target", EntityArgumentType.entity())
+                        .executes { ctx ->
+                            val value = getter(ctx, argName)
+                            run(ctx, "target") { p, _ -> setterAction(p, value) }
+                        }
+                    )
+                )
+        }
+
+        // ==================== 通用注册器 ====================
+
+        private fun registerSimpleBool(
+            dispatcher: CommandDispatcher<ServerCommandSource>,
+            name: String,
+            displayName: String,
+            getter: (Pregnant) -> Boolean,
+            setter: (Pregnant, Boolean) -> Unit,
+            trueStr: String = "是",
+            falseStr: String = "否",
+            trueColor: String = "c", // 默认红色代表某种状态/疾病
+            falseColor: String = "a" // 默认绿色代表正常
+        ) {
+            val cmd = literal(name)
+            buildSelfAndTarget(cmd) { p, s ->
+                val state = getter(p)
+                val color = if (state) trueColor else falseColor
+                val text = if (state) trueStr else falseStr
+                s.sendMessage(Text.of("§a${displayName}状态：§$color$text"))
+            }
+            cmd.then(buildSetter("is", BoolArgumentType.bool(), BoolArgumentType::getBool, setter))
+            dispatcher.register(cmd)
+        }
+
+        private fun registerSimpleInt(
+            dispatcher: CommandDispatcher<ServerCommandSource>,
+            name: String,
+            displayName: String,
+            getter: (Pregnant) -> Int,
+            setter: (Pregnant, Int) -> Unit,
+            isDisease: Boolean = false
+        ) {
+            val cmd = literal(name)
+            buildSelfAndTarget(cmd) { p, s ->
+                val value = getter(p)
+                if (isDisease) {
+                    val status = if (value > 0) "§c已患上 (数值: $value)" else "§a没有患上/健康"
+                    s.sendMessage(Text.of("当前${displayName}状态：$status"))
+                } else {
+                    s.sendMessage(Text.of("当前${displayName}：$value"))
+                }
+            }
+            cmd.then(buildSetter("time", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger, setter))
+            dispatcher.register(cmd)
+        }
+
+        private fun registerComplexDisease(
+            dispatcher: CommandDispatcher<ServerCommandSource>,
+            name: String,
+            displayName: String,
+            valGetter: (Pregnant) -> Int,
+            valSetter: (Pregnant, Int) -> Unit,
+            immuneGetter: (Pregnant) -> Boolean,
+            immuneSetter: (Pregnant, Boolean) -> Unit
+        ) {
+            val cmd = literal(name)
+            // 状态查询
+            buildSelfAndTarget(cmd) { p, s ->
+                val v = valGetter(p)
+                val msg = if (v > 0) "已经感染$v" else "没有感染${displayName}哦"
+                s.sendMessage(Text.of("当前${displayName}状态：$msg"))
+            }
+            // 设置数值
+            cmd.then(buildSetter("time", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger, valSetter))
+
+            // 免疫功能
+            val immuneCmd = literal("immune")
+            buildSelfAndTarget(immuneCmd) { p, s ->
+                val state = if (immuneGetter(p)) "已免疫" else "没有免疫"
+                s.sendMessage(Text.of("当前${displayName}免疫状态：$state"))
+            }
+            immuneCmd.then(buildSetter("is", BoolArgumentType.bool(), BoolArgumentType::getBool, immuneSetter))
+
+            cmd.then(immuneCmd)
+            dispatcher.register(cmd)
+        }
+
+        // ==================== 具体业务模块 ====================
+
+        private fun registerSex(dispatcher: CommandDispatcher<ServerCommandSource>) {
+            val cmd = literal("sex")
+
+            // 查询逻辑
+            val showSex: (Pregnant, ServerCommandSource) -> Unit = { p, s ->
+                val gender = when {
+                    p.isMale && p.isFemale -> "§b男§d女"
+                    p.isMale -> "§b男"
+                    p.isFemale -> "§d女"
+                    else -> "无"
+                }
+                s.sendMessage(Text.of("§a性别为：$gender"))
+            }
+            buildSelfAndTarget(cmd, showSex)
+
+            // 设置逻辑
+            cmd.then(literal("male").then(
+                buildSetter("is", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v -> p.isMale = v }
+            ))
+            cmd.then(literal("female").then(
+                buildSetter("is", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v -> p.isFemale = v }
+            ))
+
+            dispatcher.register(cmd)
+        }
+
+        private fun registerPregnant(dispatcher: CommandDispatcher<ServerCommandSource>) {
+            val cmd = literal("pregnant")
+
+            // 1. 查询剩余孕期
+            buildSelfAndTarget(cmd) { p, s ->
+                s.sendMessage(Text.of("剩余孕期：${p.pregnant / 20 / 60 / 20}天"))
+            }
+
+            // 2. 设置孕期
+            cmd.then(buildSetter("time", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.pregnant = v })
+
+            // 3. 状态 (status)
+            val statusCmd = literal("status")
+            statusCmd.requires { it.hasPermissionLevel(4) }
+            buildSelfAndTarget(statusCmd) { p, s ->
+                val msg = when {
+                    p.isEctopicPregnancy -> "§c当前怀孕状态为宫外孕！"
+                    p.isHydatidiformMole -> "§c当前怀孕状态为葡萄胎！"
+                    else -> "§a当前怀孕状态正常"
+                }
+                s.sendMessage(Text.of(msg))
+            }
+
+            // 3.1 状态设置 (set type)
+            // 原逻辑有些复杂，这里简化重构
+            val setStatusCmd = literal("set")
+                .then(argument("type", StringArgumentType.word())
+                    .then(argument("is", BoolArgumentType.bool())
+                        .executes { ctx ->
+                            run(ctx, null) { p, _ -> setPregnancyStatus(p, ctx) }
+                        }
+                        .then(argument("target", EntityArgumentType.entity())
+                            .executes { ctx ->
+                                run(ctx, "target") { p, _ -> setPregnancyStatus(p, ctx) }
+                            }
+                        )
+                    )
+                )
+            statusCmd.then(setStatusCmd)
+            cmd.then(statusCmd)
+
+            // 4. 胎儿数量 (count)
+            val countCmd = literal("count")
+            buildSelfAndTarget(countCmd) { p, s ->
+                if (p.isPregnant) s.sendMessage(Text.of("§a怀了${p.babyCount}胞胎！"))
+            }
+            countCmd.then(buildSetter("count", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.babyCount = v })
+            cmd.then(countCmd)
+
+            dispatcher.register(cmd)
+        }
+
+        private fun setPregnancyStatus(p: Pregnant, ctx: CommandContext<ServerCommandSource>) {
+            val type = StringArgumentType.getString(ctx, "type")
+            val value = BoolArgumentType.getBool(ctx, "is")
+            if (type.contains("ect")) {
+                p.isEctopicPregnancy = value
+            } else if (type.contains("hyd") || type.contains("mole")) {
+                p.isHydatidiformMole = value
+            }
+        }
+
+        private fun registerMenstruation(dispatcher: CommandDispatcher<ServerCommandSource>) {
+            val cmd = literal("menstruation")
+
+            buildSelfAndTarget(cmd) { p, s ->
+                s.sendMessage(Text.of("当前处于${p.menstruationCycle.text}"))
+            }
+
+            cmd.then(buildSetter("time", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.menstruation = v })
+
+            val comfortCmd = literal("comfort")
+            buildSelfAndTarget(comfortCmd) { p, s ->
+                s.sendMessage(Text.of("卫生巾剩余有效时间：${p.menstruationComfort / 20}秒"))
+            }
+            cmd.then(comfortCmd)
+
+            dispatcher.register(cmd)
+        }
+
+        private fun registerExcretion(dispatcher: CommandDispatcher<ServerCommandSource>) {
+            val cmd = literal("excretion")
+
+            // 排泄动作
+            cmd.then(literal("release").executes { ctx ->
+                run(ctx, null) { p, s ->
+                    if (p.excretion > 20 * 60 * 10) {
+                        p.excretion -= 20 * 60 * 10
+                        p.doDefecationPain()
+                        s.sendMessage(Text.of("你排泄了"))
+                        p as LivingEntity
+                        p.dropStack(JRItems.EXCREMENT.defaultStack)
+                    } else {
+                        s.sendMessage(Text.of("你目前无需排泄"))
+                    }
+                }
+            })
+
+            // 查询
+            buildSelfAndTarget(cmd) { p, s ->
+                s.sendMessage(Text.of("当前憋粑粑时间：${p.excretion / 20 / 60}分钟"))
+            }
+
+            // 设置
+            cmd.then(buildSetter("time", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.excretion = v })
+
+            dispatcher.register(cmd)
+        }
+
+        private fun registerUrination(dispatcher: CommandDispatcher<ServerCommandSource>) {
+            val cmd = literal("urination")
+
+            cmd.then(literal("release").executes { ctx ->
+                run(ctx, null) { p, s ->
+                    if (p.urination > 20 * 60 * 10) {
+                        p.urination = 0
+                        s.sendMessage(Text.of("你排尿了，感觉一身轻！"))
+                    } else {
+                        s.sendMessage(Text.of("你目前无需排尿"))
+                    }
+                }
+            })
+
+            buildSelfAndTarget(cmd) { p, s ->
+                s.sendMessage(Text.of("当前憋尿时间：${p.urination / 20 / 60}分钟"))
+            }
+
+            cmd.then(buildSetter("time", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.urination = v })
+
+            dispatcher.register(cmd)
+        }
+
+        private fun registerHymen(dispatcher: CommandDispatcher<ServerCommandSource>) {
+            val cmd = literal("hymen")
+
+            buildSelfAndTarget(cmd) { p, s ->
+                val has = if (p.hasHymen()) "§a完整" else "§c已破裂"
+                val imp = if (p.isImperforateHymen()) "§c是 (严重畸形)" else "§b否 (正常)"
+                s.sendMessage(Text.of("§e[生理检查] §f处女膜: $has §f| 闭锁畸形: $imp"))
+            }
+
+            val setCmd = literal("set").requires { it.hasPermissionLevel(4) }
+
+            // set has
+            setCmd.then(literal("has").then(
+                argument("value", BoolArgumentType.bool())
+                    .executes { ctx ->
+                        val v = BoolArgumentType.getBool(ctx, "value")
+                        run(ctx, null) { p, _ -> p.setHasHymen(v) }
+                    }
+                    .then(argument("target", EntityArgumentType.entity())
+                        .executes { ctx ->
+                            val v = BoolArgumentType.getBool(ctx, "value")
+                            run(ctx, "target") { p, s ->
+                                p.setHasHymen(v)
+                                s.sendMessage(Text.of("§a已设置目标处女膜状态"))
+                            }
+                        }
+                    )
+            ))
+
+            // set imperforate
+            setCmd.then(literal("imperforate").then(
+                argument("value", BoolArgumentType.bool())
+                    .executes { ctx ->
+                        val v = BoolArgumentType.getBool(ctx, "value")
+                        run(ctx, null) { p, _ -> p.setImperforateHymen(v) }
+                    }
+                    .then(argument("target", EntityArgumentType.entity())
+                        .executes { ctx ->
+                            val v = BoolArgumentType.getBool(ctx, "value")
+                            run(ctx, "target") { p, s ->
+                                p.setImperforateHymen(v)
+                                s.sendMessage(Text.of("§a已设置目标闭锁状态"))
+                            }
+                        }
+                    )
+            ))
+
+            cmd.then(setCmd)
+            dispatcher.register(cmd)
         }
     }
 }

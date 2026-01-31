@@ -53,6 +53,8 @@ public interface Pregnant{
         if (((Entity)this).getRandom().nextFloat() < getEctopicPregnancyProbability()) {
             this.setEctopicPregnancy(true);
         }
+        // 破处
+        this.ruptureHymen("怀孕");
     }
 
     default void setPregnant(int time) {
@@ -208,9 +210,11 @@ public interface Pregnant{
 
         boolean isSevereUterineCold = getUterineCold() > 20 * 60 * 20 * 2; // 积累超过2天寒气视为严重
 
+        boolean physicalBlock = isImperforateHymen();
+
         return menstruationOk && !this.isPregnant() && !this.isSterilization() && this.hasUterus() && !this.isPCOS()
                 && !(this.getBrithControlling() > 0 && ((Entity)this).getRandom().nextInt(10) != 0) && !noMatingPlz
-                && !isSevereUterineCold;
+                && !isSevereUterineCold && !physicalBlock;
     }
 
     default void writePregnantToNbt(NbtCompound nbt) {
@@ -243,6 +247,8 @@ public interface Pregnant{
         nbt.putInt("Prostatitis", getProstatitis());
         nbt.putInt("Hemorrhoids", getHemorrhoids());
         nbt.putFloat("ParthenogenesisVariance", getParthenogenesisVariance());
+        nbt.putBoolean("HasHymen", hasHymen());
+        nbt.putBoolean("ImperforateHymen", isImperforateHymen());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         setFemale(nbt.getBoolean("Female"));
@@ -338,6 +344,16 @@ public interface Pregnant{
         }
         if (nbt.contains("ParthenogenesisVariance")) {
             setParthenogenesisVariance(nbt.getFloat("ParthenogenesisVariance"));
+        }
+        if (nbt.contains("HasHymen")) {
+            setHasHymen(nbt.getBoolean("HasHymen"));
+        } else {
+            if (hasUterus()) {
+                setHasHymen(true);
+            }
+        }
+        if (nbt.contains("ImperforateHymen")) {
+            setImperforateHymen(nbt.getBoolean("ImperforateHymen"));
         }
     }
 
@@ -512,7 +528,77 @@ public interface Pregnant{
         return getUterineCold() > 20 * 60 * 10;
     }
 
+// ----------------- 处女膜 & 闭锁 ------------------------------
 
+    default void setHasHymen(boolean hasHymen) {}
+    /**
+     * 是否拥有完整的处女膜
+     */
+    default boolean hasHymen() {
+        return false;
+    }
+
+    default void setImperforateHymen(boolean imperforate) {}
+    /**
+     * 是否患有（先天性畸形）
+     * 如果为 true，会导致经血无法排出（腹痛）且无法自然受孕
+     */
+    default boolean isImperforateHymen() {
+        return false;
+    }
+
+    /**
+     * 执行处女膜切开术/修复术 (手术)
+     * 用于治疗处女膜闭锁，或者单纯的手术破坏
+     */
+    default void performHymenotomy() {
+        if (isImperforateHymen() || hasHymen()) {
+            setImperforateHymen(false);
+            setHasHymen(false);
+            if (this instanceof LivingEntity entity) {
+                entity.sendMessage(Text.of("§a手术成功，处女膜闭锁已解除。"));
+            }
+        }
+    }
+
+    /**
+     * 破处
+     * @return 是否成功破处
+     */
+    default boolean ruptureHymen(String cause) {
+        if (!hasHymen()) return false;
+
+        if (isImperforateHymen()) return false;
+
+        setHasHymen(false);
+
+        if (this instanceof LivingEntity entity) {
+            // 1. 扣血 (撕裂痛)
+            entity.damage(entity.getDamageSources().generic(), 2.0f);
+
+            // 2. 负面效果 (疼痛导致的虚弱)
+            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 30, 0));
+            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 10, 0));
+
+            entity.sendMessage(Text.of("§c下体感到一阵撕裂般的剧痛... (" + cause + ")"));
+
+            // 3. 弄脏胖次 / 落红逻辑
+            ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
+            boolean hasPantsu = !legStack.isEmpty() && legStack.getItem() instanceof PantsuItem;
+
+            if (hasPantsu) {
+                JRComponents.PantsuState currentState = legStack.get(JRComponents.Companion.getPANTSU_STATE());
+                // 只有干净的时候才染红
+                if (currentState == null || currentState == JRComponents.PantsuState.CLEAN) {
+                    legStack.set(JRComponents.Companion.getPANTSU_STATE(), JRComponents.PantsuState.BLOODY);
+                }
+            } else {
+                // 没穿胖
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 10, 0));
+            }
+        }
+        return true;
+    }
 
     //  --------------------- MALE --------------------------
     default void setOrchiectomy(boolean orchiectomy){}
@@ -1435,6 +1521,75 @@ public interface Pregnant{
                             false
                     )
             );
+        }
+    }
+
+    /**
+     * 处理处女膜在剧烈运动下的自然破裂逻辑
+     */
+    static <T extends LivingEntity & Pregnant> void hymenTick(T entity) {
+        if (!entity.hasHymen() || !entity.hasUterus()) return;
+
+        // 如果是闭锁状态，通常组织非常厚韧，一般的运动不会导致破裂，必须手术
+        if (entity.isImperforateHymen()) return;
+
+        // 1. 骑乘判定 (骑马、矿车等颠簸)
+        if (entity.hasVehicle()) {
+            // 骑乘时极低概率破裂 (1/10000 每tic)
+            if (entity.getRandom().nextInt(10000) == 0) {
+                entity.ruptureHymen("剧烈颠簸");
+            }
+        }
+
+        // 2. 疾跑判定 (剧烈拉伸)
+        if (entity.isSprinting()) {
+            // 疾跑时极低概率 (1/8000)
+            if (entity.getRandom().nextInt(8000) == 0) {
+                entity.ruptureHymen("剧烈运动");
+            }
+        }
+
+        // 3. 跳跃/摔落判定
+        if (entity.fallDistance > 5.0f) {
+            // 落地受击时有概率
+            if (entity.getRandom().nextInt(100) == 0) { // 落地时1%概率
+                entity.ruptureHymen("高处坠落冲击");
+            }
+        }
+    }
+    /**
+     * 处理处女膜闭锁导致的病理状态
+     * 核心逻辑：月经期经血无法排出 -> 经血潴留 -> 腹痛、伤害、负面效果
+     */
+    static <T extends LivingEntity & Pregnant> void imperforateHymenTick(T entity) {
+        if (!entity.isFemale() || !entity.hasUterus() || !entity.isImperforateHymen()) return;
+
+        // 只有在月经期才会出现严重症状
+        if (entity.getMenstruationCycle() == MenstruationCycle.MENSTRUATION) {
+
+            // 1. 阻断经血排出带来的“舒适度”或清洁逻辑
+            // (这里不需要写代码，只是逻辑上说明：因为闭锁，胖次不会脏，但人会废掉)
+
+            // 2. 周期性剧痛 (每 30秒 - 1分钟)
+            if (entity.getRandom().nextInt(600) == 0) {
+                // 魔法伤害（无视护甲，模拟内脏疼痛）
+                entity.damage(entity.getDamageSources().magic(), 2.0f);
+                entity.sendMessage(Text.of("§c下腹部因经血无法排出而肿胀剧痛！"));
+
+                // 3. 伴随效果
+                // 反胃 (疼痛引起)
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 20, 0));
+                // 缓慢 (痛得走不动)
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 30, 2));
+                // 虚弱
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 30, 1));
+            }
+
+            // 4. 极度严重情况 (如果不治疗，可能导致持续掉血)
+            // 模拟“处女膜闭锁导致的阴道积血/子宫积血”
+            if (entity.getRandom().nextInt(100) == 0) {
+                entity.damage(entity.getDamageSources().magic(), 0.5f);
+            }
         }
     }
 

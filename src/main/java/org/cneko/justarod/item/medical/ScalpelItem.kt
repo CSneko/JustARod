@@ -52,6 +52,10 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
         }else if (stack.containsEnchantment(JREnchantments.HEMORRHOIDECTOMY)) {
             tooltip.add(Text.of("§c使用它可进行痔疮切除术"))
             tooltip.add(Text.of("§7彻底解决难言之隐"))
+        }else if (stack.containsEnchantment(JREnchantments.HYMENOTOMY)){
+            tooltip.add(Text.of("§c使用它可进行处女膜切开术"))
+            tooltip.add(Text.of("§a用来切除闭锁问题"))
+            tooltip.add(Text.of("§7当然你也可以选择放弃处的身份"))
         }
     }
 
@@ -88,6 +92,8 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
         }else if (stack.containsEnchantment(JREnchantments.HEMORRHOIDECTOMY)) {
             // 只要有痔疮值就可切除
             return target.hemorrhoids > 0
+        }else if (stack.containsEnchantment(JREnchantments.HYMENOTOMY)){
+            return target.isImperforateHymen || target.hasHymen()
         }
 
         return false // 没有对应附魔，无法使用
@@ -114,8 +120,12 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
             } else if (stack.containsEnchantment(JREnchantments.AMPUTATING)) {
                 if (target.isAmputated) return if (user == target) Text.of("§c你已经截肢过了！") else Text.of("§c对方已经截肢过了！")
             } else if (stack.containsEnchantment(JREnchantments.HEMORRHOIDECTOMY)) {
-            return if (user == target) Text.of("§c你没有痔疮！") else Text.of("§c对方没有痔疮！")
-        }
+                return if (user == target) Text.of("§c你没有痔疮！") else Text.of("§c对方没有痔疮！")
+            }else if (stack.containsEnchantment(JREnchantments.HYMENOTOMY)) {
+                if (!target.isImperforateHymen && !target.hasHymen()) {
+                    return if (user == target) Text.of("§c你没有处女膜！") else Text.of("§c对方没有处女膜！")
+                }
+            }
         }
 
         return Text.of("§c不满足使用条件。") // 默认失败消息
@@ -246,6 +256,9 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
             target.damage(target.world.damageSources.generic(), 4f)
             // 术后恢复期需要一点虚弱
             target.addStatusEffect(StatusEffectInstance(StatusEffects.WEAKNESS, 1200, 0)) // 1分钟虚弱
+        } else if (stack.containsEnchantment(JREnchantments.HYMENOTOMY)){
+            target.performHymenotomy()
+            target.damage(target.world.damageSources.generic(), 2f)
         }
     }
 
@@ -298,6 +311,11 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
             return ActionMessages(
                 userSuccessMessage = if (isSelf) Text.of("§a你成功切除了自己的痔疮！一身轻松！") else Text.of("§a已为对方成功切除痔疮！"),
                 targetSuccessMessage = if (isSelf) null else Text.of("§a你的痔疮被切除了，屁股虽然痛但是很清爽！")
+            )
+        }else if (stack.containsEnchantment(JREnchantments.HYMENOTOMY)) {
+            return ActionMessages(
+                userSuccessMessage = if (isSelf) Text.of("§a你成功为自己进行了处女膜切开术！") else Text.of("§a已为对方进行了处女膜切开术！"),
+                targetSuccessMessage = if (isSelf) null else Text.of("§a你的处女膜被切开了！")
             )
         }
         // 不应该到达这里，但作为安全措施

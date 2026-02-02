@@ -528,6 +528,37 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
         return imperforateHymen;
     }
 
+    @Unique
+    private boolean protogynyEnabled = false;
+    @Unique
+    private boolean isUndergoingProtogyny = false;
+    @Unique
+    private int protogynyProgress = 0;
+    @Override
+    public boolean isProtogynyEnabled() {
+        return protogynyEnabled;
+    }
+    @Override
+    public void setProtogynyEnabled(boolean protogynyEnabled) {
+        this.protogynyEnabled = protogynyEnabled;
+    }
+    @Override
+    public boolean isUndergoingProtogyny() {
+        return isUndergoingProtogyny;
+    }
+    @Override
+    public void setUndergoingProtogyny(boolean undergoingProtogyny) {
+        isUndergoingProtogyny = undergoingProtogyny;
+    }
+    @Override
+    public int getProtogynyProgress() {
+        return protogynyProgress;
+    }
+    @Override
+    public void setProtogynyProgress(int protogynyProgress) {
+        this.protogynyProgress = protogynyProgress;
+    }
+
     @Override
     public Entity createBaby() {
         PlayerEntity player = (PlayerEntity) (Object) this;
@@ -613,6 +644,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
             Pregnant.hemorrhoidsTick(player);
             Pregnant.hymenTick(player);
             Pregnant.imperforateHymenTick(player);
+            Pregnant.protogynyTick(player);
             BDSMable.ballMouthTick(player);
             BDSMable.electricShockTick(player);
             BDSMable.bundledTick(player);

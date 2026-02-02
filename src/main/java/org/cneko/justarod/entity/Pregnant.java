@@ -10,8 +10,10 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.PlainTextContent;
 import net.minecraft.text.Text;
@@ -249,6 +251,9 @@ public interface Pregnant{
         nbt.putFloat("ParthenogenesisVariance", getParthenogenesisVariance());
         nbt.putBoolean("HasHymen", hasHymen());
         nbt.putBoolean("ImperforateHymen", isImperforateHymen());
+        nbt.putBoolean("ProtogynyEnabled", isProtogynyEnabled());
+        nbt.putBoolean("IsUndergoingProtogyny", isUndergoingProtogyny());
+        nbt.putInt("ProtogynyProgress", getProtogynyProgress());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         setFemale(nbt.getBoolean("Female"));
@@ -354,6 +359,15 @@ public interface Pregnant{
         }
         if (nbt.contains("ImperforateHymen")) {
             setImperforateHymen(nbt.getBoolean("ImperforateHymen"));
+        }
+        if (nbt.contains("ProtogynyEnabled")) {
+            setProtogynyEnabled(nbt.getBoolean("ProtogynyEnabled"));
+        }
+        if (nbt.contains("IsUndergoingProtogyny")) {
+            setUndergoingProtogyny(nbt.getBoolean("IsUndergoingProtogyny"));
+        }
+        if (nbt.contains("ProtogynyProgress")) {
+            setProtogynyProgress(nbt.getInt("ProtogynyProgress"));
         }
     }
 
@@ -683,6 +697,45 @@ public interface Pregnant{
         }
     }
 
+    // ----------------- 雌转雄机制 (Protogyny) -----------------
+
+    // 变性总时长：5分钟 (6000 ticks)
+    int PROTOGYNY_TOTAL_DURATION = 20 * 60 * 5;
+    // 雄性特征发育时间点：3分钟 (3600 ticks)
+    int PROTOGYNY_MALE_DEVELOP_TIME = 20 * 60 * 3;
+
+    /**
+     * 该实体是否开启了“雌转雄”能力的开关
+     */
+    default void setProtogynyEnabled(boolean enabled) {}
+    default boolean isProtogynyEnabled() {
+        return false;
+    }
+
+    /**
+     * 是否正在经历变性过程
+     */
+    default void setUndergoingProtogyny(boolean undergoing) {}
+    default boolean isUndergoingProtogyny() {
+        return false;
+    }
+
+    /**
+     * 变性进度 (Tick)
+     */
+    default void setProtogynyProgress(int progress) {}
+    default int getProtogynyProgress() {
+        return 0;
+    }
+
+    /**
+     * 触发变性的体型阈值
+     * 默认设定：体型大于 1.2 倍标准大小时尝试触发
+     */
+    default double getProtogynyScaleThreshold() {
+        return 1.2;
+    }
+
 
     // ----------------- 孤雌生殖 ------------------------------
     default void setParthenogenesisVariance(float variance) {}
@@ -698,6 +751,158 @@ public interface Pregnant{
             // 计算倍率：例如 variance=0.1, random=-0.5 => multiplier = 1.0 + (-0.05) = 0.95
             double multiplier = 1.0 + (randomFactor * variance);
             instance.setBaseValue(base * multiplier);
+        }
+    }
+
+
+    /**
+     * 强制转为雄性
+     * 效果：清除女性器官/病症，获得男性特征。
+     * 属性判定：如果之前不是男性，属性提升。
+     */
+    default void forceToMale() {
+        boolean wasMale = this.isMale();
+        boolean isEntity = this instanceof LivingEntity;
+
+        // 1. 属性变更判定：之前不属于男性 -> 属性上升
+        if (isEntity && !wasMale) {
+            applySexChangeAttributeModifier((LivingEntity) this, true);
+        }
+
+        // 2. 性别设定
+        this.setMale(true);
+        this.setFemale(false);
+
+        // 3. 移除女性器官与状态
+        this.setHasUterus(false);
+        this.setHasHymen(false);
+        this.setImperforateHymen(false);
+
+        // 4. 重置/赋予男性器官
+        this.setOrchiectomy(false); // 恢复睾丸（如果有切除）
+        // 前列腺炎归零，代表健康的前列腺
+        this.setProstatitis(0);
+    }
+
+    /**
+     * 强制转为雌性
+     * 效果：清除男性器官/病症，获得女性特征。
+     * 属性判定：如果之前不是女性，属性下降。
+     */
+    default void forceToFemale() {
+        boolean wasFemale = this.isFemale();
+        boolean isEntity = this instanceof LivingEntity;
+
+        // 1. 属性变更判定：之前不属于女性 -> 属性下降
+        if (isEntity && !wasFemale) {
+            applySexChangeAttributeModifier((LivingEntity) this, false);
+        }
+
+        // 2. 性别设定
+        this.setMale(false);
+        this.setFemale(true);
+
+        // 3. 赋予女性器官
+        this.setHasUterus(true);
+        // 默认给予完整的处女膜，除非是强制转换通常意味着重塑
+        this.setHasHymen(true);
+        this.setImperforateHymen(false); // 默认为健康状态
+
+        // 4. 移除男性状态
+        this.setProstatitis(0);
+        this.setOrchiectomy(true); // 概念上移除睾丸（虽然isMale=false已经屏蔽了逻辑）
+    }
+
+    /**
+     * 强制转为双性 (扶她/雌雄同体)
+     * 效果：同时拥有男性和女性的性征和器官。
+     * 属性判定：属于男性 -> 下降；属于女性 -> 上升。
+     */
+    default void forceToMaleAndFemale() {
+        boolean wasMale = this.isMale();
+        boolean wasFemale = this.isFemale();
+        boolean isEntity = this instanceof LivingEntity;
+
+        // 1. 属性变更判定
+        if (isEntity) {
+            if (wasMale && !wasFemale) {
+                // 属于纯男性 -> 下降
+                applySexChangeAttributeModifier((LivingEntity) this, false);
+            } else if (!wasMale && wasFemale) {
+                // 属于纯女性 -> 上升
+                applySexChangeAttributeModifier((LivingEntity) this, true);
+            }
+            // 既是男又是女，或者都不是 -> 属性不变
+        }
+
+        // 2. 性别设定
+        this.setMale(true);
+        this.setFemale(true);
+
+        // 3. 赋予全套器官
+        this.setHasUterus(true);
+        if (!this.hasHymen()) this.setHasHymen(true); // 如果没有就给一个
+        this.setOrchiectomy(false); // 有睾丸
+    }
+
+    /**
+     * 强制转为无性别
+     * 效果：清除所有性征和器官。
+     * 属性判定：属于男性 -> 下降；属于女性 -> 上升。
+     */
+    default void forceToNoSex() {
+        boolean wasMale = this.isMale();
+        boolean wasFemale = this.isFemale();
+        boolean isEntity = this instanceof LivingEntity;
+
+        // 1. 属性变更判定 (同双性逻辑)
+        if (isEntity) {
+            if (wasMale && !wasFemale) {
+                // 属于纯男性 -> 下降
+                applySexChangeAttributeModifier((LivingEntity) this, false);
+            } else if (!wasMale && wasFemale) {
+                // 属于纯女性 -> 上升
+                applySexChangeAttributeModifier((LivingEntity) this, true);
+            }
+        }
+
+        // 2. 性别设定
+        this.setMale(false);
+        this.setFemale(false);
+
+        // 3. 清除所有器官和状态
+        this.setHasUterus(false);
+        this.setHasHymen(false);
+        this.setOrchiectomy(true); // 移除
+    }
+
+    /**
+     * 内部辅助方法：处理属性的提升与下降
+     * 提升：生命上限 +4.0 (2心)，攻击力 +1.0
+     * 下降：生命上限 -4.0 (2心)，攻击力 -1.0
+     */
+    private void applySexChangeAttributeModifier(LivingEntity entity, boolean isBonus) {
+        // 修改生命上限
+        var healthAttr = entity.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
+        if (healthAttr != null) {
+            double currentBase = healthAttr.getBaseValue();
+            double modifier = isBonus ? 4.0 : -4.0;
+            double newValue = Math.max(1.0, currentBase + modifier); // 此时防止生命值归零
+            healthAttr.setBaseValue(newValue);
+
+            // 如果是扣血，需要同步更新当前血量，防止当前血量 > 上限
+            if (!isBonus && entity.getHealth() > newValue) {
+                entity.setHealth((float) newValue);
+            }
+        }
+
+        // 修改攻击力
+        var attackAttr = entity.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE);
+        if (attackAttr != null) {
+            double currentBase = attackAttr.getBaseValue();
+            double modifier = isBonus ? 1.0 : -1.0;
+            // 攻击力最低为 0.5
+            attackAttr.setBaseValue(Math.max(0.5, currentBase + modifier));
         }
     }
 
@@ -1589,6 +1794,135 @@ public interface Pregnant{
             // 模拟“处女膜闭锁导致的阴道积血/子宫积血”
             if (entity.getRandom().nextInt(100) == 0) {
                 entity.damage(entity.getDamageSources().magic(), 0.5f);
+            }
+        }
+    }
+
+    /**
+     * 雌转雄核心逻辑 Tick
+     */
+    static <T extends LivingEntity & Pregnant> void protogynyTick(T entity) {
+        // 1. 全局开关检查
+        if (!entity.isProtogynyEnabled()) return;
+
+        // 2. 触发检测 (如果尚未开始)
+        if (!entity.isUndergoingProtogyny()) {
+            // 必须是雌性才能转雄
+            if (!entity.isFemale()) return;
+            // 怀孕中严禁变性
+            if (entity.isPregnant()) return;
+
+            // 检测 Scale 属性
+            double currentScale = entity.getAttributeValue(EntityAttributes.GENERIC_SCALE);
+            if (currentScale >= entity.getProtogynyScaleThreshold()) {
+                // 触发变性！
+                entity.setUndergoingProtogyny(true);
+                entity.sendMessage(Text.of("§c你感觉到体内燥热难耐，似乎正在发生某种剧变..."));
+
+                // 特殊情况处理：如果已经是双性 (Male=true, Female=true)
+                // 直接快进到 3分钟 阶段，跳过单纯雌性阶段
+                if (entity.isMale()) {
+                    entity.setProtogynyProgress(PROTOGYNY_MALE_DEVELOP_TIME);
+                } else {
+                    entity.setProtogynyProgress(0);
+                }
+            }
+        }
+        // 3. 进行中逻辑
+        else {
+            // 安全检查：如果中途怀孕了（虽然不应该发生），强制终止变性
+            if (entity.isPregnant()) {
+                entity.setUndergoingProtogyny(false);
+                entity.setProtogynyProgress(0);
+                entity.sendMessage(Text.of("§c由于受孕，身体的重塑停止了。"));
+                return;
+            }
+
+            int progress = entity.getProtogynyProgress();
+            entity.setProtogynyProgress(progress + 1);
+
+            // 伴随效果：变性消耗大量能量，给予饥饿感
+            if (entity.getRandom().nextInt(100) == 0) {
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 20 * 10, 0));
+            }
+
+            // --- 阶段 A: 0 ~ 3分钟 (纯雌性阶段，但在积累雄激素) ---
+            if (progress < PROTOGYNY_MALE_DEVELOP_TIME) { // 0 ~ 3600 tick
+                // 偶尔给予微弱力量提示 (模拟雄激素逐渐起效)
+                if (entity.getRandom().nextInt(600) == 0) {
+                    if(entity.getWorld() instanceof ServerWorld sw){
+                        sw.spawnParticles(ParticleTypes.HAPPY_VILLAGER,
+                                entity.getX(), entity.getY() + 1.0, entity.getZ(),
+                                5,
+                                0.3, 0.5, 0.3,
+                                0.1);
+                    }
+                    entity.sendMessage(Text.of("§e你感觉体内有股力量在涌动..."));
+                }
+            }
+
+            // --- 阶段 B: 达到 3分钟 (开启雄性，进入间性期) ---
+            if (progress == PROTOGYNY_MALE_DEVELOP_TIME) { // 3600 tick
+                if (!entity.isMale()) {
+                    entity.setMale(true);
+                    entity.sendMessage(Text.of("§6你的身体生长出了雄性特征..."));
+                    // 给予瞬间治疗，模拟激素激增
+                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.INSTANT_HEALTH, 1, 0));
+                    // 给予力量 I，因为有了雄激素
+                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, PROTOGYNY_TOTAL_DURATION - progress, 0));
+                    if(entity.getWorld() instanceof ServerWorld sw){
+                        // 生成粒子
+                        sw.spawnParticles(ParticleTypes.HEART,
+                                entity.getX(), entity.getY() + 1.0, entity.getZ(),
+                                20,
+                                0.5, 1.0, 0.5,
+                                0.2);
+                    }
+                }
+            }
+
+            // --- 阶段 C: 达到 5分钟 (关闭雌性，变性完成) ---
+            if (progress >= PROTOGYNY_TOTAL_DURATION) { // 6000 tick
+                // 1. 关闭雌性特征
+                entity.setFemale(false);
+
+                // 2. 移除相关器官
+                // 变性完成后，子宫退化消失
+                if (entity.hasUterus()) {
+                    entity.setHasUterus(false);
+                    // 处女膜随子宫结构改变而消失
+                    entity.setHasHymen(false);
+                    entity.setImperforateHymen(false);
+                }
+
+                // 3. 疾病清理
+                entity.removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getUTERINE_COLD_EFFECT()));
+                entity.removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getOVARIAN_CANCER_EFFECT()));
+
+                // 4. 重置变性状态
+                entity.setUndergoingProtogyny(false);
+                entity.setProtogynyProgress(0);
+
+                // 5. 最终结算与奖励
+                entity.sendMessage(Text.of("§b彻底的转变完成了！你现在是雄性了。"));
+
+                // 奖励：体型略微再增大一点
+                var scaleAttr = entity.getAttributeInstance(EntityAttributes.GENERIC_SCALE);
+                if (scaleAttr != null) {
+                    // 永久性增加 10% 体型作为“阿尔法雄性”的标志
+                    // 注意：需要使用 AttributeModifier 防止重复叠加，这里简化处理直接改Base
+                    scaleAttr.setBaseValue(scaleAttr.getBaseValue() * 1.05);
+                }
+
+                // 奖励：生命上限提升
+                var healthAttr = entity.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
+                if (healthAttr != null) {
+                    healthAttr.setBaseValue(healthAttr.getBaseValue() + 4.0); // +2心
+                    entity.setHealth(entity.getMaxHealth()); // 回满血
+                }
+
+                // 奖励：获得 2分钟 力量 II
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 20 * 60 * 2, 1));
             }
         }
     }

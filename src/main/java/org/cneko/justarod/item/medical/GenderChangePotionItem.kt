@@ -38,22 +38,18 @@ class GenderChangePotionItem(settings: Settings, val gender: Gender): MedicalIte
             if (Random.nextDouble() < 0.2) {
                 if (Random.nextBoolean()) {
                     // 同时为 male 和 female
-                    target.isMale = true
-                    target.isFemale = true
+                    target.forceToMaleAndFemale()
                 } else {
                     // 同时不是 male 和 female
-                    target.isMale = false
-                    target.isFemale = false
+                    target.forceToNoSex()
                 }
             } else {
                 when (gender) {
                     Gender.MALE -> {
-                        target.isMale = true
-                        target.isFemale = false
+                        target.forceToMale()
                     }
                     Gender.FEMALE -> {
-                        target.isMale = false
-                        target.isFemale = true
+                        target.forceToFemale()
                     }
                 }
             }
@@ -74,7 +70,7 @@ class GenderChangePotionItem(settings: Settings, val gender: Gender): MedicalIte
         user: PlayerEntity,
         target: LivingEntity,
         stack: ItemStack
-    ): ActionMessages? {
+    ): ActionMessages {
         return ActionMessages(
             userSuccessMessage = Text.literal("你使用了变性药水，成功改变了 ${target.name.string} 的性别！"),
             targetSuccessMessage = Text.literal("你的性别被改变了！")

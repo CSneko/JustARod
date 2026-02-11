@@ -106,5 +106,10 @@
       <option name="name" value="LoomLocalMinecraft" />
       <option name="url" value="file:/$PROJECT_DIR$/.gradle/loom-cache/minecraftMaven/" />
     </remote-repository>
+    <remote-repository>
+      <option name="id" value="LoomGlobalMinecraft" />
+      <option name="name" value="LoomGlobalMinecraft" />
+      <option name="url" value="file:$PROJECT_DIR$/../../../enkoo/home/.gradle/caches/fabric-loom/minecraftMaven/" />
+    </remote-repository>
   </component>
 </project>

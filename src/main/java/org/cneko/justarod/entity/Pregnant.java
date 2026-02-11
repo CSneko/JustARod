@@ -1,8 +1,10 @@
 package org.cneko.justarod.entity;
 
 import lombok.Getter;
+import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -19,6 +21,7 @@ import net.minecraft.text.PlainTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
+import org.cneko.justarod.Justarod;
 import org.cneko.justarod.effect.JREffects;
 import org.cneko.justarod.item.JRComponents;
 import org.cneko.justarod.item.JRItems;
@@ -254,6 +257,9 @@ public interface Pregnant{
         nbt.putBoolean("ProtogynyEnabled", isProtogynyEnabled());
         nbt.putBoolean("IsUndergoingProtogyny", isUndergoingProtogyny());
         nbt.putInt("ProtogynyProgress", getProtogynyProgress());
+        nbt.putFloat("Hormone_T", getTestosterone());
+        nbt.putFloat("Hormone_E", getEstrogen());
+        nbt.putFloat("Hormone_P", getProgesterone());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         setFemale(nbt.getBoolean("Female"));
@@ -369,6 +375,9 @@ public interface Pregnant{
         if (nbt.contains("ProtogynyProgress")) {
             setProtogynyProgress(nbt.getInt("ProtogynyProgress"));
         }
+        if (nbt.contains("Hormone_T")) setTestosterone(nbt.getFloat("Hormone_T"));
+        if (nbt.contains("Hormone_E")) setEstrogen(nbt.getFloat("Hormone_E"));
+        if (nbt.contains("Hormone_P")) setProgesterone(nbt.getFloat("Hormone_P"));
     }
 
     default Entity createBaby() {
@@ -753,6 +762,18 @@ public interface Pregnant{
             instance.setBaseValue(base * multiplier);
         }
     }
+
+    // ----------------- 激素系统 (Hormones) -----------------
+    Identifier TESTOSTERONE_ID = Identifier.of(Justarod.MODID,"testosterone");
+    Identifier ESTROGEN_ID = Identifier.of(Justarod.MODID,"estrogen");
+    default void setTestosterone(float value) {}
+    default float getTestosterone() { return 0.0f; }
+
+    default void setEstrogen(float value) {}
+    default float getEstrogen() { return 0.0f; }
+
+    default void setProgesterone(float value) {} // 孕酮
+    default float getProgesterone() { return 0.0f; }
 
 
     /**
@@ -1923,6 +1944,248 @@ public interface Pregnant{
 
                 // 奖励：获得 2分钟 力量 II
                 entity.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 20 * 60 * 2, 1));
+            }
+        }
+    }
+
+    /**
+     * 激素系统主循环
+     */
+    static <T extends LivingEntity & Pregnant> void hormoneSlowTick(T entity) {
+        // 1. 计算理论激素水平
+        float targetT = 0.0f; // 睾酮
+        float targetE = 0.0f; // 雌激素
+        float targetP = 0.0f; // 孕酮
+
+        // --- 男性逻辑 ---
+        if (entity.isMale()) {
+            if (entity.isOrchiectomy()) {
+                // 切除睾丸：睾酮极低，可能略有雌激素（脂肪转化）
+                targetT = 5.0f;
+                targetE = 15.0f;
+            } else {
+                // 正常男性：睾酮高
+                targetT = 100.0f;
+                targetE = 5.0f;
+
+                // 前列腺炎影响：严重时轻微降低睾酮 (痛得没性致)
+                if (entity.getProstatitis() > 20 * 60 * 20 * 5) {
+                    targetT *= 0.8f;
+                }
+            }
+        }
+
+        // --- 女性逻辑 ---
+        if (entity.isFemale()) {
+            MenstruationCycle cycle = entity.getMenstruationCycle();
+
+            // 基础激素波动
+            if (entity.isPregnant()) {
+                // 怀孕：雌激素高，孕酮极高，无发情
+                targetE = 80.0f;
+                targetP = 100.0f;
+                targetT = 5.0f;
+            } else if (entity.getBrithControlling() > 0) {
+                // 避孕药：锁定激素为平稳状态，无峰值
+                targetE = 40.0f;
+                targetP = 40.0f;
+                targetT = 5.0f;
+            } else if (entity.isPCOS()) {
+                // 多囊卵巢综合征 (PCOS)：雄激素异常升高，雌激素平坦
+                targetT = 35.0f; // 显著高于正常女性
+                targetE = 30.0f; // 持续偏低，无排卵峰值
+                targetP = 10.0f;
+            } else if (!entity.hasUterus()) {
+                // 子宫切除，低
+                targetE = 20.0f;
+                targetT = 5.0f;
+            } else {
+                // 正常生理周期
+                switch (cycle) {
+                    case MENSTRUATION: // 月经期
+                        targetE = 20.0f; targetP = 5.0f; break;
+                    case FOLLICLE:     // 卵泡期 (上升)
+                        targetE = 60.0f; targetP = 10.0f; break;
+                    case OVULATION:    // 排卵期 (峰值)
+                        targetE = 100.0f; targetP = 20.0f; break;
+                    case LUTEINIZATION:// 黄体期
+                        targetE = 50.0f; targetP = 80.0f; break;
+                    default:
+                        targetE = 30.0f; break;
+                }
+                targetT = 10.0f; // 女性基础微量睾酮
+            }
+        }
+
+        // --- 雌转雄逻辑 (Protogyny) ---
+        if (entity.isUndergoingProtogyny()) {
+            float progressPercent = (float) entity.getProtogynyProgress() / (float) PROTOGYNY_TOTAL_DURATION;
+            // 线性插值：雌激素归零，睾酮升高
+            targetE *= (1.0f - progressPercent);
+            targetT = Math.max(targetT, 100.0f * progressPercent);
+        }
+
+        // --- 双性/扶她逻辑 (Male & Female) ---
+        if (entity.isMale() && entity.isFemale()) {
+            // 叠加两者，取较高值
+            targetT = Math.max(targetT, 80.0f);
+            targetE = Math.max(targetE, 80.0f);
+        }
+
+        // 2. 更新数值
+        entity.setTestosterone(targetT);
+        entity.setEstrogen(targetE);
+        entity.setProgesterone(targetP);
+
+        // 3. 应用属性修正 (Attribute Modifiers)
+        applyHormoneModifiers(entity, targetT, targetE);
+
+        // 4. 吸引力与INeko互动
+        handleAttractionSlowTick(entity);
+    }
+
+    /**
+     * 应用属性修正
+     * T -> 攻击力, 血量
+     * E -> 速度, 幸运
+     */
+    private static void applyHormoneModifiers(LivingEntity entity, float tLevel, float eLevel) {
+        // --- 睾酮修正 (Testosterone) ---
+        // 只有当 T > 20 (高于正常女性水平) 时才开始提供加成
+        // PCOS女性 (T=35) 会获得微量加成，正常男性 (T=100) 获得满额加成
+        double tBonusDamage = 0.0;
+        double tBonusHealth = 0.0;
+
+        if (tLevel > 20.0f) {
+            float effectiveT = tLevel - 20.0f;
+            tBonusDamage = effectiveT * 0.02; // 100T -> +1.6 攻击力
+            tBonusHealth = effectiveT * 0.1;  // 100T -> +8.0 血量 (4心)
+        }
+
+        // 应用攻击力
+        var damageAttr = entity.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE);
+        if (damageAttr != null) {
+            damageAttr.removeModifier(TESTOSTERONE_ID);
+            if (tBonusDamage > 0) {
+                damageAttr.addTemporaryModifier(new EntityAttributeModifier(
+                        TESTOSTERONE_ID,  tBonusDamage, EntityAttributeModifier.Operation.ADD_VALUE));
+            }
+        }
+
+        // 应用血量 (注意：修改最大血量时不需要每次都回血，MC会自动处理上限)
+        var healthAttr = entity.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
+        if (healthAttr != null) {
+            healthAttr.removeModifier(TESTOSTERONE_ID);
+            if (tBonusHealth > 0) {
+                healthAttr.addTemporaryModifier(new EntityAttributeModifier(
+                        TESTOSTERONE_ID, tBonusHealth, EntityAttributeModifier.Operation.ADD_VALUE));
+            }
+        }
+
+        // --- 雌激素修正 (Estrogen) ---
+        // E > 40 时提供加成 (排卵期/怀孕/高雌激素)
+        double eBonusSpeed = 0.0;
+        double eBonusLuck = 0.0;
+
+        if (eLevel > 40.0f) {
+            float effectiveE = eLevel - 40.0f;
+            eBonusSpeed = effectiveE * 0.0005; // 100E -> +0.03 速度 (相当可观)
+            eBonusLuck = effectiveE * 0.02;    // 100E -> +1.2 幸运
+        }
+
+        // 应用速度
+        var speedAttr = entity.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);
+        if (speedAttr != null) {
+            speedAttr.removeModifier(ESTROGEN_ID);
+            if (eBonusSpeed > 0) {
+                speedAttr.addTemporaryModifier(new EntityAttributeModifier(
+                        ESTROGEN_ID,  eBonusSpeed, EntityAttributeModifier.Operation.ADD_VALUE));
+            }
+        }
+
+        // 应用幸运
+        var luckAttr = entity.getAttributeInstance(EntityAttributes.GENERIC_LUCK);
+        if (luckAttr != null) {
+            luckAttr.removeModifier(ESTROGEN_ID);
+            if (eBonusLuck > 0) {
+                luckAttr.addTemporaryModifier(new EntityAttributeModifier(
+                        ESTROGEN_ID, eBonusLuck, EntityAttributeModifier.Operation.ADD_VALUE));
+            }
+        }
+    }
+
+    /**
+     * 计算当前实体的总吸引力评分 (0 ~ 100+)
+     */
+    default float getAttractionScore() {
+        float score = 0.0f;
+
+        // 1. 激素基础分
+        // 无论是极高的雄激素还是极高的雌激素，都是性吸引力的来源
+        score += Math.max(getTestosterone(), getEstrogen()) * 0.5f;
+
+        // 2. 排卵期加成 (费洛蒙爆发)
+        if (getMenstruationCycle() == MenstruationCycle.OVULATION) {
+            score += 30.0f;
+        }
+
+        // 3. PCOS 惩罚 (吸引力降低，但因为上面T高加了攻击力，这里做平衡)
+        if (isPCOS()) {
+            score -= 20.0f;
+        }
+
+        // 4. 卫生状况影响 (费洛蒙 vs 恶臭)
+        // 只有轻微的尿意/便意可能是某种特殊的"费洛蒙" (癖好加成)
+        // 但如果已经失禁 (SOILED/WET)，则大幅扣分
+        if (this instanceof LivingEntity living) {
+            if (living.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSMEARY_EFFECT())) ||
+                    living.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getAIDS_EFFECT())) ||
+                    living.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSYPHILIS_EFFECT()))) {
+                score -= 50.0f; // 有病或脏了，没人喜欢
+            } else {
+                // 轻微味道加成
+                if (getUrination() > 20*60*20*0.5 && getUrination() < 20*60*20*1.5) {
+                    score += 10.0f;
+                }
+            }
+        }
+
+        return Math.max(0, score);
+    }
+
+    /**
+     * 处理吸引力逻辑：吸引周围的 INeko
+     */
+    private static <T extends LivingEntity & Pregnant> void handleAttractionSlowTick(T entity) {
+
+        float myScore = entity.getAttractionScore();
+        if (myScore < 40.0f) return; // 魅力太低，没人理
+
+        // 扫描周围 16 格的生物
+        World world = entity.getWorld();
+        List<MobEntity> nearbyEntities = world.getEntitiesByClass(
+                MobEntity.class,
+                entity.getBoundingBox().expand(16.0),
+                e -> e != entity && e instanceof INeko
+        );
+
+        for (MobEntity target : nearbyEntities) {
+            // 只要是 Neko 就被吸引
+            if (target instanceof INeko) {
+                // 让 Neko看向你
+                target.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES, entity.getEyePos());
+
+                // 如果吸引力极高 (排卵期/高激素)，让它们靠近
+                if (myScore > 80.0f) {
+                    target.getNavigation().startMovingTo(entity, 0.3); // 以正常速度靠近
+
+                    // 极低概率发出爱心 (1/10)
+                    if (entity.getRandom().nextInt(10) == 0 && world instanceof ServerWorld sw) {
+                        sw.spawnParticles(ParticleTypes.HEART,
+                                target.getX(), target.getY() + 1.0, target.getZ(),
+                                1, 0.5, 0.5, 0.5, 0.1);
+                    }
+                }
             }
         }
     }

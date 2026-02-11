@@ -2,6 +2,7 @@ package org.cneko.justarod.command
 
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.BoolArgumentType
+import com.mojang.brigadier.arguments.FloatArgumentType
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
 import com.mojang.brigadier.builder.ArgumentBuilder
@@ -28,6 +29,8 @@ class PregnantCommand {
                 registerExcretion(dispatcher)
                 registerUrination(dispatcher)
                 registerHymen(dispatcher)
+                registerProtogyny(dispatcher)
+                registerHormones(dispatcher)
 
                 // 简单的布尔开关/状态类命令
                 registerSimpleBool(dispatcher, "sterilization", "绝育", { it.isSterilization }, { e, v -> e.isSterilization = v })
@@ -394,6 +397,94 @@ class PregnantCommand {
             ))
 
             cmd.then(setCmd)
+            dispatcher.register(cmd)
+        }
+
+        private fun registerProtogyny(dispatcher: CommandDispatcher<ServerCommandSource>) {
+            val cmd = literal("protogyny")
+
+            // 1. Enable 子命令
+            val enableCmd = literal("enable")
+            // 配置查看逻辑
+            buildSelfAndTarget(enableCmd) { p, s ->
+                val state = if (p.isProtogynyEnabled) "§a是" else "§c否"
+                s.sendMessage(Text.of("§e[性别特征] §f雌转雄启用: $state"))
+            }
+            // 配置设置逻辑 (... set <is> ...)
+            enableCmd.then(buildSetter("is", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v ->
+                p.isProtogynyEnabled = v
+            })
+            // 将配置好的 enableCmd 挂载到主命令
+            cmd.then(enableCmd)
+
+
+            // 2. Undergoing 子命令
+            val undergoingCmd = literal("undergoing")
+            // 配置查看逻辑
+            buildSelfAndTarget(undergoingCmd) { p, s ->
+                val state = if (p.isUndergoingProtogyny) "§a是" else "§c否"
+                s.sendMessage(Text.of("§e[性别特征] §f正在雌转雄: $state"))
+            }
+            // 配置设置逻辑
+            undergoingCmd.then(buildSetter("is", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v ->
+                p.isUndergoingProtogyny = v
+            })
+            // 挂载
+            cmd.then(undergoingCmd)
+
+
+            // 3. Progress 子命令
+            val progressCmd = literal("progress")
+            // 配置查看逻辑
+            buildSelfAndTarget(progressCmd) { p, s ->
+                // 注意：整数除法如果不先乘100或者转float，结果可能一直是0
+                val percent = (p.protogynyProgress.toDouble() / Pregnant.PROTOGYNY_TOTAL_DURATION * 100).toInt()
+                s.sendMessage(Text.of("§e[性别特征] §f雌转雄进度: $percent% (${p.protogynyProgress}/${Pregnant.PROTOGYNY_TOTAL_DURATION})"))
+            }
+            // 配置设置逻辑
+            // 注意：这里 buildSetter 的第一个参数是参数名，必须与 getter 中获取的名称一致
+            progressCmd.then(buildSetter("val", IntegerArgumentType.integer(0, Pregnant.PROTOGYNY_TOTAL_DURATION), IntegerArgumentType::getInteger) { p, v ->
+                p.protogynyProgress = v
+            })
+            // 挂载
+            cmd.then(progressCmd)
+
+            // 注册主命令
+            dispatcher.register(cmd)
+        }
+
+        private fun registerHormones(dispatcher: CommandDispatcher<ServerCommandSource>) {
+            val cmd = literal("hormone")
+
+            // 1. 激素总览 (Status)
+            // /hormone [target]
+            buildSelfAndTarget(cmd) { p, s ->
+                val t = String.format("%.1f", p.testosterone)
+                val e = String.format("%.1f", p.estrogen)
+                val prog = String.format("%.1f", p.progesterone)
+                val attr = String.format("%.1f", p.attractionScore)
+
+                s.sendMessage(Text.of("§e[激素面板] §7===================="))
+                s.sendMessage(Text.of("§c 睾酮(T): $t  §d 雌激素(E): $e"))
+                s.sendMessage(Text.of("§b 孕酮(P): $prog §6 吸引力: $attr"))
+            }
+
+            // 2. 睾酮设置
+            // /hormone testosterone set <val> [target]
+            val tCmd = literal("testosterone")
+            tCmd.then(buildSetter("val", FloatArgumentType.floatArg(0f), FloatArgumentType::getFloat) { p, v -> p.testosterone = v })
+            cmd.then(tCmd)
+
+            // 3. 雌激素设置
+            val eCmd = literal("estrogen")
+            eCmd.then(buildSetter("val", FloatArgumentType.floatArg(0f), FloatArgumentType::getFloat) { p, v -> p.estrogen = v })
+            cmd.then(eCmd)
+
+            // 4. 孕酮设置
+            val pCmd = literal("progesterone")
+            pCmd.then(buildSetter("val", FloatArgumentType.floatArg(0f), FloatArgumentType::getFloat) { p, v -> p.progesterone = v })
+            cmd.then(pCmd)
+
             dispatcher.register(cmd)
         }
     }

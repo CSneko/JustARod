@@ -5,6 +5,7 @@
       <configuration>
         <autoDetectTypes>
           <platformType>ARCHITECTURY</platformType>
+          <platformType>FABRIC</platformType>
           <platformType>MIXIN</platformType>
           <platformType>MCP</platformType>
         </autoDetectTypes>

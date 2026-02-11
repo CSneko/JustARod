@@ -119,6 +119,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     private boolean orchiectomy = false;
 
 
+
+
     @Override
     public double getPower() {
         return power;
@@ -559,6 +561,40 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
         this.protogynyProgress = protogynyProgress;
     }
 
+    @Unique
+    private float testosterone = 0;
+    @Unique
+    private float estrogen = 0;
+    @Unique
+    private float progesterone = 0;
+
+    @Override
+    public void setEstrogen(float estrogen) {
+        this.estrogen = estrogen;
+    }
+    @Override
+    public float getEstrogen() {
+        return estrogen;
+    }
+
+    @Override
+    public void setTestosterone(float testosterone) {
+        this.testosterone = testosterone;
+    }
+    @Override
+    public float getTestosterone() {
+        return testosterone;
+    }
+
+    @Override
+    public void setProgesterone(float progesterone) {
+        this.progesterone = progesterone;
+    }
+    @Override
+    public float getProgesterone() {
+        return progesterone;
+    }
+
     @Override
     public Entity createBaby() {
         PlayerEntity player = (PlayerEntity) (Object) this;
@@ -624,6 +660,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
                         orchiectomy,
                         prostatitis>0
                 ));
+                // slowTick区域
+                Pregnant.hormoneSlowTick(player);
             }
         }
         if (player.getWorld() instanceof ServerWorld) {

@@ -20,6 +20,7 @@
     "defaultRequire": 1
   },
   "client": [
+    "client.BackgroundRendererMixin",
     "client.ClientPlayerEntityMixin",
     "client.ClientPlayerInteractionManagerMixin",
     "client.EnderDragonRendererMixin",

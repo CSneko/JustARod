@@ -260,6 +260,7 @@ public interface Pregnant{
         nbt.putFloat("Hormone_T", getTestosterone());
         nbt.putFloat("Hormone_E", getEstrogen());
         nbt.putFloat("Hormone_P", getProgesterone());
+        nbt.putInt("Cataract", getCataract());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         setFemale(nbt.getBoolean("Female"));
@@ -378,6 +379,9 @@ public interface Pregnant{
         if (nbt.contains("Hormone_T")) setTestosterone(nbt.getFloat("Hormone_T"));
         if (nbt.contains("Hormone_E")) setEstrogen(nbt.getFloat("Hormone_E"));
         if (nbt.contains("Hormone_P")) setProgesterone(nbt.getFloat("Hormone_P"));
+        if (nbt.contains("Cataract")) {
+            setCataract(nbt.getInt("Cataract"));
+        }
     }
 
     default Entity createBaby() {
@@ -924,6 +928,26 @@ public interface Pregnant{
             double modifier = isBonus ? 1.0 : -1.0;
             // 攻击力最低为 0.5
             attackAttr.setBaseValue(Math.max(0.5, currentBase + modifier));
+        }
+    }
+
+    // ----------------- 白内障 (Cataract) -----------------
+
+    // 严重程度阈值 (Tick)
+    int CATARACT_STAGE_1 = 20 * 60 * 20 * 2; // 2天：初期
+    int CATARACT_STAGE_2 = 20 * 60 * 20 * 5; // 5天：中期（开始畏光）
+    int CATARACT_STAGE_3 = 20 * 60 * 20 * 10; // 10天：晚期（严重白翳）
+
+    default void setCataract(int ticks) {}
+    default int getCataract() { return 0; }
+
+    // 手术治疗白内障（换晶状体）
+    default void cureCataract() {
+        setCataract(0);
+        if (this instanceof LivingEntity entity) {
+            entity.sendMessage(Text.of("§a手术成功，眼前变得清晰了！"));
+            // 手术后眼睛敏感，给予短时间畏光（失明/夜视闪烁）
+            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 20 * 5, 0));
         }
     }
 
@@ -2187,6 +2211,49 @@ public interface Pregnant{
                     }
                 }
             }
+        }
+    }
+
+    static <T extends LivingEntity & Pregnant> void cataractTick(T entity) {
+        int current = entity.getCataract();
+        int increase = 0;
+        World world = entity.getWorld();
+        net.minecraft.util.math.BlockPos pos = entity.getBlockPos();
+
+        // --- 1. 紫外线诱因 (光照) ---
+        // 判定：白天 + 露天 + 亮度高
+        if (world.isDay() && world.getLightLevel(net.minecraft.world.LightType.SKY, pos) >= 14 && world.isSkyVisible(pos)) {
+            // 检查是否有头部装备 (视为墨镜/帽子)
+            ItemStack headStack = entity.getEquippedStack(EquipmentSlot.HEAD);
+            if (headStack.isEmpty()) {
+                // 无保护，UV 伤害积累
+                if (entity.getRandom().nextInt(100) == 0) increase++;
+            }
+        }
+
+        // --- 2. 并发症诱因 ---
+        if (entity.isPCOS()) {
+            if (entity.getRandom().nextInt(300) == 0) increase++;
+        }
+
+        // --- 3. 年龄/自然老化诱因 ---
+        // 极其缓慢的自然增长
+        if (entity.getRandom().nextInt(1000) == 0) {
+            increase++;
+        }
+
+        // --- 4. 高亮度眩光惩罚 (逻辑层) ---
+        // 如果到了中期(Stage 2)，且直视阳光或高亮环境，偶尔给予反胃
+        if (current > CATARACT_STAGE_2) {
+            if (world.getLightLevel(pos) > 12) {
+                if (entity.getRandom().nextInt(1200) == 0) { // 1分钟一次
+                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 5));
+                }
+            }
+        }
+
+        if (increase > 0) {
+            entity.setCataract(current + increase);
         }
     }
 

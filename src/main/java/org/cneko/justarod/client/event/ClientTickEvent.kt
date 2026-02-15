@@ -1,13 +1,11 @@
 package org.cneko.justarod.client.event
 
 import com.mojang.blaze3d.systems.RenderSystem
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.*
-import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
@@ -73,6 +71,12 @@ class ClientTickEvent {
                 renderPowerBar(context)
 
                 renderSexText(context)
+
+                renderCataractOverlay(context)
+            }
+
+            ClientTickEvents.END_CLIENT_TICK.register {
+                updateCataractShader()
             }
 
         }
@@ -392,6 +396,118 @@ class ClientTickEvent {
         }
 
 
+        private val CATARACT_TEXTURE = rodId("textures/misc/cataract_overlay.png")
+
+        private fun renderCataractOverlay(context: DrawContext) {
+            val client = MinecraftClient.getInstance()
+            val player = client.player ?: return
+
+            // 获取同步过来的病情值 (0 ~ 100% 对应的 tick)
+            val pregnant = player as? org.cneko.justarod.entity.Pregnant ?: return
+            val progressTick = pregnant.cataract
+            val maxSeverity = 20 * 60 * 20 * 10f // 10天满值
+
+            // 计算病情进度 (0.0 ~ 1.0)
+            val severity = (progressTick / maxSeverity).coerceIn(0f, 1f)
+
+            if (severity < 0.1f) return // 初期不渲染，保证体验
+
+            val width = client.window.scaledWidth
+            val height = client.window.scaledHeight
+            val world = client.world ?: return
+            val pos = player.blockPos
+
+            // --- 核心优化 1: 动态光感计算 ---
+            // 获取当前位置亮度 (0~15)
+            val lightLevel = world.getLightLevel(pos)
+
+            // 基础不透明度：病情越重，底色越明显，但在暗处只有原来的 20%
+            // 这样你在矿洞里或者家里不会觉得眼前全是白纸
+            var alpha = severity * 0.2f
+
+            // 眩光因子：光越强，雾越浓
+            // 只有当亮度 > 8 时才开始计算眩光
+            if (lightLevel > 8) {
+                val glareIntensity = (lightLevel - 8) / 7f // 0.0 ~ 1.0
+                // 眩光带来的额外不透明度，最高可达 0.6
+                alpha += glareIntensity * severity * 0.6f
+            }
+
+            // 太阳直射惩罚：如果在白天且抬头看天
+            if (world.isDay && player.pitch < -15f && world.isSkyVisible(pos)) {
+                alpha += 0.3f * severity
+            }
+
+            // 最终限制：永远不要让屏幕完全变白 (保留 10% 可视度)，否则没法玩
+            alpha = alpha.coerceIn(0f, 0.9f)
+
+            // --- 核心优化 2: 渲染 ---
+            RenderSystem.enableBlend()
+            RenderSystem.defaultBlendFunc()
+
+            // 设置颜色：乳黄色/米色 (1.0, 0.97, 0.92)
+            // 这种颜色比纯白更护眼，也更有质感
+            RenderSystem.setShaderColor(1.0f, 0.97f, 0.92f, alpha)
+
+            // 使用 "细雪" 的贴图作为遮罩
+            // 它的效果是四周有冰霜，中间相对清晰，正好符合我们想要的“边缘模糊”
+            // 这样玩家看正中间的准星时不会太难受
+            RenderSystem.setShaderTexture(0, CATARACT_TEXTURE)
+
+            context.drawTexture(
+                CATARACT_TEXTURE,
+                0, 0, // x, y
+                0f, 0f, // u, v
+                width, height, // 渲染宽高
+                width, height  // 纹理宽高
+            )
+
+            // 如果病情极其严重 (>80%)，再叠加一层极其淡的纯色，模拟整体视力下降
+            if (severity > 0.8f) {
+                // 非常淡的填充，仅用于降低对比度
+                val fillAlpha = ((severity - 0.8f) * 0.5f).coerceAtMost(0.2f)
+                val color = ( (fillAlpha * 255).toInt() shl 24 ) or 0xFFFDD0 // Cream color
+                context.fill(0, 0, width, height, color)
+            }
+
+            RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
+            RenderSystem.disableBlend()
+        }
+
+        // 记录上一次的着色器状态，防止每帧重复加载导致卡顿
+        private var isShaderLoaded = false
+        private val BLUR_SHADER = Identifier.of("shaders/post/blur.json")
+
+        private fun updateCataractShader() {
+            val client = MinecraftClient.getInstance()
+            val player = client.player ?: return
+            val pregnant = player as? org.cneko.justarod.entity.Pregnant ?: return
+
+            val cataract = pregnant.cataract
+            val stage3 = 20 * 60 * 20 * 10 // 晚期
+
+            // 只有在非常严重（晚期）时才开启真实模糊 Shader
+            // 因为 Shader 会模糊掉 GUI 和血条，对游戏体验影响很大，所以建议只在晚期开启
+            val shouldHaveBlur = cataract > stage3
+
+            if (shouldHaveBlur) {
+                if (!isShaderLoaded) {
+                    // 加载模糊着色器
+                    try {
+                        client.gameRenderer.loadPostProcessor(BLUR_SHADER)
+                        isShaderLoaded = true
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            } else {
+                // 如果病情好转，或者还没到严重程度，但Shader还开着 -> 关掉
+                if (isShaderLoaded) {
+                    client.gameRenderer.disablePostProcessor()
+                    isShaderLoaded = false
+                }
+            }
+        }
 
     }
 }

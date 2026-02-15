@@ -1,3 +1,4 @@
 accessWidener v2 named
 accessible method net/minecraft/client/render/entity/LivingEntityRenderer addFeature (Lnet/minecraft/client/render/entity/feature/FeatureRenderer;)Z
 accessible field net/minecraft/entity/LivingEntity activeItemStack Lnet/minecraft/item/ItemStack;
+accessible method net/minecraft/client/render/GameRenderer loadPostProcessor (Lnet/minecraft/util/Identifier;)V

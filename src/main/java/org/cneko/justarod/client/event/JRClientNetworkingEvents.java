@@ -43,6 +43,7 @@ public class JRClientNetworkingEvents {
                 player.setExcretion(payload.excretion());
                 player.setUrination(payload.urination());
                 player.setSyphilis(payload.syphilis());
+                player.setCataract(payload.cataract());
 
                 // --- 2. 复杂对象处理 ---
                 // Optional 解包：如果有值则设置，没有则设为 null

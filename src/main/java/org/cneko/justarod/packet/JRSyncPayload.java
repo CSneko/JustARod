@@ -22,6 +22,7 @@ public record JRSyncPayload(
         int excretion,
         int urination,
         int syphilis,
+        int cataract,
         // 下面所有字段在网络传输层都将合并为一个 int
         boolean male,
         boolean female,
@@ -61,6 +62,7 @@ public record JRSyncPayload(
         buf.writeVarInt(this.excretion);
         buf.writeVarInt(this.urination);
         buf.writeVarInt(this.syphilis);
+        buf.writeVarInt(this.cataract);
 
         // 2. 位压缩逻辑
         int flags = 0;
@@ -98,13 +100,14 @@ public record JRSyncPayload(
         int excretion = buf.readVarInt();
         int urination = buf.readVarInt();
         int syphilis = buf.readVarInt();
+        int cataract = buf.readVarInt();
 
         // 2. 读取 Flags 整数
         int flags = buf.readVarInt();
 
         // 3. 解压缩逻辑 (检查特定位是否为1)
         return new JRSyncPayload(
-                power, pregnant, childrenType, menstruation, menstruationComfort, babyCount, excretion, urination,syphilis,
+                power, pregnant, childrenType, menstruation, menstruationComfort, babyCount, excretion, urination,syphilis,cataract,
                 (flags & (1)) != 0, // male
                 (flags & (1 << 1)) != 0, // female
                 (flags & (1 << 2)) != 0, // sterilization

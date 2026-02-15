@@ -48,6 +48,7 @@ class PregnantCommand {
                 registerSimpleInt(dispatcher, "urethritis", "尿道炎", { it.urethritis }, { e, v -> e.urethritis = v }, isDisease = true)
                 registerSimpleInt(dispatcher, "prostatitis", "前列腺炎", { it.prostatitis }, { e, v -> e.prostatitis = v }, isDisease = true)
                 registerSimpleInt(dispatcher, "hemorrhoids", "痔疮", { it.hemorrhoids }, { e, v -> e.hemorrhoids = v }, isDisease = true)
+                registerSimpleInt(dispatcher, "cataract", "白内障", { it.cataract }, { e, v -> e.cataract = v }, isDisease = true)
 
                 // 带有免疫功能的特殊疾病
                 registerComplexDisease(dispatcher, "aids", "AIDS", { it.aids }, { e, v -> e.aids = v }, { it.isImmune2Aids }, { e, v -> e.isImmune2Aids = v })

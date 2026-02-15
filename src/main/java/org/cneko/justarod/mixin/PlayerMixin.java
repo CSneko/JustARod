@@ -595,6 +595,19 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
         return progesterone;
     }
 
+    @Unique
+    private int cataract = 0;
+
+    @Override
+    public int getCataract() {
+        return cataract;
+    }
+
+    @Override
+    public void setCataract(int cataract) {
+        this.cataract = cataract;
+    }
+
     @Override
     public Entity createBaby() {
         PlayerEntity player = (PlayerEntity) (Object) this;
@@ -641,6 +654,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
                         excretion,
                         urination,
                         syphilis,
+                        cataract,
                         // 下面是 boolean 区域
                         male,
                         female,
@@ -683,6 +697,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
             Pregnant.hymenTick(player);
             Pregnant.imperforateHymenTick(player);
             Pregnant.protogynyTick(player);
+            Pregnant.cataractTick(player);
             BDSMable.ballMouthTick(player);
             BDSMable.electricShockTick(player);
             BDSMable.bundledTick(player);

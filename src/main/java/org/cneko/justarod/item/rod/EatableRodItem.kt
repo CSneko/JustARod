@@ -17,6 +17,7 @@ import org.cneko.justarod.item.JRComponents
 
 /*
 其实用过之后味道是有点酸的，也会有点咸咸的，你要喜欢可以舔舔，虽然可能有点细菌，不过不是不能接受
+（自己的就算了，毕竟... 不太好吃... 甚至有点难以下口）
  */
 class EatableRodItem: SelfUsedItem(Settings().food(FoodComponent.Builder().nutrition(1).saturationModifier(0.2f).build()).component(
     JRComponents.Companion.USED_TIME_MARK, 0).maxDamage(200)){

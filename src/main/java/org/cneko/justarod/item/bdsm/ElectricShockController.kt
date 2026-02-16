@@ -12,6 +12,10 @@ import net.minecraft.util.TypedActionResult
 import net.minecraft.world.World
 import org.cneko.justarod.entity.BDSMable
 
+/*
+被电击，齁哦哦哦♡ 好爽~~♡
+哒... 哒咩！不...不要提高挡数了喵♡ 要受不了惹♡
+ */
 class ElectricShockController(settings: Settings): Item(settings) {
     override fun use(world: World?, user: PlayerEntity?, hand: Hand?): TypedActionResult<ItemStack?>? {
         if (user == null || world !is ServerWorld){

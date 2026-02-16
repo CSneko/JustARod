@@ -25,6 +25,9 @@ import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
 
+/*
+啊~♡ 主人别打了喵~
+ */
 open class WhipItem(settings: Settings) : Item(settings.maxCount(1).maxDamage(1000)) {
 
     override fun postHit(stack: ItemStack, target: LivingEntity, attacker: LivingEntity): Boolean {

@@ -32,7 +32,9 @@ import org.cneko.justarod.item.electric.*
 import org.cneko.justarod.item.medical.*
 import org.cneko.justarod.item.syringe.*
 
-
+/*
+仙之人兮列如喵
+ */
 class JRItems {
     companion object{
         val SLIME_ROD = SlimeRodItem()

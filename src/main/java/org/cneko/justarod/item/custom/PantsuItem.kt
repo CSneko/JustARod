@@ -14,6 +14,9 @@ import net.minecraft.world.World
 import org.cneko.justarod.item.JRComponents
 import org.cneko.justarod.item.JRComponents.PantsuState
 
+/*
+嗯... 好变态，偷人家胖次
+ */
 class PantsuItem(
     material: RegistryEntry<ArmorMaterial>,
     type: Type,

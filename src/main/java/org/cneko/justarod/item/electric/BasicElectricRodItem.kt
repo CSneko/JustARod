@@ -12,6 +12,7 @@ import org.cneko.justarod.item.JRComponents
 
 /*
 其实漏电也不错的说... 低压的话还是挺棒的哦
+酥酥麻麻耶嘿嘿~
  */
 open class BasicElectricRodItem: SelfUsedElectricRodItem(Settings().component(JRComponents.USED_TIME_MARK,0).component(JRComponents.SPEED,10).maxDamage(10000)) {
 

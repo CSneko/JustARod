@@ -20,6 +20,8 @@ import org.cneko.toneko.common.mod.items.BazookaItem.Ammunition
 
 /*
 趁着别人不注意，偷偷脱下她的胖次给她塞一个进去
+你不会以为我是姛吧
+emm.... 也行
  */
 class InsertionPedestalItem:Item(Settings()),Ammunition {
     override fun onClicked(

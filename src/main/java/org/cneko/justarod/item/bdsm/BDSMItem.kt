@@ -2,6 +2,12 @@ package org.cneko.justarod.item.bdsm
 
 import net.minecraft.item.Item
 
+/*
+这个的话... 名字叫禁言口罩吧... 其实就是... 口求
+戴上去的话... 根本说不出话诶，哼哼唧唧的♡
+对方看来的话，甚至还有点... 可爱呢？
+哎呀，戴久了要流口水的喵~
+ */
 class BallMouthItem(settings: Settings) : AbstractBDSMItem(
     settings,
     { it.ballMouth },
@@ -10,6 +16,9 @@ class BallMouthItem(settings: Settings) : AbstractBDSMItem(
     "成功插入禁言口罩~"
 )
 
+/*
+喂喂，你还在想什么不正经的用途呢
+ */
 class EarplugItem(settings: Settings) : AbstractBDSMItem(
     settings,
     { it.earplug },
@@ -18,6 +27,9 @@ class EarplugItem(settings: Settings) : AbstractBDSMItem(
     "成功插入耳塞~"
 )
 
+/*
+我没试过...
+ */
 class BindingRopeItem(settings: Settings) : AbstractBDSMItem(
     settings,
     { it.bundled },
@@ -43,6 +55,9 @@ class EyePatchItem(settings: Settings) : AbstractBDSMItem(
     "成功插入眼罩~"
 )
 
+/*
+大哥哥，喝茶~
+ */
 class HandcuffesItem(settings: Settings) : AbstractBDSMItem(
     settings,
     { it.handcuffed },
@@ -59,6 +74,9 @@ class ShacklesItem(settings: Settings) : AbstractBDSMItem(
     "成功插入脚镣~"
 )
 
+/*
+听说你们小南梁喜欢这个？
+ */
 class NoMatingPlz(settings: Item.Settings): AbstractBDSMItem(
     settings,
     { it.noMatingPlz },

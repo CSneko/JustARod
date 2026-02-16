@@ -29,6 +29,9 @@ import org.cneko.justarod.item.JRComponents
 import org.cneko.toneko.common.mod.items.BazookaItem.Ammunition
 import kotlin.math.sqrt
 
+/*
+末地烛啊喵~♡ 我也想被大调查呀♡ 我也想和别人玩扣扣空间喵♡
+ */
 abstract class EndRodItem(settings: Settings) : Item(settings), EndRodItemInterface {
     override fun onUse(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean,times: Int) : ActionResult{
         // 添加计数

@@ -9,6 +9,9 @@ import org.cneko.justarod.entity.RodEntity
 import org.cneko.justarod.item.rod.addEffect
 import org.cneko.toneko.common.mod.entities.NekoEntity
 
+/*
+主人快超我喵~~♡ 嗯啊~~♡ 主人~~
+ */
 class RodAgentItem:BaseSyringeItem(Settings()) {
     override fun applyEffect(target: LivingEntity) {
         // 如果生物是Neko

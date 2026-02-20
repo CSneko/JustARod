@@ -7,7 +7,7 @@
 
 喜欢这个模组的话记得把star点上(｢・ω・)｢
 
-可以来[爱发电](https://afdian.com/a/csneko)支持作者获取整合包哦
+可以来[爱发电](https://afdian.com/a/cccry)支持作者获取整合包哦
 
 # 如何使用
 

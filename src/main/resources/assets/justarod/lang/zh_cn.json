@@ -19,6 +19,7 @@
   "enchantment.justarod.hemorrhoidectomy": "痔疮切除",
   "enchantment.justarod.meiosis": "减数分裂",
   "enchantment.justarod.hymenotomy": "处女膜切除术",
+  "enchantment.justarod.laparoscopy": "腹腔镜手术",
   "command.justarod.rod.get.success": "§a在你里面的末地烛是%s",
   "command.justarod.rod.get.failure": "§c你没有末地烛",
   "command.justarod.rod.set.success": "§a你已成功设置末地烛%s",

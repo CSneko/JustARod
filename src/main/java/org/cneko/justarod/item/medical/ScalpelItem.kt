@@ -31,7 +31,6 @@ import net.minecraft.entity.boss.dragon.EnderDragonEntity
 // 继承自 MedicalItem
 class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDamage(4)) {
 
-    // appendTooltip 保持不变，它与物品使用逻辑无关
     override fun appendTooltip(stack: ItemStack, context: TooltipContext, tooltip: MutableList<Text>, type: TooltipType) {
         super.appendTooltip(stack, context, tooltip, type)
         if (stack.containsEnchantment(JREnchantments.HYSTERECTOMY)) {
@@ -39,23 +38,26 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
             tooltip.add(Text.of("§c此操作会永久切除子宫，请谨慎使用！"))
         } else if (stack.containsEnchantment(JREnchantments.UTERUS_INSTALLATION)) {
             tooltip.add(Text.of("§a使用它可以安装子宫"))
-        }else if (stack.containsEnchantment(JREnchantments.MASTECTOMY)){
+        } else if (stack.containsEnchantment(JREnchantments.MASTECTOMY)) {
             tooltip.add(Text.of("§c使用它可以进行乳房切除"))
-        }else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)){
+        } else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)) {
             tooltip.add(Text.of("§a想练此功，必先自宫"))
-        }else if (stack.containsEnchantment(JREnchantments.AMPUTATING)){
+        } else if (stack.containsEnchantment(JREnchantments.AMPUTATING)) {
             tooltip.add(Text.of("§c使用它可以进行截肢"))
             tooltip.add(Text.of("§d嗯... 你应该不是病娇吧？"))
-        }else if (stack.containsEnchantment(JREnchantments.BEHEADING)){
+        } else if (stack.containsEnchantment(JREnchantments.BEHEADING)) {
             tooltip.add(Text.of("§c使用它可以进行斩首"))
             tooltip.add(Text.of("§d这样做的话... 嗯... 小心点哦~"))
-        }else if (stack.containsEnchantment(JREnchantments.HEMORRHOIDECTOMY)) {
+        } else if (stack.containsEnchantment(JREnchantments.HEMORRHOIDECTOMY)) {
             tooltip.add(Text.of("§c使用它可进行痔疮切除术"))
             tooltip.add(Text.of("§7彻底解决难言之隐"))
-        }else if (stack.containsEnchantment(JREnchantments.HYMENOTOMY)){
+        } else if (stack.containsEnchantment(JREnchantments.HYMENOTOMY)) {
             tooltip.add(Text.of("§c使用它可进行处女膜切开术"))
             tooltip.add(Text.of("§a用来切除闭锁问题"))
             tooltip.add(Text.of("§7当然你也可以选择放弃处的身份"))
+        } else if (stack.containsEnchantment(JREnchantments.LAPAROSCOPY)) {
+            tooltip.add(Text.of("§c使用它可进行腹腔镜微创手术"))
+            tooltip.add(Text.of("§a用于修补黄体破裂及清理腹腔积血"))
         }
     }
 
@@ -81,19 +83,20 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
         } else if (stack.containsEnchantment(JREnchantments.UTERUS_INSTALLATION)) {
             val offHandStack = user.getStackInHand(if (hand == Hand.MAIN_HAND) Hand.OFF_HAND else Hand.MAIN_HAND)
             return !target.hasUterus() && offHandStack.isOf(JRItems.UTERUS) // 目标需要安装，且使用者副手持有子宫
-        }else if (stack.containsEnchantment(JREnchantments.ARTIFICIAL_ABORTION)){
-            return target.pregnant >0 && target.isFemale
-        }else if (stack.containsEnchantment(JREnchantments.MASTECTOMY)) {
+        } else if (stack.containsEnchantment(JREnchantments.ARTIFICIAL_ABORTION)) {
+            return target.pregnant > 0 && target.isFemale
+        } else if (stack.containsEnchantment(JREnchantments.MASTECTOMY)) {
             return target.isFemale
-        }else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)){
+        } else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)) {
             return target.isMale && !target.isOrchiectomy
-        }else if (stack.containsEnchantment(JREnchantments.AMPUTATING)){
+        } else if (stack.containsEnchantment(JREnchantments.AMPUTATING)) {
             return !target.isAmputated
-        }else if (stack.containsEnchantment(JREnchantments.HEMORRHOIDECTOMY)) {
-            // 只要有痔疮值就可切除
+        } else if (stack.containsEnchantment(JREnchantments.HEMORRHOIDECTOMY)) {
             return target.hemorrhoids > 0
-        }else if (stack.containsEnchantment(JREnchantments.HYMENOTOMY)){
+        } else if (stack.containsEnchantment(JREnchantments.HYMENOTOMY)) {
             return target.isImperforateHymen || target.hasHymen()
+        } else if (stack.containsEnchantment(JREnchantments.LAPAROSCOPY)) {
+            return target.corpusLuteumRupture > 0
         }
 
         return false // 没有对应附魔，无法使用
@@ -110,8 +113,7 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
                 if (!target.hasUterus()) return if (user == target) Text.of("§c你已经切除过了！") else Text.of("§c对方已经切除过了！")
             } else if (stack.containsEnchantment(JREnchantments.UTERUS_INSTALLATION)) {
                 if (target.hasUterus()) return if (user == target) Text.of("§c你不需要安装子宫！") else Text.of("§c对方不需要安装子宫！")
-                // canApply已经检查过副手，这里为了更明确的消息再次检查
-                val offHandStack = user.getStackInHand(Hand.OFF_HAND) // 假设主手是手术刀
+                val offHandStack = user.getStackInHand(Hand.OFF_HAND)
                 if (!offHandStack.isOf(JRItems.UTERUS)) return Text.of("§c你的副手必须持有子宫才能执行此操作！")
             } else if (stack.containsEnchantment(JREnchantments.ARTIFICIAL_ABORTION)) {
                 return if (user == target) Text.of("§c你没有怀孕！") else Text.of("§c对方没有怀孕")
@@ -121,10 +123,12 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
                 if (target.isAmputated) return if (user == target) Text.of("§c你已经截肢过了！") else Text.of("§c对方已经截肢过了！")
             } else if (stack.containsEnchantment(JREnchantments.HEMORRHOIDECTOMY)) {
                 return if (user == target) Text.of("§c你没有痔疮！") else Text.of("§c对方没有痔疮！")
-            }else if (stack.containsEnchantment(JREnchantments.HYMENOTOMY)) {
+            } else if (stack.containsEnchantment(JREnchantments.HYMENOTOMY)) {
                 if (!target.isImperforateHymen && !target.hasHymen()) {
                     return if (user == target) Text.of("§c你没有处女膜！") else Text.of("§c对方没有处女膜！")
                 }
+            } else if (stack.containsEnchantment(JREnchantments.LAPAROSCOPY)) {
+                return if (user == target) Text.of("§c你没有发生黄体破裂或腹腔内出血，无需进行此手术！") else Text.of("§c对方未发生腹腔内出血，无需进行此手术！")
             }
         }
 
@@ -135,19 +139,12 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
      * 执行核心效果：改变状态、造成伤害、应用效果等
      */
     override fun applyEffect(user: PlayerEntity, target: LivingEntity, stack: ItemStack, hand: Hand) {
-        // 先处理斩首（该操作不需要 Pregnant）
+        // 先处理斩首
         if (stack.containsEnchantment(JREnchantments.BEHEADING)) {
-            // 仅对存活目标有效
             if (target.isDead || !target.isAlive) return
-
-            // 如果是玩家：直接导致致命伤并决定掉落（50% 头颅 / 50% 骨头）
             if (target is PlayerEntity) {
-                // 致命伤（使用足够大的伤害值）
                 target.damage(target.world.damageSources.generic(), 1000f)
-
-                // 50% 掉落玩家头颅，否则掉落骨头
                 if (target.random.nextBoolean()) {
-                    // 掉落玩家头颅
                     val head = Items.PLAYER_HEAD.defaultStack
                     head.set(DataComponentTypes.PROFILE, ProfileComponent(target.gameProfile))
                     target.dropStack(head)
@@ -155,32 +152,15 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
                     target.dropStack(Items.BONE.defaultStack)
                 }
             } else {
-                // 非玩家实体：尝试根据实体类型掉落对应头颅（如果存在）
                 when {
-                    target is WitherSkeletonEntity -> {
-                        target.dropStack(Items.WITHER_SKELETON_SKULL.defaultStack)
-                    }
-                    target is SkeletonEntity -> {
-                        // 这里排除了凋灵，因为凋灵优先匹配 WitherSkeletonEntity
-                        target.dropStack(Items.SKELETON_SKULL.defaultStack)
-                    }
-                    target is ZombieEntity -> {
-                        target.dropStack(Items.ZOMBIE_HEAD.defaultStack)
-                    }
-                    target is CreeperEntity -> {
-                        target.dropStack(Items.CREEPER_HEAD.defaultStack)
-                    }
-                    target is EnderDragonEntity -> {
-                        target.dropStack(Items.DRAGON_HEAD.defaultStack)
-                    }
-                    else -> {
-                        // 其他实体：没有对应头颅则不掉落（保持安全）
-                    }
+                    target is WitherSkeletonEntity -> target.dropStack(Items.WITHER_SKELETON_SKULL.defaultStack)
+                    target is SkeletonEntity -> target.dropStack(Items.SKELETON_SKULL.defaultStack)
+                    target is ZombieEntity -> target.dropStack(Items.ZOMBIE_HEAD.defaultStack)
+                    target is CreeperEntity -> target.dropStack(Items.CREEPER_HEAD.defaultStack)
+                    target is EnderDragonEntity -> target.dropStack(Items.DRAGON_HEAD.defaultStack)
                 }
-                // 对实体造成致命伤
                 target.damage(target.world.damageSources.generic(), 1000f)
             }
-
             consumeItem(user, target, stack, hand)
             return
         }
@@ -197,35 +177,28 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
         // 根据附魔执行特定效果
         if (stack.containsEnchantment(JREnchantments.HYSTERECTOMY)) {
             target.setHasUterus(false)
-            // 在目标位置掉落子宫
             target.dropStack(ItemStack(JRItems.UTERUS))
         } else if (stack.containsEnchantment(JREnchantments.UTERUS_INSTALLATION)) {
             target.setHasUterus(true)
-            // 消耗副手的子宫
             val offHandStack = user.getStackInHand(if (hand == Hand.MAIN_HAND) Hand.OFF_HAND else Hand.MAIN_HAND)
             if (offHandStack.isOf(JRItems.UTERUS)) {
                 offHandStack.decrement(1)
             }
-        }else if (stack.containsEnchantment(JREnchantments.ARTIFICIAL_ABORTION)){
+        } else if (stack.containsEnchantment(JREnchantments.ARTIFICIAL_ABORTION)) {
             val pre = target.pregnant
             if (pre > 20*60*20*5) {
                 val task = TickTaskQueue()
-                target.damage(target.world.damageSources.generic(), 2f) // 初始伤害
-
-                // 安排持续伤害模拟大出血
-                for (i in 1..10) { // 从1开始产生延迟
+                target.damage(target.world.damageSources.generic(), 2f)
+                for (i in 1..10) {
                     task.addTask(20 * i) {
                         if (!target.isDead) {
                             target.damage(target.world.damageSources.generic(), 2f)
                         }
                     }
                 }
-                // 有20%概率因并发症导致永久绝育和恶心
                 if (target.random.nextInt(5) == 0) {
                     target.isSterilization = true
-                    target.addEffect(StatusEffects.NAUSEA, 0, 20 * 15) // 恶心效果持续15秒
-
-                    // 通知玩家出现并发症
+                    target.addEffect(StatusEffects.NAUSEA, 0, 20 * 15)
                     val complicationMsg = "§c并发症！手术对你造成了永久性损伤！"
                     if (user != target) {
                         user.sendMessage(Text.of("§e并发症发生了..."), false)
@@ -235,30 +208,32 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
             }
             target.pregnant = 0
             target.dropStack(JRItems.MOLE.defaultStack)
-        }else if (stack.containsEnchantment(JREnchantments.MASTECTOMY)){
+        } else if (stack.containsEnchantment(JREnchantments.MASTECTOMY)) {
             target.breastCancer = 0
             target.dropStack(Items.CHICKEN.defaultStack)
-        }else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)){
+        } else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)) {
             target.isOrchiectomy = true
             val eggs = Items.EGG.defaultStack
             eggs.count = 2
             target.dropStack(eggs)
             target.damage(target.world.damageSources.generic(), 6f)
-        }else if (stack.containsEnchantment(JREnchantments.AMPUTATING)){
+        } else if (stack.containsEnchantment(JREnchantments.AMPUTATING)) {
             target.isAmputated = true
             target.damage(target.world.damageSources.generic(), 8f)
             target.dropStack(Items.BONE.defaultStack)
         } else if (stack.containsEnchantment(JREnchantments.HEMORRHOIDECTOMY)) {
             target.hemorrhoids = 0
-            // 掉落一点...咳咳，肉球
             target.dropStack(ItemStack(JRItems.MOLE))
-            // 造成瞬间剧痛
             target.damage(target.world.damageSources.generic(), 4f)
-            // 术后恢复期需要一点虚弱
-            target.addStatusEffect(StatusEffectInstance(StatusEffects.WEAKNESS, 1200, 0)) // 1分钟虚弱
-        } else if (stack.containsEnchantment(JREnchantments.HYMENOTOMY)){
+            target.addStatusEffect(StatusEffectInstance(StatusEffects.WEAKNESS, 1200, 0))
+        } else if (stack.containsEnchantment(JREnchantments.HYMENOTOMY)) {
             target.performHymenotomy()
             target.damage(target.world.damageSources.generic(), 2f)
+        } else if (stack.containsEnchantment(JREnchantments.LAPAROSCOPY)) {
+            // 调用治愈方法 (cure方法内部会给予瞬间恢复效果，正好抵消上面的通用10点扣血)
+            target.cureCorpusLuteumRupture()
+            // 掉落清理出来的腹腔积血 (血块)
+            target.dropStack(JRItems.MOLE.defaultStack)
         }
     }
 
@@ -266,7 +241,6 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
      * 消耗手术刀的耐久度
      */
     override fun consumeItem(user: PlayerEntity, target: LivingEntity, stack: ItemStack, hand: Hand) {
-        // 每次成功使用消耗1点耐久度
         stack.damage(1, user, EquipmentSlot.MAINHAND)
     }
 
@@ -286,18 +260,17 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
                 userSuccessMessage = if (isSelf) Text.of("§a你成功为自己安装了子宫！") else Text.of("§a已为对方安装子宫！"),
                 targetSuccessMessage = if (isSelf) null else Text.of("§a你被安装了子宫！")
             )
-        }else if (stack.containsEnchantment(JREnchantments.MASTECTOMY)){
+        } else if (stack.containsEnchantment(JREnchantments.MASTECTOMY)) {
             return ActionMessages(
                 userSuccessMessage = if (isSelf) Text.of("§a你成功切除了你自己的乳房") else Text.of("§a已为对方进行乳房切除"),
                 targetSuccessMessage = if (isSelf) null else Text.of("§a你被进行了乳房切除！")
             )
-        }
-        else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)){
+        } else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)) {
             return ActionMessages(
                 userSuccessMessage = if (isSelf) Text.of("§a你成功切除了你自己的魔丸") else Text.of("§a已为对方进行切除魔丸！"),
                 targetSuccessMessage = if (isSelf) null else Text.of("§a你被进行了魔丸切除！")
             )
-        }else if (stack.containsEnchantment(JREnchantments.AMPUTATING)) {
+        } else if (stack.containsEnchantment(JREnchantments.AMPUTATING)) {
             return ActionMessages(
                 userSuccessMessage = if (isSelf) Text.of("§a你成功为自己进行了截肢！") else Text.of("§a已为对方进行截肢！"),
                 targetSuccessMessage = if (isSelf) null else Text.of("§c你被进行了截肢手术！")
@@ -307,18 +280,23 @@ class ScalpelItem(settings: Settings) : MedicalItem(settings.maxCount(1).maxDama
                 userSuccessMessage = if (isSelf) Text.of("§a你成功为自己进行了斩首（……）") else Text.of("§a已为对方进行了斩首！"),
                 targetSuccessMessage = if (isSelf) null else Text.of("§c你被斩首了！")
             )
-        }else if (stack.containsEnchantment(JREnchantments.HEMORRHOIDECTOMY)) {
+        } else if (stack.containsEnchantment(JREnchantments.HEMORRHOIDECTOMY)) {
             return ActionMessages(
                 userSuccessMessage = if (isSelf) Text.of("§a你成功切除了自己的痔疮！一身轻松！") else Text.of("§a已为对方成功切除痔疮！"),
                 targetSuccessMessage = if (isSelf) null else Text.of("§a你的痔疮被切除了，屁股虽然痛但是很清爽！")
             )
-        }else if (stack.containsEnchantment(JREnchantments.HYMENOTOMY)) {
+        } else if (stack.containsEnchantment(JREnchantments.HYMENOTOMY)) {
             return ActionMessages(
                 userSuccessMessage = if (isSelf) Text.of("§a你成功为自己进行了处女膜切开术！") else Text.of("§a已为对方进行了处女膜切开术！"),
                 targetSuccessMessage = if (isSelf) null else Text.of("§a你的处女膜被切开了！")
             )
+        } else if (stack.containsEnchantment(JREnchantments.LAPAROSCOPY)) {
+            return ActionMessages(
+                userSuccessMessage = if (isSelf) Text.of("§a你成功为自己进行了腹腔镜手术，清除了腹腔积血！") else Text.of("§a已成功为对方进行腹腔镜微创手术，止住了内出血！"),
+                targetSuccessMessage = if (isSelf) null else Text.of("§a你接受了腹腔镜手术，黄体破裂已被修补！")
+            )
         }
-        // 不应该到达这里，但作为安全措施
+
         return ActionMessages(Text.of("操作完成。"), null)
     }
 }

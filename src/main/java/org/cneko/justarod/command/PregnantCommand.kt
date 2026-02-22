@@ -31,6 +31,7 @@ class PregnantCommand {
                 registerHymen(dispatcher)
                 registerProtogyny(dispatcher)
                 registerHormones(dispatcher)
+                registerCorpusLuteumRupture(dispatcher)
 
                 // 简单的布尔开关/状态类命令
                 registerSimpleBool(dispatcher, "sterilization", "绝育", { it.isSterilization }, { e, v -> e.isSterilization = v })
@@ -192,10 +193,10 @@ class PregnantCommand {
 
         // ==================== 具体业务模块 ====================
 
+        // ... (保持原有的 registerSex 等不修改) ...
         private fun registerSex(dispatcher: CommandDispatcher<ServerCommandSource>) {
             val cmd = literal("sex")
 
-            // 查询逻辑
             val showSex: (Pregnant, ServerCommandSource) -> Unit = { p, s ->
                 val gender = when {
                     p.isMale && p.isFemale -> "§b男§d女"
@@ -207,7 +208,6 @@ class PregnantCommand {
             }
             buildSelfAndTarget(cmd, showSex)
 
-            // 设置逻辑
             cmd.then(literal("male").then(
                 buildSetter("is", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v -> p.isMale = v }
             ))
@@ -221,15 +221,11 @@ class PregnantCommand {
         private fun registerPregnant(dispatcher: CommandDispatcher<ServerCommandSource>) {
             val cmd = literal("pregnant")
 
-            // 1. 查询剩余孕期
             buildSelfAndTarget(cmd) { p, s ->
                 s.sendMessage(Text.of("剩余孕期：${p.pregnant / 20 / 60 / 20}天"))
             }
-
-            // 2. 设置孕期
             cmd.then(buildSetter("time", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.pregnant = v })
 
-            // 3. 状态 (status)
             val statusCmd = literal("status")
             statusCmd.requires { it.hasPermissionLevel(4) }
             buildSelfAndTarget(statusCmd) { p, s ->
@@ -241,8 +237,6 @@ class PregnantCommand {
                 s.sendMessage(Text.of(msg))
             }
 
-            // 3.1 状态设置 (set type)
-            // 原逻辑有些复杂，这里简化重构
             val setStatusCmd = literal("set")
                 .then(argument("type", StringArgumentType.word())
                     .then(argument("is", BoolArgumentType.bool())
@@ -259,7 +253,6 @@ class PregnantCommand {
             statusCmd.then(setStatusCmd)
             cmd.then(statusCmd)
 
-            // 4. 胎儿数量 (count)
             val countCmd = literal("count")
             buildSelfAndTarget(countCmd) { p, s ->
                 if (p.isPregnant) s.sendMessage(Text.of("§a怀了${p.babyCount}胞胎！"))
@@ -301,7 +294,6 @@ class PregnantCommand {
         private fun registerExcretion(dispatcher: CommandDispatcher<ServerCommandSource>) {
             val cmd = literal("excretion")
 
-            // 排泄动作
             cmd.then(literal("release").executes { ctx ->
                 run(ctx, null) { p, s ->
                     if (p.excretion > 20 * 60 * 10) {
@@ -316,12 +308,10 @@ class PregnantCommand {
                 }
             })
 
-            // 查询
             buildSelfAndTarget(cmd) { p, s ->
                 s.sendMessage(Text.of("当前憋粑粑时间：${p.excretion / 20 / 60}分钟"))
             }
 
-            // 设置
             cmd.then(buildSetter("time", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.excretion = v })
 
             dispatcher.register(cmd)
@@ -361,7 +351,6 @@ class PregnantCommand {
 
             val setCmd = literal("set").requires { it.hasPermissionLevel(4) }
 
-            // set has
             setCmd.then(literal("has").then(
                 argument("value", BoolArgumentType.bool())
                     .executes { ctx ->
@@ -379,7 +368,6 @@ class PregnantCommand {
                     )
             ))
 
-            // set imperforate
             setCmd.then(literal("imperforate").then(
                 argument("value", BoolArgumentType.bool())
                     .executes { ctx ->
@@ -404,61 +392,42 @@ class PregnantCommand {
         private fun registerProtogyny(dispatcher: CommandDispatcher<ServerCommandSource>) {
             val cmd = literal("protogyny")
 
-            // 1. Enable 子命令
             val enableCmd = literal("enable")
-            // 配置查看逻辑
             buildSelfAndTarget(enableCmd) { p, s ->
                 val state = if (p.isProtogynyEnabled) "§a是" else "§c否"
                 s.sendMessage(Text.of("§e[性别特征] §f雌转雄启用: $state"))
             }
-            // 配置设置逻辑 (... set <is> ...)
             enableCmd.then(buildSetter("is", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v ->
                 p.isProtogynyEnabled = v
             })
-            // 将配置好的 enableCmd 挂载到主命令
             cmd.then(enableCmd)
 
-
-            // 2. Undergoing 子命令
             val undergoingCmd = literal("undergoing")
-            // 配置查看逻辑
             buildSelfAndTarget(undergoingCmd) { p, s ->
                 val state = if (p.isUndergoingProtogyny) "§a是" else "§c否"
                 s.sendMessage(Text.of("§e[性别特征] §f正在雌转雄: $state"))
             }
-            // 配置设置逻辑
             undergoingCmd.then(buildSetter("is", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v ->
                 p.isUndergoingProtogyny = v
             })
-            // 挂载
             cmd.then(undergoingCmd)
 
-
-            // 3. Progress 子命令
             val progressCmd = literal("progress")
-            // 配置查看逻辑
             buildSelfAndTarget(progressCmd) { p, s ->
-                // 注意：整数除法如果不先乘100或者转float，结果可能一直是0
                 val percent = (p.protogynyProgress.toDouble() / Pregnant.PROTOGYNY_TOTAL_DURATION * 100).toInt()
                 s.sendMessage(Text.of("§e[性别特征] §f雌转雄进度: $percent% (${p.protogynyProgress}/${Pregnant.PROTOGYNY_TOTAL_DURATION})"))
             }
-            // 配置设置逻辑
-            // 注意：这里 buildSetter 的第一个参数是参数名，必须与 getter 中获取的名称一致
             progressCmd.then(buildSetter("val", IntegerArgumentType.integer(0, Pregnant.PROTOGYNY_TOTAL_DURATION), IntegerArgumentType::getInteger) { p, v ->
                 p.protogynyProgress = v
             })
-            // 挂载
             cmd.then(progressCmd)
 
-            // 注册主命令
             dispatcher.register(cmd)
         }
 
         private fun registerHormones(dispatcher: CommandDispatcher<ServerCommandSource>) {
             val cmd = literal("hormone")
 
-            // 1. 激素总览 (Status)
-            // /hormone [target]
             buildSelfAndTarget(cmd) { p, s ->
                 val t = String.format("%.1f", p.testosterone)
                 val e = String.format("%.1f", p.estrogen)
@@ -470,21 +439,76 @@ class PregnantCommand {
                 s.sendMessage(Text.of("§b 孕酮(P): $prog §6 吸引力: $attr"))
             }
 
-            // 2. 睾酮设置
-            // /hormone testosterone set <val> [target]
             val tCmd = literal("testosterone")
             tCmd.then(buildSetter("val", FloatArgumentType.floatArg(0f), FloatArgumentType::getFloat) { p, v -> p.testosterone = v })
             cmd.then(tCmd)
 
-            // 3. 雌激素设置
             val eCmd = literal("estrogen")
             eCmd.then(buildSetter("val", FloatArgumentType.floatArg(0f), FloatArgumentType::getFloat) { p, v -> p.estrogen = v })
             cmd.then(eCmd)
 
-            // 4. 孕酮设置
             val pCmd = literal("progesterone")
             pCmd.then(buildSetter("val", FloatArgumentType.floatArg(0f), FloatArgumentType::getFloat) { p, v -> p.progesterone = v })
             cmd.then(pCmd)
+
+            dispatcher.register(cmd)
+        }
+
+        // ==================== 【新增模块】 黄体破裂指令 ====================
+        private fun registerCorpusLuteumRupture(dispatcher: CommandDispatcher<ServerCommandSource>) {
+            val cmd = literal("corpus_luteum_rupture")
+
+            // 1. 查看状态
+            // /corpus_luteum_rupture [target]
+            buildSelfAndTarget(cmd) { p, s ->
+                val time = p.corpusLuteumRupture
+                val severe = p.isSevereCorpusLuteumRupture
+                if (time > 0) {
+                    val sevStr = if (severe) "§c重症 (大血管破裂)" else "§e轻症"
+                    s.sendMessage(Text.of("§c[生理检查] §f黄体破裂: $sevStr §f| 积血时间: $time tick"))
+                } else {
+                    s.sendMessage(Text.of("§a[生理检查] §f黄体完好 (无破裂内出血)"))
+                }
+            }
+
+            // 2. 更改数值与重症状态
+            // /corpus_luteum_rupture time set <val> [target]
+            val timeCmd = literal("time")
+            timeCmd.then(buildSetter("val", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v ->
+                p.corpusLuteumRupture = v
+            })
+            cmd.then(timeCmd)
+
+            // /corpus_luteum_rupture severe set <val> [target]
+            val severeCmd = literal("severe")
+            severeCmd.then(buildSetter("val", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v ->
+                p.isSevereCorpusLuteumRupture = v
+            })
+            cmd.then(severeCmd)
+
+            // 3. 手动触发
+            // /corpus_luteum_rupture trigger [target]
+            val triggerCmd = literal("trigger").requires { it.hasPermissionLevel(4) }
+            buildSelfAndTarget(triggerCmd) { p, s ->
+                // 调用我们在接口里写好的破裂方法
+                val success = p.ruptureCorpusLuteum("")
+                if (!success){
+                    s.sendMessage(Text.of("§e触发失败：目标可能并非处于黄体期，或者没有子宫，或已经处于破裂状态。"))
+                }
+            }
+            cmd.then(triggerCmd)
+
+            // 4. 手动治愈
+            // /corpus_luteum_rupture cure [target]
+            val cureCmd = literal("cure").requires { it.hasPermissionLevel(4) }
+            buildSelfAndTarget(cureCmd) { p, s ->
+                if (p.corpusLuteumRupture > 0) {
+                    p.cureCorpusLuteumRupture()
+                } else {
+                    s.sendMessage(Text.of("§a目标没有黄体破裂，无需治疗。"))
+                }
+            }
+            cmd.then(cureCmd)
 
             dispatcher.register(cmd)
         }

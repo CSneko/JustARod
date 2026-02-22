@@ -219,7 +219,7 @@ public interface Pregnant{
 
         return menstruationOk && !this.isPregnant() && !this.isSterilization() && this.hasUterus() && !this.isPCOS()
                 && !(this.getBrithControlling() > 0 && ((Entity)this).getRandom().nextInt(10) != 0) && !noMatingPlz
-                && !isSevereUterineCold && !physicalBlock;
+                && !isSevereUterineCold && !physicalBlock && this.getCorpusLuteumRupture() <= 0;
     }
 
     default void writePregnantToNbt(NbtCompound nbt) {
@@ -261,6 +261,8 @@ public interface Pregnant{
         nbt.putFloat("Hormone_E", getEstrogen());
         nbt.putFloat("Hormone_P", getProgesterone());
         nbt.putInt("Cataract", getCataract());
+        nbt.putInt("CorpusLuteumRupture", getCorpusLuteumRupture());
+        nbt.putBoolean("SevereCorpusLuteumRupture", isSevereCorpusLuteumRupture());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         setFemale(nbt.getBoolean("Female"));
@@ -381,6 +383,12 @@ public interface Pregnant{
         if (nbt.contains("Hormone_P")) setProgesterone(nbt.getFloat("Hormone_P"));
         if (nbt.contains("Cataract")) {
             setCataract(nbt.getInt("Cataract"));
+        }
+        if (nbt.contains("CorpusLuteumRupture")) {
+            setCorpusLuteumRupture(nbt.getInt("CorpusLuteumRupture"));
+        }
+        if (nbt.contains("SevereCorpusLuteumRupture")) {
+            setSevereCorpusLuteumRupture(nbt.getBoolean("SevereCorpusLuteumRupture"));
         }
     }
 
@@ -948,6 +956,61 @@ public interface Pregnant{
             entity.sendMessage(Text.of("§a手术成功，眼前变得清晰了！"));
             // 手术后眼睛敏感，给予短时间畏光（失明/夜视闪烁）
             entity.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 20 * 5, 0));
+        }
+    }
+
+    // ----------------------------- CORPUS LUTEUM RUPTURE (黄体破裂) -----------------------------
+    default void setCorpusLuteumRupture(int time) {}
+    default int getCorpusLuteumRupture() {
+        return 0;
+    }
+
+    default void setSevereCorpusLuteumRupture(boolean severe) {}
+    default boolean isSevereCorpusLuteumRupture() {
+        return false;
+    }
+
+    /**
+     * 触发黄体破裂
+     * @param cause 破裂原因（用于文本提示）
+     */
+    default boolean ruptureCorpusLuteum(String cause) {
+        if (!isFemale() || !hasUterus()) return false;
+
+        // 只有在黄体期才容易发生黄体破裂
+        if (getMenstruationCycle() != MenstruationCycle.LUTEINIZATION) return false;
+        // 如果已经破裂了则不重复触发
+        if (getCorpusLuteumRupture() > 0) return false;
+
+        // 随机判定是否为重症 (例如 20% 概率是大血管破裂的重症)
+        boolean severe = ((Entity)this).getRandom().nextInt(100) < 20;
+        setSevereCorpusLuteumRupture(severe);
+        setCorpusLuteumRupture(20 * 60 * 3); // 启动计时器
+
+        if (this instanceof LivingEntity entity) {
+            // 瞬间的高额伤害 (重症 6点/3心，轻症 4点/2心)
+            entity.damage(entity.getDamageSources().generic(), severe ? 6.0f : 4.0f);
+
+            // 痛得无法动弹
+            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 15, 2));
+            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 15, 1));
+
+            entity.sendMessage(Text.of("§c你的下腹部突然传来一阵撕裂般的剧痛... (" + cause + ")"));
+        }
+        return true;
+    }
+
+    /**
+     * 手术/药物 治愈黄体破裂
+     */
+    default void cureCorpusLuteumRupture() {
+        if (getCorpusLuteumRupture() > 0) {
+            setCorpusLuteumRupture(0);
+            setSevereCorpusLuteumRupture(false);
+            if (this instanceof LivingEntity entity) {
+                entity.sendMessage(Text.of("§a经过及时治疗，腹腔内的出血停止了。"));
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.INSTANT_HEALTH, 1, 0));
+            }
         }
     }
 
@@ -2254,6 +2317,129 @@ public interface Pregnant{
 
         if (increase > 0) {
             entity.setCataract(current + increase);
+        }
+    }
+
+    /**
+     * 黄体破裂诱因检测 Tick
+     * 负责检测实体的高危行为（疾跑、坠落、骑乘）并掷骰子触发破裂
+     */
+    static <T extends LivingEntity & Pregnant> void corpusLuteumTriggerTick(T entity) {
+        if (entity.getCorpusLuteumRupture() > 0) return; // 已经破裂就不检测了
+        if (!entity.isFemale() || !entity.hasUterus()) return;
+        if (entity.getMenstruationCycle() != MenstruationCycle.LUTEINIZATION) return;
+
+        // 1. 高处坠落冲击判定
+        if (entity.fallDistance > 3.0f) {
+            if (entity.getRandom().nextInt(150) == 0) { // 概率较高
+                entity.ruptureCorpusLuteum("高处坠落冲击");
+            }
+        }
+        // 2. 剧烈运动判定 (疾跑)
+        if (entity.isSprinting()) {
+            if (entity.getRandom().nextInt(8000) == 0) {
+                entity.ruptureCorpusLuteum("剧烈运动");
+            }
+        }
+        // 3. 颠簸判定 (骑乘)
+        if (entity.hasVehicle()) {
+            if (entity.getRandom().nextInt(5000) == 0) {
+                entity.ruptureCorpusLuteum("剧烈颠簸");
+            }
+        }
+    }
+
+    /**
+     * 黄体破裂症状演变 Tick
+     * 负责处理内出血积累、休克、以及轻症的自愈逻辑
+     */
+    static <T extends LivingEntity & Pregnant> void corpusLuteumRuptureTick(T entity) {
+        int current = entity.getCorpusLuteumRupture();
+        if (current <= 0) return;
+
+        boolean isSevere = entity.isSevereCorpusLuteumRupture();
+        // 判定是否处于静养状态（睡觉、潜行，或速度极慢且没疾跑没骑乘）
+        boolean isResting = entity.isSleeping() || entity.isSneaking() ||
+                (!entity.isSprinting() && !entity.hasVehicle() && entity.getVelocity().lengthSquared() < 0.01);
+
+        // 1. 出血量变化逻辑
+        int delta = 1; // 默认每 tick 出血量增加 1
+        if (!isSevere && isResting) {
+            delta = -2; // 轻症且静养，身体自我吸收（数值下降，加速愈合）
+        } else if (entity.isSprinting() || entity.hasVehicle()) {
+            delta = 3;  // 不管轻重症，剧烈运动都会加速出血
+        }
+
+        current += delta;
+
+        // 轻症自愈判定
+        if (current <= 0) {
+            entity.setCorpusLuteumRupture(0);
+            entity.setSevereCorpusLuteumRupture(false);
+            entity.sendMessage(Text.of("§a经过休息，腹部的隐痛逐渐消失了...（黄体破裂已自愈）"));
+            return;
+        }
+
+        entity.setCorpusLuteumRupture(current);
+
+        // 2. 并发症：引发流产
+        // 现实中黄体主要维持早孕，黄体破裂极易导致流产
+        if (entity.isPregnant() && entity.getRandom().nextInt(2000) == 0) {
+            entity.sendMessage(Text.of("§c内出血与黄体受损导致了流产..."));
+            entity.miscarry();
+        }
+
+        // 3. 并发症：直肠刺激征（血液流入道格拉斯窝）
+        // 给玩家造成强烈的虚假便意（肛门坠胀感）
+        if (entity.getRandom().nextInt(800) == 0) {
+            entity.setExcretion(entity.getExcretion() + 20 * 60); // 强行增加1分钟的便意值
+            entity.sendMessage(Text.of("§e腹腔积血压迫直肠，传来强烈的坠胀感..."));
+        }
+
+        // 4. 症状表现
+        if (!isSevere) {
+            // 【轻症症状】
+            // 偶尔隐痛
+            if (entity.getRandom().nextInt(1200) == 0) {
+                entity.damage(entity.getDamageSources().magic(), 0.5f);
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20 * 5, 0));
+            }
+
+            // 轻症作死惩罚：积血多且剧烈活动，有概率恶化为重症
+            if (current > 20 * 60 * 3 && (entity.isSprinting() || entity.fallDistance > 2.0f)) {
+                if (entity.getRandom().nextInt(200) == 0) {
+                    entity.setSevereCorpusLuteumRupture(true);
+                    entity.sendMessage(Text.of("§c糟糕！剧烈活动导致黄体破裂口扩大，转为大出血！"));
+                    entity.damage(entity.getDamageSources().generic(), 2.0f);
+                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 10, 0));
+                }
+            }
+        } else {
+            // 【重症症状】
+            // 频繁的内出血伤害
+            if (entity.getRandom().nextInt(200) == 0) {
+                entity.damage(entity.getDamageSources().magic(), 1.0f);
+            }
+
+            // 阶段 A: 失血 3 分钟以上 -> 头晕目眩
+            if (current > 20 * 60 * 3) {
+                if (entity.getRandom().nextInt(400) == 0) {
+                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 15, 0));
+                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 20 * 5, 0));
+                }
+            }
+
+            // 阶段 B: 失血 8 分钟以上 -> 休克昏迷，濒死
+            if (current > 20 * 60 * 8) {
+                if (entity.getRandom().nextInt(400) == 0) {
+                    entity.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getFAINT_EFFECT()), 20 * 30, 0));
+                    entity.sendMessage(Text.of("§c由于大量内出血，你陷入了失血性休克..."));
+                }
+                // 不治疗有极高致死率
+                if (entity.getRandom().nextInt(600) == 0) {
+                    entity.damage(entity.getDamageSources().generic(), 4.0f);
+                }
+            }
         }
     }
 

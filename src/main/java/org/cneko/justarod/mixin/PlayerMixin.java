@@ -608,6 +608,31 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
         this.cataract = cataract;
     }
 
+    @Unique
+    private int corpusLuteumRupture = 0;
+    @Unique
+    private boolean severeCorpusLuteumRupture = false;
+
+    @Override
+    public int getCorpusLuteumRupture() {
+        return corpusLuteumRupture;
+    }
+
+    @Override
+    public void setCorpusLuteumRupture(int corpusLuteumRupture) {
+        this.corpusLuteumRupture = corpusLuteumRupture;
+    }
+
+    @Override
+    public boolean isSevereCorpusLuteumRupture() {
+        return severeCorpusLuteumRupture;
+    }
+
+    @Override
+    public void setSevereCorpusLuteumRupture(boolean severeCorpusLuteumRupture) {
+        this.severeCorpusLuteumRupture = severeCorpusLuteumRupture;
+    }
+
     @Override
     public Entity createBaby() {
         PlayerEntity player = (PlayerEntity) (Object) this;
@@ -698,6 +723,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
             Pregnant.imperforateHymenTick(player);
             Pregnant.protogynyTick(player);
             Pregnant.cataractTick(player);
+            Pregnant.corpusLuteumTriggerTick(player);
+            Pregnant.corpusLuteumRuptureTick(player);
             BDSMable.ballMouthTick(player);
             BDSMable.electricShockTick(player);
             BDSMable.bundledTick(player);

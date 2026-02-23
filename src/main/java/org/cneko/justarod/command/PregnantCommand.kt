@@ -1,82 +1,131 @@
 package org.cneko.justarod.command
 
-import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.BoolArgumentType
 import com.mojang.brigadier.arguments.FloatArgumentType
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import com.mojang.brigadier.arguments.StringArgumentType
-import com.mojang.brigadier.builder.ArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.command.argument.EntityArgumentType
+import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
 import net.minecraft.server.command.CommandManager.argument
 import net.minecraft.server.command.CommandManager.literal
 import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.ClickEvent
+import net.minecraft.text.HoverEvent
 import net.minecraft.text.Text
+import org.cneko.justarod.client.gui.ScanType
 import org.cneko.justarod.entity.Pregnant
 import org.cneko.justarod.item.JRItems
-import javax.swing.text.html.parser.Entity
+import org.cneko.justarod.packet.XRayScanScreenPayload
+import org.cneko.justarod.property.JRRegistry
 
 class PregnantCommand {
     companion object {
+
+        // ==================== 帮助系统数据结构 ====================
+        private data class CommandHelp(val displayName: String, val usages: List<String>)
+        private val helpData = mutableMapOf<String, CommandHelp>()
+
+        private fun addHelp(name: String, displayName: String, vararg usages: String) {
+            helpData[name] = CommandHelp(displayName, usages.toList())
+        }
+
+        // ==================== 初始化入口 ====================
         fun init() {
             CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
-                registerSex(dispatcher)
-                registerPregnant(dispatcher)
-                registerMenstruation(dispatcher)
-                registerExcretion(dispatcher)
-                registerUrination(dispatcher)
-                registerHymen(dispatcher)
-                registerProtogyny(dispatcher)
-                registerHormones(dispatcher)
-                registerCorpusLuteumRupture(dispatcher)
+                val baseCmd = literal("jr")
 
-                // 简单的布尔开关/状态类命令
-                registerSimpleBool(dispatcher, "sterilization", "绝育", { it.isSterilization }, { e, v -> e.isSterilization = v })
-                registerSimpleBool(dispatcher, "uterus", "子宫", { it.hasUterus() }, { e, v -> e.setHasUterus(v) }, trueStr = "有", falseStr = "没有")
-                registerSimpleBool(dispatcher, "PCOS", "多囊卵巢综合征", { it.isPCOS }, { e, v -> e.isPCOS = v }, trueStr = "已患上", falseStr = "没有患上", trueColor = "c", falseColor = "a")
-                registerSimpleBool(dispatcher, "orchiectomy", "魔丸切除", { it.isOrchiectomy }, { e, v -> e.isOrchiectomy = v }, trueStr = "已切除", falseStr = "未切除", trueColor = "c", falseColor = "b")
-                registerSimpleBool(dispatcher, "amputated", "截肢", { it.isAmputated }, { e, v -> e.isAmputated = v }, trueStr = "已截肢", falseStr = "未截肢", trueColor = "c", falseColor = "b")
+                // 1. 注册基础属性命令，并自动生成帮助信息
+                JRRegistry.PROPERTIES.forEach { property ->
+                    val argument = property.registerCommand()
+                    if (argument != null) {
+                        baseCmd.then(argument)
+                        addHelp(property.name, property.displayName,
+                            "/jr ${property.name} [target] §7- 查看状态",
+                            "/jr ${property.name} set <value> [target] §7- 修改状态 (需要OP)"
+                        )
+                    }
+                }
 
-                // 简单的整数/时间/等级类命令
-                registerSimpleInt(dispatcher, "BrithControlling", "避孕有效期", { it.brithControlling }, { e, v -> e.brithControlling = v })
-                registerSimpleInt(dispatcher, "OvarianCancer", "卵巢癌", { it.ovarianCancer }, { e, v -> e.ovarianCancer = v }, isDisease = true)
-                registerSimpleInt(dispatcher, "BreastCancer", "乳腺癌", { it.breastCancer }, { e, v -> e.breastCancer = v }, isDisease = true)
-                registerSimpleInt(dispatcher, "syphilis", "梅毒", { it.syphilis }, { e, v -> e.syphilis = v }, isDisease = true)
-                registerSimpleInt(dispatcher, "uterine_cold", "宫寒", { it.uterineCold }, { e, v -> e.uterineCold = v }, isDisease = true)
-                registerSimpleInt(dispatcher, "urethritis", "尿道炎", { it.urethritis }, { e, v -> e.urethritis = v }, isDisease = true)
-                registerSimpleInt(dispatcher, "prostatitis", "前列腺炎", { it.prostatitis }, { e, v -> e.prostatitis = v }, isDisease = true)
-                registerSimpleInt(dispatcher, "hemorrhoids", "痔疮", { it.hemorrhoids }, { e, v -> e.hemorrhoids = v }, isDisease = true)
-                registerSimpleInt(dispatcher, "cataract", "白内障", { it.cataract }, { e, v -> e.cataract = v }, isDisease = true)
+                // 2. 注册具体业务模块 (将其全部挂载到 baseCmd 下)
+                registerSex(baseCmd)
+                registerPregnant(baseCmd)
+                registerMenstruation(baseCmd)
+                registerExcretion(baseCmd)
+                registerUrination(baseCmd)
+                registerHymen(baseCmd)
+                registerProtogyny(baseCmd)
+                registerHormones(baseCmd)
+                registerCorpusLuteumRupture(baseCmd)
+                registerXRayScan(baseCmd)
 
-                // 带有免疫功能的特殊疾病
-                registerComplexDisease(dispatcher, "aids", "AIDS", { it.aids }, { e, v -> e.aids = v }, { it.isImmune2Aids }, { e, v -> e.isImmune2Aids = v })
-                registerComplexDisease(dispatcher, "hpv", "HPV", { it.hpv }, { e, v -> e.hpv = v }, { it.isImmune2HPV }, { e, v -> e.isImmune2HPV = v })
+                // 3. 注册帮助命令
+                registerHelp(baseCmd)
+
+                // 4. 最终将 /jr 注册到 dispatcher
+                dispatcher.register(baseCmd)
             }
         }
 
-        // ==================== 核心 Helper ====================
+        // ==================== 帮助系统命令实现 ====================
+        private fun registerHelp(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
+            val helpCmd = literal("help")
 
-        /**
-         * 核心执行逻辑：自动处理 self/target，自动检查 Pregnant 类型
-         */
+            // /jr help
+            helpCmd.executes { ctx ->
+                val source = ctx.source
+                source.sendMessage(Text.of("§e=== JustARod 命令帮助列表 ==="))
+                source.sendMessage(Text.of("§7(提示：点击绿色命令即可快速查看用法)"))
+
+                helpData.toSortedMap().forEach { (name, info) ->
+                    // 创建可点击的文本
+                    val text = Text.literal("§a/jr $name §f- ${info.displayName}")
+                        .styled { style ->
+                            style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/jr help $name"))
+                                .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.of("点击查看该命令具体用法")))
+                        }
+                    source.sendMessage(text)
+                }
+                1
+            }
+
+            // /jr help <子命令>
+            helpCmd.then(argument("command", StringArgumentType.word())
+                .executes { ctx ->
+                    val cmdName = StringArgumentType.getString(ctx, "command")
+                    val source = ctx.source
+                    val info = helpData[cmdName]
+
+                    if (info == null) {
+                        source.sendMessage(Text.of("§c未找到子命令: $cmdName。请输入 /jr help 查看列表。"))
+                        return@executes 0
+                    }
+
+                    source.sendMessage(Text.of("§e=== /jr $cmdName (${info.displayName}) ==="))
+                    info.usages.forEach { usage ->
+                        source.sendMessage(Text.of("§b$usage"))
+                    }
+                    1
+                }
+            )
+
+            baseCmd.then(helpCmd)
+        }
+
+
+        // ==================== 核心 Helper ====================
         private fun run(ctx: CommandContext<ServerCommandSource>, targetName: String? = null, action: (Pregnant, ServerCommandSource) -> Unit): Int {
             val source = ctx.source
             val entity = if (targetName != null) EntityArgumentType.getEntity(ctx, targetName) else source.entity
-
-            if (entity is Pregnant) {
-                action(entity, source)
-            } else {
-                // 可选：提示目标不是 Pregnant 实体
-            }
+            if (entity is Pregnant) action(entity, source)
             return 1
         }
 
-        /**
-         * 构建通用的 "查看状态" + "针对目标查看状态" 结构
-         */
         private fun buildSelfAndTarget(
             builder: LiteralArgumentBuilder<ServerCommandSource>,
             action: (Pregnant, ServerCommandSource) -> Unit
@@ -88,10 +137,6 @@ class PregnantCommand {
                 )
         }
 
-        /**
-         * 构建通用的 Set 命令 (需要 OP 权限)
-         * 结构: ... set <argName> (Self) -> optional target
-         */
         private fun <T> buildSetter(
             argName: String,
             argType: com.mojang.brigadier.arguments.ArgumentType<T>,
@@ -114,88 +159,16 @@ class PregnantCommand {
                 )
         }
 
-        // ==================== 通用注册器 ====================
-
-        private fun registerSimpleBool(
-            dispatcher: CommandDispatcher<ServerCommandSource>,
-            name: String,
-            displayName: String,
-            getter: (Pregnant) -> Boolean,
-            setter: (Pregnant, Boolean) -> Unit,
-            trueStr: String = "是",
-            falseStr: String = "否",
-            trueColor: String = "c", // 默认红色代表某种状态/疾病
-            falseColor: String = "a" // 默认绿色代表正常
-        ) {
-            val cmd = literal(name)
-            buildSelfAndTarget(cmd) { p, s ->
-                val state = getter(p)
-                val color = if (state) trueColor else falseColor
-                val text = if (state) trueStr else falseStr
-                s.sendMessage(Text.of("§a${displayName}状态：§$color$text"))
-            }
-            cmd.then(buildSetter("is", BoolArgumentType.bool(), BoolArgumentType::getBool, setter))
-            dispatcher.register(cmd)
-        }
-
-        private fun registerSimpleInt(
-            dispatcher: CommandDispatcher<ServerCommandSource>,
-            name: String,
-            displayName: String,
-            getter: (Pregnant) -> Int,
-            setter: (Pregnant, Int) -> Unit,
-            isDisease: Boolean = false
-        ) {
-            val cmd = literal(name)
-            buildSelfAndTarget(cmd) { p, s ->
-                val value = getter(p)
-                if (isDisease) {
-                    val status = if (value > 0) "§c已患上 (数值: $value)" else "§a没有患上/健康"
-                    s.sendMessage(Text.of("当前${displayName}状态：$status"))
-                } else {
-                    s.sendMessage(Text.of("当前${displayName}：$value"))
-                }
-            }
-            cmd.then(buildSetter("time", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger, setter))
-            dispatcher.register(cmd)
-        }
-
-        private fun registerComplexDisease(
-            dispatcher: CommandDispatcher<ServerCommandSource>,
-            name: String,
-            displayName: String,
-            valGetter: (Pregnant) -> Int,
-            valSetter: (Pregnant, Int) -> Unit,
-            immuneGetter: (Pregnant) -> Boolean,
-            immuneSetter: (Pregnant, Boolean) -> Unit
-        ) {
-            val cmd = literal(name)
-            // 状态查询
-            buildSelfAndTarget(cmd) { p, s ->
-                val v = valGetter(p)
-                val msg = if (v > 0) "已经感染$v" else "没有感染${displayName}哦"
-                s.sendMessage(Text.of("当前${displayName}状态：$msg"))
-            }
-            // 设置数值
-            cmd.then(buildSetter("time", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger, valSetter))
-
-            // 免疫功能
-            val immuneCmd = literal("immune")
-            buildSelfAndTarget(immuneCmd) { p, s ->
-                val state = if (immuneGetter(p)) "已免疫" else "没有免疫"
-                s.sendMessage(Text.of("当前${displayName}免疫状态：$state"))
-            }
-            immuneCmd.then(buildSetter("is", BoolArgumentType.bool(), BoolArgumentType::getBool, immuneSetter))
-
-            cmd.then(immuneCmd)
-            dispatcher.register(cmd)
-        }
-
         // ==================== 具体业务模块 ====================
 
-        // ... (保持原有的 registerSex 等不修改) ...
-        private fun registerSex(dispatcher: CommandDispatcher<ServerCommandSource>) {
+        // 注意：将传入参数由 CommandDispatcher 改为 LiteralArgumentBuilder，这样就能作为子节点挂载
+        private fun registerSex(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
             val cmd = literal("sex")
+            addHelp("sex", "基础性别管理",
+                "/jr sex [target] §7- 查看性别",
+                "/jr sex male set <true/false> [target] §7- 设置男性状态",
+                "/jr sex female set <true/false> [target] §7- 设置女性状态"
+            )
 
             val showSex: (Pregnant, ServerCommandSource) -> Unit = { p, s ->
                 val gender = when {
@@ -215,11 +188,19 @@ class PregnantCommand {
                 buildSetter("is", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v -> p.isFemale = v }
             ))
 
-            dispatcher.register(cmd)
+            baseCmd.then(cmd)
         }
 
-        private fun registerPregnant(dispatcher: CommandDispatcher<ServerCommandSource>) {
+        private fun registerPregnant(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
             val cmd = literal("pregnant")
+            addHelp("pregnant", "怀孕详细管理",
+                "/jr pregnant [target] §7- 查看剩余孕期",
+                "/jr pregnant set time <ticks> [target] §7- 设置孕期",
+                "/jr pregnant count [target] §7- 查看胎儿数量",
+                "/jr pregnant count set <val> [target] §7- 设置胎儿数量",
+                "/jr pregnant status [target] §7- 查看是否有宫外孕/葡萄胎等异常",
+                "/jr pregnant status set <ect/hyd> <is_true> [target] §7- 设置异常状态"
+            )
 
             buildSelfAndTarget(cmd) { p, s ->
                 s.sendMessage(Text.of("剩余孕期：${p.pregnant / 20 / 60 / 20}天"))
@@ -240,13 +221,9 @@ class PregnantCommand {
             val setStatusCmd = literal("set")
                 .then(argument("type", StringArgumentType.word())
                     .then(argument("is", BoolArgumentType.bool())
-                        .executes { ctx ->
-                            run(ctx, null) { p, _ -> setPregnancyStatus(p, ctx) }
-                        }
+                        .executes { ctx -> run(ctx, null) { p, _ -> setPregnancyStatus(p, ctx) } }
                         .then(argument("target", EntityArgumentType.entity())
-                            .executes { ctx ->
-                                run(ctx, "target") { p, _ -> setPregnancyStatus(p, ctx) }
-                            }
+                            .executes { ctx -> run(ctx, "target") { p, _ -> setPregnancyStatus(p, ctx) } }
                         )
                     )
                 )
@@ -260,39 +237,41 @@ class PregnantCommand {
             countCmd.then(buildSetter("count", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.babyCount = v })
             cmd.then(countCmd)
 
-            dispatcher.register(cmd)
+            baseCmd.then(cmd)
         }
 
         private fun setPregnancyStatus(p: Pregnant, ctx: CommandContext<ServerCommandSource>) {
             val type = StringArgumentType.getString(ctx, "type")
             val value = BoolArgumentType.getBool(ctx, "is")
-            if (type.contains("ect")) {
-                p.isEctopicPregnancy = value
-            } else if (type.contains("hyd") || type.contains("mole")) {
-                p.isHydatidiformMole = value
-            }
+            if (type.contains("ect")) p.isEctopicPregnancy = value
+            else if (type.contains("hyd") || type.contains("mole")) p.isHydatidiformMole = value
         }
 
-        private fun registerMenstruation(dispatcher: CommandDispatcher<ServerCommandSource>) {
+        private fun registerMenstruation(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
             val cmd = literal("menstruation")
+            addHelp("menstruation", "生理期管理",
+                "/jr menstruation [target] §7- 查看当前处于哪个周期",
+                "/jr menstruation set time <ticks> [target] §7- 设置生理周期进度",
+                "/jr menstruation comfort [target] §7- 查看卫生巾剩余有效时间"
+            )
 
-            buildSelfAndTarget(cmd) { p, s ->
-                s.sendMessage(Text.of("当前处于${p.menstruationCycle.text}"))
-            }
-
+            buildSelfAndTarget(cmd) { p, s -> s.sendMessage(Text.of("当前处于${p.menstruationCycle.text}")) }
             cmd.then(buildSetter("time", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.menstruation = v })
 
             val comfortCmd = literal("comfort")
-            buildSelfAndTarget(comfortCmd) { p, s ->
-                s.sendMessage(Text.of("卫生巾剩余有效时间：${p.menstruationComfort / 20}秒"))
-            }
+            buildSelfAndTarget(comfortCmd) { p, s -> s.sendMessage(Text.of("卫生巾剩余有效时间：${p.menstruationComfort / 20}秒")) }
             cmd.then(comfortCmd)
 
-            dispatcher.register(cmd)
+            baseCmd.then(cmd)
         }
 
-        private fun registerExcretion(dispatcher: CommandDispatcher<ServerCommandSource>) {
+        private fun registerExcretion(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
             val cmd = literal("excretion")
+            addHelp("excretion", "排泄管理",
+                "/jr excretion [target] §7- 查看憋屎时间",
+                "/jr excretion set time <ticks> [target] §7- 设置憋屎时间",
+                "/jr excretion release §7- 释放排泄物 (玩家自己)"
+            )
 
             cmd.then(literal("release").executes { ctx ->
                 run(ctx, null) { p, s ->
@@ -300,25 +279,26 @@ class PregnantCommand {
                         p.excretion -= 20 * 60 * 10
                         p.doDefecationPain()
                         s.sendMessage(Text.of("你排泄了"))
-                        p as LivingEntity
-                        p.dropStack(JRItems.EXCREMENT.defaultStack)
+                        (p as LivingEntity).dropStack(JRItems.EXCREMENT.defaultStack)
                     } else {
                         s.sendMessage(Text.of("你目前无需排泄"))
                     }
                 }
             })
 
-            buildSelfAndTarget(cmd) { p, s ->
-                s.sendMessage(Text.of("当前憋粑粑时间：${p.excretion / 20 / 60}分钟"))
-            }
-
+            buildSelfAndTarget(cmd) { p, s -> s.sendMessage(Text.of("当前憋粑粑时间：${p.excretion / 20 / 60}分钟")) }
             cmd.then(buildSetter("time", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.excretion = v })
 
-            dispatcher.register(cmd)
+            baseCmd.then(cmd)
         }
 
-        private fun registerUrination(dispatcher: CommandDispatcher<ServerCommandSource>) {
+        private fun registerUrination(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
             val cmd = literal("urination")
+            addHelp("urination", "排尿管理",
+                "/jr urination [target] §7- 查看憋尿时间",
+                "/jr urination set time <ticks> [target] §7- 设置憋尿时间",
+                "/jr urination release §7- 排尿 (玩家自己)"
+            )
 
             cmd.then(literal("release").executes { ctx ->
                 run(ctx, null) { p, s ->
@@ -331,85 +311,67 @@ class PregnantCommand {
                 }
             })
 
-            buildSelfAndTarget(cmd) { p, s ->
-                s.sendMessage(Text.of("当前憋尿时间：${p.urination / 20 / 60}分钟"))
-            }
-
+            buildSelfAndTarget(cmd) { p, s -> s.sendMessage(Text.of("当前憋尿时间：${p.urination / 20 / 60}分钟")) }
             cmd.then(buildSetter("time", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.urination = v })
 
-            dispatcher.register(cmd)
+            baseCmd.then(cmd)
         }
 
-        private fun registerHymen(dispatcher: CommandDispatcher<ServerCommandSource>) {
+        private fun registerHymen(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
             val cmd = literal("hymen")
+            addHelp("hymen", "处女膜状态",
+                "/jr hymen [target] §7- 查看状态与是否畸形",
+                "/jr hymen set has <true/false> [target] §7- 设置完整度",
+                "/jr hymen set imperforate <true/false> [target] §7- 设置是否闭锁(畸形)"
+            )
 
             buildSelfAndTarget(cmd) { p, s ->
                 val has = if (p.hasHymen()) "§a完整" else "§c已破裂"
-                val imp = if (p.isImperforateHymen()) "§c是 (严重畸形)" else "§b否 (正常)"
+                val imp = if (p.isImperforateHymen) "§c是 (严重畸形)" else "§b否 (正常)"
                 s.sendMessage(Text.of("§e[生理检查] §f处女膜: $has §f| 闭锁畸形: $imp"))
             }
 
             val setCmd = literal("set").requires { it.hasPermissionLevel(4) }
 
-            setCmd.then(literal("has").then(
-                argument("value", BoolArgumentType.bool())
-                    .executes { ctx ->
-                        val v = BoolArgumentType.getBool(ctx, "value")
-                        run(ctx, null) { p, _ -> p.setHasHymen(v) }
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        .executes { ctx ->
-                            val v = BoolArgumentType.getBool(ctx, "value")
-                            run(ctx, "target") { p, s ->
-                                p.setHasHymen(v)
-                                s.sendMessage(Text.of("§a已设置目标处女膜状态"))
-                            }
-                        }
-                    )
+            setCmd.then(literal("has").then(argument("value", BoolArgumentType.bool())
+                .executes { ctx -> run(ctx, null) { p, _ -> p.setHasHymen(BoolArgumentType.getBool(ctx, "value")) } }
+                .then(argument("target", EntityArgumentType.entity())
+                    .executes { ctx -> run(ctx, "target") { p, s ->
+                        p.setHasHymen(BoolArgumentType.getBool(ctx, "value")); s.sendMessage(Text.of("§a已设置"))
+                    } }
+                )
             ))
 
-            setCmd.then(literal("imperforate").then(
-                argument("value", BoolArgumentType.bool())
-                    .executes { ctx ->
-                        val v = BoolArgumentType.getBool(ctx, "value")
-                        run(ctx, null) { p, _ -> p.setImperforateHymen(v) }
-                    }
-                    .then(argument("target", EntityArgumentType.entity())
-                        .executes { ctx ->
-                            val v = BoolArgumentType.getBool(ctx, "value")
-                            run(ctx, "target") { p, s ->
-                                p.setImperforateHymen(v)
-                                s.sendMessage(Text.of("§a已设置目标闭锁状态"))
-                            }
-                        }
-                    )
+            setCmd.then(literal("imperforate").then(argument("value", BoolArgumentType.bool())
+                .executes { ctx -> run(ctx, null) { p, _ -> p.setImperforateHymen(BoolArgumentType.getBool(ctx, "value")) } }
+                .then(argument("target", EntityArgumentType.entity())
+                    .executes { ctx -> run(ctx, "target") { p, s ->
+                        p.setImperforateHymen(BoolArgumentType.getBool(ctx, "value")); s.sendMessage(Text.of("§a已设置"))
+                    } }
+                )
             ))
 
             cmd.then(setCmd)
-            dispatcher.register(cmd)
+            baseCmd.then(cmd)
         }
 
-        private fun registerProtogyny(dispatcher: CommandDispatcher<ServerCommandSource>) {
+        private fun registerProtogyny(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
             val cmd = literal("protogyny")
+            addHelp("protogyny", "雌转雄机制",
+                "/jr protogyny enable [target] §7- 查看是否激活雌转雄",
+                "/jr protogyny enable set is <true/false> [target] §7- 更改激活状态",
+                "/jr protogyny undergoing [target] §7- 查看是否正在转换",
+                "/jr protogyny progress [target] §7- 查看转换进度"
+            )
 
             val enableCmd = literal("enable")
-            buildSelfAndTarget(enableCmd) { p, s ->
-                val state = if (p.isProtogynyEnabled) "§a是" else "§c否"
-                s.sendMessage(Text.of("§e[性别特征] §f雌转雄启用: $state"))
-            }
-            enableCmd.then(buildSetter("is", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v ->
-                p.isProtogynyEnabled = v
-            })
+            buildSelfAndTarget(enableCmd) { p, s -> s.sendMessage(Text.of("§e[性别特征] §f雌转雄启用: ${if (p.isProtogynyEnabled) "§a是" else "§c否"}")) }
+            enableCmd.then(buildSetter("is", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v -> p.isProtogynyEnabled = v })
             cmd.then(enableCmd)
 
             val undergoingCmd = literal("undergoing")
-            buildSelfAndTarget(undergoingCmd) { p, s ->
-                val state = if (p.isUndergoingProtogyny) "§a是" else "§c否"
-                s.sendMessage(Text.of("§e[性别特征] §f正在雌转雄: $state"))
-            }
-            undergoingCmd.then(buildSetter("is", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v ->
-                p.isUndergoingProtogyny = v
-            })
+            buildSelfAndTarget(undergoingCmd) { p, s -> s.sendMessage(Text.of("§e[性别特征] §f正在雌转雄: ${if (p.isUndergoingProtogyny) "§a是" else "§c否"}")) }
+            undergoingCmd.then(buildSetter("is", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v -> p.isUndergoingProtogyny = v })
             cmd.then(undergoingCmd)
 
             val progressCmd = literal("progress")
@@ -417,16 +379,20 @@ class PregnantCommand {
                 val percent = (p.protogynyProgress.toDouble() / Pregnant.PROTOGYNY_TOTAL_DURATION * 100).toInt()
                 s.sendMessage(Text.of("§e[性别特征] §f雌转雄进度: $percent% (${p.protogynyProgress}/${Pregnant.PROTOGYNY_TOTAL_DURATION})"))
             }
-            progressCmd.then(buildSetter("val", IntegerArgumentType.integer(0, Pregnant.PROTOGYNY_TOTAL_DURATION), IntegerArgumentType::getInteger) { p, v ->
-                p.protogynyProgress = v
-            })
+            progressCmd.then(buildSetter("val", IntegerArgumentType.integer(0, Pregnant.PROTOGYNY_TOTAL_DURATION), IntegerArgumentType::getInteger) { p, v -> p.protogynyProgress = v })
             cmd.then(progressCmd)
 
-            dispatcher.register(cmd)
+            baseCmd.then(cmd)
         }
 
-        private fun registerHormones(dispatcher: CommandDispatcher<ServerCommandSource>) {
+        private fun registerHormones(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
             val cmd = literal("hormone")
+            addHelp("hormone", "激素系统",
+                "/jr hormone [target] §7- 查看激素综合面板",
+                "/jr hormone testosterone set <val> [target] §7- 设置睾酮",
+                "/jr hormone estrogen set <val> [target] §7- 设置雌激素",
+                "/jr hormone progesterone set <val> [target] §7- 设置孕酮"
+            )
 
             buildSelfAndTarget(cmd) { p, s ->
                 val t = String.format("%.1f", p.testosterone)
@@ -439,27 +405,23 @@ class PregnantCommand {
                 s.sendMessage(Text.of("§b 孕酮(P): $prog §6 吸引力: $attr"))
             }
 
-            val tCmd = literal("testosterone")
-            tCmd.then(buildSetter("val", FloatArgumentType.floatArg(0f), FloatArgumentType::getFloat) { p, v -> p.testosterone = v })
-            cmd.then(tCmd)
+            cmd.then(literal("testosterone").then(buildSetter("val", FloatArgumentType.floatArg(0f), FloatArgumentType::getFloat) { p, v -> p.testosterone = v }))
+            cmd.then(literal("estrogen").then(buildSetter("val", FloatArgumentType.floatArg(0f), FloatArgumentType::getFloat) { p, v -> p.estrogen = v }))
+            cmd.then(literal("progesterone").then(buildSetter("val", FloatArgumentType.floatArg(0f), FloatArgumentType::getFloat) { p, v -> p.progesterone = v }))
 
-            val eCmd = literal("estrogen")
-            eCmd.then(buildSetter("val", FloatArgumentType.floatArg(0f), FloatArgumentType::getFloat) { p, v -> p.estrogen = v })
-            cmd.then(eCmd)
-
-            val pCmd = literal("progesterone")
-            pCmd.then(buildSetter("val", FloatArgumentType.floatArg(0f), FloatArgumentType::getFloat) { p, v -> p.progesterone = v })
-            cmd.then(pCmd)
-
-            dispatcher.register(cmd)
+            baseCmd.then(cmd)
         }
 
-        // ==================== 【新增模块】 黄体破裂指令 ====================
-        private fun registerCorpusLuteumRupture(dispatcher: CommandDispatcher<ServerCommandSource>) {
+        private fun registerCorpusLuteumRupture(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
             val cmd = literal("corpus_luteum_rupture")
+            addHelp("corpus_luteum_rupture", "黄体破裂",
+                "/jr corpus_luteum_rupture [target] §7- 查看状态",
+                "/jr corpus_luteum_rupture trigger [target] §7- 手动触发破裂",
+                "/jr corpus_luteum_rupture cure [target] §7- 治疗破裂",
+                "/jr corpus_luteum_rupture time set <val> [target]",
+                "/jr corpus_luteum_rupture severe set <true/false> [target] §7- 设定是否大血管破裂(重症)"
+            )
 
-            // 1. 查看状态
-            // /corpus_luteum_rupture [target]
             buildSelfAndTarget(cmd) { p, s ->
                 val time = p.corpusLuteumRupture
                 val severe = p.isSevereCorpusLuteumRupture
@@ -471,46 +433,41 @@ class PregnantCommand {
                 }
             }
 
-            // 2. 更改数值与重症状态
-            // /corpus_luteum_rupture time set <val> [target]
-            val timeCmd = literal("time")
-            timeCmd.then(buildSetter("val", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v ->
-                p.corpusLuteumRupture = v
-            })
-            cmd.then(timeCmd)
+            cmd.then(literal("time").then(buildSetter("val", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.corpusLuteumRupture = v }))
+            cmd.then(literal("severe").then(buildSetter("val", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v -> p.isSevereCorpusLuteumRupture = v }))
 
-            // /corpus_luteum_rupture severe set <val> [target]
-            val severeCmd = literal("severe")
-            severeCmd.then(buildSetter("val", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v ->
-                p.isSevereCorpusLuteumRupture = v
-            })
-            cmd.then(severeCmd)
-
-            // 3. 手动触发
-            // /corpus_luteum_rupture trigger [target]
             val triggerCmd = literal("trigger").requires { it.hasPermissionLevel(4) }
             buildSelfAndTarget(triggerCmd) { p, s ->
-                // 调用我们在接口里写好的破裂方法
-                val success = p.ruptureCorpusLuteum("")
-                if (!success){
+                if (!p.ruptureCorpusLuteum("")) {
                     s.sendMessage(Text.of("§e触发失败：目标可能并非处于黄体期，或者没有子宫，或已经处于破裂状态。"))
                 }
             }
             cmd.then(triggerCmd)
 
-            // 4. 手动治愈
-            // /corpus_luteum_rupture cure [target]
             val cureCmd = literal("cure").requires { it.hasPermissionLevel(4) }
             buildSelfAndTarget(cureCmd) { p, s ->
-                if (p.corpusLuteumRupture > 0) {
-                    p.cureCorpusLuteumRupture()
-                } else {
-                    s.sendMessage(Text.of("§a目标没有黄体破裂，无需治疗。"))
-                }
+                if (p.corpusLuteumRupture > 0) p.cureCorpusLuteumRupture()
+                else s.sendMessage(Text.of("§a目标没有黄体破裂，无需治疗。"))
             }
             cmd.then(cureCmd)
 
-            dispatcher.register(cmd)
+            baseCmd.then(cmd)
+        }
+
+        private fun registerXRayScan(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
+            val cmd = literal("xray_scan")
+            addHelp("xray_scan", "B超扫描",
+                "/jr xray_scan uterus [target] §7- 打开B超扫描UI界面"
+            )
+
+            val uterusCmd = literal("uterus")
+            buildSelfAndTarget(uterusCmd) { p, s ->
+                if (p.hasUterus() && s.entity is ServerPlayerEntity) {
+                    ServerPlayNetworking.send(s.entity as ServerPlayerEntity, XRayScanScreenPayload(ScanType.UTERUS, (p as Entity).id))
+                }
+            }
+            cmd.then(uterusCmd)
+            baseCmd.then(cmd)
         }
     }
 }

@@ -7,16 +7,18 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
+import org.cneko.justarod.client.gui.ScanType;
+import org.cneko.justarod.client.gui.UterusScanScreen;
 import org.cneko.justarod.client.screen.FrictionScreen;
 import org.cneko.justarod.entity.BDSMable;
 import org.cneko.justarod.entity.Pregnant;
-import org.cneko.justarod.packet.BDSMPayload;
-import org.cneko.justarod.packet.FrictionPayload;
-import org.cneko.justarod.packet.JRSyncPayload;
-import org.cneko.justarod.packet.MedicalPayload;
+import org.cneko.justarod.packet.*;
+import org.cneko.justarod.property.JRProperty;
+import org.cneko.justarod.property.JRRegistry;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -28,49 +30,22 @@ public class JRClientNetworkingEvents {
             getInstance().setScreen(new FrictionScreen());
         }));
         ClientPlayNetworking.registerGlobalReceiver(JRSyncPayload.ID, (payload, context) -> {
-            // 获取客户端实例，确保在主线程执行
+            // 确保在主线程执行
             context.client().execute(() -> {
-                var player = context.player();
+                if (context.client().player instanceof Pregnant clientPregnant) {
+                    List<Object> values = payload.values();
+                    List<JRProperty<?>> properties = JRRegistry.INSTANCE.getPROPERTIES();
 
-                if (player == null) return;
+                    // 自动将收到的数据塞回客户端玩家体内
+                    for (int i = 0; i < properties.size(); i++) {
+                        @SuppressWarnings("unchecked")
+                        JRProperty<Object> prop = (JRProperty<Object>) properties.get(i);
+                        Object value = values.get(i);
 
-                // --- 1. 基础数值直接同步 ---
-                player.setPower(payload.power());
-                player.setPregnant(payload.pregnant());
-                player.setMenstruation(payload.menstruation());
-                player.setMenstruationComfort(payload.menstruationComfort());
-                player.setBabyCount(payload.babyCount());
-                player.setExcretion(payload.excretion());
-                player.setUrination(payload.urination());
-                player.setSyphilis(payload.syphilis());
-                player.setCataract(payload.cataract());
-
-                // --- 2. 复杂对象处理 ---
-                // Optional 解包：如果有值则设置，没有则设为 null
-                player.setChildrenType(payload.childrenType().orElse(null));
-
-                // --- 3. 纯 Boolean 状态同步 ---
-                player.setMale(payload.male());
-                player.setFemale(payload.female());
-                player.setSterilization(payload.sterilization());
-                player.setEctopicPregnancy(payload.ectopicPregnancy());
-                player.setHydatidiformMole(payload.hydatidiformMole());
-                player.setImmune2Aids(payload.immune2Aids());
-                player.setImmune2HPV(payload.immune2HPV());
-                player.setHasUterus(payload.hasUterus());
-                player.setPCOS(payload.isPCOS());
-                player.setAmputated(payload.amputated());
-                player.setOrchiectomy(payload.orchiectomy());
-
-                // --- 4. Boolean 转 Int (False->0, True->22) ---
-                // 针对 aids, hpv, birthControlling, ovarianCancer, breastCancer
-
-                player.setAids(payload.aids() ? 22 : 0);
-                player.setHPV(payload.hpv() ? 22 : 0);
-                player.setBrithControlling(payload.brithControlling() ? 22 : 0);
-                player.setOvarianCancer(payload.ovarianCancer() ? 22 : 0);
-                player.setBreastCancer(payload.breastCancer() ? 22 : 0);
-                player.setProstatitis(payload.prostatitis() ? 22 : 0);
+                        // 调用 Kotlin 中的 setter
+                        prop.getSetter().invoke(clientPregnant, value);
+                    }
+                }
             });
         });
         ClientPlayNetworking.registerGlobalReceiver(BDSMPayload.ID, (payload, context) -> {
@@ -118,6 +93,22 @@ public class JRClientNetworkingEvents {
                 processMedical.accept(pre);
             }
         }));
+
+        ClientPlayNetworking.registerGlobalReceiver(XRayScanScreenPayload.ID,(payload,context)->{
+            int id = payload.targetEntityId();
+            ScanType type = payload.scanType();
+            Entity entity = null;
+            if (MinecraftClient.getInstance().world != null) {
+                entity = MinecraftClient.getInstance().world.getEntityById(id);
+            }
+            if(entity instanceof LivingEntity le && entity instanceof Pregnant) {
+                getInstance().execute(() -> {
+                    if (type== ScanType.UTERUS) {
+                        getInstance().setScreen(new UterusScanScreen(le));
+                    }
+                });
+            }
+        });
     }
 
     public static @Nullable LivingEntity findNearbyEntityByUuid(UUID targetUuid, double range) {

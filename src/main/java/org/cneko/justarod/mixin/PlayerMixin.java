@@ -17,6 +17,8 @@ import net.minecraft.world.World;
 import org.cneko.justarod.effect.JREffects;
 import org.cneko.justarod.entity.*;
 import org.cneko.justarod.packet.JRSyncPayload;
+import org.cneko.justarod.property.JRProperty;
+import org.cneko.justarod.property.JRRegistry;
 import org.cneko.toneko.common.mod.entities.INeko;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -26,7 +28,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
-import java.util.Optional;
+import java.util.List;
 
 import static org.cneko.justarod.JRAttributes.Companion;
 
@@ -662,6 +664,21 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
         this.writeBDSMToNbt(nbt);
     }
 
+    @Unique
+    private static void syncToClient(ServerPlayerEntity player) {
+        List<Object> currentValues = new ArrayList<>();
+
+        // 自动采集所有数据
+        for (JRProperty<?> prop : JRRegistry.INSTANCE.getPROPERTIES()) {
+            // 在 Kotlin 里声明的 (Pregnant) -> T ，在 Java 里会被编译为 invoke()
+            Object value = ((JRProperty<Object>) prop).getGetter().invoke(player);
+            currentValues.add(value);
+        }
+
+        // 发送给客户端
+        ServerPlayNetworking.send(player, new JRSyncPayload(currentValues));
+    }
+
     @Inject(method = "tick",at = @At("HEAD"))
     public void tick(CallbackInfo ci) {
         PlayerEntity player = (PlayerEntity) (Object) this;
@@ -669,36 +686,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
             slowTick = 0;
             if (player instanceof ServerPlayerEntity sp) {
                 // 同步power
-                ServerPlayNetworking.send(sp, new JRSyncPayload(
-                        power,
-                        pregnant,
-                        Optional.ofNullable(childrenType),
-                        menstruation,
-                        menstruationComfort,
-                        babyCount,
-                        excretion,
-                        urination,
-                        syphilis,
-                        cataract,
-                        // 下面是 boolean 区域
-                        male,
-                        female,
-                        sterilization,
-                        ectopicPregnancy,
-                        aids > 0,
-                        immune2Aids,
-                        hydatidiformMole,
-                        hpv > 0,
-                        immune2HPV,
-                        hasUterus,
-                        isPCOS,
-                        brithControlling > 0,
-                        ovarianCancer > 0,
-                        breastCancer > 0,
-                        amputated,
-                        orchiectomy,
-                        prostatitis>0
-                ));
+                syncToClient(sp);
                 // slowTick区域
                 Pregnant.hormoneSlowTick(player);
             }

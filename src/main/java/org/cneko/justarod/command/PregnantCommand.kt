@@ -62,7 +62,7 @@ class PregnantCommand {
                 registerProtogyny(baseCmd)
                 registerHormones(baseCmd)
                 registerCorpusLuteumRupture(baseCmd)
-                registerXRayScan(baseCmd)
+                //registerXRayScan(baseCmd)
 
                 // 3. 注册帮助命令
                 registerHelp(baseCmd)

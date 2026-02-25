@@ -1014,6 +1014,38 @@ public interface Pregnant{
         }
     }
 
+    // ----------------- 百合 (Yuri) 系统 -----------------
+
+    /**
+     * 判断当前实体是否为百合。
+     */
+    default boolean isYuri() {
+        return false;
+    }
+
+    /**
+     * 触发百合孤雌受孕（供外部物品/交互调用）
+     * @return 是否成功怀上
+     */
+    default boolean tryYuriPregnant() {
+        if (!this.isYuri() || !this.canPregnant()) {
+            return false;
+        }
+
+        // 1. 设置怀上的实体类型
+        this.setChildrenType(JREntities.SEEEEEX_NEKO);
+
+        // 2. 提高孤雌生殖的基因变异率 (0.5f 代表出生时属性有 ±50% 的随机极高浮动)
+        this.setParthenogenesisVariance(0.5f);
+
+        // 3. 调用原本的完美怀孕判定逻辑（包含破处、宫外孕判定等）
+        this.tryPregnant();
+
+        if (this instanceof LivingEntity entity) {
+            entity.sendMessage(Text.of("§d纯洁的羁绊创造了奇迹..."));
+        }
+        return true;
+    }
 
 
 
@@ -2438,6 +2470,100 @@ public interface Pregnant{
                 // 不治疗有极高致死率
                 if (entity.getRandom().nextInt(600) == 0) {
                     entity.damage(entity.getDamageSources().generic(), 4.0f);
+                }
+            }
+        }
+    }
+
+
+    /**
+     * 百合系统核心 Tick
+     */
+    static <T extends LivingEntity & Pregnant> void yuriSlowTick(T entity) {
+        // 1. 基础拦截
+        if (!entity.isYuri()) return;
+
+        // 2. 降频执行：外部虽然 10 tick 调用一次，但这里加入 1/10 概率
+        // 意味着核心扫描逻辑平均每 100 tick (5秒) 才会真正执行一次，极大节省服务器性能
+        if (entity.getRandom().nextInt(10) != 0) return;
+
+        World world = entity.getWorld();
+        if (world.isClient) return; // 只在服务端执行逻辑
+
+        // 3. 雷达扫描：寻找半径 8 格内的“贴贴”对象
+        List<LivingEntity> partners = world.getEntitiesByClass(
+                LivingEntity.class,
+                entity.getBoundingBox().expand(8.0),
+                e -> e != entity && e instanceof Pregnant p && p.isYuri()
+        );
+
+        if (partners.isEmpty()) return;
+
+        // 获取最近的百合伴侣
+        LivingEntity partnerEntity = partners.getFirst();
+        Pregnant partner = (Pregnant) partnerEntity;
+
+        // 4. 卫生与气氛审核 (Dirty Check)
+        // 阈值设定：1.2天的尿意或0.8天的便意视为破坏气氛
+        int criticalUrination = (int) (20 * 60 * 20 * 1.2);
+        int criticalExcretion = (int) (20 * 60 * 20 * 0.8);
+
+        boolean entityDirty = entity.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSMEARY_EFFECT())) ||
+                entity.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getAIDS_EFFECT())) ||
+                entity.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSYPHILIS_EFFECT())) ||
+                entity.getUrination() > criticalUrination ||
+                entity.getExcretion() > criticalExcretion;
+
+        boolean partnerDirty = partnerEntity.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSMEARY_EFFECT())) ||
+                partnerEntity.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getAIDS_EFFECT())) ||
+                partnerEntity.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSYPHILIS_EFFECT())) ||
+                partner.getUrination() > criticalUrination ||
+                partner.getExcretion() > criticalExcretion;
+
+        // 5. 百合花香 (Lily Pheromone) 状态赋予
+        if (!entityDirty && !partnerDirty) {
+            // 只要双方干净健康，每次扫描到就赋予 200 tick (10秒) 的百合花香效果
+            // 这样只要贴在一起，Buff 就会不断刷新
+            entity.addStatusEffect(new StatusEffectInstance(
+                    Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getLILY_PHEROMONE_EFFECT()),
+                    200,
+                    0,
+                    false,
+                    true,
+                    true
+            ));
+        }
+
+        // 6. 生理期同步算法
+        // 前提：双方都有子宫，且都没有怀孕（怀孕没月经）
+        if (entity.hasUterus() && partner.hasUterus()
+                && !entity.isPregnant() && !partner.isPregnant()) {
+
+            int myMens = entity.getMenstruation();
+            int partnerMens = partner.getMenstruation();
+
+            int diff = myMens - partnerMens;
+
+            // 差距足够大才触发同步
+            if (Math.abs(diff) > 2400) {
+
+                // 计算一个同步步长
+                int step = 1200;
+
+                if (diff > 0) {
+                    // 我领先 → 我后退，对方前进
+                    entity.setMenstruation(myMens - step);
+                    partner.setMenstruation(partnerMens + step);
+                } else {
+                    // 我落后 → 我前进，对方后退
+                    entity.setMenstruation(myMens + step);
+                    partner.setMenstruation(partnerMens - step);
+                }
+
+                if (world instanceof ServerWorld sw && entity.getRandom().nextInt(5) == 0) {
+                    sw.spawnParticles(ParticleTypes.HEART,
+                            entity.getX(), entity.getY() + 1.0, entity.getZ(),
+                            1, 0.3, 0.5, 0.3, 0.0);
                 }
             }
         }

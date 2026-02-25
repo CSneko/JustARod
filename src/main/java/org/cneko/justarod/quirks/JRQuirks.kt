@@ -7,9 +7,11 @@ import org.cneko.toneko.common.mod.quirks.QuirkRegister
  */
 class JRQuirks {
     companion object{
+        val YURI_QUIRK = YuriQuirk()
         fun init(){
             QuirkRegister.register(EndRodQuirk())
             QuirkRegister.register(CCBQuirk())
+            QuirkRegister.register(YURI_QUIRK)
         }
     }
 }

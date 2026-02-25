@@ -19,7 +19,9 @@ import org.cneko.justarod.entity.*;
 import org.cneko.justarod.packet.JRSyncPayload;
 import org.cneko.justarod.property.JRProperty;
 import org.cneko.justarod.property.JRRegistry;
+import org.cneko.justarod.quirks.JRQuirks;
 import org.cneko.toneko.common.mod.entities.INeko;
+import org.cneko.toneko.common.mod.quirks.Quirk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -636,6 +638,11 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     }
 
     @Override
+    public boolean isYuri() {
+        return ((INeko)this).hasQuirk(JRQuirks.Companion.getYURI_QUIRK());
+    }
+
+    @Override
     public Entity createBaby() {
         PlayerEntity player = (PlayerEntity) (Object) this;
         var baby = (Entity) getChildrenType().create(player.getWorld());
@@ -689,6 +696,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
                 syncToClient(sp);
                 // slowTick区域
                 Pregnant.hormoneSlowTick(player);
+                Pregnant.yuriSlowTick(player);
             }
         }
         if (player.getWorld() instanceof ServerWorld) {

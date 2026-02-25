@@ -10,7 +10,6 @@ import org.cneko.justarod.property.JRRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class JRSyncScreen extends Screen {
 
@@ -24,6 +23,9 @@ public class JRSyncScreen extends Screen {
 
     private ButtonWidget prevBtn;
     private ButtonWidget nextBtn;
+
+    // 刷新计时器 (20 tick = 1 秒)
+    private int tickCounter = 0;
 
     public JRSyncScreen(PlayerEntity player) {
         super(Text.of("身体状态监控面板"));
@@ -65,6 +67,30 @@ public class JRSyncScreen extends Screen {
         updateButtons();
     }
 
+    // ================= 新增：Tick更新逻辑 =================
+    @Override
+    public void tick() {
+        super.tick();
+        this.tickCounter++;
+
+        // 每 20 tick (大约1秒) 刷新一次数据
+        if (this.tickCounter >= 20) {
+            this.tickCounter = 0;
+            this.prepareData();
+
+            // 防止由于动态增删属性导致当前页码越界
+            if (this.currentPage >= this.totalPages && this.totalPages > 0) {
+                this.currentPage = this.totalPages - 1;
+            } else if (this.totalPages == 0) {
+                this.currentPage = 0;
+            }
+
+            // 更新按钮状态
+            this.updateButtons();
+        }
+    }
+    // ======================================================
+
     private void prepareData() {
         dataList.clear();
 
@@ -83,10 +109,13 @@ public class JRSyncScreen extends Screen {
         // 计算页数
         this.totalPages = (int) Math.ceil((double) dataList.size() / itemsPerPage);
     }
+
     private record DataLine(String key, String value, int color) {}
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        // 画背景 (如果你是在较新版本，建议加上这句防止文字重叠看不清)
+        this.renderBackground(context, mouseX, mouseY, delta);
 
         // 标题
         context.drawCenteredTextWithShadow(this.textRenderer, this.title, this.width / 2, 15, 0xFFFFFF);

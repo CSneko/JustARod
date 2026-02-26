@@ -63,12 +63,12 @@ class YuriQuirk : JRDefaultQuirk("yuri") {
 
             // 6. 发送 ActionBar 提示文本
             if (player is ServerPlayerEntity) {
-                val msgKey = "你与 ${entity.name} 贴贴了!"
+                val msgKey = "你与 ${entity.name.string} 贴贴了!"
                 player.sendMessage(Text.literal(msgKey).formatted(Formatting.LIGHT_PURPLE), true)
             }
 
             if (entity is ServerPlayerEntity) {
-                val msgKey = "你与 ${player.name} 贴贴了!"
+                val msgKey = "你与 ${player.name.string} 贴贴了!"
                 entity.sendMessage(Text.literal(msgKey).formatted(Formatting.LIGHT_PURPLE), true)
             }
         }

@@ -18,7 +18,12 @@ object JRRegistry {
     // ==================== 怀孕与生理 ====================
     val PREGNANT = registerTime("pregnant", "怀孕时间", { it.pregnant }, { e, v -> e.pregnant = v })
     val BABY_COUNT = registerInt("baby_count", "胎儿数量", { it.babyCount }, { e, v -> e.babyCount = v })
-    val CHILDREN_TYPE = registerOptEntity("children_type", "胚胎类型", { Optional.of(it.childrenType) }, { e, v -> e.childrenType = v.get() })
+    val CHILDREN_TYPE = registerOptEntity(
+        "children_type",
+        "胚胎类型",
+        { Optional.ofNullable(it.childrenType) },
+        { e, v -> e.childrenType = v.orElse(null) }
+    )
 
     val MENSTRUATION = registerTime("menstruation", "生理期时间", { it.menstruation }, { e, v -> e.menstruation = v })
     val MENSTRUATION_COMFORT = registerTime("menstruation_comfort", "卫生巾有效时间", { it.menstruationComfort }, { e, v -> e.menstruationComfort = v })

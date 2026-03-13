@@ -18,6 +18,10 @@ class TickEvent {
 
             }
 
+            ServerTickEvents.END_WORLD_TICK.register(ServerTickEvents.EndWorldTick { world ->
+                YuriKissManager.onWorldTick(world)
+            })
+
 
         }
     }

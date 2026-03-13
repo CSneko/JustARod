@@ -60,6 +60,7 @@ public interface Pregnant{
         }
         // 破处
         this.ruptureHymen("怀孕");
+
     }
 
     default void setPregnant(int time) {
@@ -1040,6 +1041,12 @@ public interface Pregnant{
 
         // 3. 调用原本的完美怀孕判定逻辑（包含破处、宫外孕判定等）
         this.tryPregnant();
+
+        // 计算胎儿数量
+        if (this instanceof LivingEntity entity) {
+            int babyCount = calculateBabyCount(entity);
+            this.setBabyCount(babyCount);
+        }
 
         if (this instanceof LivingEntity entity) {
             entity.sendMessage(Text.of("§d纯洁的羁绊创造了奇迹..."));

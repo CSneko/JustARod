@@ -122,6 +122,12 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     @Unique
     private boolean orchiectomy = false;
 
+    @Unique
+    private float milk = 0;
+    @Unique
+    private int mastitis = 0;
+    @Unique
+    private int lactationStimulation = 0;
 
 
 
@@ -638,6 +644,36 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     }
 
     @Override
+    public float getMilk() {
+        return milk;
+    }
+
+    @Override
+    public void setMilk(float milk) {
+        this.milk = milk;
+    }
+
+    @Override
+    public int getMastitis() {
+        return mastitis;
+    }
+
+    @Override
+    public void setMastitis(int mastitis) {
+        this.mastitis = mastitis;
+    }
+
+    @Override
+    public void setLactationStimulation(int lactationStimulation) {
+        this.lactationStimulation = lactationStimulation;
+    }
+
+    @Override
+    public int getLactationStimulation() {
+        return lactationStimulation;
+    }
+
+    @Override
     public boolean isYuri() {
         return ((INeko)this).hasQuirk(JRQuirks.Companion.getYURI_QUIRK());
     }
@@ -721,6 +757,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
             Pregnant.cataractTick(player);
             Pregnant.corpusLuteumTriggerTick(player);
             Pregnant.corpusLuteumRuptureTick(player);
+            Pregnant.lactationTick(player);
             BDSMable.ballMouthTick(player);
             BDSMable.electricShockTick(player);
             BDSMable.bundledTick(player);

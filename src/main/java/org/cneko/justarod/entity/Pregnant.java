@@ -264,6 +264,9 @@ public interface Pregnant{
         nbt.putInt("Cataract", getCataract());
         nbt.putInt("CorpusLuteumRupture", getCorpusLuteumRupture());
         nbt.putBoolean("SevereCorpusLuteumRupture", isSevereCorpusLuteumRupture());
+         nbt.putFloat("Milk", getMilk());
+         nbt.putInt("Mastitis", getMastitis());
+         nbt.putInt("LactationStimulation", getLactationStimulation());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         setFemale(nbt.getBoolean("Female"));
@@ -391,6 +394,9 @@ public interface Pregnant{
         if (nbt.contains("SevereCorpusLuteumRupture")) {
             setSevereCorpusLuteumRupture(nbt.getBoolean("SevereCorpusLuteumRupture"));
         }
+         if (nbt.contains("Milk")) setMilk(nbt.getFloat("Milk"));
+         if (nbt.contains("Mastitis")) setMastitis(nbt.getInt("Mastitis"));
+         if (nbt.contains("LactationStimulation")) setLactationStimulation(nbt.getInt("LactationStimulation"));
     }
 
     default Entity createBaby() {
@@ -787,6 +793,46 @@ public interface Pregnant{
 
     default void setProgesterone(float value) {} // 孕酮
     default float getProgesterone() { return 0.0f; }
+
+    // ----------------- 泌乳系统 (Lactation) -----------------
+    default void setMilk(float amount) {}
+    default float getMilk() { return 0.0f; }
+    default float getMaxMilk() { return 1000.0f; } // 默认最大储奶量
+
+    default void setMastitis(int time) {} // 乳腺炎病程
+    default int getMastitis() { return 0; }
+
+    default void setLactationStimulation(int time) {} // 泌乳刺激度（频繁吸吮会增加此值，导致非孕期产奶）
+    default int getLactationStimulation() { return 0; }
+
+    /**
+     * 排空乳汁 (被吸吮/挤奶)
+     * @param amount 尝试吸出的量
+     * @return 实际吸出的量
+     */
+    default float extractMilk(float amount) {
+        float currentMilk = getMilk();
+        if (currentMilk <= 0) return 0.0f;
+
+        float extracted = Math.min(currentMilk, amount);
+        setMilk(currentMilk - extracted);
+
+        // 增加泌乳刺激度 (越吸越多)
+        setLactationStimulation(getLactationStimulation() + 20 * 10); // 增加10s的刺激度
+
+        if (this instanceof LivingEntity entity) {
+            // 如释重负的反馈
+            if (getMastitis() > 0) {
+                setMastitis(0); // 排空后乳腺炎瞬间缓解
+                entity.sendMessage(Text.of("§a淤积的乳汁被排空，胸部的胀痛感消失了..."));
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 20 * 5, 0));
+            }
+            // 移除胀奶导致的缓慢和虚弱
+            entity.removeStatusEffect(StatusEffects.SLOWNESS);
+            entity.removeStatusEffect(StatusEffects.WEAKNESS);
+        }
+        return extracted;
+    }
 
 
     /**
@@ -2573,6 +2619,86 @@ public interface Pregnant{
                             1, 0.3, 0.5, 0.3, 0.0);
                 }
             }
+        }
+    }
+
+    static <T extends LivingEntity & Pregnant> void lactationTick(T entity) {
+        // 1. 判断是否具备产奶条件 (孕晚期 / 雌激素过高 / 受到频繁刺激)
+        boolean isLatePregnancy = entity.isPregnant() && entity.getPregnant() < 20 * 60 * 20 * 3;
+        boolean hasHighEstrogen = entity.getEstrogen() > 60.0f;
+        boolean isStimulated = entity.getLactationStimulation() > 0;
+
+        // 如果是男性且雌激素不高，且没有被刺激，则不产奶
+        if (entity.isMale() && !entity.isFemale() && !hasHighEstrogen && !isStimulated) {
+            // 激素消退后慢慢回奶
+            if (entity.getMilk() > 0) entity.setMilk(Math.max(0, entity.getMilk() - 0.5f));
+            return;
+        }
+
+        if (!isLatePregnancy && !hasHighEstrogen && !isStimulated) {
+            // 自然回奶
+            if (entity.getMilk() > 0) entity.setMilk(Math.max(0, entity.getMilk() - 0.1f));
+            return;
+        }
+
+        // 2. 计算产奶速度
+        float productionRate = 0.5f;
+        if (hasHighEstrogen) productionRate += 0.5f;
+        if (isStimulated) productionRate += 1.0f;
+
+        float currentMilk = entity.getMilk();
+        float maxMilk = entity.getMaxMilk();
+
+        // 3. 产奶过程与消耗
+        if (currentMilk < maxMilk) {
+            entity.setMilk(currentMilk + productionRate);
+
+            // 产奶消耗身体能量，给予饥饿效果
+            if (entity.getRandom().nextInt(800) == 0) {
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 20 * 10, 0));
+            }
+        }
+        // 4. 胀奶与溢乳惩罚
+        else {
+            entity.setMastitis(entity.getMastitis() + 1);
+            int mastitis = entity.getMastitis();
+
+            // 阶段 A: 溢乳 (弄湿衣服)
+            if (entity.getRandom().nextInt(1200) == 0) {
+                entity.setMilk(maxMilk * 0.9f); // 溢出一点点
+                entity.sendMessage(Text.of("§e胸前湿透了...乳汁不受控制地溢了出来..."));
+
+                // 弄湿胖次 (复用你的排泄弄脏逻辑)
+                ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
+                if (!legStack.isEmpty() && legStack.getItem() instanceof PantsuItem) {
+                    JRComponents.PantsuState currentState = legStack.get(JRComponents.Companion.getPANTSU_STATE());
+                    if (currentState == null || currentState == JRComponents.PantsuState.CLEAN) {
+                        legStack.set(JRComponents.Companion.getPANTSU_STATE(), JRComponents.PantsuState.WET);
+                    }
+                }
+            }
+
+            // 阶段 B: 严重胀痛
+            if (mastitis > 20 * 60 * 5) { // 憋奶 5 分钟
+                if (entity.getRandom().nextInt(400) == 0) {
+                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 15, 0));
+                    entity.sendMessage(Text.of("§c由于严重胀奶，胸部感到沉甸甸的痛楚，急需排空..."));
+                }
+            }
+
+            // 阶段 C: 乳腺炎发烧
+            if (mastitis > 20 * 60 * 10) { // 憋奶 10 分钟
+                if (entity.getRandom().nextInt(200) == 0) {
+                    entity.damage(entity.getDamageSources().magic(), 1.0f); // 持续掉血
+                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 20, 1));
+                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 5, 0)); // 发烧反胃
+                }
+            }
+        }
+
+        // 刺激度随时间缓慢下降
+        if (entity.getLactationStimulation() > 0 && entity.getRandom().nextInt(20) == 0) {
+            entity.setLactationStimulation(entity.getLactationStimulation() - 1);
         }
     }
 

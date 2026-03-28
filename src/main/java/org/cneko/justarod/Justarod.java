@@ -44,6 +44,7 @@ public class Justarod implements ModInitializer {
 
         EntityDeathEvent.init();
         EntityRespawnEvent.init();
+        LactationInteractionEvents.Companion.init();
     }
 
 }

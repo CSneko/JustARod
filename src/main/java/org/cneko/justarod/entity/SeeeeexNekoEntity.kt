@@ -17,6 +17,7 @@ import net.minecraft.text.Text
 import net.minecraft.world.World
 import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.entity.ai.SexualIntercourseGoal
+import org.cneko.justarod.entity.ai.SuckMilkGoal
 import org.cneko.justarod.item.JRItems.Companion.BYT
 import org.cneko.toneko.common.mod.entities.INeko
 import org.cneko.toneko.common.mod.entities.NekoEntity
@@ -37,6 +38,7 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
     }
     var isMasturbation = false
     var sexualIntercourseGoal: SexualIntercourseGoal? = null
+    var suckMilkGoal: SuckMilkGoal? = null
 
     override fun getBreedOffspring(world: ServerWorld?, neko: INeko?): NekoEntity? {
         return world?.let { SeeeeexNekoEntity(this.type, it) }
@@ -46,6 +48,8 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
         super.initGoals()
         sexualIntercourseGoal = SexualIntercourseGoal(this)
         this.goalSelector.add(5, sexualIntercourseGoal)
+        suckMilkGoal = SuckMilkGoal(this)
+        this.goalSelector.add(5, suckMilkGoal)
     }
 
     override fun initDataTracker(builder: DataTracker.Builder) {

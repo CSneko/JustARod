@@ -32,12 +32,16 @@ class PregnantCommand {
         private val helpData = mutableMapOf<String, CommandHelp>()
 
         private fun addHelp(name: String, displayName: String, vararg usages: String) {
-            helpData[name] = CommandHelp(displayName, usages.toList())
+            // 强制转换为小写，防止大写字母导致客户端崩溃
+            helpData[name.lowercase()] = CommandHelp(displayName, usages.toList())
         }
 
         // ==================== 初始化入口 ====================
         fun init() {
             CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
+                // 修复：每次 reload 时清空帮助数据，防止重复堆积
+                helpData.clear()
+
                 val baseCmd = literal("jr")
 
                 // 1. 注册基础属性命令，并自动生成帮助信息
@@ -45,9 +49,12 @@ class PregnantCommand {
                     val argument = property.registerCommand()
                     if (argument != null) {
                         baseCmd.then(argument)
-                        addHelp(property.name, property.displayName,
-                            "/jr ${property.name} [target] §7- 查看状态",
-                            "/jr ${property.name} set <value> [target] §7- 修改状态 (需要OP)"
+
+                        // 强制将名称转换为小写，这是防止进服崩溃的关键防御之一
+                        val safeName = property.name.lowercase()
+                        addHelp(safeName, property.displayName,
+                            "/jr $safeName [target] §7- 查看状态",
+                            "/jr $safeName set <value> [target] §7- 修改状态 (需要OP)"
                         )
                     }
                 }
@@ -62,7 +69,8 @@ class PregnantCommand {
                 registerProtogyny(baseCmd)
                 registerHormones(baseCmd)
                 registerCorpusLuteumRupture(baseCmd)
-                //registerXRayScan(baseCmd)
+                // registerXRayScan(baseCmd)
+                registerLactation(baseCmd)
 
                 // 3. 注册帮助命令
                 registerHelp(baseCmd)
@@ -97,7 +105,7 @@ class PregnantCommand {
             // /jr help <子命令>
             helpCmd.then(argument("command", StringArgumentType.word())
                 .executes { ctx ->
-                    val cmdName = StringArgumentType.getString(ctx, "command")
+                    val cmdName = StringArgumentType.getString(ctx, "command").lowercase()
                     val source = ctx.source
                     val info = helpData[cmdName]
 
@@ -144,7 +152,8 @@ class PregnantCommand {
             setterAction: (Pregnant, T) -> Unit
         ): LiteralArgumentBuilder<ServerCommandSource> {
             return literal("set")
-                .requires { s -> s.hasPermissionLevel(4) }
+                // 修复：原为 4(控制台)，现改为 2(普通OP)，否则管理员无法使用
+                .requires { s -> s.hasPermissionLevel(2) }
                 .then(argument(argName, argType)
                     .executes { ctx ->
                         val value = getter(ctx, argName)
@@ -161,7 +170,6 @@ class PregnantCommand {
 
         // ==================== 具体业务模块 ====================
 
-        // 注意：将传入参数由 CommandDispatcher 改为 LiteralArgumentBuilder，这样就能作为子节点挂载
         private fun registerSex(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
             val cmd = literal("sex")
             addHelp("sex", "基础性别管理",
@@ -208,7 +216,7 @@ class PregnantCommand {
             cmd.then(buildSetter("time", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.pregnant = v })
 
             val statusCmd = literal("status")
-            statusCmd.requires { it.hasPermissionLevel(4) }
+            statusCmd.requires { it.hasPermissionLevel(2) }
             buildSelfAndTarget(statusCmd) { p, s ->
                 val msg = when {
                     p.isEctopicPregnancy -> "§c当前怀孕状态为宫外孕！"
@@ -241,7 +249,7 @@ class PregnantCommand {
         }
 
         private fun setPregnancyStatus(p: Pregnant, ctx: CommandContext<ServerCommandSource>) {
-            val type = StringArgumentType.getString(ctx, "type")
+            val type = StringArgumentType.getString(ctx, "type").lowercase()
             val value = BoolArgumentType.getBool(ctx, "is")
             if (type.contains("ect")) p.isEctopicPregnancy = value
             else if (type.contains("hyd") || type.contains("mole")) p.isHydatidiformMole = value
@@ -331,7 +339,7 @@ class PregnantCommand {
                 s.sendMessage(Text.of("§e[生理检查] §f处女膜: $has §f| 闭锁畸形: $imp"))
             }
 
-            val setCmd = literal("set").requires { it.hasPermissionLevel(4) }
+            val setCmd = literal("set").requires { it.hasPermissionLevel(2) }
 
             setCmd.then(literal("has").then(argument("value", BoolArgumentType.bool())
                 .executes { ctx -> run(ctx, null) { p, _ -> p.setHasHymen(BoolArgumentType.getBool(ctx, "value")) } }
@@ -436,7 +444,7 @@ class PregnantCommand {
             cmd.then(literal("time").then(buildSetter("val", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.corpusLuteumRupture = v }))
             cmd.then(literal("severe").then(buildSetter("val", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v -> p.isSevereCorpusLuteumRupture = v }))
 
-            val triggerCmd = literal("trigger").requires { it.hasPermissionLevel(4) }
+            val triggerCmd = literal("trigger").requires { it.hasPermissionLevel(2) }
             buildSelfAndTarget(triggerCmd) { p, s ->
                 if (!p.ruptureCorpusLuteum("")) {
                     s.sendMessage(Text.of("§e触发失败：目标可能并非处于黄体期，或者没有子宫，或已经处于破裂状态。"))
@@ -444,7 +452,7 @@ class PregnantCommand {
             }
             cmd.then(triggerCmd)
 
-            val cureCmd = literal("cure").requires { it.hasPermissionLevel(4) }
+            val cureCmd = literal("cure").requires { it.hasPermissionLevel(2) }
             buildSelfAndTarget(cureCmd) { p, s ->
                 if (p.corpusLuteumRupture > 0) p.cureCorpusLuteumRupture()
                 else s.sendMessage(Text.of("§a目标没有黄体破裂，无需治疗。"))
@@ -467,6 +475,81 @@ class PregnantCommand {
                 }
             }
             cmd.then(uterusCmd)
+            baseCmd.then(cmd)
+        }
+
+        private fun registerLactation(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
+            val cmd = literal("lactation")
+
+            // 1. 注册帮助信息
+            addHelp("lactation", "泌乳系统",
+                "/jr lactation [target] §7- 查看当前泌乳状态与储奶量",
+                "/jr lactation extract <amount> [target] §7- 手动挤出指定量乳汁",
+                "/jr lactation milk set <val> [target] §7- 设置当前奶量",
+                "/jr lactation mastitis set <ticks> [target] §7- 设置乳腺炎病程",
+                "/jr lactation stimulation set <ticks> [target] §7- 设置泌乳刺激度"
+            )
+
+            // 2. 基础查询命令 (/jr lactation [target])
+            buildSelfAndTarget(cmd) { p, s ->
+                val milk = String.format("%.1f", p.milk)
+                val max = String.format("%.1f", p.maxMilk)
+                val mastitis = p.mastitis
+                val stim = p.lactationStimulation
+
+                s.sendMessage(Text.of("§e[泌乳面板] §7===================="))
+                s.sendMessage(Text.of("§f 当前储奶量: §b$milk §f/ §3$max"))
+                s.sendMessage(Text.of("§c 乳腺炎病程: $mastitis tick"))
+                s.sendMessage(Text.of("§d 泌乳刺激度: $stim tick (一直吸一直有)"))
+            }
+
+            // 3. 属性 Setter
+            // /jr lactation milk set <val> [target]
+            cmd.then(literal("milk").then(
+                buildSetter("val", FloatArgumentType.floatArg(0f), FloatArgumentType::getFloat) { p, v -> p.milk = v }
+            ))
+
+            // /jr lactation mastitis set <val> [target]
+            cmd.then(literal("mastitis").then(
+                buildSetter("val", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.mastitis = v }
+            ))
+
+            // /jr lactation stimulation set <val> [target]
+            cmd.then(literal("stimulation").then(
+                buildSetter("val", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.lactationStimulation = v }
+            ))
+
+            // 4. 执行动作：手动挤奶 (/jr lactation extract <amount> [target])
+            val extractCmd = literal("extract").requires { it.hasPermissionLevel(2) }
+                .then(argument("amount", FloatArgumentType.floatArg(0.1f))
+                    .executes { ctx ->
+                        val amount = FloatArgumentType.getFloat(ctx, "amount")
+                        run(ctx, null) { p, s ->
+                            val extracted = p.extractMilk(amount)
+                            if (extracted > 0) {
+                                s.sendMessage(Text.of("§a成功挤出了 ${String.format("%.1f", extracted)} ml乳汁！感觉一阵轻松..."))
+                            } else {
+                                s.sendMessage(Text.of("§c一滴也没有了..."))
+                            }
+                        }
+                    }
+                    .then(argument("target", EntityArgumentType.entity())
+                        .executes { ctx ->
+                            val amount = FloatArgumentType.getFloat(ctx, "amount")
+                            run(ctx, "target") { p, s ->
+                                val extracted = p.extractMilk(amount)
+                                if (extracted > 0) {
+                                    s.sendMessage(Text.of("§a成功从目标身上挤出了 ${String.format("%.1f", extracted)} ml乳汁！"))
+                                } else {
+                                    s.sendMessage(Text.of("§c目标一滴也没有了..."))
+                                }
+                            }
+                        }
+                    )
+                )
+            cmd.then(extractCmd)
+
+            // 挂载到主命令
             baseCmd.then(cmd)
         }
     }

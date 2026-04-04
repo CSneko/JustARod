@@ -46,6 +46,22 @@ class JRArmorMaterials {
             true
         )
 
+        val DIAPER_MATERIAL:RegistryEntry<ArmorMaterial> = register(
+            "diaper",
+            mapOf(
+                ArmorItem.Type.BOOTS to 1,
+                ArmorItem.Type.LEGGINGS to 4,
+                ArmorItem.Type.CHESTPLATE to 3,
+                ArmorItem.Type.HELMET to 1
+            ),
+            10,
+            SoundEvents.ITEM_ARMOR_EQUIP_LEATHER,
+            {Ingredient.ofItems(Items.WHITE_WOOL)},
+            0f,
+            0f,
+            true
+        )
+
         fun register(
             id: String,
             defensePoints: Map<ArmorItem.Type?, Int?>?,

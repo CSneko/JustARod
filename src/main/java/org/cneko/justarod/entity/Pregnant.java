@@ -25,11 +25,13 @@ import org.cneko.justarod.Justarod;
 import org.cneko.justarod.effect.JREffects;
 import org.cneko.justarod.item.JRComponents;
 import org.cneko.justarod.item.JRItems;
+import org.cneko.justarod.item.custom.DiaperItem;
 import org.cneko.justarod.item.custom.PantsuItem;
 import org.cneko.toneko.common.mod.effects.ToNekoEffects;
 import org.cneko.toneko.common.mod.entities.INeko;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public interface Pregnant{
     List<UUID> FOREVER_BABY = new ArrayList<>();
@@ -159,6 +161,14 @@ public interface Pregnant{
                     }else {
                         pregnantEntity.damage(pregnantEntity.getDamageSources().generic(), 2.0F);
                     }
+                    // 每次分娩造成巨大的盆底肌损伤（约增加3天到5天的失禁值），生得越多损伤越重
+                    int trauma = 20 * 60 * 20 * (3 + pregnantEntity.getRandom().nextInt(3)) * getBabyCount();
+                    this.setUrinaryIncontinence(this.getUrinaryIncontinence() + trauma);
+
+                    // 如果是极度难产（比如怀了末影龙），直接造成重度失禁
+                    if (getChildrenType() == EntityType.ENDER_DRAGON) {
+                        this.setUrinaryIncontinence(this.getUrinaryIncontinence() + 20 * 60 * 20 * 10);
+                    }
                 }
             }
         }
@@ -264,9 +274,10 @@ public interface Pregnant{
         nbt.putInt("Cataract", getCataract());
         nbt.putInt("CorpusLuteumRupture", getCorpusLuteumRupture());
         nbt.putBoolean("SevereCorpusLuteumRupture", isSevereCorpusLuteumRupture());
-         nbt.putFloat("Milk", getMilk());
-         nbt.putInt("Mastitis", getMastitis());
-         nbt.putInt("LactationStimulation", getLactationStimulation());
+        nbt.putFloat("Milk", getMilk());
+        nbt.putInt("Mastitis", getMastitis());
+        nbt.putInt("LactationStimulation", getLactationStimulation());
+        nbt.putInt("UrinaryIncontinence", getUrinaryIncontinence());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         setFemale(nbt.getBoolean("Female"));
@@ -397,6 +408,9 @@ public interface Pregnant{
          if (nbt.contains("Milk")) setMilk(nbt.getFloat("Milk"));
          if (nbt.contains("Mastitis")) setMastitis(nbt.getInt("Mastitis"));
          if (nbt.contains("LactationStimulation")) setLactationStimulation(nbt.getInt("LactationStimulation"));
+        if (nbt.contains("UrinaryIncontinence")) {
+            setUrinaryIncontinence(nbt.getInt("UrinaryIncontinence"));
+        }
     }
 
     default Entity createBaby() {
@@ -691,6 +705,10 @@ public interface Pregnant{
         if (getUrination() > 0){
             setUrination(getUrination()+1);
         }
+    }
+    default void setUrinaryIncontinence(int time){}
+    default int getUrinaryIncontinence(){
+        return 0;
     }
 
     default void setAmputated(boolean amputated){}
@@ -2699,6 +2717,121 @@ public interface Pregnant{
         // 刺激度随时间缓慢下降
         if (entity.getLactationStimulation() > 0 && entity.getRandom().nextInt(20) == 0) {
             entity.setLactationStimulation(entity.getLactationStimulation() - 1);
+        }
+    }
+
+    static <T extends LivingEntity & Pregnant> void urinaryIncontinenceTick(T entity) {
+        int incontinence = entity.getUrinaryIncontinence();
+
+        // --- 1. 损伤积累与恢复机制 ---
+        if (entity.isPregnant() && entity.getPregnant() < 20 * 60 * 20 * 3) {
+            // 孕晚期压迫：沉重的胎儿压迫盆底肌，缓慢增加失禁值
+            if (entity.getRandom().nextInt(20) == 0) incontinence++;
+        } else {
+            // 自然恢复与凯格尔运动：只要不处于孕晚期，盆底肌会慢慢自我修复
+            if (incontinence > 0) {
+                // 极其缓慢的自然恢复 (现实中产后需几个月)
+                if (entity.getRandom().nextInt(10) == 0) incontinence--;
+
+                // 凯格尔运动：如果玩家在潜行（蹲起），模拟锻炼盆底肌，恢复速度提升 10 倍！
+                if (entity.isSneaking() && entity.getRandom().nextInt(2) == 0) {
+                    incontinence -= 2;
+                    // 偶尔给一点正反馈
+                    if (entity.getRandom().nextInt(1000) == 0) {
+                        entity.sendMessage(Text.of("§a随着不断的收缩锻炼，你感觉盆底肌肉逐渐恢复了力量..."));
+                    }
+                }
+            }
+        }
+
+        entity.setUrinaryIncontinence(Math.max(0, incontinence));
+        if (incontinence <= 0) return;
+
+        // --- 2. 状态判定预备 ---
+        int stage1 = 20 * 60 * 20 * 2;  // 轻度：积累 > 2天
+        int stage2 = 20 * 60 * 20 * 6;  // 中度：积累 > 6天
+        int stage3 = 20 * 60 * 20 * 12; // 重度：积累 > 12天
+
+        int currentUrine = entity.getUrination();
+        ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
+        boolean hasDiaper = !legStack.isEmpty() && legStack.getItem() instanceof DiaperItem;
+        boolean hasPantsu = !legStack.isEmpty() && legStack.getItem() instanceof PantsuItem;
+
+        // 统一漏尿处理函数 (Lambda)
+        Consumer<Integer> doLeak = (leakAmount) -> {
+            if (currentUrine <= 0) return;
+            entity.setUrination(Math.max(0, currentUrine - leakAmount));
+
+            if (hasDiaper) {
+                // 漏进尿布
+                legStack.set(JRComponents.Companion.getPANTSU_STATE(), JRComponents.PantsuState.SOILED);
+                entity.sendMessage(Text.of("§e啊...尿布湿透了..."));
+            } else if (hasPantsu) {
+                // 弄湿胖次
+                JRComponents.PantsuState currentState = legStack.get(JRComponents.Companion.getPANTSU_STATE());
+                if (currentState == null || currentState == JRComponents.PantsuState.CLEAN) {
+                    legStack.set(JRComponents.Companion.getPANTSU_STATE(), JRComponents.PantsuState.WET);
+                    entity.sendMessage(Text.of("§e没忍住...漏出来把胖次弄湿了..."));
+                }
+            } else {
+                // 光着身子漏尿，流到腿上
+                entity.addStatusEffect(new StatusEffectInstance(
+                        Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSMEARY_EFFECT()),
+                        20 * 60 * 2, 0, false, false, true
+                ));
+            }
+        };
+
+        // --- 3. 症状表现 ---
+
+        // 【重度：完全失禁】(括约肌瘫痪)
+        if (incontinence > stage3) {
+            // 只要存了一丁点尿（比如几分钟的量），就会不受控制地流出
+            if (currentUrine > 20 * 60 * 2) {
+                doLeak.accept(currentUrine);
+            }
+            return; // 已经是重度了，不需要再判定轻度/中度的诱因
+        }
+
+        // 【中度：急迫性尿失禁】(膀胱极度敏感)
+        if (incontinence > stage2) {
+            // 原本能憋 1.5 天，现在只要达到 0.4 天，随时可能失控全尿出来
+            if (currentUrine > 20 * 60 * 20 * 0.4) {
+                if (entity.getRandom().nextInt(600) == 0) {
+                    entity.sendMessage(Text.of("§c一阵强烈的尿意突然袭来，括约肌彻底失守了！"));
+                    doLeak.accept(currentUrine); // 全部漏光
+                }
+            }
+        }
+
+        // 【轻度：压力性尿失禁】(腹压增大导致漏尿)
+        if (incontinence > stage1) {
+            // 只有膀胱里有一定量（憋尿超过 0.1 天）才会漏
+            if (currentUrine > 20 * 60 * 20 * 0.1) {
+                boolean pressureEvent = false;
+                String cause = "";
+
+                // 受到伤害（比如被打、摔伤）
+                if (entity.hurtTime == entity.maxHurtTime && entity.maxHurtTime > 0) {
+                    if (entity.getRandom().nextInt(3) == 0) { pressureEvent = true; cause = "遭到猛烈撞击"; }
+                }
+                // 从高处坠落落地瞬间
+                else if (entity.fallDistance > 3.0f && entity.isOnGround()) {
+                    if (entity.getRandom().nextInt(2) == 0) { pressureEvent = true; cause = "落地冲击"; }
+                }
+                // 疾跑拉扯盆底肌
+                else if (entity.isSprinting()) {
+                    if (entity.getRandom().nextInt(400) == 0) { pressureEvent = true; cause = "剧烈运动"; }
+                }
+
+                if (pressureEvent) {
+                    // 漏出部分尿液 (大约 10 分钟的量)
+                    doLeak.accept(20 * 60 * 10);
+                    if (!hasDiaper) {
+                        entity.sendMessage(Text.of("§7因为" + cause + "，腹部一紧，不小心漏出了一点尿..."));
+                    }
+                }
+            }
         }
     }
 

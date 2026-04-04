@@ -673,6 +673,19 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
         return lactationStimulation;
     }
 
+    @Unique
+    private int urinaryIncontinence = 0;
+
+    @Override
+    public int getUrinaryIncontinence() {
+        return urinaryIncontinence;
+    }
+
+    @Override
+    public void setUrinaryIncontinence(int urinaryIncontinence) {
+        this.urinaryIncontinence = urinaryIncontinence;
+    }
+
     @Override
     public boolean isYuri() {
         return ((INeko)this).hasQuirk(JRQuirks.Companion.getYURI_QUIRK());
@@ -758,6 +771,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
             Pregnant.corpusLuteumTriggerTick(player);
             Pregnant.corpusLuteumRuptureTick(player);
             Pregnant.lactationTick(player);
+            Pregnant.urinaryIncontinenceTick(player);
             BDSMable.ballMouthTick(player);
             BDSMable.electricShockTick(player);
             BDSMable.bundledTick(player);

@@ -26,6 +26,7 @@ import org.cneko.justarod.item.armor.*
 import org.cneko.justarod.item.bdsm.*
 import org.cneko.justarod.item.bio.ClonerDevice
 import org.cneko.justarod.item.bio.ParthenogenesisCatalystItem
+import org.cneko.justarod.item.custom.DiaperItem
 import org.cneko.justarod.item.custom.PantsuItem
 import org.cneko.justarod.item.custom.PantsuGetterItem
 import org.cneko.justarod.item.electric.*
@@ -101,6 +102,7 @@ class JRItems {
         val CLONER_DEVICE = ClonerDevice()
         val PANTSU = PantsuItem(JRArmorMaterials.PANTSU_MATERIAL, ArmorItem.Type.LEGGINGS, Item.Settings().maxCount(1))
         val PANTSU_GETTER = PantsuGetterItem(Item.Settings().maxCount(1))
+        val DIAPER = DiaperItem(JRArmorMaterials.DIAPER_MATERIAL, ArmorItem.Type.LEGGINGS, Item.Settings().maxCount(1))
         val AIDS_VACCINE = AidsVaccine(Item.Settings())
         val TAMSULOSIN_CAPSULE = TamsulosinCapsuleItem(Item.Settings())
         val PARTHENOGENESIS_CATALYST = ParthenogenesisCatalystItem(Item.Settings().maxCount(1))
@@ -170,6 +172,7 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "cloner_device"), CLONER_DEVICE)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "pantsu"), PANTSU)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "pantsu_getter"), PANTSU_GETTER)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "diaper"), DIAPER)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "aids_vaccine"), AIDS_VACCINE)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "tamsulosin_capsule"), TAMSULOSIN_CAPSULE)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "parthenogenesis_catalyst"), PARTHENOGENESIS_CATALYST)
@@ -244,6 +247,7 @@ class JRItems {
                 entries.add(CLONER_DEVICE)
                 entries.add(PANTSU)
                 entries.add(PANTSU_GETTER)
+                entries.add(DIAPER)
                 entries.add(AIDS_VACCINE)
                 entries.add(TAMSULOSIN_CAPSULE)
                 entries.add(PARTHENOGENESIS_CATALYST)

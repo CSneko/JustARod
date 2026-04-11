@@ -302,12 +302,14 @@ class PregnantCommand {
 
         private fun registerUrination(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
             val cmd = literal("urination")
-            addHelp("urination", "排尿管理",
-                "/jr urination [target] §7- 查看憋尿时间",
+            addHelp("urination", "排尿与括约肌管理",
+                "/jr urination [target] §7- 查看憋尿时间与括约肌状态",
                 "/jr urination set time <ticks> [target] §7- 设置憋尿时间",
-                "/jr urination release §7- 排尿 (玩家自己)"
+                "/jr urination release §7- 释放排尿 (玩家自己)",
+                "/jr urination incontinence set <ticks> [target] §7- 设置尿失禁严重程度(tick)"
             )
 
+            // 1. 玩家自己排空膀胱
             cmd.then(literal("release").executes { ctx ->
                 run(ctx, null) { p, s ->
                     if (p.urination > 20 * 60 * 10) {
@@ -319,8 +321,34 @@ class PregnantCommand {
                 }
             })
 
-            buildSelfAndTarget(cmd) { p, s -> s.sendMessage(Text.of("当前憋尿时间：${p.urination / 20 / 60}分钟")) }
+            // 2. 综合状态查询 (憋尿量 + 括约肌健康度)
+            buildSelfAndTarget(cmd) { p, s ->
+                val urineMinutes = p.urination / 20 / 60
+
+                // 尿失禁分级判定 (与 Tick 逻辑保持一致)
+                val incTime = p.urinaryIncontinence
+                val stage = when {
+                    incTime <= 0 -> "§a正常 (括约肌健康)"
+                    incTime <= 20 * 60 * 20 * 2 -> "§e潜伏期 (轻微受损)"
+                    incTime <= 20 * 60 * 20 * 6 -> "§6轻度 (压力性漏尿 - 剧烈运动易漏)"
+                    incTime <= 20 * 60 * 20 * 12 -> "§c中度 (急迫性失禁 - 憋不住尿)"
+                    else -> "§4重度 (完全失禁 - 随时都在滴答)"
+                }
+
+                s.sendMessage(Text.of("§e[排尿系统] §7===================="))
+                s.sendMessage(Text.of("§f 当前憋尿时间：§b$urineMinutes 分钟"))
+                s.sendMessage(Text.of("§f 括约肌状态：$stage §7(积累值: $incTime tick)"))
+            }
+
+            // 3. 设置憋尿时间
             cmd.then(buildSetter("time", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.urination = v })
+
+            // 4. 设置尿失禁数值 (挂载在 /jr urination incontinence 下)
+            val incontinenceCmd = literal("incontinence")
+            incontinenceCmd.then(
+                buildSetter("val", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.urinaryIncontinence = v }
+            )
+            cmd.then(incontinenceCmd)
 
             baseCmd.then(cmd)
         }

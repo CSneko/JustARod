@@ -35,6 +35,9 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
     companion object{
         const val SKIN:String = "shiuri_neko"
         val SEXUAL_DESIRE_ID:TrackedData<Int> = DataTracker.registerData(SeeeeexNekoEntity::class.java, TrackedDataHandlerRegistry.INTEGER)
+
+        // 全局开关：是否允许自动和其他Neko交配
+        var AUTO_MATE_WITH_NEKO = false
     }
     var isMasturbation = false
     var sexualIntercourseGoal: SexualIntercourseGoal? = null
@@ -68,8 +71,8 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
         if (mate is Pregnant){
             if (mate is PlayerEntity){
                 if (mate.getInventory().offHand.stream()
-                    .anyMatch(Predicate { item: ItemStack? -> item!!.isOf(BYT) })
-                    ){
+                        .anyMatch(Predicate { item: ItemStack? -> item!!.isOf(BYT) })
+                ){
                     this.nekoLevel = this.nekoLevel + 0.1f
                     mate.nekoLevel = this.nekoLevel + 0.1f
                     this.addStatusEffect(StatusEffectInstance(StatusEffects.WEAKNESS, 3000, 0))
@@ -165,7 +168,6 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
         }
     }
 
-
     override fun getSkin(): String {
         return SKIN
     }
@@ -173,5 +175,4 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
     override fun getRandomSkin(): String {
         return SKIN
     }
-
 }

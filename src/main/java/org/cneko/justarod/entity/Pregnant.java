@@ -702,7 +702,7 @@ public interface Pregnant{
         return 0;
     }
     default void updateUrination() {
-        if (getUrination() > 0){
+        if (getUrination() >= 0){
             setUrination(getUrination()+1);
         }
     }

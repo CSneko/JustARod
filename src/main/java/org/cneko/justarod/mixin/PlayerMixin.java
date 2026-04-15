@@ -267,16 +267,6 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     }
 
     @Override
-    public int getMenstruation() {
-        return menstruation;
-    }
-
-    @Override
-    public void setMenstruation(int menstruation) {
-        this.menstruation = menstruation;
-    }
-
-    @Override
     public void setMenstruationComfort(int time) {
         this.menstruationComfort = time;
     }
@@ -572,37 +562,99 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     }
 
     @Unique
-    private float testosterone = 0;
+    private int ovarianClock = 0;
     @Unique
-    private float estrogen = 0;
+    private float uterineThickness = 0;
     @Unique
-    private float progesterone = 0;
+    private float endoE2 = 0;
+    @Unique
+    private float endoP = 0;
+    @Unique
+    private float endoT = 0;
+    @Unique
+    private float exoE2 = 0;
+    @Unique
+    private float exoP = 0;
+    @Unique
+    private float exoT = 0;
 
     @Override
-    public void setEstrogen(float estrogen) {
-        this.estrogen = estrogen;
+    public int getOvarianClock() {
+        return ovarianClock;
     }
     @Override
-    public float getEstrogen() {
-        return estrogen;
-    }
-
-    @Override
-    public void setTestosterone(float testosterone) {
-        this.testosterone = testosterone;
-    }
-    @Override
-    public float getTestosterone() {
-        return testosterone;
+    public void setOvarianClock(int ovarianClock) {
+        this.ovarianClock = ovarianClock;
     }
 
     @Override
-    public void setProgesterone(float progesterone) {
-        this.progesterone = progesterone;
+    public float getUterineThickness() {
+        return uterineThickness;
     }
+
     @Override
-    public float getProgesterone() {
-        return progesterone;
+    public void setUterineThickness(float uterineThickness) {
+        this.uterineThickness = uterineThickness;
+    }
+
+    @Override
+    public float getEndoE2() {
+        return endoE2;
+    }
+
+    @Override
+    public void setEndoE2(float endoE2) {
+        this.endoE2 = endoE2;
+    }
+
+    @Override
+    public float getEndoP() {
+        return endoP;
+    }
+
+    @Override
+    public void setEndoP(float endoP) {
+        this.endoP = endoP;
+    }
+
+    @Override
+    public float getEndoT() {
+        return endoT;
+    }
+
+    @Override
+    public void setEndoT(float endoT) {
+        this.endoT = endoT;
+    }
+
+    @Override
+    public float getExoP() {
+        return exoP;
+    }
+
+    @Override
+    public void setExoP(float exoP) {
+        this.exoP = exoP;
+    }
+
+    @Override
+    public float getExoE2() {
+        return exoE2;
+    }
+
+    @Override
+    public void setExoE2(float exoE2) {
+        this.exoE2 = exoE2;
+    }
+
+    @Override
+    public float getExoT() {
+        return exoT;
+    }
+
+    @Override
+    public void setExoT(float exoT) {
+        this.exoT = exoT;
     }
 
     @Unique
@@ -744,14 +796,13 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
                 // 同步power
                 syncToClient(sp);
                 // slowTick区域
-                Pregnant.hormoneSlowTick(player);
+                Pregnant.hormoneAndCycleSlowTick(sp);
                 Pregnant.yuriSlowTick(player);
             }
         }
         if (player.getWorld() instanceof ServerWorld) {
             Powerable.tickPower(player);
             Pregnant.pregnantTick(player);
-            Pregnant.menstruationTick(player);
             Pregnant.aidsTick(player);
             Pregnant.HPVTick(player);
             Pregnant.ovarianCancerTick(player);

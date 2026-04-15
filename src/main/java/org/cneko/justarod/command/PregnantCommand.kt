@@ -255,23 +255,6 @@ class PregnantCommand {
             else if (type.contains("hyd") || type.contains("mole")) p.isHydatidiformMole = value
         }
 
-        private fun registerMenstruation(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
-            val cmd = literal("menstruation")
-            addHelp("menstruation", "生理期管理",
-                "/jr menstruation [target] §7- 查看当前处于哪个周期",
-                "/jr menstruation set time <ticks> [target] §7- 设置生理周期进度",
-                "/jr menstruation comfort [target] §7- 查看卫生巾剩余有效时间"
-            )
-
-            buildSelfAndTarget(cmd) { p, s -> s.sendMessage(Text.of("当前处于${p.menstruationCycle.text}")) }
-            cmd.then(buildSetter("time", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.menstruation = v })
-
-            val comfortCmd = literal("comfort")
-            buildSelfAndTarget(comfortCmd) { p, s -> s.sendMessage(Text.of("卫生巾剩余有效时间：${p.menstruationComfort / 20}秒")) }
-            cmd.then(comfortCmd)
-
-            baseCmd.then(cmd)
-        }
 
         private fun registerExcretion(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
             val cmd = literal("excretion")
@@ -421,29 +404,104 @@ class PregnantCommand {
             baseCmd.then(cmd)
         }
 
-        private fun registerHormones(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
-            val cmd = literal("hormone")
-            addHelp("hormone", "激素系统",
-                "/jr hormone [target] §7- 查看激素综合面板",
-                "/jr hormone testosterone set <val> [target] §7- 设置睾酮",
-                "/jr hormone estrogen set <val> [target] §7- 设置雌激素",
-                "/jr hormone progesterone set <val> [target] §7- 设置孕酮"
+        // ====================================================
+        // 生理周期与子宫内膜 管理
+        // ====================================================
+        private fun registerMenstruation(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
+            val cmd = literal("menstruation")
+            addHelp("menstruation", "生理周期与内膜管理",
+                "/jr menstruation [target] §7- 查看当前周期、时钟与内膜状态",
+                "/jr menstruation clock set <ticks> [target] §7- 设置卵巢时钟(0~336000)",
+                "/jr menstruation thickness set <val> [target] §7- 设置子宫内膜厚度",
+                "/jr menstruation comfort [target] §7- 查看卫生巾剩余有效时间"
             )
 
+            // 查看生理周期综合面板
             buildSelfAndTarget(cmd) { p, s ->
-                val t = String.format("%.1f", p.testosterone)
-                val e = String.format("%.1f", p.estrogen)
-                val prog = String.format("%.1f", p.progesterone)
-                val attr = String.format("%.1f", p.attractionScore)
+                if (!p.isFemale || !p.hasUterus()) {
+                    s.sendMessage(Text.of("§c目标不具备女性生理特征或子宫，没有生理周期。"))
+                    return@buildSelfAndTarget
+                }
 
-                s.sendMessage(Text.of("§e[激素面板] §7===================="))
-                s.sendMessage(Text.of("§c 睾酮(T): $t  §d 雌激素(E): $e"))
-                s.sendMessage(Text.of("§b 孕酮(P): $prog §6 吸引力: $attr"))
+                val clockDays = String.format("%.1f", p.ovarianClock / 24000.0f)
+                val thick = String.format("%.2f", p.uterineThickness)
+                val cycleName = p.menstruationCycle.text // 如果你的Java改成了 getCurrentCycle()，这里对应 currentCycle.text
+
+                s.sendMessage(Text.of("§d[生理周期面板] §7===================="))
+                s.sendMessage(Text.of("§f 当前状态: §b$cycleName"))
+                s.sendMessage(Text.of("§f 卵巢时钟: 第 §e$clockDays §f天 §7(满14天一循环)"))
+                s.sendMessage(Text.of("§f 内膜厚度: §c$thick mm §7(跌破厚度且激素撤退时出血)"))
             }
 
-            cmd.then(literal("testosterone").then(buildSetter("val", FloatArgumentType.floatArg(0f), FloatArgumentType::getFloat) { p, v -> p.testosterone = v }))
-            cmd.then(literal("estrogen").then(buildSetter("val", FloatArgumentType.floatArg(0f), FloatArgumentType::getFloat) { p, v -> p.estrogen = v }))
-            cmd.then(literal("progesterone").then(buildSetter("val", FloatArgumentType.floatArg(0f), FloatArgumentType::getFloat) { p, v -> p.progesterone = v }))
+            // 修改卵巢时钟 (0 ~ 14天)
+            cmd.then(literal("clock").then(
+                buildSetter("ticks", IntegerArgumentType.integer(0, 336000), IntegerArgumentType::getInteger) { p, v -> p.ovarianClock = v }
+            ))
+
+            // 修改内膜厚度
+            cmd.then(literal("thickness").then(
+                buildSetter("val", FloatArgumentType.floatArg(0f, 100f), FloatArgumentType::getFloat) { p, v -> p.uterineThickness = v }
+            ))
+
+            // 卫生巾相关 (保留原逻辑)
+            val comfortCmd = literal("comfort")
+            buildSelfAndTarget(comfortCmd) { p, s -> s.sendMessage(Text.of("卫生巾剩余有效时间：${p.menstruationComfort / 20}秒")) }
+            cmd.then(comfortCmd)
+
+            baseCmd.then(cmd)
+        }
+
+        // ====================================================
+        // 内外源激素 管理
+        // ====================================================
+        private fun registerHormones(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
+            val cmd = literal("hormone")
+            addHelp("hormone", "内分泌与激素系统",
+                "/jr hormone [target] §7- 查看激素综合面板(内外源分离)",
+                "/jr hormone exo_e2 set <val> [target] §7- 注射外源雌二醇 (吃药)",
+                "/jr hormone exo_p set <val> [target] §7- 注射外源孕酮 (吃药)",
+                "/jr hormone exo_t set <val> [target] §7- 注射外源睾酮 (吃药)"
+            )
+
+            // 查看激素分离面板
+            buildSelfAndTarget(cmd) { p, s ->
+                val formatNum = { num: Float -> String.format("%.1f", num) }
+
+                val tE2 = formatNum(p.totalE2)
+                val inE2 = formatNum(p.endoE2)
+                val exE2 = formatNum(p.exoE2)
+
+                val tP = formatNum(p.totalP)
+                val inP = formatNum(p.endoP)
+                val exP = formatNum(p.exoP)
+
+                val tT = formatNum(p.totalT)
+                val inT = formatNum(p.endoT)
+                val exT = formatNum(p.exoT)
+
+                val attr = formatNum(p.attractionScore)
+
+                s.sendMessage(Text.of("§e[激素浓度面板 (单位:pg/mL或ng/mL)] §7========="))
+                s.sendMessage(Text.of("§d 雌二醇(E2): 总 §l$tE2§r §7(内:$inE2 + 外:$exE2)"))
+                s.sendMessage(Text.of("§b 孕酮(P):   总 §l$tP§r §7(内:$inP + 外:$exP)"))
+                s.sendMessage(Text.of("§c 睾酮(T):   总 §l$tT§r §7(内:$inT + 外:$exT)"))
+                s.sendMessage(Text.of("§6 当前散发吸引力: $attr"))
+            }
+
+            // 修改外源雌激素 (外源激素不会被Tick覆盖，只会自然代谢)
+            cmd.then(literal("exo_e2").then(
+                buildSetter("val", FloatArgumentType.floatArg(0f), FloatArgumentType::getFloat) { p, v -> p.exoE2 = v }
+            ))
+
+            // 修改外源孕酮
+            cmd.then(literal("exo_p").then(
+                buildSetter("val", FloatArgumentType.floatArg(0f), FloatArgumentType::getFloat) { p, v -> p.exoP = v }
+            ))
+
+            // 修改外源睾酮
+            cmd.then(literal("exo_t").then(
+                buildSetter("val", FloatArgumentType.floatArg(0f), FloatArgumentType::getFloat) { p, v -> p.exoT = v }
+            ))
 
             baseCmd.then(cmd)
         }

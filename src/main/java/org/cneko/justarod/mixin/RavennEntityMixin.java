@@ -74,15 +74,6 @@ public class RavennEntityMixin implements Pregnant {
         this.childrenType = childrenType;
     }
 
-    @Override
-    public int getMenstruation() {
-        return menstruation;
-    }
-
-    @Override
-    public void setMenstruation(int menstruation) {
-        this.menstruation = menstruation;
-    }
 
     @Override
     public void setMenstruationComfort(int time) {
@@ -242,7 +233,6 @@ public class RavennEntityMixin implements Pregnant {
     public void tick(CallbackInfo ci) {
         RavennEntity ravenn = (RavennEntity) (Object) this;
         Pregnant.pregnantTick((LivingEntity & Pregnant)ravenn);
-        Pregnant.menstruationTick((LivingEntity & Pregnant)ravenn);
         Pregnant.aidsTick((LivingEntity & Pregnant)ravenn);
         Pregnant.HPVTick((LivingEntity & Pregnant)ravenn);
         Pregnant.ovarianCancerTick((LivingEntity & Pregnant)ravenn);

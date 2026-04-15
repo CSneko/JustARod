@@ -25,17 +25,11 @@ object JRRegistry {
         { e, v -> e.childrenType = v.orElse(null) }
     )
 
-    val MENSTRUATION = registerTime("menstruation", "生理期时间", { it.menstruation }, { e, v -> e.menstruation = v })
     val MENSTRUATION_COMFORT = registerTime("menstruation_comfort", "卫生巾有效时间", { it.menstruationComfort }, { e, v -> e.menstruationComfort = v })
 
     val EXCRETION = registerTime("excretion", "憋粑粑时间", { it.excretion }, { e, v -> e.excretion = v })
     val URINATION = registerTime("urination", "憋尿时间", { it.urination }, { e, v -> e.urination = v })
     val BRITH_CONTROLLING = registerTime("brith_controlling", "避孕药效", { it.brithControlling }, { e, v -> e.brithControlling = v })
-
-    // ==================== 激素系统 ====================
-    val TESTOSTERONE = registerFloat("testosterone", "睾酮 (T)", { it.testosterone }, { e, v -> e.testosterone = v })
-    val ESTROGEN = registerFloat("estrogen", "雌激素 (E)", { it.estrogen }, { e, v -> e.estrogen = v })
-    val PROGESTERONE = registerFloat("progesterone", "孕酮 (P)", { it.progesterone }, { e, v -> e.progesterone = v })
 
     // ==================== 疾病与异常 (数值类) ====================
     val AIDS = registerTime("aids", "艾滋病", { it.aids }, { e, v -> e.aids = v }, isDisease = true)

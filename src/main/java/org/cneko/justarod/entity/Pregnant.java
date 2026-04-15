@@ -64,6 +64,26 @@ public interface Pregnant{
         this.ruptureHymen("怀孕");
 
     }
+    default boolean canPregnant(){
+        boolean noMatingPlz = false;
+        if (this instanceof BDSMable bm){
+            if (bm.getNoMatingPlz() >0){
+                noMatingPlz = true;
+            }
+        }
+        boolean menstruationOk = isMale();
+        if (isFemale()){
+            menstruationOk = getMenstruationCycle() == MenstruationCycle.OVULATION;
+        }
+
+        boolean isSevereUterineCold = getUterineCold() > 20 * 60 * 20 * 2; // 积累超过2天寒气视为严重
+
+        boolean physicalBlock = isImperforateHymen();
+
+        return menstruationOk && !this.isPregnant() && !this.isSterilization() && this.hasUterus() && !this.isPCOS()
+                && !(this.getBrithControlling() > 0 && ((Entity)this).getRandom().nextInt(10) != 0) && !noMatingPlz
+                && !isSevereUterineCold && !physicalBlock && this.getCorpusLuteumRupture() <= 0;
+    }
 
     default void setPregnant(int time) {
     }
@@ -174,71 +194,18 @@ public interface Pregnant{
         }
     }
 
-    default int getMenstruation(){
-        return 0;
-    }
-    default void setMenstruation(int time){}
-    default MenstruationCycle getMenstruationCycle(){
-        if (!isFemale()) return MenstruationCycle.NONE;
-        int menstruation = getMenstruation();
-        if (menstruation <=0){
-            return MenstruationCycle.NONE;
-        }else if(menstruation <= 20*60*20*2){
-            return MenstruationCycle.MENSTRUATION;
-        } else if (menstruation <= 20*60*20*7) {
-            return MenstruationCycle.FOLLICLE;
-        } else if (menstruation <= 20*60*20*8) {
-            return MenstruationCycle.OVULATION;
-        } else if (menstruation <=20*60*20*11) {
-            return MenstruationCycle.LUTEINIZATION;
-        }
-        return MenstruationCycle.NONE;
-    }
-
     default void setMenstruationComfort(int time){
     }
     default int getMenstruationComfort(){
         return 0;
     }
 
-    default void updateMenstruation() {
-        if (!isFemale()) return;
-        if (!isPregnant() && getMenstruation() <= 20*60*20*11) {
-            setMenstruation(getMenstruation() + 1);
-        }else {
-            setMenstruation(0);
-        }
-        if (getMenstruationComfort() > 0){
-            setMenstruationComfort(getMenstruationComfort()-1);
-        }
-    }
-    default boolean canPregnant(){
-        boolean noMatingPlz = false;
-        if (this instanceof BDSMable bm){
-            if (bm.getNoMatingPlz() >0){
-                noMatingPlz = true;
-            }
-        }
-        boolean menstruationOk = isMale();
-        if (isFemale()){
-            menstruationOk = getMenstruationCycle() == MenstruationCycle.OVULATION;
-        }
-
-        boolean isSevereUterineCold = getUterineCold() > 20 * 60 * 20 * 2; // 积累超过2天寒气视为严重
-
-        boolean physicalBlock = isImperforateHymen();
-
-        return menstruationOk && !this.isPregnant() && !this.isSterilization() && this.hasUterus() && !this.isPCOS()
-                && !(this.getBrithControlling() > 0 && ((Entity)this).getRandom().nextInt(10) != 0) && !noMatingPlz
-                && !isSevereUterineCold && !physicalBlock && this.getCorpusLuteumRupture() <= 0;
-    }
 
     default void writePregnantToNbt(NbtCompound nbt) {
         nbt.putBoolean("Female", isFemale());
         nbt.putBoolean("Male", isMale());
         nbt.putInt("Pregnant", getPregnant());
         nbt.putString("ChildrenType", EntityType.getId(getChildrenType()).toString());
-        nbt.putInt("Menstruation", getMenstruation());
         nbt.putInt("MenstruationComfort", getMenstruationComfort());
         nbt.putBoolean("Sterilization", isSterilization());
         nbt.putBoolean("EctopicPregnancy", isEctopicPregnancy());
@@ -268,9 +235,6 @@ public interface Pregnant{
         nbt.putBoolean("ProtogynyEnabled", isProtogynyEnabled());
         nbt.putBoolean("IsUndergoingProtogyny", isUndergoingProtogyny());
         nbt.putInt("ProtogynyProgress", getProtogynyProgress());
-        nbt.putFloat("Hormone_T", getTestosterone());
-        nbt.putFloat("Hormone_E", getEstrogen());
-        nbt.putFloat("Hormone_P", getProgesterone());
         nbt.putInt("Cataract", getCataract());
         nbt.putInt("CorpusLuteumRupture", getCorpusLuteumRupture());
         nbt.putBoolean("SevereCorpusLuteumRupture", isSevereCorpusLuteumRupture());
@@ -278,6 +242,19 @@ public interface Pregnant{
         nbt.putInt("Mastitis", getMastitis());
         nbt.putInt("LactationStimulation", getLactationStimulation());
         nbt.putInt("UrinaryIncontinence", getUrinaryIncontinence());
+
+
+        nbt.putInt("OvarianClock", getOvarianClock());
+        nbt.putFloat("UterineThickness", getUterineThickness());
+        nbt.putString("CurrentCycle", getCurrentCycle().name());
+
+        nbt.putFloat("EndoE2", getEndoE2());
+        nbt.putFloat("EndoP", getEndoP());
+        nbt.putFloat("EndoT", getEndoT());
+
+        nbt.putFloat("ExoE2", getExoE2());
+        nbt.putFloat("ExoP", getExoP());
+        nbt.putFloat("ExoT", getExoT());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         setFemale(nbt.getBoolean("Female"));
@@ -291,9 +268,6 @@ public interface Pregnant{
                 EntityType<?> childrenType = Registries.ENTITY_TYPE.get(id);
                 setChildrenType(childrenType);
             }
-        }
-        if (nbt.contains("Menstruation")) {
-            setMenstruation(nbt.getInt("Menstruation"));
         }
         if (nbt.contains("MenstruationComfort")) {
             setMenstruationComfort(nbt.getInt("MenstruationComfort"));
@@ -393,9 +367,6 @@ public interface Pregnant{
         if (nbt.contains("ProtogynyProgress")) {
             setProtogynyProgress(nbt.getInt("ProtogynyProgress"));
         }
-        if (nbt.contains("Hormone_T")) setTestosterone(nbt.getFloat("Hormone_T"));
-        if (nbt.contains("Hormone_E")) setEstrogen(nbt.getFloat("Hormone_E"));
-        if (nbt.contains("Hormone_P")) setProgesterone(nbt.getFloat("Hormone_P"));
         if (nbt.contains("Cataract")) {
             setCataract(nbt.getInt("Cataract"));
         }
@@ -411,6 +382,21 @@ public interface Pregnant{
         if (nbt.contains("UrinaryIncontinence")) {
             setUrinaryIncontinence(nbt.getInt("UrinaryIncontinence"));
         }
+
+        if (nbt.contains("OvarianClock")) setOvarianClock(nbt.getInt("OvarianClock"));
+        if (nbt.contains("UterineThickness")) setUterineThickness(nbt.getFloat("UterineThickness"));
+        if (nbt.contains("CurrentCycle")) {
+            try { setCurrentCycle(MenstruationCycle.valueOf(nbt.getString("CurrentCycle"))); }
+            catch (Exception ignored) { setCurrentCycle(MenstruationCycle.NONE); }
+        }
+
+        if (nbt.contains("EndoE2")) setEndoE2(nbt.getFloat("EndoE2"));
+        if (nbt.contains("EndoP"))  setEndoP(nbt.getFloat("EndoP"));
+        if (nbt.contains("EndoT"))  setEndoT(nbt.getFloat("EndoT"));
+
+        if (nbt.contains("ExoE2")) setExoE2(nbt.getFloat("ExoE2"));
+        if (nbt.contains("ExoP"))  setExoP(nbt.getFloat("ExoP"));
+        if (nbt.contains("ExoT"))  setExoT(nbt.getFloat("ExoT"));
     }
 
     default Entity createBaby() {
@@ -803,14 +789,46 @@ public interface Pregnant{
     // ----------------- 激素系统 (Hormones) -----------------
     Identifier TESTOSTERONE_ID = Identifier.of(Justarod.MODID,"testosterone");
     Identifier ESTROGEN_ID = Identifier.of(Justarod.MODID,"estrogen");
-    default void setTestosterone(float value) {}
-    default float getTestosterone() { return 0.0f; }
 
-    default void setEstrogen(float value) {}
-    default float getEstrogen() { return 0.0f; }
+    // 卵巢时钟：14个Minecraft天 (14 * 24000 = 336000 ticks)
+    int CYCLE_TOTAL_TICKS = 14 * 24000;
+    default void setOvarianClock(int ticks) {}
+    default int getOvarianClock() { return 0; }
 
-    default void setProgesterone(float value) {} // 孕酮
-    default float getProgesterone() { return 0.0f; }
+    // 子宫内膜厚度 (0.0 ~ 100.0)
+    default void setUterineThickness(float value) {}
+    default float getUterineThickness() { return 0.0f; }
+
+    // 当前周期状态缓存
+    default void setCurrentCycle(MenstruationCycle cycle) {}
+    default MenstruationCycle getCurrentCycle() { return MenstruationCycle.NONE; }
+
+    // --- 内源激素 (身体产生的) ---
+    default void setEndoE2(float value) {} // 雌二醇 (pg/mL)
+    default float getEndoE2() { return 0.0f; }
+    default void setEndoP(float value) {}  // 孕酮 (ng/mL)
+    default float getEndoP() { return 0.0f; }
+    default void setEndoT(float value) {}  // 睾酮 (ng/mL)
+    default float getEndoT() { return 0.0f; }
+
+    // --- 外源激素 (吃药/注射获得的) ---
+    default void setExoE2(float value) {}
+    default float getExoE2() { return 0.0f; }
+    default void setExoP(float value) {}
+    default float getExoP() { return 0.0f; }
+    default void setExoT(float value) {}
+    default float getExoT() { return 0.0f; }
+
+    // --- 获取总激素 (内源 + 外源) ---
+    default float getTotalE2() { return getEndoE2() + getExoE2(); }
+    default float getTotalP() { return getEndoP() + getExoP(); }
+    default float getTotalT() { return getEndoT() + getExoT(); }
+
+    // 对外兼容的老接口
+    default float getEstrogen() { return getTotalE2(); }
+    default float getProgesterone() { return getTotalP(); }
+    default float getTestosterone() { return getTotalT(); }
+    default MenstruationCycle getMenstruationCycle() { return getCurrentCycle(); }
 
     // ----------------- 泌乳系统 (Lactation) -----------------
     default void setMilk(float amount) {}
@@ -1195,55 +1213,6 @@ public interface Pregnant{
                 if (pregnant.getRandom().nextInt(500) == 0) {
                     pregnant.setPregnant(0);
                     pregnant.makeBaby(true);
-                }
-            }
-        }
-    }
-    static <T extends LivingEntity&Pregnant> void menstruationTick(T pregnant) {
-        if (!pregnant.isFemale()) return;
-        if (!pregnant.hasUterus() || pregnant.isPCOS()){
-            pregnant.setMenstruation(0);
-            return;
-        }
-        pregnant.updateMenstruation();
-        MenstruationCycle cycle = pregnant.getMenstruationCycle();
-        // 1/3000的几率获得效果
-        if (pregnant.getRandom().nextInt(3000) == 0) {
-            if (cycle == MenstruationCycle.MENSTRUATION){
-                // 缓慢效果（60s）
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20*60, 0));
-                // 虚弱效果（30s）
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20*30, 0));
-            } else if (cycle == MenstruationCycle.FOLLICLE) {
-                // 速度效果（60s）
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SPEED, 20*60, 0));
-                // 跳跃提升（30s）
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.JUMP_BOOST, 20*30, 0));
-            } else if (cycle == MenstruationCycle.OVULATION) {
-                // 生命恢复(60s)
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 20*60, 0));
-                // 兴奋效果(30s)
-                if (pregnant instanceof INeko neko && neko.isNeko()){
-                    neko.getEntity().addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(ToNekoEffects.NEKO_EFFECT), 20*30, 0));
-                }
-            } else if (cycle == MenstruationCycle.LUTEINIZATION) {
-                // 饥饿效果
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 20*60, 0));
-                // 挖掘疲劳
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20*30, 0));
-            }
-        }
-        // /1000的几率附加
-        if (pregnant.getRandom().nextInt(1000) == 0) {
-            if (cycle == MenstruationCycle.MENSTRUATION){
-                if (pregnant.getMenstruationComfort()>0){
-                    if (pregnant.getRandom().nextBoolean()){
-                        // 扣血
-                        pregnant.damage(pregnant.getDamageSources().magic(), 1.0f);
-                    }
-                }else {
-                    // 扣血
-                    pregnant.damage(pregnant.getDamageSources().magic(), 1.0f);
                 }
             }
         }
@@ -2139,99 +2108,185 @@ public interface Pregnant{
     }
 
     /**
-     * 激素系统主循环
+     * 激素与生理周期主循环 (SlowTick: 每 10 Tick 调用一次)
      */
-    static <T extends LivingEntity & Pregnant> void hormoneSlowTick(T entity) {
-        // 1. 计算理论激素水平
-        float targetT = 0.0f; // 睾酮
-        float targetE = 0.0f; // 雌激素
-        float targetP = 0.0f; // 孕酮
+    static <T extends LivingEntity & Pregnant> void hormoneAndCycleSlowTick(T entity) {
 
-        // --- 男性逻辑 ---
-        if (entity.isMale()) {
-            if (entity.isOrchiectomy()) {
-                // 切除睾丸：睾酮极低，可能略有雌激素（脂肪转化）
-                targetT = 5.0f;
-                targetE = 15.0f;
-            } else {
-                // 正常男性：睾酮高
-                targetT = 100.0f;
-                targetE = 5.0f;
+        // ---------------------------------------------------------
+        // 1. 外源激素代谢 (自然衰减)
+        // ---------------------------------------------------------
+        if (entity.getExoE2() > 0) entity.setExoE2(Math.max(0, entity.getExoE2() - 0.05f));
+        if (entity.getExoP() > 0)  entity.setExoP(Math.max(0,  entity.getExoP() - 0.01f));
+        if (entity.getExoT() > 0)  entity.setExoT(Math.max(0,  entity.getExoT() - 0.05f));
 
-                // 前列腺炎影响：严重时轻微降低睾酮 (痛得没性致)
-                if (entity.getProstatitis() > 20 * 60 * 20 * 5) {
-                    targetT *= 0.8f;
-                }
-            }
+        // ---------------------------------------------------------
+        // 2. 卵巢时钟推进与内源激素计算
+        // ---------------------------------------------------------
+        float endoE2 = 20.0f, endoP = 0.5f, endoT = 5.0f; // 默认基底值（如绝经、切除子宫者）
+
+        if (entity.isMale() && !entity.isOrchiectomy()) {
+            // 男性内源激素 (睾酮维持在正常水平 300~1000 ng/mL)
+            endoT = 600.0f;
+            endoE2 = 15.0f;
+            endoP = 0.5f;
+
+            // 前列腺炎惩罚：痛到影响内分泌
+            if (entity.getProstatitis() > 20 * 60 * 20 * 5) endoT *= 0.8f;
         }
-
-        // --- 女性逻辑 ---
-        if (entity.isFemale()) {
-            MenstruationCycle cycle = entity.getMenstruationCycle();
-
-            // 基础激素波动
+        else if (entity.isFemale() && entity.hasUterus()) {
+            // 女性内源激素逻辑
             if (entity.isPregnant()) {
-                // 怀孕：雌激素高，孕酮极高，无发情
-                targetE = 80.0f;
-                targetP = 100.0f;
-                targetT = 5.0f;
-            } else if (entity.getBrithControlling() > 0) {
-                // 避孕药：锁定激素为平稳状态，无峰值
-                targetE = 40.0f;
-                targetP = 40.0f;
-                targetT = 5.0f;
-            } else if (entity.isPCOS()) {
-                // 多囊卵巢综合征 (PCOS)：雄激素异常升高，雌激素平坦
-                targetT = 35.0f; // 显著高于正常女性
-                targetE = 30.0f; // 持续偏低，无排卵峰值
-                targetP = 10.0f;
-            } else if (!entity.hasUterus()) {
-                // 子宫切除，低
-                targetE = 20.0f;
-                targetT = 5.0f;
-            } else {
-                // 正常生理周期
-                switch (cycle) {
-                    case MENSTRUATION: // 月经期
-                        targetE = 20.0f; targetP = 5.0f; break;
-                    case FOLLICLE:     // 卵泡期 (上升)
-                        targetE = 60.0f; targetP = 10.0f; break;
-                    case OVULATION:    // 排卵期 (峰值)
-                        targetE = 100.0f; targetP = 20.0f; break;
-                    case LUTEINIZATION:// 黄体期
-                        targetE = 50.0f; targetP = 80.0f; break;
-                    default:
-                        targetE = 30.0f; break;
+                // 怀孕状态：极高的雌孕激素，时钟暂停
+                endoE2 = 300.0f;
+                endoP = 100.0f;
+                endoT = 0.5f;
+            }
+            else if (entity.isPCOS()) {
+                // 多囊卵巢综合征：雄激素偏高，雌激素平坦无排卵，时钟紊乱
+                endoE2 = 50.0f;
+                endoP = 0.5f;
+                endoT = 60.0f; // 女性异常高睾酮
+            }
+            else {
+                // 正常女性的卵巢时钟
+                int clock = entity.getOvarianClock();
+
+                // 负反馈抑制机制：
+                // 如果外源孕酮极高(如服用避孕药)，卵巢检测到激素充足，会停止工作(不排卵)
+                if (entity.getExoP() > 5.0f || entity.getExoE2() > 200.0f) {
+                    // 时钟停止推进，进入假孕休眠期
+                } else {
+                    // 推进时钟！注意这里是 SlowTick，每次加 10
+                    clock = (clock + 10) % CYCLE_TOTAL_TICKS;
+                    entity.setOvarianClock(clock);
                 }
-                targetT = 10.0f; // 女性基础微量睾酮
+
+                // 将 14天(336,000 tick) 映射到内源激素曲线上
+                float dayProgress = (float) clock / 24000.0f; // 当前在第几天 (0.0 ~ 14.0)
+
+                if (dayProgress < 3.0f) {
+                    // Day 0-3 (通常对应月经期，激素处于最低谷)
+                    endoE2 = 30.0f;
+                    endoP = 0.5f;
+                    endoT = 0.3f;
+                } else if (dayProgress < 7.0f) {
+                    // Day 3-7 (卵泡期，E2平滑爬坡)
+                    float t = (dayProgress - 3.0f) / 4.0f; // 0.0 ~ 1.0
+                    endoE2 = 30.0f + t * 170.0f; // 30 -> 200
+                    endoP = 0.5f;
+                    endoT = 0.3f + t * 0.2f; // 0.3 -> 0.5
+                } else if (dayProgress < 8.0f) {
+                    // Day 7-8 (排卵期，E2峰值，P开始苏醒)
+                    float t = (dayProgress - 7.0f);
+                    // 排卵峰：前半天升到最高，后半天回落
+                    endoE2 = (t < 0.5f) ? 200.0f + t * 2 * 300.0f : 500.0f - (t - 0.5f) * 2 * 300.0f;
+                    endoP = 0.5f + t * 2.5f; // 0.5 -> 3.0
+                    endoT = 0.8f; // 排卵期微量睾酮峰值，显著提升性欲
+                } else if (dayProgress < 12.0f) {
+                    // Day 8-12 (黄体期，P绝对峰值，E2第二峰)
+                    float t = (dayProgress - 8.0f) / 4.0f;
+                    endoE2 = 150.0f + (float)Math.sin(t * Math.PI) * 100.0f; // 平滑波动 150 -> 250 -> 150
+                    endoP = 3.0f + (float)Math.sin(t * Math.PI) * 17.0f;     // 3.0 -> 20.0 -> 3.0
+                    endoT = 0.5f;
+                } else {
+                    // Day 12-14 (黄体萎缩，激素断崖式撤退，准备迎接月经)
+                    float t = (dayProgress - 12.0f) / 2.0f;
+                    endoE2 = 150.0f - t * 120.0f; // 150 -> 30
+                    endoP = 3.0f - t * 2.5f;      // 3.0 -> 0.5
+                    endoT = 0.3f;
+                }
             }
         }
 
-        // --- 雌转雄逻辑 (Protogyny) ---
-        if (entity.isUndergoingProtogyny()) {
-            float progressPercent = (float) entity.getProtogynyProgress() / (float) PROTOGYNY_TOTAL_DURATION;
-            // 线性插值：雌激素归零，睾酮升高
-            targetE *= (1.0f - progressPercent);
-            targetT = Math.max(targetT, 100.0f * progressPercent);
+        // 写入身体内源激素
+        entity.setEndoE2(endoE2);
+        entity.setEndoP(endoP);
+        entity.setEndoT(endoT);
+
+        // ---------------------------------------------------------
+        // 3. 获取总激素 = 身体自产 + 外部摄入
+        // ---------------------------------------------------------
+        float totalE2 = entity.getTotalE2();
+        float totalP  = entity.getTotalP();
+        float totalT  = entity.getTotalT();
+
+        // 刷新激素带来的属性 Buff (比如高T加攻击力，高E加移速，这个方法里不用乘10，它是状态应用)
+        applyHormoneModifiers(entity, totalT, totalE2);
+
+        // ---------------------------------------------------------
+        // 4. 子宫内膜状态机与生理周期判定 (核心)
+        // ---------------------------------------------------------
+        if (!entity.isFemale() || !entity.hasUterus()) {
+            entity.setCurrentCycle(MenstruationCycle.NONE);
+            entity.setUterineThickness(0);
+            return;
         }
 
-        // --- 双性/扶她逻辑 (Male & Female) ---
-        if (entity.isMale() && entity.isFemale()) {
-            // 叠加两者，取较高值
-            targetT = Math.max(targetT, 80.0f);
-            targetE = Math.max(targetE, 80.0f);
+        float thickness = entity.getUterineThickness();
+        MenstruationCycle cycle = MenstruationCycle.NONE;
+
+        // 【条件一：激素撤退性出血判断】
+        // 生理学基础：如果体内 E2 跌破 60 或 孕酮跌破 1.5，说明激素不足以维持内膜
+        boolean isHormoneWithdrawal = (totalE2 < 60.0f && totalP < 1.5f);
+        boolean isMenstruating = (entity.getCurrentCycle() == MenstruationCycle.MENSTRUATION);
+
+        // 如果激素发生了撤退 且 内膜厚度 > 15 (说明有足够的东西可以脱落)
+        // 或者 已经处于经期 且 还没脱落干净
+        if ((isHormoneWithdrawal && thickness > 15.0f) || (isMenstruating && thickness > 0.0f)) {
+
+            cycle = MenstruationCycle.MENSTRUATION;
+
+            // 内膜脱落 (SlowTick 乘 10)
+            thickness -= 0.01f;
+            if (thickness < 0) thickness = 0;
+
+            // 月经期表现：流血/弄脏/虚弱 (概率除以 10)
+            if (entity.getRandom().nextInt(100) == 0) { // 原本是 1/1000
+                entity.damage(entity.getDamageSources().magic(), 1.0f);
+
+                // --- 这里接入弄脏胖次的逻辑 ---
+                ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
+                if (!legStack.isEmpty() && legStack.getItem() instanceof PantsuItem) {
+                    JRComponents.PantsuState currentState = legStack.get(JRComponents.Companion.getPANTSU_STATE());
+                    if (currentState == null || currentState == JRComponents.PantsuState.CLEAN) {
+                        legStack.set(JRComponents.Companion.getPANTSU_STATE(), JRComponents.PantsuState.BLOODY);
+                    }
+                }
+            }
+        }
+        else {
+            // 【条件二：内膜生长】
+            // 只要激素维持在高位，内膜就会缓慢生长 (SlowTick 乘 10)
+            if (totalE2 > 50.0f) thickness += totalE2 * 0.0002f;
+            if (totalP > 2.0f)   thickness += totalP * 0.002f;
+            if (thickness > 100.0f) thickness = 100.0f; // 厚度上限
+
+            // 【条件三：判定当前所处的非月经周期】
+            if (entity.isPregnant()) {
+                cycle = MenstruationCycle.NONE; // 怀孕期间子宫处于稳态，无周期划分
+            }
+            else if (totalP > 5.0f) {
+                cycle = MenstruationCycle.LUTEINIZATION; // 孕酮高绝对是黄体期
+                // 表现：容易疲劳和饥饿 (概率除以 10)
+                if (entity.getRandom().nextInt(300) == 0) {
+                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 20*60, 0));
+                }
+            }
+            else if (totalE2 > 150.0f && totalP >= 1.0f && totalP <= 5.0f) {
+                cycle = MenstruationCycle.OVULATION; // 雌激素大峰值，孕酮刚抬头
+                // 表现：精神焕发，容易高潮 (概率除以 10)
+                if (entity.getRandom().nextInt(300) == 0) {
+                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 20*60, 0));
+                }
+            }
+            else if (totalE2 > 50.0f && totalP < 1.0f) {
+                cycle = MenstruationCycle.FOLLICLE; // 只有雌激素，没有孕酮
+            }
         }
 
-        // 2. 更新数值
-        entity.setTestosterone(targetT);
-        entity.setEstrogen(targetE);
-        entity.setProgesterone(targetP);
-
-        // 3. 应用属性修正 (Attribute Modifiers)
-        applyHormoneModifiers(entity, targetT, targetE);
-
-        // 4. 吸引力与INeko互动
-        handleAttractionSlowTick(entity);
+        // 写回状态
+        entity.setUterineThickness(thickness);
+        entity.setCurrentCycle(cycle);
     }
 
     /**
@@ -2248,8 +2303,8 @@ public interface Pregnant{
 
         if (tLevel > 20.0f) {
             float effectiveT = tLevel - 20.0f;
-            tBonusDamage = effectiveT * 0.02; // 100T -> +1.6 攻击力
-            tBonusHealth = effectiveT * 0.1;  // 100T -> +8.0 血量 (4心)
+            tBonusDamage = effectiveT * 0.001; // 100T -> +0.1 攻击力
+            tBonusHealth = effectiveT * 0.01;  // 100T -> +1 生命值
         }
 
         // 应用攻击力
@@ -2279,8 +2334,8 @@ public interface Pregnant{
 
         if (eLevel > 40.0f) {
             float effectiveE = eLevel - 40.0f;
-            eBonusSpeed = effectiveE * 0.0005; // 100E -> +0.03 速度 (相当可观)
-            eBonusLuck = effectiveE * 0.02;    // 100E -> +1.2 幸运
+            eBonusSpeed = effectiveE * 0.0001;
+            eBonusLuck = effectiveE * 0.01;
         }
 
         // 应用速度
@@ -2603,40 +2658,6 @@ public interface Pregnant{
                     true,
                     true
             ));
-        }
-
-        // 6. 生理期同步算法
-        // 前提：双方都有子宫，且都没有怀孕（怀孕没月经）
-        if (entity.hasUterus() && partner.hasUterus()
-                && !entity.isPregnant() && !partner.isPregnant()) {
-
-            int myMens = entity.getMenstruation();
-            int partnerMens = partner.getMenstruation();
-
-            int diff = myMens - partnerMens;
-
-            // 差距足够大才触发同步
-            if (Math.abs(diff) > 2400) {
-
-                // 计算一个同步步长
-                int step = 1200;
-
-                if (diff > 0) {
-                    // 我领先 → 我后退，对方前进
-                    entity.setMenstruation(myMens - step);
-                    partner.setMenstruation(partnerMens + step);
-                } else {
-                    // 我落后 → 我前进，对方后退
-                    entity.setMenstruation(myMens + step);
-                    partner.setMenstruation(partnerMens - step);
-                }
-
-                if (world instanceof ServerWorld sw && entity.getRandom().nextInt(5) == 0) {
-                    sw.spawnParticles(ParticleTypes.HEART,
-                            entity.getX(), entity.getY() + 1.0, entity.getZ(),
-                            1, 0.3, 0.5, 0.3, 0.0);
-                }
-            }
         }
     }
 

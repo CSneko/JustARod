@@ -9,7 +9,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Hand
 import org.cneko.justarod.entity.Pregnant
 
-class EstrogenItem(settings: Settings): MedicalItem(settings) {
+class TestosteroneItem(settings: Settings): MedicalItem(settings) {
     override fun canApply(user: PlayerEntity, target: LivingEntity, stack: ItemStack, hand: Hand): Boolean {
         return target is Pregnant
     }
@@ -21,20 +21,19 @@ class EstrogenItem(settings: Settings): MedicalItem(settings) {
     override fun applyEffect(user: PlayerEntity, target: LivingEntity, stack: ItemStack, hand: Hand) {
         target as Pregnant
 
-        // 1. 激素机制：直接注入大量外源雌二醇
-        target.exoE2 += 150.0f
+        // 1. 激素机制：直接注入大量外源睾酮
+        target.exoT += 200.0f
 
-        // 2. 药效生理反应
+        // 2. 药效生理反应 (类固醇狂热)
+        // 瞬间获得少量力量增益，呼应激素系统长期的 +攻击力 Buff
+        target.addStatusEffect(StatusEffectInstance(StatusEffects.STRENGTH, 20 * 30, 0))
+
         if (target.random.nextBoolean()) {
-            // 激素冲击带来的晕眩/恶心
-            target.addStatusEffect(StatusEffectInstance(StatusEffects.NAUSEA, 120, 0))
-        }
-        if (target.random.nextBoolean()) {
-            // 胸部发育/胀痛感
-            target.damage(target.damageSources.magic(), 1.0f)
-            target.sendMessage(Text.of("§d你感觉胸口传来一阵胀痛，身体变得异常敏感..."))
+            // 雄性激素导致代谢加快，容易饥饿
+            target.addStatusEffect(StatusEffectInstance(StatusEffects.HUNGER, 20 * 60, 0))
+            target.sendMessage(Text.of("§c一股暴躁的力量在体内横冲直撞，你感觉异常亢奋！"))
         } else {
-            target.sendMessage(Text.of("§d一股温热的感觉流遍全身..."))
+            target.sendMessage(Text.of("§6肌肉微微发热，你感觉充满力量。"))
         }
 
     }
@@ -46,9 +45,9 @@ class EstrogenItem(settings: Settings): MedicalItem(settings) {
     override fun getSuccessMessages(user: PlayerEntity, target: LivingEntity, stack: ItemStack): ActionMessages {
         val isSelf = user == target
         return ActionMessages(
-            userSuccessMessage = if (isSelf) Text.of("§a你使用了雌激素制剂。")
-            else Text.of("§a你给 ${target.displayName?.string} 摄入了雌激素。"),
-            targetSuccessMessage = if (isSelf) null else Text.of("§d${user.displayName?.string} 给你摄入了雌激素，你感觉体温在升高...")
+            userSuccessMessage = if (isSelf) Text.of("§a你使用了雄激素制剂。")
+            else Text.of("§a你给 ${target.displayName?.string} 摄入了雄激素。"),
+            targetSuccessMessage = if (isSelf) null else Text.of("§6${user.displayName?.string} 给你摄入了雄激素，你感到烦躁且充满力量...")
         )
     }
 }

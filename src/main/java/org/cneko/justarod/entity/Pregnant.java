@@ -2210,8 +2210,11 @@ public interface Pregnant{
         float totalP  = entity.getTotalP();
         float totalT  = entity.getTotalT();
 
-        // 刷新激素带来的属性 Buff (比如高T加攻击力，高E加移速，这个方法里不用乘10，它是状态应用)
+        // 刷新激素带来的属性 Buff (带上限限制)
         applyHormoneModifiers(entity, totalT, totalE2);
+
+        // 检查严重过量激素导致的危险并发症
+        applyHormoneSideEffects(entity, totalT, totalE2);
 
         // ---------------------------------------------------------
         // 4. 子宫内膜状态机与生理周期判定 (核心)
@@ -2226,61 +2229,78 @@ public interface Pregnant{
         MenstruationCycle cycle = MenstruationCycle.NONE;
 
         // 【条件一：激素撤退性出血判断】
-        // 生理学基础：如果体内 E2 跌破 60 或 孕酮跌破 1.5，说明激素不足以维持内膜
         boolean isHormoneWithdrawal = (totalE2 < 60.0f && totalP < 1.5f);
         boolean isMenstruating = (entity.getCurrentCycle() == MenstruationCycle.MENSTRUATION);
 
-        // 如果激素发生了撤退 且 内膜厚度 > 15 (说明有足够的东西可以脱落)
-        // 或者 已经处于经期 且 还没脱落干净
         if ((isHormoneWithdrawal && thickness > 15.0f) || (isMenstruating && thickness > 0.0f)) {
-
             cycle = MenstruationCycle.MENSTRUATION;
 
             // 内膜脱落 (SlowTick 乘 10)
             thickness -= 0.01f;
             if (thickness < 0) thickness = 0;
 
-            // 月经期表现：流血/弄脏/虚弱 (概率除以 10)
-            if (entity.getRandom().nextInt(100) == 0) { // 原本是 1/1000
-                entity.damage(entity.getDamageSources().magic(), 1.0f);
+            // 检查是否为厚度过高引发的血崩
+            boolean isHemorrhage = (thickness > 80.0f);
 
-                // --- 这里接入弄脏胖次的逻辑 ---
-                ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
-                if (!legStack.isEmpty() && legStack.getItem() instanceof PantsuItem) {
-                    JRComponents.PantsuState currentState = legStack.get(JRComponents.Companion.getPANTSU_STATE());
-                    if (currentState == null || currentState == JRComponents.PantsuState.CLEAN) {
-                        legStack.set(JRComponents.Companion.getPANTSU_STATE(), JRComponents.PantsuState.BLOODY);
+            if (isHemorrhage) {
+                // 血崩表现：高频掉血、极度虚弱、失明(贫血)
+                if (entity.getRandom().nextInt(20) == 0) { // 比正常月经频繁 5 倍
+                    entity.damage(entity.getDamageSources().magic(), 2.0f); // 伤害加倍
+                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 10, 1));
+                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 20 * 5, 0)); // 眼发黑
+
+                    if (entity.getRandom().nextInt(5) == 0) { // 偶尔提示
+                        entity.sendMessage(Text.of("§4由于内膜过度增生，发生了极其严重的撤退性血崩..."));
+                    }
+
+                    // 弄脏胖次
+                    ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
+                    if (!legStack.isEmpty() && legStack.getItem() instanceof PantsuItem) {
+                        JRComponents.PantsuState currentState = legStack.get(JRComponents.Companion.getPANTSU_STATE());
+                        if (currentState == null || currentState == JRComponents.PantsuState.CLEAN) {
+                            legStack.set(JRComponents.Companion.getPANTSU_STATE(), JRComponents.PantsuState.BLOODY);
+                        }
+                    }
+                }
+            } else {
+                // 正常月经期表现
+                if (entity.getRandom().nextInt(100) == 0) {
+                    entity.damage(entity.getDamageSources().magic(), 1.0f);
+                    ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
+                    if (!legStack.isEmpty() && legStack.getItem() instanceof PantsuItem) {
+                        JRComponents.PantsuState currentState = legStack.get(JRComponents.Companion.getPANTSU_STATE());
+                        if (currentState == null || currentState == JRComponents.PantsuState.CLEAN) {
+                            legStack.set(JRComponents.Companion.getPANTSU_STATE(), JRComponents.PantsuState.BLOODY);
+                        }
                     }
                 }
             }
         }
         else {
             // 【条件二：内膜生长】
-            // 只要激素维持在高位，内膜就会缓慢生长 (SlowTick 乘 10)
+            // 只要激素维持在高位，内膜就会缓慢生长 (过度摄入外源雌激素会迅速涨满)
             if (totalE2 > 50.0f) thickness += totalE2 * 0.0002f;
             if (totalP > 2.0f)   thickness += totalP * 0.002f;
             if (thickness > 100.0f) thickness = 100.0f; // 厚度上限
 
             // 【条件三：判定当前所处的非月经周期】
             if (entity.isPregnant()) {
-                cycle = MenstruationCycle.NONE; // 怀孕期间子宫处于稳态，无周期划分
+                cycle = MenstruationCycle.NONE;
             }
             else if (totalP > 5.0f) {
-                cycle = MenstruationCycle.LUTEINIZATION; // 孕酮高绝对是黄体期
-                // 表现：容易疲劳和饥饿 (概率除以 10)
+                cycle = MenstruationCycle.LUTEINIZATION; // 黄体期
                 if (entity.getRandom().nextInt(300) == 0) {
                     entity.addStatusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 20*60, 0));
                 }
             }
             else if (totalE2 > 150.0f && totalP >= 1.0f && totalP <= 5.0f) {
-                cycle = MenstruationCycle.OVULATION; // 雌激素大峰值，孕酮刚抬头
-                // 表现：精神焕发，容易高潮 (概率除以 10)
+                cycle = MenstruationCycle.OVULATION; // 排卵期
                 if (entity.getRandom().nextInt(300) == 0) {
                     entity.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 20*60, 0));
                 }
             }
             else if (totalE2 > 50.0f && totalP < 1.0f) {
-                cycle = MenstruationCycle.FOLLICLE; // 只有雌激素，没有孕酮
+                cycle = MenstruationCycle.FOLLICLE; // 卵泡期
             }
         }
 
@@ -2290,21 +2310,93 @@ public interface Pregnant{
     }
 
     /**
-     * 应用属性修正
+     * 过量激素的生理危机判定 (Side Effects)
+     */
+    private static <T extends LivingEntity & Pregnant> void applyHormoneSideEffects(T entity, float tLevel, float eLevel) {
+
+        // ------------------------------------
+        // 睾酮 (Testosterone) 严重超标危机 (> 1200.0)
+        // ------------------------------------
+        if (tLevel > 1200.0f) {
+            // 1. 通用：代谢过载与严重心血管负担
+            if (entity.getRandom().nextInt(100) == 0) { // 暴怒饥饿
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 20 * 15, 2));
+            }
+            if (entity.getRandom().nextInt(200) == 0) { // 心脏抽痛
+                entity.damage(entity.getDamageSources().magic(), 3.0f);
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 5, 0));
+                entity.sendMessage(Text.of("§c心脏因为药物负荷传来一阵危险的抽痛..."));
+            }
+            if (entity.getRandom().nextInt(800) == 0) { // 高血压晕厥
+                entity.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getFAINT_EFFECT()), 20 * 10, 0));
+                entity.sendMessage(Text.of("§c过高的激素引发了高血压，你眼前一黑..."));
+            }
+
+            // 2. 男性专属：毁灭性的前列腺刺激
+            if (entity.isMale()) {
+                if (entity.getRandom().nextInt(20) == 0) {
+                    // 每次增加 1 分钟病程，极快恶化
+                    entity.setProstatitis(entity.getProstatitis() + 20 * 60);
+                }
+            }
+            // 3. 女性专属：多囊卵巢与不可逆的男性化
+            if (entity.isFemale() && !entity.isPCOS()) {
+                entity.setPCOS(true);
+                entity.sendMessage(Text.of("§c严重过量的雄激素彻底破坏了你的卵巢功能..."));
+            }
+        }
+
+        // ------------------------------------
+        // 雌激素 (Estrogen) 严重超标危机 (> 800.0)
+        // ------------------------------------
+        if (eLevel > 800.0f) {
+            // 1. 通用：激素中毒与神经刺激
+            if (entity.getRandom().nextInt(100) == 0) {
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 15, 1));
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 15, 0));
+            }
+            // 2. 通用：严重水肿与深静脉血栓风险
+            if (entity.getRandom().nextInt(150) == 0) {
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 20, 1));
+            }
+            if (entity.getRandom().nextInt(1200) == 0) { // 血栓脱落（致命危险）
+                entity.damage(entity.getDamageSources().generic(), 6.0f);
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, 20 * 5, 1));
+                entity.sendMessage(Text.of("§4胸口一阵剧痛，极高雌激素引发的血栓脱落了！"));
+            }
+
+            // 3. 女性专属：生殖系统病变
+            if (entity.isFemale()) {
+                // 极高概率催化乳腺癌与卵巢癌
+                if (entity.getRandom().nextInt(20) == 0) {
+                    entity.setBreastCancer(entity.getBreastCancer() + 20 * 60);
+                    if (entity.hasUterus()) {
+                        entity.setOvarianCancer(entity.getOvarianCancer() + 20 * 60);
+                    }
+                }
+                // 乳腺过度受激胀痛（不论是否怀孕）
+                if (entity.getRandom().nextInt(40) == 0) {
+                    entity.setMastitis(entity.getMastitis() + 20 * 60);
+                }
+            }
+        }
+    }
+
+    /**
+     * 应用属性修正 (带增益上限)
      * T -> 攻击力, 血量
      * E -> 速度, 幸运
      */
     private static void applyHormoneModifiers(LivingEntity entity, float tLevel, float eLevel) {
         // --- 睾酮修正 (Testosterone) ---
-        // 只有当 T > 20 (高于正常女性水平) 时才开始提供加成
-        // PCOS女性 (T=35) 会获得微量加成，正常男性 (T=100) 获得满额加成
         double tBonusDamage = 0.0;
         double tBonusHealth = 0.0;
 
         if (tLevel > 20.0f) {
             float effectiveT = tLevel - 20.0f;
-            tBonusDamage = effectiveT * 0.001; // 100T -> +0.1 攻击力
-            tBonusHealth = effectiveT * 0.01;  // 100T -> +1 生命值
+            // 增益计算，并使用 Math.min 设置硬上限：最高增加 3 点攻击力，最高增加 20 点生命上限
+            tBonusDamage = Math.min(3.0, effectiveT * 0.001);
+            tBonusHealth = Math.min(20.0, effectiveT * 0.01);
         }
 
         // 应用攻击力
@@ -2317,7 +2409,7 @@ public interface Pregnant{
             }
         }
 
-        // 应用血量 (注意：修改最大血量时不需要每次都回血，MC会自动处理上限)
+        // 应用血量
         var healthAttr = entity.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
         if (healthAttr != null) {
             healthAttr.removeModifier(TESTOSTERONE_ID);
@@ -2328,14 +2420,14 @@ public interface Pregnant{
         }
 
         // --- 雌激素修正 (Estrogen) ---
-        // E > 40 时提供加成 (排卵期/怀孕/高雌激素)
         double eBonusSpeed = 0.0;
         double eBonusLuck = 0.0;
 
         if (eLevel > 40.0f) {
             float effectiveE = eLevel - 40.0f;
-            eBonusSpeed = effectiveE * 0.0001;
-            eBonusLuck = effectiveE * 0.01;
+            // 增益计算，并设置硬上限：最高增加 0.05 移速，最高增加 5 点幸运
+            eBonusSpeed = Math.min(0.05, effectiveE * 0.0001);
+            eBonusLuck = Math.min(5.0, effectiveE * 0.01);
         }
 
         // 应用速度

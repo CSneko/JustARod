@@ -658,6 +658,55 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     }
 
     @Unique
+    private float exoBlocker = 0;
+    @Unique
+    private int hrtMtfProgress = 0;
+    @Unique
+    private int hrtFtmProgress = 0;
+    @Unique
+    private int vaginalAtrophy = 0;
+
+    @Override
+    public float getExoBlocker() {
+        return exoBlocker;
+    }
+
+    @Override
+    public void setExoBlocker(float exoBlocker) {
+        this.exoBlocker = exoBlocker;
+    }
+
+    @Override
+    public int getHrtFtmProgress() {
+        return hrtFtmProgress;
+    }
+
+    @Override
+    public void setHrtFtmProgress(int hrtFtmProgress) {
+        this.hrtFtmProgress = hrtFtmProgress;
+    }
+
+    @Override
+    public int getHrtMtfProgress() {
+        return hrtMtfProgress;
+    }
+
+    @Override
+    public void setHrtMtfProgress(int hrtMtfProgress) {
+        this.hrtMtfProgress = hrtMtfProgress;
+    }
+
+    @Override
+    public int getVaginalAtrophy() {
+        return vaginalAtrophy;
+    }
+
+    @Override
+    public void setVaginalAtrophy(int vaginalAtrophy) {
+        this.vaginalAtrophy = vaginalAtrophy;
+    }
+
+    @Unique
     private int cataract = 0;
 
     @Override

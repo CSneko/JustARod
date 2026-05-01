@@ -80,6 +80,16 @@ class JRItems {
         val ABORtiON_PILL = AbortionPillItem(Item.Settings())
         val ESTROGEN = EstrogenItem(Item.Settings())
         val TESTOSTERONE = TestosteroneItem(Item.Settings())
+        val ANTI_ANDROGEN = AntiAndrogenItem(Item.Settings())
+        val AROMATASE = object : Item(Settings().maxCount(1)) {
+            // 这个物品参与合成后不消耗
+            override fun hasRecipeRemainder(): Boolean {
+                return true
+            }
+            override fun getRecipeRemainder(stack: ItemStack?): ItemStack {
+                return ItemStack(this)
+            }
+        }
         val PENICILLIN = PenicillinItem(Item.Settings())
         val BALL_MOUTH = BallMouthItem(Item.Settings())
         val ELECTRIC_SHOCK_DEVICE = ElectricShockDeviceItem(Item.Settings())
@@ -152,6 +162,8 @@ class JRItems {
             Registry.register(Registries.ITEM, Identifier.of(MODID, "abortion_pill"), ABORtiON_PILL)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "estrogen"), ESTROGEN)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "testosterone"), TESTOSTERONE)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "anti_androgen"), ANTI_ANDROGEN)
+            Registry.register(Registries.ITEM, Identifier.of(MODID, "aromatase"),AROMATASE )
             Registry.register(Registries.ITEM, Identifier.of(MODID, "penicillin"), PENICILLIN)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "ball_mouth"), BALL_MOUTH)
             Registry.register(Registries.ITEM, Identifier.of(MODID, "electric_shock_device"), ELECTRIC_SHOCK_DEVICE)
@@ -228,6 +240,8 @@ class JRItems {
                 entries.add(ABORtiON_PILL)
                 entries.add(ESTROGEN)
                 entries.add(TESTOSTERONE)
+                entries.add(ANTI_ANDROGEN)
+                entries.add(AROMATASE)
                 entries.add(PENICILLIN)
                 entries.add(BALL_MOUTH)
                 entries.add(ELECTRIC_SHOCK_DEVICE)

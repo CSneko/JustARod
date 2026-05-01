@@ -67,22 +67,27 @@ public interface Pregnant{
     default boolean canPregnant(){
         boolean noMatingPlz = false;
         if (this instanceof BDSMable bm){
-            if (bm.getNoMatingPlz() >0){
+            if (bm.getNoMatingPlz() > 0){
                 noMatingPlz = true;
             }
         }
-        boolean menstruationOk = isMale();
-        if (isFemale()){
+
+        // 判定月经周期（如果有子宫，必须在排卵期才能怀孕）
+        boolean menstruationOk = true;
+        if (hasUterus()) {
             menstruationOk = getMenstruationCycle() == MenstruationCycle.OVULATION;
         }
 
         boolean isSevereUterineCold = getUterineCold() > 20 * 60 * 20 * 2; // 积累超过2天寒气视为严重
-
         boolean physicalBlock = isImperforateHymen();
+
+        // 血液中总睾酮如果过高（>100），无论男女绝对无法受孕 (HRT 闭经/绝育表现)
+        boolean isHormoneSuppressed = this.getTotalT() > 100.0f;
 
         return menstruationOk && !this.isPregnant() && !this.isSterilization() && this.hasUterus() && !this.isPCOS()
                 && !(this.getBrithControlling() > 0 && ((Entity)this).getRandom().nextInt(10) != 0) && !noMatingPlz
-                && !isSevereUterineCold && !physicalBlock && this.getCorpusLuteumRupture() <= 0;
+                && !isSevereUterineCold && !physicalBlock && this.getCorpusLuteumRupture() <= 0
+                && !isHormoneSuppressed; // <--- 新增的激素阻断判定
     }
 
     default void setPregnant(int time) {
@@ -255,6 +260,11 @@ public interface Pregnant{
         nbt.putFloat("ExoE2", getExoE2());
         nbt.putFloat("ExoP", getExoP());
         nbt.putFloat("ExoT", getExoT());
+
+        nbt.putFloat("ExoBlocker", getExoBlocker());
+        nbt.putInt("HrtMtfProgress", getHrtMtfProgress());
+        nbt.putInt("HrtFtmProgress", getHrtFtmProgress());
+        nbt.putInt("VaginalAtrophy", getVaginalAtrophy());
     }
     default void readPregnantFromNbt(NbtCompound nbt) {
         setFemale(nbt.getBoolean("Female"));
@@ -397,6 +407,11 @@ public interface Pregnant{
         if (nbt.contains("ExoE2")) setExoE2(nbt.getFloat("ExoE2"));
         if (nbt.contains("ExoP"))  setExoP(nbt.getFloat("ExoP"));
         if (nbt.contains("ExoT"))  setExoT(nbt.getFloat("ExoT"));
+
+        if (nbt.contains("ExoBlocker")) setExoBlocker(nbt.getFloat("ExoBlocker"));
+        if (nbt.contains("HrtMtfProgress")) setHrtMtfProgress(nbt.getInt("HrtMtfProgress"));
+        if (nbt.contains("HrtFtmProgress")) setHrtFtmProgress(nbt.getInt("HrtFtmProgress"));
+        if (nbt.contains("VaginalAtrophy")) setVaginalAtrophy(nbt.getInt("VaginalAtrophy"));
     }
 
     default Entity createBaby() {
@@ -641,6 +656,24 @@ public interface Pregnant{
         }
         return true;
     }
+
+    // ----------------- HRT 激素替代疗法系统 -----------------
+
+    // 抗雄/抗雌 阻断剂浓度 (Exogenous Blocker)
+    default void setExoBlocker(float value) {}
+    default float getExoBlocker() { return 0.0f; }
+
+    // 男转女 (MTF) 身体重塑进度 (Tick)
+    default void setHrtMtfProgress(int progress) {}
+    default int getHrtMtfProgress() { return 0; }
+
+    // 女转男 (FTM) 身体重塑进度 (Tick)
+    default void setHrtFtmProgress(int progress) {}
+    default int getHrtFtmProgress() { return 0; }
+
+    // 阴道萎缩症病程 (FTM 缺乏雌激素滋养导致)
+    default void setVaginalAtrophy(int time) {}
+    default int getVaginalAtrophy() { return 0; }
 
     //  --------------------- MALE --------------------------
     default void setOrchiectomy(boolean orchiectomy){}
@@ -2118,108 +2151,154 @@ public interface Pregnant{
         if (entity.getExoE2() > 0) entity.setExoE2(Math.max(0, entity.getExoE2() - 0.05f));
         if (entity.getExoP() > 0)  entity.setExoP(Math.max(0,  entity.getExoP() - 0.01f));
         if (entity.getExoT() > 0)  entity.setExoT(Math.max(0,  entity.getExoT() - 0.05f));
+        if (entity.getExoBlocker() > 0) entity.setExoBlocker(Math.max(0, entity.getExoBlocker() - 0.02f));
 
         // ---------------------------------------------------------
-        // 2. 卵巢时钟推进与内源激素计算
+        // 2. 卵巢/睾丸时钟推进与内源激素压制计算
         // ---------------------------------------------------------
-        float endoE2 = 20.0f, endoP = 0.5f, endoT = 5.0f; // 默认基底值（如绝经、切除子宫者）
+        float endoE2 = 20.0f, endoP = 0.5f, endoT = 5.0f; // 默认基底值（如绝经、切除双侧性腺者）
 
-        if (entity.isMale() && !entity.isOrchiectomy()) {
-            // 男性内源激素 (睾酮维持在正常水平 300~1000 ng/mL)
+        // 使用 hasUterus() 作为原生生物学性别的底层依据（贴合现实解剖）
+        boolean biologicallyFemale = entity.hasUterus();
+
+        if (!biologicallyFemale && !entity.isOrchiectomy()) {
+            // 原生男性 (MTF 的起始状态)
             endoT = 600.0f;
             endoE2 = 15.0f;
             endoP = 0.5f;
 
-            // 前列腺炎惩罚：痛到影响内分泌
             if (entity.getProstatitis() > 20 * 60 * 20 * 5) endoT *= 0.8f;
+
+            // MTF HRT 压制逻辑：如果有阻断剂，或极高雌激素，睾丸停止工作
+            if (entity.getExoBlocker() > 2.0f || entity.getExoE2() > 200.0f) {
+                endoT = 30.0f; // 压制到女性水平
+            }
         }
-        else if (entity.isFemale() && entity.hasUterus()) {
-            // 女性内源激素逻辑
+        else if (biologicallyFemale) {
+            // 原生女性 (FTM 的起始状态)
+            boolean isFTMSuppressed = entity.getExoT() > 100.0f; // 雄激素霸道，不需要阻断剂即可关闭卵巢
+
             if (entity.isPregnant()) {
-                // 怀孕状态：极高的雌孕激素，时钟暂停
-                endoE2 = 300.0f;
-                endoP = 100.0f;
-                endoT = 0.5f;
+                endoE2 = 300.0f; endoP = 100.0f; endoT = 0.5f;
             }
             else if (entity.isPCOS()) {
-                // 多囊卵巢综合征：雄激素偏高，雌激素平坦无排卵，时钟紊乱
-                endoE2 = 50.0f;
-                endoP = 0.5f;
-                endoT = 60.0f; // 女性异常高睾酮
+                endoE2 = 50.0f; endoP = 0.5f; endoT = 60.0f;
+            }
+            else if (isFTMSuppressed) {
+                // FTM 跨性别激素干预：卵巢完全休眠，彻底停经
+                endoE2 = 20.0f; endoP = 0.5f; endoT = 20.0f;
+                // 时钟被冻结，不推进
             }
             else {
                 // 正常女性的卵巢时钟
                 int clock = entity.getOvarianClock();
 
-                // 负反馈抑制机制：
-                // 如果外源孕酮极高(如服用避孕药)，卵巢检测到激素充足，会停止工作(不排卵)
-                if (entity.getExoP() > 5.0f || entity.getExoE2() > 200.0f) {
-                    // 时钟停止推进，进入假孕休眠期
+                if (entity.getExoP() > 5.0f || entity.getExoE2() > 200.0f || entity.getExoBlocker() > 2.0f) {
+                    // 避孕药或阻断剂休眠期
                 } else {
-                    // 推进时钟！注意这里是 SlowTick，每次加 10
                     clock = (clock + 10) % CYCLE_TOTAL_TICKS;
                     entity.setOvarianClock(clock);
                 }
 
-                // 将 14天(336,000 tick) 映射到内源激素曲线上
-                float dayProgress = (float) clock / 24000.0f; // 当前在第几天 (0.0 ~ 14.0)
-
+                float dayProgress = (float) clock / 24000.0f;
                 if (dayProgress < 3.0f) {
-                    // Day 0-3 (通常对应月经期，激素处于最低谷)
-                    endoE2 = 30.0f;
-                    endoP = 0.5f;
-                    endoT = 0.3f;
+                    endoE2 = 30.0f; endoP = 0.5f; endoT = 0.3f;
                 } else if (dayProgress < 7.0f) {
-                    // Day 3-7 (卵泡期，E2平滑爬坡)
-                    float t = (dayProgress - 3.0f) / 4.0f; // 0.0 ~ 1.0
-                    endoE2 = 30.0f + t * 170.0f; // 30 -> 200
-                    endoP = 0.5f;
-                    endoT = 0.3f + t * 0.2f; // 0.3 -> 0.5
+                    float t = (dayProgress - 3.0f) / 4.0f;
+                    endoE2 = 30.0f + t * 170.0f; endoP = 0.5f; endoT = 0.3f + t * 0.2f;
                 } else if (dayProgress < 8.0f) {
-                    // Day 7-8 (排卵期，E2峰值，P开始苏醒)
                     float t = (dayProgress - 7.0f);
-                    // 排卵峰：前半天升到最高，后半天回落
                     endoE2 = (t < 0.5f) ? 200.0f + t * 2 * 300.0f : 500.0f - (t - 0.5f) * 2 * 300.0f;
-                    endoP = 0.5f + t * 2.5f; // 0.5 -> 3.0
-                    endoT = 0.8f; // 排卵期微量睾酮峰值，显著提升性欲
+                    endoP = 0.5f + t * 2.5f; endoT = 0.8f;
                 } else if (dayProgress < 12.0f) {
-                    // Day 8-12 (黄体期，P绝对峰值，E2第二峰)
                     float t = (dayProgress - 8.0f) / 4.0f;
-                    endoE2 = 150.0f + (float)Math.sin(t * Math.PI) * 100.0f; // 平滑波动 150 -> 250 -> 150
-                    endoP = 3.0f + (float)Math.sin(t * Math.PI) * 17.0f;     // 3.0 -> 20.0 -> 3.0
-                    endoT = 0.5f;
+                    endoE2 = 150.0f + (float)Math.sin(t * Math.PI) * 100.0f;
+                    endoP = 3.0f + (float)Math.sin(t * Math.PI) * 17.0f; endoT = 0.5f;
                 } else {
-                    // Day 12-14 (黄体萎缩，激素断崖式撤退，准备迎接月经)
                     float t = (dayProgress - 12.0f) / 2.0f;
-                    endoE2 = 150.0f - t * 120.0f; // 150 -> 30
-                    endoP = 3.0f - t * 2.5f;      // 3.0 -> 0.5
-                    endoT = 0.3f;
+                    endoE2 = 150.0f - t * 120.0f; endoP = 3.0f - t * 2.5f; endoT = 0.3f;
                 }
             }
         }
 
-        // 写入身体内源激素
         entity.setEndoE2(endoE2);
         entity.setEndoP(endoP);
         entity.setEndoT(endoT);
 
         // ---------------------------------------------------------
-        // 3. 获取总激素 = 身体自产 + 外部摄入
+        // 3. 获取总激素并处理副作用
         // ---------------------------------------------------------
         float totalE2 = entity.getTotalE2();
         float totalP  = entity.getTotalP();
         float totalT  = entity.getTotalT();
 
-        // 刷新激素带来的属性 Buff (带上限限制)
         applyHormoneModifiers(entity, totalT, totalE2);
-
-        // 检查严重过量激素导致的危险并发症
         applyHormoneSideEffects(entity, totalT, totalE2);
 
         // ---------------------------------------------------------
-        // 4. 子宫内膜状态机与生理周期判定 (核心)
+        // 4. HRT 变性进度推进与不可逆性征改变
         // ---------------------------------------------------------
-        if (!entity.isFemale() || !entity.hasUterus()) {
+        int HRT_FLIP_THRESHOLD = 20 * 60 * 20 * 10; // 现实中几年，游戏内设为持续服药 10 个游戏天
+
+        // MTF (男转女) 进度
+        if (!biologicallyFemale) {
+            if (totalE2 > 100.0f && totalT < 50.0f) {
+                // 处于女性化黄金区间，进度增加
+                entity.setHrtMtfProgress(entity.getHrtMtfProgress() + 10);
+            }
+            if (entity.getHrtMtfProgress() >= HRT_FLIP_THRESHOLD && entity.isMale()) {
+                // 完成社会性别/外观重塑
+                entity.setMale(false);
+                entity.setFemale(true);
+                // 注意：绝对不给子宫，保留生物学限制
+                entity.sendMessage(Text.of("§d长期的雌激素重塑了你的身体外观，你获得了女性的特征。"));
+            }
+        }
+
+        // FTM (女转男) 进度
+        if (biologicallyFemale) {
+            if (totalT > 200.0f && totalE2 < 60.0f) {
+                // 处于男性化黄金区间，进度增加
+                entity.setHrtFtmProgress(entity.getHrtFtmProgress() + 10);
+            }
+            if (entity.getHrtFtmProgress() >= HRT_FLIP_THRESHOLD && entity.isFemale()) {
+                // 完成社会性别/外观重塑
+                entity.setFemale(false);
+                entity.setMale(true);
+                // 注意：子宫被保留，但由于高 T，它处于休眠状态
+                entity.sendMessage(Text.of("§b长期的雄激素重塑了你的身体，声带增厚，你获得了男性的特征。"));
+            }
+
+            // FTM 专属病理：雌激素极度缺乏导致的阴道/子宫萎缩症 (Vaginal Atrophy)
+            if (totalE2 < 30.0f) {
+                entity.setVaginalAtrophy(entity.getVaginalAtrophy() + 10);
+            } else if (entity.getVaginalAtrophy() > 0) {
+                // 停药后，雌激素恢复，萎缩会缓慢自愈
+                entity.setVaginalAtrophy(Math.max(0, entity.getVaginalAtrophy() - 10));
+            }
+
+            // 萎缩症的惩罚：剧痛
+            if (entity.getVaginalAtrophy() > 20 * 60 * 20 * 5) { // 持续萎缩 5 天以上
+                if ((entity.isSprinting() || entity.hasVehicle()) && entity.getRandom().nextInt(1200) == 0) {
+                    entity.damage(entity.getDamageSources().magic(), 1.0f);
+                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 5, 0));
+                    entity.sendMessage(Text.of("§c由于长期缺乏雌激素，萎缩的生殖道在剧烈运动中传来了撕裂般的刺痛..."));
+                }
+            }
+
+            // 孕期误服大量雄激素 -> 强制流产
+            if (entity.isPregnant() && totalT > 150.0f) {
+                if (entity.getRandom().nextInt(500) == 0) { // 极高概率
+                    entity.sendMessage(Text.of("§4高浓度的雄激素导致了严重的胎儿畸形与宫缩，你流产了..."));
+                    entity.miscarry();
+                }
+            }
+        }
+
+        // ---------------------------------------------------------
+        // 5. 子宫内膜状态机与生理周期判定 (保持原有核心逻辑，适应 HRT)
+        // ---------------------------------------------------------
+        if (!entity.hasUterus()) { // MTF 或切除子宫者无周期
             entity.setCurrentCycle(MenstruationCycle.NONE);
             entity.setUterineThickness(0);
             return;
@@ -2228,32 +2307,23 @@ public interface Pregnant{
         float thickness = entity.getUterineThickness();
         MenstruationCycle cycle = MenstruationCycle.NONE;
 
-        // 【条件一：激素撤退性出血判断】
         boolean isHormoneWithdrawal = (totalE2 < 60.0f && totalP < 1.5f);
         boolean isMenstruating = (entity.getCurrentCycle() == MenstruationCycle.MENSTRUATION);
 
         if ((isHormoneWithdrawal && thickness > 15.0f) || (isMenstruating && thickness > 0.0f)) {
             cycle = MenstruationCycle.MENSTRUATION;
-
-            // 内膜脱落 (SlowTick 乘 10)
             thickness -= 0.01f;
             if (thickness < 0) thickness = 0;
 
-            // 检查是否为厚度过高引发的血崩
             boolean isHemorrhage = (thickness > 80.0f);
-
             if (isHemorrhage) {
-                // 血崩表现：高频掉血、极度虚弱、失明(贫血)
-                if (entity.getRandom().nextInt(20) == 0) { // 比正常月经频繁 5 倍
-                    entity.damage(entity.getDamageSources().magic(), 2.0f); // 伤害加倍
+                if (entity.getRandom().nextInt(20) == 0) {
+                    entity.damage(entity.getDamageSources().magic(), 2.0f);
                     entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 10, 1));
-                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 20 * 5, 0)); // 眼发黑
-
-                    if (entity.getRandom().nextInt(5) == 0) { // 偶尔提示
+                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 20 * 5, 0));
+                    if (entity.getRandom().nextInt(5) == 0) {
                         entity.sendMessage(Text.of("§4由于内膜过度增生，发生了极其严重的撤退性血崩..."));
                     }
-
-                    // 弄脏胖次
                     ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
                     if (!legStack.isEmpty() && legStack.getItem() instanceof PantsuItem) {
                         JRComponents.PantsuState currentState = legStack.get(JRComponents.Companion.getPANTSU_STATE());
@@ -2263,7 +2333,6 @@ public interface Pregnant{
                     }
                 }
             } else {
-                // 正常月经期表现
                 if (entity.getRandom().nextInt(100) == 0) {
                     entity.damage(entity.getDamageSources().magic(), 1.0f);
                     ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
@@ -2277,34 +2346,35 @@ public interface Pregnant{
             }
         }
         else {
-            // 【条件二：内膜生长】
-            // 只要激素维持在高位，内膜就会缓慢生长 (过度摄入外源雌激素会迅速涨满)
             if (totalE2 > 50.0f) thickness += totalE2 * 0.0002f;
             if (totalP > 2.0f)   thickness += totalP * 0.002f;
-            if (thickness > 100.0f) thickness = 100.0f; // 厚度上限
+            if (thickness > 100.0f) thickness = 100.0f;
 
-            // 【条件三：判定当前所处的非月经周期】
             if (entity.isPregnant()) {
                 cycle = MenstruationCycle.NONE;
             }
             else if (totalP > 5.0f) {
-                cycle = MenstruationCycle.LUTEINIZATION; // 黄体期
+                cycle = MenstruationCycle.LUTEINIZATION;
                 if (entity.getRandom().nextInt(300) == 0) {
                     entity.addStatusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 20*60, 0));
                 }
             }
             else if (totalE2 > 150.0f && totalP >= 1.0f && totalP <= 5.0f) {
-                cycle = MenstruationCycle.OVULATION; // 排卵期
+                cycle = MenstruationCycle.OVULATION;
                 if (entity.getRandom().nextInt(300) == 0) {
                     entity.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 20*60, 0));
                 }
             }
             else if (totalE2 > 50.0f && totalP < 1.0f) {
-                cycle = MenstruationCycle.FOLLICLE; // 卵泡期
+                cycle = MenstruationCycle.FOLLICLE;
             }
         }
 
-        // 写回状态
+        // FTM 在高 T 下子宫厚度被抑制为 0 (停经表现)
+        if (totalT > 100.0f) {
+            cycle = MenstruationCycle.NONE;
+        }
+
         entity.setUterineThickness(thickness);
         entity.setCurrentCycle(cycle);
     }

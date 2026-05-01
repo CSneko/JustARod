@@ -5,9 +5,14 @@ import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack
+import net.minecraft.item.tooltip.TooltipData
+import net.minecraft.item.tooltip.TooltipType
 import net.minecraft.text.Text
 import net.minecraft.util.Hand
+import net.minecraft.util.Identifier
 import org.cneko.justarod.entity.Pregnant
+import org.cneko.justarod.item.tooltip.ChemicalStructureTooltipData
+import java.util.Optional
 
 class EstrogenItem(settings: Settings): MedicalItem(settings) {
     override fun canApply(user: PlayerEntity, target: LivingEntity, stack: ItemStack, hand: Hand): Boolean {
@@ -38,6 +43,13 @@ class EstrogenItem(settings: Settings): MedicalItem(settings) {
         }
 
     }
+
+    override fun getTooltipData(stack: ItemStack): Optional<TooltipData> {
+        return Optional.of(
+            ChemicalStructureTooltipData(Identifier.of("justarod", "textures/tooltip/estradiol.png"))
+        )
+    }
+
 
     override fun consumeItem(user: PlayerEntity, target: LivingEntity, stack: ItemStack, hand: Hand) {
         if (!user.abilities.creativeMode) stack.decrement(1)

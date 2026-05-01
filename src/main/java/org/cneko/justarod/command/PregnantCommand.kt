@@ -460,7 +460,11 @@ class PregnantCommand {
                 "/jr hormone [target] §7- 查看激素综合面板(内外源分离)",
                 "/jr hormone exo_e2 set <val> [target] §7- 注射外源雌二醇 (吃药)",
                 "/jr hormone exo_p set <val> [target] §7- 注射外源孕酮 (吃药)",
-                "/jr hormone exo_t set <val> [target] §7- 注射外源睾酮 (吃药)"
+                "/jr hormone exo_t set <val> [target] §7- 注射外源睾酮 (吃药)",
+                "/jr hormone exo_blocker set <val> [target] §7- 注射/服用激素阻断剂 (抗雄/抗雌)",
+                "/jr hormone hrt_mtf set <val> [target] §7- 修改男转女变性进度 (Tick)",
+                "/jr hormone hrt_ftm set <val> [target] §7- 修改女转男变性进度 (Tick)",
+                "/jr hormone atrophy set <val> [target] §7- 修改生殖道萎缩病程 (Tick)"
             )
 
             // 查看激素分离面板
@@ -479,13 +483,25 @@ class PregnantCommand {
                 val inT = formatNum(p.endoT)
                 val exT = formatNum(p.exoT)
 
+                val blocker = formatNum(p.exoBlocker)
                 val attr = formatNum(p.attractionScore)
+
+                val mtf = p.hrtMtfProgress
+                val ftm = p.hrtFtmProgress
+                val atrophy = p.vaginalAtrophy
 
                 s.sendMessage(Text.of("§e[激素浓度面板 (单位:pg/mL或ng/mL)] §7========="))
                 s.sendMessage(Text.of("§d 雌二醇(E2): 总 §l$tE2§r §7(内:$inE2 + 外:$exE2)"))
                 s.sendMessage(Text.of("§b 孕酮(P):   总 §l$tP§r §7(内:$inP + 外:$exP)"))
                 s.sendMessage(Text.of("§c 睾酮(T):   总 §l$tT§r §7(内:$inT + 外:$exT)"))
+                s.sendMessage(Text.of("§8 阻断剂(Blocker): §l$blocker§r"))
                 s.sendMessage(Text.of("§6 当前散发吸引力: $attr"))
+                s.sendMessage(Text.of("§a[HRT 变性与病理状态] §7========="))
+                s.sendMessage(Text.of("§d 男转女(MTF) 进度: $mtf Ticks"))
+                s.sendMessage(Text.of("§b 女转男(FTM) 进度: $ftm Ticks"))
+                if (atrophy > 0) {
+                    s.sendMessage(Text.of("§4 缺乏雌激素导致的萎缩症: $atrophy Ticks"))
+                }
             }
 
             // 修改外源雌激素 (外源激素不会被Tick覆盖，只会自然代谢)
@@ -501,6 +517,26 @@ class PregnantCommand {
             // 修改外源睾酮
             cmd.then(literal("exo_t").then(
                 buildSetter("val", FloatArgumentType.floatArg(0f), FloatArgumentType::getFloat) { p, v -> p.exoT = v }
+            ))
+
+            // 修改激素阻断剂
+            cmd.then(literal("exo_blocker").then(
+                buildSetter("val", FloatArgumentType.floatArg(0f), FloatArgumentType::getFloat) { p, v -> p.exoBlocker = v }
+            ))
+
+            // 修改 MTF 男转女进度
+            cmd.then(literal("hrt_mtf").then(
+                buildSetter("val", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.hrtMtfProgress = v }
+            ))
+
+            // 修改 FTM 女转男进度
+            cmd.then(literal("hrt_ftm").then(
+                buildSetter("val", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.hrtFtmProgress = v }
+            ))
+
+            // 修改 萎缩症进度
+            cmd.then(literal("atrophy").then(
+                buildSetter("val", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.vaginalAtrophy = v }
             ))
 
             baseCmd.then(cmd)

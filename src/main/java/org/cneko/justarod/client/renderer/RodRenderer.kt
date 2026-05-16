@@ -26,6 +26,12 @@ class RodRenderer(renderManager: EntityRendererFactory.Context?): GeoEntityRende
         packedOverlay: Int,
         colour: Int
     ) {
+        // 应用遗传学大小：长度影响Y轴，宽度影响X/Z轴
+        if (animatable != null) {
+            val lengthScale = 1.0f + animatable.getLengthBonus()
+            val widthScale = 1.0f + animatable.getWidthBonus()
+            poseStack?.scale(widthScale, lengthScale, widthScale)
+        }
 
         if (animatable?.isBaby == true){
             poseStack?.scale(0.5f,0.5f,0.5f)

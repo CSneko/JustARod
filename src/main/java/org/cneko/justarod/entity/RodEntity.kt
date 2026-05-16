@@ -22,7 +22,11 @@ import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.ActionResult
 import net.minecraft.util.Hand
 import net.minecraft.util.TimeHelper
+import net.minecraft.world.LocalDifficulty
+import net.minecraft.world.ServerWorldAccess
 import net.minecraft.world.World
+import org.cneko.justarod.genetics.RodGenetics
+import org.cneko.toneko.common.mod.genetics.api.*
 import org.cneko.justarod.block.JRBlocks
 import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.item.rod.addEffect
@@ -45,13 +49,45 @@ import java.util.*
 哇哦哇哦，那可得太爽了呀~
  */
 class RodEntity(private val entityType:EntityType<RodEntity>, world: World):TameableEntity(entityType,world),GeoEntity,Angerable,
-    Monster, SlowTickable {
+    Monster, SlowTickable, IGeneticEntity {
     private val animCache: AnimatableInstanceCache = GeckoLibUtil.createInstanceCache(this)
     private val defSpeed:Double = 0.8
     private val slowSpeed:Double = 0.6
     private var slowTickCount = 0
+
+    // ========== 遗传学相关 ==========
+    private var genome: Genome = Genome()
+    private val geneticData: NbtCompound = NbtCompound()
+    private val activeTraits: MutableList<IGeneticEntity.ExpressedTrait> = ArrayList()
+    private val activeGeneticGoals: MutableList<net.minecraft.entity.ai.goal.Goal> = ArrayList()
+
+    override fun getGenome(): Genome = genome
+    override fun setGenome(genome: Genome) { this.genome = genome }
+    override fun getGeneticData(): NbtCompound = geneticData
+    override fun getActiveTraits(): MutableList<IGeneticEntity.ExpressedTrait> = activeTraits
+    override fun getActiveGeneticGoals(): MutableList<net.minecraft.entity.ai.goal.Goal> = activeGeneticGoals
+    override fun expressTraits() {
+        if (!world.isClient) {
+            genome.express(this)
+            // 同步计算值到客户端，方便渲染
+            dataTracker.set(LENGTH_BONUS, RodGenetics.getTotalLengthBonus(geneticData).toFloat())
+            dataTracker.set(WIDTH_BONUS, RodGenetics.getTotalWidthBonus(geneticData).toFloat())
+            dataTracker.set(ORGASM_INTENSITY, RodGenetics.getOrgasmMultiplier(geneticData).toFloat())
+        }
+    }
+
     override fun createChild(world: ServerWorld?, entity: PassiveEntity?): PassiveEntity {
         val baby = RodEntity(entityType, world!!)
+        if (entity is IGeneticEntity) {
+            val paternal = genome.createGamete(random)
+            val maternal = entity.genome.createGamete(entity.random)
+            baby.setGenome(Genome.combine(paternal, maternal, RodGenetics.KARYOTYPE))
+        } else {
+            val g1 = Genome.generateFallbackGamete(random, RodGenetics.KARYOTYPE)
+            val g2 = Genome.generateFallbackGamete(random, RodGenetics.KARYOTYPE)
+            baby.setGenome(Genome.combine(g1, g2, RodGenetics.KARYOTYPE))
+        }
+        baby.expressTraits()
         return baby
     }
 
@@ -103,7 +139,8 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
 
     override fun tryAttack(target: Entity?): Boolean {
         if (target is LivingEntity){
-            target.addEffect(JREffects.ORGASM_EFFECT, 100, 0)
+            val intensity = getOrgasmIntensity()
+            target.addEffect(JREffects.ORGASM_EFFECT, (100 * intensity).toInt(), 0)
         }
         return super.tryAttack(target)
     }
@@ -146,9 +183,10 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
             )
         }
         tickAnger()
-        // 如果头上有生物，给予orgasm
+        // 如果头上有生物，给予orgasm（强度受基因影响）
         if (firstPassenger is LivingEntity) {
-            (firstPassenger as LivingEntity).addEffect(JREffects.ORGASM_EFFECT, 100, 0)
+            val intensity = getOrgasmIntensity()
+            (firstPassenger as LivingEntity).addEffect(JREffects.ORGASM_EFFECT, (100 * intensity).toInt(), 0)
         }
         if (slowTickCount++> 20) {
             slowTickCount = 0
@@ -240,6 +278,28 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
 
     }
 
+    // ========== 遗传学初始化（自然生成时分配随机基因） ==========
+    override fun initialize(
+        world: ServerWorldAccess,
+        difficulty: LocalDifficulty,
+        reason: SpawnReason,
+        entityData: EntityData?
+    ): EntityData? {
+        val g1 = Genome.generateFallbackGamete(random, RodGenetics.KARYOTYPE)
+        val g2 = Genome.generateFallbackGamete(random, RodGenetics.KARYOTYPE)
+        genome = Genome.combine(g1, g2, RodGenetics.KARYOTYPE)
+        expressTraits()
+        return super.initialize(world, difficulty, reason, entityData)
+    }
+
+    // ========== 基因值查询（供渲染/效果使用） ==========
+
+    /** 总长度加成 */
+    fun getLengthBonus(): Float = dataTracker.get(LENGTH_BONUS)
+    /** 总宽度加成 */
+    fun getWidthBonus(): Float = dataTracker.get(WIDTH_BONUS)
+    /** 高潮强度倍率 (1.0 = 普通) */
+    fun getOrgasmIntensity(): Float = dataTracker.get(ORGASM_INTENSITY)
 
     private fun tryTame(player: PlayerEntity) {
         ownerUuid = player.uuid
@@ -258,16 +318,31 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
     override fun initDataTracker(builder: DataTracker.Builder?) {
         super.initDataTracker(builder)
         builder?.add(ANGER_TIME,0)
+        builder?.add(LENGTH_BONUS, 0.0f)
+        builder?.add(WIDTH_BONUS, 0.0f)
+        builder?.add(ORGASM_INTENSITY, 1.0f)
     }
 
     override fun writeCustomDataToNbt(nbt: NbtCompound) {
         super.writeCustomDataToNbt(nbt)
         writeAngerToNbt(nbt)
+        nbt.put("Genome", genome.save())
+        nbt.put("GeneticData", geneticData)
     }
 
     override fun readCustomDataFromNbt(nbt: NbtCompound) {
         super.readCustomDataFromNbt(nbt)
         readAngerFromNbt(world, nbt)
+        if (nbt.contains("Genome")) {
+            genome.load(nbt.getCompound("Genome"))
+        }
+        if (nbt.contains("GeneticData")) {
+            val loaded = nbt.getCompound("GeneticData")
+            for (key in loaded.keys) {
+                geneticData.put(key, loaded.get(key))
+            }
+        }
+        expressTraits()
     }
 
     private var angerTime = 0
@@ -307,5 +382,10 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
         }
         private val ANGER_TIME = DataTracker.registerData(RodEntity::class.java, TrackedDataHandlerRegistry.INTEGER)
         private val ANGER_TIME_RANGE = TimeHelper.betweenSeconds(20, 39)
+
+        // 遗传学同步数据
+        private val LENGTH_BONUS = DataTracker.registerData(RodEntity::class.java, TrackedDataHandlerRegistry.FLOAT)
+        private val WIDTH_BONUS = DataTracker.registerData(RodEntity::class.java, TrackedDataHandlerRegistry.FLOAT)
+        private val ORGASM_INTENSITY = DataTracker.registerData(RodEntity::class.java, TrackedDataHandlerRegistry.FLOAT)
     }
 }

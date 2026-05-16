@@ -2898,8 +2898,8 @@ public interface Pregnant{
         }
 
         // 刺激度随时间缓慢下降
-        if (entity.getLactationStimulation() > 0 && entity.getRandom().nextInt(20) == 0) {
-            entity.setLactationStimulation(entity.getLactationStimulation() - 1);
+        if (entity.getLactationStimulation() > 0) {
+            entity.setLactationStimulation(entity.getLactationStimulation() - 5);
         }
     }
 

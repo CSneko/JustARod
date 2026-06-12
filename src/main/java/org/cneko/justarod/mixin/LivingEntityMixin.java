@@ -75,5 +75,12 @@ public class LivingEntityMixin implements Insertable {
             // 流产
             pregnant.miscarry();
         }
+        // 甲沟炎"磕到"触发
+        if (self instanceof Pregnant pregnant && pregnant.getParonychia() > 0 && amount >= 1.0f) {
+            int bumpChance = pregnant.getParonychiaBumpChance();
+            if (bumpChance > 0 && self.getRandom().nextInt(bumpChance) == 0) {
+                pregnant.triggerParonychiaBump("受到" + Math.round(amount) + "点伤害");
+            }
+        }
     }
 }

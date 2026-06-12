@@ -155,6 +155,8 @@
   "attribute.name.generic.max_power": "最大体力",
   "death.attack.sexual_excitement": "%s因为过度性奋而死",
   "death.attack.grass": "%s被%s撅死了",
+  "death.attack.paronychia": "666，磕到甲沟炎了",
+  "effect.justarod.paronychia": "甲沟炎",
   "quirk.toneko.end_rod": "末地烛",
   "quirk.toneko.end_rod.des": "好想被插~",
   "quirk.toneko.ccb": "CCB",

@@ -71,6 +71,7 @@ class PregnantCommand {
                 registerCorpusLuteumRupture(baseCmd)
                 // registerXRayScan(baseCmd)
                 registerLactation(baseCmd)
+                registerParonychia(baseCmd)
 
                 // 3. 注册帮助命令
                 registerHelp(baseCmd)
@@ -670,6 +671,152 @@ class PregnantCommand {
                     )
                 )
             cmd.then(extractCmd)
+
+            // 挂载到主命令
+            baseCmd.then(cmd)
+        }
+
+        // ====================================================
+        // 甲沟炎系统 (Paronychia)
+        // ====================================================
+        private fun registerParonychia(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
+            val cmd = literal("paronychia")
+            addHelp("paronychia", "甲沟炎系统",
+                "/jr paronychia [target] §7- 查看当前感染状态",
+                "/jr paronychia set time <ticks> [target] §7- 设置感染病程",
+                "/jr paronychia bump [cause] [target] §7- 🔥 手动触发\"磕到\"甲沟炎",
+                "/jr paronychia drain [target] §7- 🔪 切开引流 (减少50%病程)",
+                "/jr paronychia nail_remove [target] §7- 🏥 拔甲手术 (彻底清除感染)",
+                "/jr paronychia nail set <true/false> [target] §7- 设置趾甲是否已移除",
+                "/jr paronychia nail regrow set <ticks> [target] §7- 设置趾甲再生剩余时间",
+                "/jr paronychia infect <probability> [target] §7- 🦠 尝试以指定概率触发感染"
+            )
+
+            // 1. 综合状态查询 (/jr paronychia [target])
+            buildSelfAndTarget(cmd) { p, s ->
+                val time = p.paronychia
+                val nailRemoved = p.isNailRemoved
+                val regrow = p.nailRegrowTime
+                val bumpChance = p.paronychiaBumpChance
+
+                val stageStr = when {
+                    time <= 0 -> "§a健康 (无甲沟炎)"
+                    time < Pregnant.PARONYCHIA_STAGE_1 -> "§e第一阶段：红肿期"
+                    time < Pregnant.PARONYCHIA_STAGE_2 -> "§6第二阶段：化脓期"
+                    time < Pregnant.PARONYCHIA_STAGE_3 -> "§c第三阶段：严重感染"
+                    time < Pregnant.PARONYCHIA_STAGE_4 -> "§4第四阶段：危险期"
+                    else -> "§4第四阶段：危险期 (败血症风险！)"
+                }
+
+                val days = String.format("%.1f", time / (20.0 * 60.0 * 20.0))
+
+                s.sendMessage(Text.of("§e[甲沟炎面板] §7===================="))
+                s.sendMessage(Text.of("§f 感染严重度: $stageStr"))
+                s.sendMessage(Text.of("§f 病程计时: §b${time} ticks §7(约${days}天)"))
+                if (bumpChance > 0) {
+                    s.sendMessage(Text.of("§f 🔥磕到概率: §c1/$bumpChance §7(每次受击)"))
+                }
+                if (nailRemoved) {
+                    val regrowDays = String.format("%.1f", regrow / (20.0 * 60.0 * 20.0))
+                    s.sendMessage(Text.of("§f 趾甲状态: §4已脱落 §7(再生剩余: ${regrow} ticks / 约${regrowDays}天)"))
+                } else {
+                    s.sendMessage(Text.of("§f 趾甲状态: §a完好"))
+                }
+            }
+
+            // 2. /jr paronychia set time <ticks> [target]
+            cmd.then(literal("set").then(
+                buildSetter("time", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.paronychia = v }
+            ))
+
+            // 3. /jr paronychia bump [cause] [target] — 🔥 戏剧性触发
+            val bumpCmd = literal("bump").requires { it.hasPermissionLevel(2) }
+                .executes { ctx ->
+                    run(ctx, null) { p, _ -> p.triggerParonychiaBump("命令触发") }
+                }
+                .then(argument("cause", StringArgumentType.greedyString())
+                    .executes { ctx ->
+                        val cause = StringArgumentType.getString(ctx, "cause")
+                        run(ctx, null) { p, _ -> p.triggerParonychiaBump(cause) }
+                    }
+                    .then(argument("target", EntityArgumentType.entity())
+                        .executes { ctx ->
+                            val cause = StringArgumentType.getString(ctx, "cause")
+                            run(ctx, "target") { p, _ -> p.triggerParonychiaBump(cause) }
+                        }
+                    )
+                )
+                .then(argument("target", EntityArgumentType.entity())
+                    .executes { ctx -> run(ctx, "target") { p, _ -> p.triggerParonychiaBump("命令触发") } }
+                )
+            cmd.then(bumpCmd)
+
+            // 4. /jr paronychia drain [target] — 🔪 切开引流
+            val drainCmd = literal("drain").requires { it.hasPermissionLevel(2) }
+            buildSelfAndTarget(drainCmd) { p, s ->
+                if (p.paronychia <= 0) {
+                    s.sendMessage(Text.of("§e目标没有甲沟炎，无需引流。"))
+                } else {
+                    p.drainParonychiaAbscess()
+                    val remaining = p.paronychia
+                    val days = String.format("%.1f", remaining / (20.0 * 60.0 * 20.0))
+                    s.sendMessage(Text.of("§e已执行切开引流，剩余病程约${days}天。"))
+                }
+            }
+            cmd.then(drainCmd)
+
+            // 5. /jr paronychia nail_remove [target] — 🏥 拔甲手术
+            val nailRemoveCmd = literal("nail_remove").requires { it.hasPermissionLevel(2) }
+            buildSelfAndTarget(nailRemoveCmd) { p, s ->
+                if (p.paronychia <= 0 && !p.isNailRemoved) {
+                    s.sendMessage(Text.of("§e目标不需要拔甲（既无甲沟炎，趾甲也完好）。"))
+                } else {
+                    p.removeNail()
+                    s.sendMessage(Text.of("§e已执行拔甲手术，感染已清除。趾甲将在约7天后重新长出。"))
+                }
+            }
+            cmd.then(nailRemoveCmd)
+
+            // 6. /jr paronychia nail set <true/false> [target]
+            //    /jr paronychia nail regrow set <ticks> [target]
+            val nailCmd = literal("nail")
+            nailCmd.then(literal("set").then(
+                buildSetter("removed", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v -> p.isNailRemoved = v }
+            ))
+            nailCmd.then(literal("regrow").then(
+                buildSetter("ticks", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.nailRegrowTime = v }
+            ))
+            cmd.then(nailCmd)
+
+            // 7. /jr paronychia infect <probability> [target] — 🦠 尝试感染
+            val infectCmd = literal("infect").requires { it.hasPermissionLevel(2) }
+                .then(argument("probability", FloatArgumentType.floatArg(0f, 1f))
+                    .executes { ctx ->
+                        val prob = FloatArgumentType.getFloat(ctx, "probability")
+                        run(ctx, null) { p, s ->
+                            p.tryInfectParonychia(prob)
+                            if (p.paronychia > 0) {
+                                s.sendMessage(Text.of("§c目标感染了甲沟炎！"))
+                            } else {
+                                s.sendMessage(Text.of("§a运气不错，目标没有感染（概率: $prob）。"))
+                            }
+                        }
+                    }
+                    .then(argument("target", EntityArgumentType.entity())
+                        .executes { ctx ->
+                            val prob = FloatArgumentType.getFloat(ctx, "probability")
+                            run(ctx, "target") { p, s ->
+                                p.tryInfectParonychia(prob)
+                                if (p.paronychia > 0) {
+                                    s.sendMessage(Text.of("§c目标感染了甲沟炎！"))
+                                } else {
+                                    s.sendMessage(Text.of("§a运气不错，目标没有感染（概率: $prob）。"))
+                                }
+                            }
+                        }
+                    )
+                )
+            cmd.then(infectCmd)
 
             // 挂载到主命令
             baseCmd.then(cmd)

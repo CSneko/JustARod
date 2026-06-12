@@ -98,6 +98,11 @@ class JREffects {
             Identifier.of(MODID, "lily_pheromone"),
             LilyPheromoneEffect()
         )
+        val PARONYCHIA_EFFECT: StatusEffect? = Registry.register(
+            Registries.STATUS_EFFECT,
+            Identifier.of(MODID, "paronychia"),
+            ParonychiaEffect()
+        )
         fun init(){
         }
     }

@@ -115,6 +115,12 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     @Unique
     private int hemorrhoids = 0;
     @Unique
+    private int paronychia = 0;
+    @Unique
+    private boolean nailRemoved = false;
+    @Unique
+    private int nailRegrowTime = 0;
+    @Unique
     private boolean amputated = false;
     @Unique
     private float parthenogenesisVariance = 0;
@@ -505,6 +511,36 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
         this.hemorrhoids = hemorrhoids;
     }
 
+    @Override
+    public int getParonychia() {
+        return paronychia;
+    }
+
+    @Override
+    public void setParonychia(int paronychia) {
+        this.paronychia = paronychia;
+    }
+
+    @Override
+    public boolean isNailRemoved() {
+        return nailRemoved;
+    }
+
+    @Override
+    public void setNailRemoved(boolean nailRemoved) {
+        this.nailRemoved = nailRemoved;
+    }
+
+    @Override
+    public int getNailRegrowTime() {
+        return nailRegrowTime;
+    }
+
+    @Override
+    public void setNailRegrowTime(int nailRegrowTime) {
+        this.nailRegrowTime = nailRegrowTime;
+    }
+
     @Unique
     private boolean hymen = true;
 
@@ -864,6 +900,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
             Pregnant.urethritisTick(player);
             Pregnant.prostatitisTick(player);
             Pregnant.hemorrhoidsTick(player);
+            Pregnant.paronychiaTick(player);
             Pregnant.hymenTick(player);
             Pregnant.imperforateHymenTick(player);
             Pregnant.protogynyTick(player);

@@ -39,6 +39,7 @@ object JRRegistry {
     val URETHRITIS = registerTime("urethritis", "尿道炎", { it.urethritis }, { e, v -> e.urethritis = v }, isDisease = true)
     val PROSTATITIS = registerTime("prostatitis", "前列腺炎", { it.prostatitis }, { e, v -> e.prostatitis = v }, isDisease = true)
     val HEMORRHOIDS = registerTime("hemorrhoids", "痔疮", { it.hemorrhoids }, { e, v -> e.hemorrhoids = v }, isDisease = true)
+    val PARONYCHIA = registerTime("paronychia", "甲沟炎", { it.paronychia }, { e, v -> e.paronychia = v }, isDisease = true)
     val CATARACT = registerTime("cataract", "白内障", { it.cataract }, { e, v -> e.cataract = v }, isDisease = true)
     val OVARIAN_CANCER = registerTime("ovarian_cancer", "卵巢癌", { it.ovarianCancer }, { e, v -> e.ovarianCancer = v }, isDisease = true)
     val BREAST_CANCER = registerTime("breast_cancer", "乳腺癌", { it.breastCancer }, { e, v -> e.breastCancer = v }, isDisease = true)
@@ -56,6 +57,7 @@ object JRRegistry {
     // ==================== 外科特征 / 改造 ====================
     val ORCHIECTOMY = registerBool("orchiectomy", "睾丸切除", { it.isOrchiectomy }, { e, v -> e.isOrchiectomy = v }, isDisease = true)
     val AMPUTATED = registerBool("amputated", "截肢", { it.isAmputated }, { e, v -> e.isAmputated = v }, isDisease = true)
+    val NAIL_REMOVED = registerBool("nail_removed", "趾甲脱落", { it.isNailRemoved }, { e, v -> e.isNailRemoved = v }, isDisease = true)
     val PROTOGYNY_ENABLED = registerBool("protogyny_enabled", "雌转雄体质启用", { it.isProtogynyEnabled }, { e, v -> e.isProtogynyEnabled = v })
     val UNDERGOING_PROTOGYNY = registerBool("undergoing_protogyny", "正在雌转雄", { it.isUndergoingProtogyny }, { e, v -> e.isUndergoingProtogyny = v })
     val PROTOGYNY_PROGRESS = registerInt("protogyny_progress", "雌转雄进度", { it.protogynyProgress }, { e, v -> e.protogynyProgress = v })

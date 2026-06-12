@@ -21,7 +21,10 @@ import net.minecraft.text.PlainTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
+import net.minecraft.block.Blocks;
+import net.minecraft.util.math.BlockPos;
 import org.cneko.justarod.Justarod;
+import org.cneko.justarod.damage.JRDamageTypes;
 import org.cneko.justarod.effect.JREffects;
 import org.cneko.justarod.item.JRComponents;
 import org.cneko.justarod.item.JRItems;
@@ -33,6 +36,12 @@ import org.cneko.toneko.common.mod.entities.INeko;
 import java.util.*;
 import java.util.function.Consumer;
 
+/*
+这是一个复杂的生理系统的类，添加新功能时，首先要在这里添加对应的方法和静态方法（如果需要的话）
+然后，在org.cneko.justarod.mixin.PlayerMixin里添加这个
+添加对应命令（org.cneko.justarod.command.PregnantCommand）或属性（org.cneko.justarod.property.JRRegistry）（如果需要同步到客户端的话）
+之后，在客户端类org.cneko.justarod.client.screen.JRSyncScreen添加屏幕信息展示
+ */
 public interface Pregnant{
     List<UUID> FOREVER_BABY = new ArrayList<>();
 
@@ -247,6 +256,9 @@ public interface Pregnant{
         nbt.putInt("Mastitis", getMastitis());
         nbt.putInt("LactationStimulation", getLactationStimulation());
         nbt.putInt("UrinaryIncontinence", getUrinaryIncontinence());
+        nbt.putInt("Paronychia", getParonychia());
+        nbt.putBoolean("NailRemoved", isNailRemoved());
+        nbt.putInt("NailRegrowTime", getNailRegrowTime());
 
 
         nbt.putInt("OvarianClock", getOvarianClock());
@@ -392,6 +404,9 @@ public interface Pregnant{
         if (nbt.contains("UrinaryIncontinence")) {
             setUrinaryIncontinence(nbt.getInt("UrinaryIncontinence"));
         }
+        if (nbt.contains("Paronychia")) setParonychia(nbt.getInt("Paronychia"));
+        if (nbt.contains("NailRemoved")) setNailRemoved(nbt.getBoolean("NailRemoved"));
+        if (nbt.contains("NailRegrowTime")) setNailRegrowTime(nbt.getInt("NailRegrowTime"));
 
         if (nbt.contains("OvarianClock")) setOvarianClock(nbt.getInt("OvarianClock"));
         if (nbt.contains("UterineThickness")) setUterineThickness(nbt.getFloat("UterineThickness"));
@@ -748,6 +763,151 @@ public interface Pregnant{
     default void setHemorrhoids(int time){}
     default int getHemorrhoids(){
         return 0;
+    }
+
+    // ----------------------------- PARONYCHIA (甲沟炎) -----------------------------
+    default void setParonychia(int time){}
+    default int getParonychia(){ return 0; }
+    default void updateParonychia() {
+        if (getParonychia() > 0){
+            setParonychia(getParonychia()+1);
+        }
+    }
+    default void setNailRemoved(boolean removed){}
+    default boolean isNailRemoved(){ return false; }
+    default void setNailRegrowTime(int time){}
+    default int getNailRegrowTime(){ return 0; }
+
+    // 阶段阈值 (tick)
+    int PARONYCHIA_STAGE_1 = 20 * 60 * 20 * 2;  // 2天 红肿期
+    int PARONYCHIA_STAGE_2 = 20 * 60 * 20 * 5;  // 5天 化脓期
+    int PARONYCHIA_STAGE_3 = 20 * 60 * 20 * 8;  // 8天 严重感染
+    int PARONYCHIA_STAGE_4 = 20 * 60 * 20 * 12; // 12天 危险期
+
+    /**
+     * 🔥 戏剧性核心："磕到"甲沟炎
+     * 在受到物理伤害/撞击时调用，触发撕心裂肺的剧痛
+     * @param cause 触发原因，用于消息提示
+     * @return 是否成功触发"磕到"
+     */
+    default boolean triggerParonychiaBump(String cause) {
+        if (getParonychia() <= 0) return false;
+        if (!(this instanceof LivingEntity entity)) return false;
+
+        int stage = getParonychia();
+        float damage;
+        String message;
+        int blindDuration;
+
+        if (stage < PARONYCHIA_STAGE_1) {
+            damage = 1.0f;
+            message = "啊！你不小心碰到了发炎的脚趾...";
+            blindDuration = 20 * 2;
+        } else if (stage < PARONYCHIA_STAGE_2) {
+            damage = 3.0f;
+            message = "啊啊——！肿胀的趾头被狠狠撞了一下，脓液在皮肤下剧烈涌动！";
+            blindDuration = 20 * 5;
+        } else if (stage < PARONYCHIA_STAGE_3) {
+            damage = 5.0f;
+            message = "你眼前一黑——感染的脚趾撞到了东西，撕心裂肺的剧痛让你几乎晕厥！";
+            blindDuration = 20 * 8;
+        } else {
+            damage = 8.0f;
+            message = "咔嚓...你听到了一声轻微的脆响。低头一看，松动的趾甲彻底脱落了，血和脓混合着流了出来...";
+            blindDuration = 20 * 10;
+            // 趾甲脱落！
+            setNailRemoved(true);
+            setNailRegrowTime(0); // 启动再生计时
+            setParonychia(getParonychia() / 2); // 感染部分引流
+        }
+
+        // 使用自定义伤害类型——死亡提示词："666，磕到甲沟炎了"
+        entity.damage(JRDamageTypes.paronychia(entity), damage);
+        // 痛到失明（眼泪模糊视线）
+        entity.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, blindDuration, 0));
+        // 抱着脚跳（剧痛导致的行动障碍）
+        entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 15, 2));
+        // 痛到虚脱
+        entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 10, 1));
+        // 痛到想吐
+        entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 5, 0));
+        entity.sendMessage(Text.of("§c" + message + " (" + cause + ")"));
+
+        return true;
+    }
+
+    /**
+     * 轻症自愈判定 & "磕到"概率外露
+     * @return 当前阶段"磕到"的触发概率（1/N的N），-1表示无甲沟炎
+     */
+    default int getParonychiaBumpChance() {
+        int p = getParonychia();
+        if (p <= 0) return -1;
+        if (p < PARONYCHIA_STAGE_1) return 500;
+        if (p < PARONYCHIA_STAGE_2) return 100;
+        if (p < PARONYCHIA_STAGE_3) return 20;
+        return 5;
+    }
+
+    /**
+     * 🔪 切开引流
+     * 使用剪刀切开脓包，剧痛但能大幅减少病程
+     */
+    default void drainParonychiaAbscess() {
+        if (getParonychia() <= 0) return;
+        if (!(this instanceof LivingEntity entity)) return;
+
+        int current = getParonychia();
+        int reduction = current / 2; // 减少一半病程
+        float damage = current < PARONYCHIA_STAGE_2 ? 2.0f : 4.0f;
+
+        entity.damage(entity.getDamageSources().generic(), damage);
+        setParonychia(Math.max(0, current - reduction));
+        entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 5, 1));
+        entity.sendMessage(Text.of("§e你用剪刀切开了肿胀的脓包...剧痛中混合着一种奇异的解脱感，脓液缓缓流出。"));
+
+        // 排出脓液弄脏地面/胖次
+        ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
+        if (!legStack.isEmpty() && legStack.getItem() instanceof PantsuItem) {
+            JRComponents.PantsuState currentState = legStack.get(JRComponents.Companion.getPANTSU_STATE());
+            if (currentState == null || currentState == JRComponents.PantsuState.CLEAN) {
+                legStack.set(JRComponents.Companion.getPANTSU_STATE(), JRComponents.PantsuState.SOILED);
+                entity.sendMessage(Text.of("§c脓液弄脏了胖次..."));
+            }
+        }
+
+        if (getParonychia() <= 0) {
+            entity.sendMessage(Text.of("§a甲沟炎的感染终于被清除了！"));
+        }
+    }
+
+    /**
+     * 🏥 拔甲手术
+     * 彻底移除感染的趾甲，一了百了但极其痛苦
+     */
+    default void removeNail() {
+        if (getParonychia() <= 0 && !isNailRemoved()) return;
+        if (!(this instanceof LivingEntity entity)) return;
+
+        boolean alreadyMissing = isNailRemoved();
+
+        // 巨大的手术痛苦
+        entity.damage(entity.getDamageSources().generic(), alreadyMissing ? 2.0f : 8.0f);
+        // 清除感染
+        setParonychia(0);
+        // 移除趾甲
+        setNailRemoved(true);
+        setNailRegrowTime(0); // 立即开始再生计时
+
+        if (alreadyMissing) {
+            entity.sendMessage(Text.of("§e趾甲已经不在了...你只能等待它慢慢长出来。"));
+        } else {
+            entity.sendMessage(Text.of("§4眼一闭心一横，你把那颗折磨你许久的趾甲拔了下来！混合着血和脓液的趾甲落在了地上..."));
+            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 20 * 3, 0));
+            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 20, 2));
+            // 掉落一个"奇怪的趾甲"物品
+            entity.dropItem(JRItems.Companion.getMOLE());
+        }
     }
 
     // 手动排便时调用此方法检测是否疼痛
@@ -3018,6 +3178,253 @@ public interface Pregnant{
         }
     }
 
+
+    // ==================== PARONYCHIA TICK (甲沟炎主循环) ====================
+
+    static <T extends LivingEntity & Pregnant> void paronychiaTick(T entity) {
+        entity.updateParonychia();
+        int current = entity.getParonychia();
+        boolean nailRemoved = entity.isNailRemoved();
+
+        // --- 0. 趾甲再生逻辑 ---
+        if (nailRemoved && entity.getNailRegrowTime() <= 0) {
+            // 启动再生计时：7个Minecraft天
+            entity.setNailRegrowTime(20 * 60 * 20 * 7);
+        }
+        if (nailRemoved && entity.getNailRegrowTime() > 0) {
+            int regrow = entity.getNailRegrowTime() - 1;
+            entity.setNailRegrowTime(regrow);
+            if (regrow <= 0) {
+                entity.setNailRemoved(false);
+                entity.sendMessage(Text.of("§a经过了漫长的等待，你的趾甲终于重新长好了！"));
+            }
+        }
+
+        // --- 1. 无活动感染时的诱因检测 ---
+        if (current <= 0) {
+            entity.removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getPARONYCHIA_EFFECT()));
+            // 如果趾甲缺失，甲床仍然脆弱，但没有活动感染时就是健康的
+            return;
+        }
+
+        // --- 2. 给予甲沟炎状态效果图标 ---
+        entity.addStatusEffect(new StatusEffectInstance(
+                Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getPARONYCHIA_EFFECT()),
+                current, 0, false, false, true
+        ));
+
+        // --- 3. 环境加速因子 ---
+        int envAccel = 0;
+
+        // A. 赤脚在粗糙地面上 → 加速感染
+        ItemStack footStack = entity.getEquippedStack(EquipmentSlot.FEET);
+        boolean isBarefoot = footStack.isEmpty();
+        if (isBarefoot && entity.isOnGround()) {
+            BlockPos pos = entity.getBlockPos();
+            net.minecraft.block.Block blockBelow = entity.getWorld().getBlockState(pos.down()).getBlock();
+            boolean isRough = blockBelow == Blocks.STONE || blockBelow == Blocks.COBBLESTONE
+                    || blockBelow == Blocks.GRAVEL || blockBelow == Blocks.DIRT_PATH
+                    || blockBelow == Blocks.ANDESITE || blockBelow == Blocks.GRANITE
+                    || blockBelow == Blocks.DIORITE || blockBelow == Blocks.DEEPSLATE
+                    || blockBelow == Blocks.NETHERRACK || blockBelow == Blocks.END_STONE
+                    || blockBelow == Blocks.TUFF || blockBelow == Blocks.BASALT
+                    || blockBelow == Blocks.BLACKSTONE;
+            if (isRough) {
+                if (entity.getRandom().nextInt(200) == 0) envAccel++;
+                if (entity.isSprinting() && entity.getRandom().nextInt(100) == 0) envAccel++;
+            }
+        }
+
+        // B. 潮湿环境 → 细菌滋生
+        if (entity.isTouchingWater() || entity.isSubmergedInWater()) {
+            if (entity.getRandom().nextInt(300) == 0) envAccel++;
+        }
+
+        // C. 免疫力低下 → 更难自愈
+        boolean lowImmunity = entity.getAids() > 0
+                || entity.getSyphilis() > 20 * 60 * 20 * 4
+                || (entity.isPregnant() && entity.getPregnant() < 20 * 60 * 20 * 5);
+
+        if (envAccel > 0) {
+            entity.setParonychia(current + envAccel);
+            current += envAccel;
+        }
+
+        // --- 4. 温水浸泡治疗 ---
+        boolean isInWarmWater = false;
+        if (entity.isSubmergedInWater() || entity.isTouchingWater()) {
+            // 检测附近是否有热源
+            World world = entity.getWorld();
+            boolean nearHeat = world.getStatesInBoxIfLoaded(entity.getBoundingBox().expand(3.0)).anyMatch(state ->
+                    state.isOf(Blocks.FIRE) || state.isOf(Blocks.SOUL_FIRE)
+                            || state.isOf(Blocks.LAVA) || state.isOf(Blocks.CAMPFIRE)
+                            || state.isOf(Blocks.SOUL_CAMPFIRE) || state.isOf(Blocks.MAGMA_BLOCK)
+                            || state.isOf(Blocks.TORCH) || state.isOf(Blocks.SOUL_TORCH)
+                            || state.isOf(Blocks.LANTERN) || state.isOf(Blocks.SOUL_LANTERN)
+            );
+            if (nearHeat) {
+                isInWarmWater = true;
+                // 温水加速治疗：每tick减少5点病程
+                entity.setParonychia(Math.max(0, current - 5));
+                current = entity.getParonychia();
+                if (entity.getRandom().nextInt(3000) == 0) {
+                    entity.sendMessage(Text.of("§a温水缓解了脚趾的胀痛..."));
+                }
+            }
+        }
+
+        // 自然代谢：没有环境加速也没有治疗时，免疫系统缓慢对抗
+        if (!isInWarmWater && envAccel == 0 && current > 0 && !lowImmunity) {
+            if (entity.getRandom().nextInt(40) == 0) {
+                entity.setParonychia(Math.max(0, current - 1));
+                current = entity.getParonychia();
+            }
+        }
+
+        if (current <= 0) {
+            entity.removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getPARONYCHIA_EFFECT()));
+            entity.sendMessage(Text.of("§a你的甲沟炎终于痊愈了！脚趾不再疼痛。"));
+            return;
+        }
+
+        // --- 5. 各阶段症状表现 ---
+
+        // === 第一阶段：红肿期 (0-2天) ===
+        if (current < entity.PARONYCHIA_STAGE_1) {
+            // 赤脚走路偶尔磕到
+            if (isBarefoot && entity.isOnGround() && entity.getRandom().nextInt(1200) == 0) {
+                entity.triggerParonychiaBump("走路时脚趾蹭到了地面");
+            }
+            // 疾跑更容易踢到东西
+            if (entity.isSprinting() && entity.isOnGround() && entity.getRandom().nextInt(800) == 0) {
+                entity.triggerParonychiaBump("疾跑时狠狠踢到了石头");
+            }
+        }
+
+        // === 第二阶段：化脓期 (2-5天) ===
+        if (current >= entity.PARONYCHIA_STAGE_1 && current < entity.PARONYCHIA_STAGE_2) {
+            // 走路很容易磕到
+            if (entity.isOnGround() && entity.getRandom().nextInt(800) == 0) {
+                entity.triggerParonychiaBump("走路时不小心磕到了发炎的脚趾");
+            }
+            // 疾跑更加危险
+            if (entity.isSprinting() && entity.isOnGround() && entity.getRandom().nextInt(400) == 0) {
+                entity.triggerParonychiaBump("疾跑中脚趾狠狠撞上了地面");
+            }
+            // 穿鞋挤压
+            if (!isBarefoot && entity.isOnGround() && entity.getRandom().nextInt(600) == 0) {
+                entity.triggerParonychiaBump("靴子挤压到了肿胀的趾头");
+            }
+        }
+
+        // === 第三阶段：严重感染 (5-8天) ===
+        if (current >= entity.PARONYCHIA_STAGE_2 && current < entity.PARONYCHIA_STAGE_3) {
+            // 持续缓慢效果
+            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 10, 0, false, false, true));
+            // 走路就是赌博
+            if (entity.isOnGround() && entity.getRandom().nextInt(400) == 0) {
+                entity.triggerParonychiaBump("走路的每一步都在蹂躏着感染的脚趾");
+            }
+            // 疾跑非常危险
+            if (entity.isSprinting() && entity.isOnGround() && entity.getRandom().nextInt(150) == 0) {
+                entity.triggerParonychiaBump("疾跑的冲击让感染的趾头几乎炸开");
+            }
+            // 全身感染症状（极少突袭）
+            if (entity.getRandom().nextInt(4000) == 0) {
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 20, 0));
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, 20 * 5, 0));
+            }
+            // 自发性脓肿破裂（极少，不提示）
+            if (entity.getRandom().nextInt(4000) == 0) {
+                entity.damage(entity.getDamageSources().generic(), 2.0f);
+                // 弄脏胖次
+                ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
+                if (!legStack.isEmpty() && legStack.getItem() instanceof PantsuItem) {
+                    JRComponents.PantsuState pantsuState = legStack.get(JRComponents.Companion.getPANTSU_STATE());
+                    if (pantsuState == null || pantsuState == JRComponents.PantsuState.CLEAN) {
+                        legStack.set(JRComponents.Companion.getPANTSU_STATE(), JRComponents.PantsuState.SOILED);
+                    }
+                }
+                // 脓液排出稍微减轻病程
+                entity.setParonychia(current - 20 * 60 * 20);
+            }
+        }
+
+        // === 第四阶段：危险期 (8天+) ===
+        if (current >= entity.PARONYCHIA_STAGE_3) {
+            // 持续 debuff
+            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 10, 0, false, false, true));
+            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 10, 1, false, false, true));
+            // 败血症风险（极少但致命）
+            if (entity.getRandom().nextInt(6000) == 0) {
+                entity.damage(entity.getDamageSources().generic(), 6.0f);
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, 20 * 30, 1));
+                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 30, 2));
+            }
+            // 走路就是在玩命
+            if (entity.isOnGround() && entity.getRandom().nextInt(250) == 0) {
+                entity.triggerParonychiaBump("每一步都像踩在刀尖上");
+            }
+            // 疾跑 = 自杀
+            if (entity.isSprinting() && entity.isOnGround() && entity.getRandom().nextInt(100) == 0) {
+                entity.triggerParonychiaBump("疾跑让感染的脚趾彻底崩溃");
+            }
+            // 趾甲自发脱落（极少）
+            if (!nailRemoved && entity.getRandom().nextInt(12000) == 0) {
+                entity.damage(entity.getDamageSources().generic(), 6.0f);
+                entity.setNailRemoved(true);
+                entity.setNailRegrowTime(0);
+                entity.setParonychia(current - 20 * 60 * 20 * 3);
+                entity.dropItem(JRItems.Companion.getMOLE());
+            }
+
+            // 感染超过12天有致命风险
+            if (current >= entity.PARONYCHIA_STAGE_4) {
+                if (entity.getRandom().nextInt(8000) == 0) {
+                    entity.damage(JRDamageTypes.paronychia(entity), 10.0f);
+                }
+                // 走路几乎必磕
+                if (entity.isOnGround() && entity.getRandom().nextInt(120) == 0) {
+                    entity.triggerParonychiaBump("腐烂的脚趾再也经不起任何触碰");
+                }
+            }
+        }
+
+        // --- 6. 趾甲缺失时的额外敏感 ---
+        if (nailRemoved && current > 0) {
+            // 裸露的甲床极为敏感
+            if (isBarefoot && entity.isOnGround() && entity.getRandom().nextInt(600) == 0) {
+                entity.triggerParonychiaBump("裸露的甲床直接摩擦着地面");
+            }
+        }
+
+        // --- 7. 限制最大值 ---
+        if (current > 20 * 60 * 20 * 20) {
+            entity.setParonychia(20 * 60 * 20 * 20); // 最长20天
+        }
+    }
+
+    /**
+     * 外部诱因：尝试触发甲沟炎感染
+     * 可在受到外伤/赤脚摔落等场景调用
+     * @param probability 基础触发概率 (0.0 ~ 1.0)
+     */
+    default void tryInfectParonychia(float probability) {
+        if (getParonychia() > 0) return; // 已经感染了
+
+        // 免疫力低下增大感染概率
+        float effectiveProb = probability;
+        if (getAids() > 0) effectiveProb *= 3.0f;
+        if (isPregnant()) effectiveProb *= 1.5f;
+        if (isNailRemoved()) effectiveProb *= 2.0f; // 趾甲缺失 → 甲床暴露
+
+        if (((Entity)this).getRandom().nextFloat() < effectiveProb) {
+            setParonychia(1);
+            if (this instanceof LivingEntity entity) {
+                entity.sendMessage(Text.of("§c你的脚趾甲边缘感到一阵灼热和红肿...怕是甲沟炎来了。"));
+            }
+        }
+    }
 
     @Getter
     enum MenstruationCycle{

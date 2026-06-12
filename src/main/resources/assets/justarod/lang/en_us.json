@@ -153,6 +153,8 @@
   "attribute.name.generic.max_power": "Max Stamina",
   "death.attack.sexual_excitement": "%s died from sexual excitement",
   "death.attack.grass": "%s was stimulated to death by %s",
+  "death.attack.paronychia": "666, stubbed their paronychia to death",
+  "effect.justarod.paronychia": "Paronychia",
   "quirk.toneko.end_rod": "End Rod",
   "quirk.toneko.end_rod.des": "I want to be inserted... until I can't take it anymore!",
   "quirk.toneko.ccb": "CCB",

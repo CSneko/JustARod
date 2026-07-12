@@ -11,6 +11,7 @@
     "NekoEntityMixin",
     "PlayerMixin",
     "RavennEntityMixin",
+    "WitherEntityMixin",
     "ServerCommonNetworkingHandlerMixin",
     "ServerPlayerMixin",
     "ServerPlayNetworkHandlerMixin"

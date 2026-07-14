@@ -40,7 +40,7 @@ public class CommonChatEventMixin {
         if (sender.getBallMouth()>0){
             ci.cancel();
             String msg = MESSAGES.get(sender.getRandom().nextInt(MESSAGES.size()));
-            msg = Messaging.nekoModify(msg, (INeko) sender);
+            msg = Messaging.prepareMessage(msg, (INeko) sender);
             msg = Messaging.format(msg, (INeko) sender, Messaging.getChatPrefixes((INeko) sender), ConfigUtil.getChatFormat());
 
             sendMessage(Text.of(msg));

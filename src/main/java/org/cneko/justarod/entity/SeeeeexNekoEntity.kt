@@ -19,6 +19,7 @@ import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.entity.ai.SexualIntercourseGoal
 import org.cneko.justarod.entity.ai.SuckMilkGoal
 import org.cneko.justarod.item.JRItems.Companion.BYT
+import org.cneko.toneko.common.mod.api.NekoLevelRegistry
 import org.cneko.toneko.common.mod.entities.INeko
 import org.cneko.toneko.common.mod.entities.NekoEntity
 import software.bernie.geckolib.animation.AnimatableManager
@@ -73,8 +74,8 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
                 if (mate.getInventory().offHand.stream()
                         .anyMatch(Predicate { item: ItemStack? -> item!!.isOf(BYT) })
                 ){
-                    this.nekoLevel = this.nekoLevel + 0.1f
-                    mate.nekoLevel = this.nekoLevel + 0.1f
+                    NekoLevelRegistry.base().addRaw(this, 0.1)
+                    NekoLevelRegistry.base().addRaw(mate, 0.1)
                     this.addStatusEffect(StatusEffectInstance(StatusEffects.WEAKNESS, 3000, 0))
                     mate.addStatusEffect(StatusEffectInstance(StatusEffects.WEAKNESS, 3000, 0))
                     mate.entity.sendMessage(Text.of("§b你没有怀孕！"))
@@ -85,8 +86,8 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
             // 怀孕10天
             mate.tryPregnant()
             mate.babyCount = mate.calculateBabyCount(this)
-            this.nekoLevel = this.nekoLevel + 0.1f
-            mate.nekoLevel = this.nekoLevel + 0.1f
+            NekoLevelRegistry.base().addRaw(this, 0.1)
+            NekoLevelRegistry.base().addRaw(mate, 0.1)
             this.addStatusEffect(StatusEffectInstance(StatusEffects.WEAKNESS, 3000, 0))
             mate.entity.sendMessage(Text.of("§a你怀孕了！"))
             // 获取自己的效果

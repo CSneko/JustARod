@@ -1,12 +1,12 @@
 package org.cneko.justarod.client.event;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.Box;
-import net.minecraft.world.World;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import org.cneko.justarod.client.gui.ScanType;
 import org.cneko.justarod.client.gui.UterusScanScreen;
 import org.cneko.justarod.client.screen.FrictionScreen;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import static net.minecraft.client.MinecraftClient.getInstance;
+import static net.minecraft.client.Minecraft.getInstance;
 
 public class JRClientNetworkingEvents {
     public static void init(){
@@ -50,7 +50,7 @@ public class JRClientNetworkingEvents {
         });
         ClientPlayNetworking.registerGlobalReceiver(BDSMPayload.ID, (payload, context) -> {
             UUID uuid = UUID.fromString(payload.uuid());
-            PlayerEntity player = MinecraftClient.getInstance().player;
+            Player player = Minecraft.getInstance().player;
 
             Consumer<BDSMable> processBDSM = bdsmEntity -> {
                 int ballMouth = payload.ballMouth() ? 2 : 0;
@@ -65,7 +65,7 @@ public class JRClientNetworkingEvents {
                 bdsmEntity.setNoMatingPlz(payload.noMatingPlz() ? 2 : 0);
             };
 
-            if (player.getUuid().equals(uuid)) {
+            if (player.getUUID().equals(uuid)) {
                 processBDSM.accept(player);
             }
 
@@ -77,14 +77,14 @@ public class JRClientNetworkingEvents {
 
         ClientPlayNetworking.registerGlobalReceiver(MedicalPayload.ID,((payload, context) -> {
             UUID uuid = UUID.fromString(payload.uuid());
-            PlayerEntity player = MinecraftClient.getInstance().player;
+            Player player = Minecraft.getInstance().player;
 
             Consumer<Pregnant> processMedical = medicalEntity -> {
                 boolean amputated = payload.isAmputated();
                 medicalEntity.setAmputated(amputated);
             };
 
-            if (player.getUuid().equals(uuid)) {
+            if (player.getUUID().equals(uuid)) {
                 processMedical.accept(player);
             }
 
@@ -98,8 +98,8 @@ public class JRClientNetworkingEvents {
             int id = payload.targetEntityId();
             ScanType type = payload.scanType();
             Entity entity = null;
-            if (MinecraftClient.getInstance().world != null) {
-                entity = MinecraftClient.getInstance().world.getEntityById(id);
+            if (Minecraft.getInstance().level != null) {
+                entity = Minecraft.getInstance().level.getEntity(id);
             }
             if(entity instanceof LivingEntity le && entity instanceof Pregnant) {
                 getInstance().execute(() -> {
@@ -112,10 +112,10 @@ public class JRClientNetworkingEvents {
     }
 
     public static @Nullable LivingEntity findNearbyEntityByUuid(UUID targetUuid, double range) {
-        PlayerEntity player = MinecraftClient.getInstance().player;
-        Box box = new Box(player.getX() - range, player.getY() - range, player.getZ() - range, player.getX() + range, player.getY() + range, player.getZ() + range);
-        World world = player.getWorld();
-        Iterator<Entity> var6 = world.getOtherEntities(player, box).iterator();
+        Player player = Minecraft.getInstance().player;
+        AABB box = new AABB(player.getX() - range, player.getY() - range, player.getZ() - range, player.getX() + range, player.getY() + range, player.getZ() + range);
+        Level world = player.level();
+        Iterator<Entity> var6 = world.getEntities(player, box).iterator();
 
         Entity entity;
         do {
@@ -124,7 +124,7 @@ public class JRClientNetworkingEvents {
             }
 
             entity = var6.next();
-        } while(!entity.getUuid().equals(targetUuid));
+        } while(!entity.getUUID().equals(targetUuid));
 
         if (entity instanceof LivingEntity le) {
             return le;

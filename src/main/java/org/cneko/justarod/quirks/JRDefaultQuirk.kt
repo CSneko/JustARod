@@ -1,6 +1,6 @@
 package org.cneko.justarod.quirks
 
-import net.minecraft.text.Text
+import net.minecraft.network.chat.Component
 import org.cneko.toneko.common.mod.quirks.Quirk
 import org.cneko.toneko.common.mod.quirks.QuirkRegister
 
@@ -10,8 +10,8 @@ open class JRDefaultQuirk(id:String): Quirk(id) {
         return 1
     }
 
-    override fun getTooltip(): Text? {
-        return Text.translatable("quirk.toneko.${id}.des")
+    override fun getTooltip(): Component? {
+        return Component.translatable("quirk.toneko.${id}.des")
     }
 
     companion object{

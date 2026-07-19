@@ -1,19 +1,19 @@
 package org.cneko.justarod.item.custom
 
-import net.minecraft.entity.EquipmentSlot
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.text.Text
-import net.minecraft.util.ActionResult
-import net.minecraft.util.Hand
+import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.network.chat.Component
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.InteractionHand
 import org.cneko.justarod.item.JRComponents
 
-class PantsuGetterItem(settings: Settings) : Item(settings) {
+class PantsuGetterItem(properties: Properties) : Item(properties) {
 
-    override fun useOnEntity(stack: ItemStack, user: PlayerEntity, entity: LivingEntity, hand: Hand): ActionResult {
-        if (entity.world.isClient) return ActionResult.PASS
+    override fun useOnEntity(stack: ItemStack, user: Player, entity: LivingEntity, hand: InteractionHand): InteractionResult {
+        if (entity.level().isClientSide) return InteractionResult.PASS
 
         // 检查目标腿部装备
         val legStack = entity.getEquippedStack(EquipmentSlot.LEGS)
@@ -38,16 +38,16 @@ class PantsuGetterItem(settings: Settings) : Item(settings) {
             entity.equipStack(EquipmentSlot.LEGS, ItemStack.EMPTY)
 
             // 5. 反馈
-            user.sendMessage(Text.of("§d你成功偷走了 ${entity.name.string} 的胖次！"), true)
+            user.sendSystemMessage(Component.literal("§d你成功偷走了 ${entity.name.string} 的胖次！"), true)
             // 给受害者发消息
-            if (entity is PlayerEntity) {
-                entity.sendMessage(Text.of("§c感觉下半身凉飕飕的..."), true)
+            if (entity is Player) {
+                entity.sendSystemMessage(Component.literal("§c感觉下半身凉飕飕的..."), true)
             }
 
 
-            return ActionResult.SUCCESS
+            return InteractionResult.SUCCESS
         }
 
-        return ActionResult.PASS
+        return InteractionResult.PASS
     }
 }

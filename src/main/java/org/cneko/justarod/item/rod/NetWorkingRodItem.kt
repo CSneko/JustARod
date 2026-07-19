@@ -1,12 +1,12 @@
 package org.cneko.justarod.item.rod
 
 import net.minecraft.component.DataComponentTypes
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.ItemStack
-import net.minecraft.item.ItemUsageContext
-import net.minecraft.text.Text
-import net.minecraft.util.ActionResult
-import net.minecraft.world.World
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.context.UseOnContext
+import net.minecraft.network.chat.Component
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.level.Level
 import org.cneko.justarod.api.NetWorkingRodData
 import org.cneko.justarod.item.JRComponents
 
@@ -17,20 +17,20 @@ class NetWorkingRodItem: SelfUsedItem(Settings().maxCount(1).maxDamage(NetWorkin
         return NetWorkingRodData.SPEED
     }
 
-    override fun useOnBlock(context: ItemUsageContext?): ActionResult {
+    override fun useOnBlock(context: UseOnContext?): InteractionResult {
         updateData(context?.player,context?.stack)
         return super.useOnBlock(context)
     }
 
-    override fun onCraft(stack: ItemStack?, world: World?) {
+    override fun onCraft(stack: ItemStack?, world: Level?) {
         super.onCraft(stack, world)
         stack?.set(DataComponentTypes.MAX_DAMAGE, NetWorkingRodData.MAX_DAMAGE)
     }
 
-    fun updateData(player: PlayerEntity?,stack: ItemStack?){
+    fun updateData(player: Player?,stack: ItemStack?){
         NetWorkingRodData.update()
         stack?.set(DataComponentTypes.MAX_DAMAGE, NetWorkingRodData.MAX_DAMAGE)
-        player?.sendMessage(Text.translatable("item.justarod.networking_rod.update"),true)
+        player?.sendSystemMessage(Component.translatable("item.justarod.networking_rod.update"),true)
     }
 
     override fun getDefaultStack(): ItemStack {

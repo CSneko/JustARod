@@ -1,8 +1,8 @@
 package org.cneko.justarod.item.syringe
 
-import net.minecraft.entity.Entity
-import net.minecraft.entity.LivingEntity
-import net.minecraft.server.world.ServerWorld
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.server.level.ServerLevel
 import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.entity.JREntities
 import org.cneko.justarod.entity.RodEntity
@@ -17,12 +17,12 @@ class RodAgentItem:BaseSyringeItem(Settings()) {
         // 如果生物是Neko
         if (target is NekoEntity) {
             // 变成Rod
-            val world = target.world
-            if (world is ServerWorld){
+            val world = target.level()
+            if (world is ServerLevel){
                 target.remove(Entity.RemovalReason.DISCARDED)
                 val rod = RodEntity(JREntities.ROD,world)
                 rod.setPos(target.x, target.y+1, target.z)
-                world.spawnEntity(rod)
+                level().addFreshEntity(rod)
                 // 如果有名字的话
                 if (target.hasCustomName()){
                     rod.customName = target.customName

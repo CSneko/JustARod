@@ -1,38 +1,39 @@
 package org.cneko.justarod.packet;
 
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
 import org.cneko.justarod.client.gui.ScanType;
 
 import static org.cneko.justarod.Justarod.MODID;
 
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+
 public record XRayScanScreenPayload(ScanType scanType, int targetEntityId)
-        implements CustomPayload {
+        implements CustomPacketPayload {
 
-    public static final CustomPayload.Id<XRayScanScreenPayload> ID =
-            new CustomPayload.Id<>(Identifier.of(MODID, "x_ray_scan_screen"));
+    public static final CustomPacketPayload.Type<XRayScanScreenPayload> ID =
+            new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(MODID, "x_ray_scan_screen"));
 
-    public static final PacketCodec<RegistryByteBuf, XRayScanScreenPayload> CODEC =
-            PacketCodec.tuple(
+    public static final StreamCodec<RegistryFriendlyByteBuf, XRayScanScreenPayload> CODEC =
+            StreamCodec.composite(
                     // ScanType -> String
-                    PacketCodecs.STRING.xmap(
+                    ByteBufCodecs.STRING_UTF8.map(
                             ScanType::fromId,
                             ScanType::getId
                     ),
                     XRayScanScreenPayload::scanType,
 
                     // Entity ID
-                    PacketCodecs.INTEGER,
+                    ByteBufCodecs.INT,
                     XRayScanScreenPayload::targetEntityId,
 
                     XRayScanScreenPayload::new
             );
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 }

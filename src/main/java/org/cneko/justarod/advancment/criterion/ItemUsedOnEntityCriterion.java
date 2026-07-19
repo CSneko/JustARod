@@ -2,49 +2,49 @@ package org.cneko.justarod.advancment.criterion;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.advancement.criterion.AbstractCriterion;
-import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.predicate.entity.EntityPredicate;
-import net.minecraft.predicate.entity.LootContextPredicate;
-import net.minecraft.predicate.item.ItemPredicate;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
 import org.cneko.justarod.Justarod;
 
 import java.util.Optional;
+import net.minecraft.advancements.critereon.ContextAwarePredicate;
+import net.minecraft.advancements.critereon.EntityPredicate;
+import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 
-public class ItemUsedOnEntityCriterion extends AbstractCriterion<ItemUsedOnEntityCriterion.Conditions> {
-    public static final Identifier ID = Identifier.of(Justarod.MODID, "item_used_on_entity");
+public class ItemUsedOnEntityCriterion extends SimpleCriterionTrigger<ItemUsedOnEntityCriterion.Conditions> {
+    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(Justarod.MODID, "item_used_on_entity");
 
     @Override
-    public Codec<Conditions> getConditionsCodec() {
+    public Codec<Conditions> codec() {
         return Conditions.CODEC;
     }
 
-    public void trigger(ServerPlayerEntity player, ItemStack stack, Entity entity) {
+    public void trigger(ServerPlayer player, ItemStack stack, Entity entity) {
         this.trigger(player, conditions -> conditions.matches(player,stack,entity));
     }
 
     public record Conditions(
-            Optional<LootContextPredicate> playerPredicate,
+            Optional<ContextAwarePredicate> playerPredicate,
             ItemPredicate itemPredicate,
             EntityPredicate entityPredicate
-    ) implements AbstractCriterion.Conditions {
+    ) implements SimpleCriterionTrigger.SimpleInstance {
         public static final Codec<Conditions> CODEC =
                 RecordCodecBuilder.create(instance -> instance.group(
-                        LootContextPredicate.CODEC.optionalFieldOf("player").forGetter(Conditions::playerPredicate),
+                        ContextAwarePredicate.CODEC.optionalFieldOf("player").forGetter(Conditions::playerPredicate),
                         ItemPredicate.CODEC.fieldOf("item").forGetter(Conditions::itemPredicate),
                         EntityPredicate.CODEC.fieldOf("entity").forGetter(Conditions::entityPredicate)
                 ).apply(instance, Conditions::new));
 
         @Override
-        public Optional<LootContextPredicate> player() {
+        public Optional<ContextAwarePredicate> player() {
             return playerPredicate;
         }
 
-        public boolean matches(ServerPlayerEntity player,ItemStack stack, Entity entity) {
-            return itemPredicate.test(stack) && entityPredicate().test(player,entity);
+        public boolean matches(ServerPlayer player,ItemStack stack, Entity entity) {
+            return itemPredicate.test(stack) && entityPredicate().matches(player,entity);
         }
     }
 

@@ -1,39 +1,39 @@
 package org.cneko.justarod.item.bdsm
 
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.particle.ParticleTypes
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.sound.SoundEvents
-import net.minecraft.util.Hand
-import net.minecraft.util.TypedActionResult
-import net.minecraft.world.World
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.particles.ParticleTypes
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.InteractionResultHolder
+import net.minecraft.world.level.Level
 import org.cneko.justarod.entity.BDSMable
 
 /*
 被电击，齁哦哦哦♡ 好爽~~♡
 哒... 哒咩！不...不要提高挡数了喵♡ 要受不了惹♡
  */
-class ElectricShockController(settings: Settings): Item(settings) {
-    override fun use(world: World?, user: PlayerEntity?, hand: Hand?): TypedActionResult<ItemStack?>? {
-        if (user == null || world !is ServerWorld){
+class ElectricShockController(properties: Properties): Item(properties) {
+    override fun use(world: Level?, user: Player?, hand: InteractionHand?): InteractionResultHolder<ItemStack?>? {
+        if (user == null || world !is ServerLevel){
             return super.use(world, user, hand)
         }
         // 寻找附近16格的实体
-        val nearbyEntities = user.world.getEntitiesByClass(
+        val nearbyEntities = user.level().getEntitiesOfClass(
             LivingEntity::class.java,
-            user.boundingBox.expand(16.0, 16.0, 16.0)
+            user.boundingBox.inflate(16.0, 16.0, 16.0)
         ) {it is BDSMable && it.electricShock > 0}
         for (entity in nearbyEntities ?: emptyList()) {
             entity as BDSMable
             // 触发电击
-            entity.damage(user.damageSources.magic(),0.2f)
+            entity.hurt(user.damageSources.magic(),0.2f)
             // 跳起来
-            entity.addVelocity(0.0, 0.5, 0.0)
+            entity.addDeltaMovement(0.0, 0.5, 0.0)
             // 播放声音
-            entity.world.playSound(
+            entity.level().playSound(
                 null,
                 entity.x,
                 entity.y,
@@ -44,7 +44,7 @@ class ElectricShockController(settings: Settings): Item(settings) {
                 1.0f
             )
             // 播放粒子
-            world.spawnParticles(
+            level().sendParticles(
                 ParticleTypes.ELECTRIC_SPARK,
                 entity.x,
                 entity.y + entity.height / 2.0,
@@ -52,7 +52,7 @@ class ElectricShockController(settings: Settings): Item(settings) {
                 10,
                 0.0, 0.0, 0.0,0.1
             )
-            return TypedActionResult.success(user.getStackInHand(hand))
+            return InteractionResultHolder.success(user.getItemInHand(hand))
 
         }
 

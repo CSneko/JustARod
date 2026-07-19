@@ -8,13 +8,13 @@ class RealClientTickEvent {
     companion object{
         fun init(){
             ClientTickEvents.START_CLIENT_TICK.register { client ->
-                while (JRKeyBindings.EXCREMENT_KEY.wasPressed()){
-                    client.player!!.networkHandler.sendCommand("jr excretion release")
+                while (JRKeyBindings.EXCREMENT_KEY.consumeClick()){
+                    client.player!!.connection.sendCommand("jr excretion release")
                 }
-                while (JRKeyBindings.URINATE_KEY.wasPressed()){
-                    client.player!!.networkHandler.sendCommand("jr urination release")
+                while (JRKeyBindings.URINATE_KEY.consumeClick()){
+                    client.player!!.connection.sendCommand("jr urination release")
                 }
-                while (JRKeyBindings.STATUS_KEY.wasPressed()){
+                while (JRKeyBindings.STATUS_KEY.consumeClick()){
                     client.setScreen(JRSyncScreen(client.player))
                 }
             }

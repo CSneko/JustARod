@@ -1,10 +1,10 @@
 package org.cneko.justarod.client.renderer
 
-import net.minecraft.client.render.RenderLayer
-import net.minecraft.client.render.VertexConsumer
-import net.minecraft.client.render.VertexConsumerProvider
-import net.minecraft.client.render.entity.EntityRendererFactory
-import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.client.renderer.RenderType
+import com.mojang.blaze3d.vertex.VertexConsumer
+import net.minecraft.client.renderer.MultiBufferSource
+import net.minecraft.client.renderer.entity.EntityRendererProvider
+import com.mojang.blaze3d.vertex.PoseStack
 import org.cneko.justarod.entity.LoliNekoEntity
 import org.cneko.toneko.common.mod.client.renderers.NekoRenderer
 import software.bernie.geckolib.cache.`object`.BakedGeoModel
@@ -12,15 +12,15 @@ import software.bernie.geckolib.cache.`object`.GeoBone
 import java.util.Optional
 
 // 萝莉控？变态变态变态！
-class LoliNekoRenderer(renderManager: EntityRendererFactory.Context) : NekoRenderer<LoliNekoEntity>(renderManager) {
+class LoliNekoRenderer(renderManager: EntityRendererProvider.Context) : NekoRenderer<LoliNekoEntity>(renderManager) {
 
 
     override fun actuallyRender(
-        poseStack: MatrixStack?,
+        poseStack: PoseStack?,
         entity: LoliNekoEntity?,
         model: BakedGeoModel?,
-        renderType: RenderLayer?,
-        bufferSource: VertexConsumerProvider?,
+        renderType: RenderType?,
+        bufferSource: MultiBufferSource?,
         buffer: VertexConsumer?,
         isReRender: Boolean,
         partialTick: Float,

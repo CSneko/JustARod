@@ -1,16 +1,22 @@
 package org.cneko.justarod.client.event
 
 import com.mojang.blaze3d.systems.RenderSystem
+import com.mojang.blaze3d.vertex.BufferUploader
+import com.mojang.blaze3d.vertex.DefaultVertexFormat
+import com.mojang.blaze3d.vertex.Tesselator
+import com.mojang.blaze3d.vertex.VertexFormat
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.render.*
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.renderer.*
+import net.minecraft.world.entity.player.Player
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.world.level.LightLayer
 import org.cneko.justarod.JRAttributes
 import org.cneko.justarod.JRUtil.Companion.rodId
+import org.cneko.justarod.Justarod.MODID
 import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.item.rod.hasEffect
 import java.util.*
@@ -20,7 +26,7 @@ class ClientTickEvent {
     companion object{
         fun init() {
             HudRenderCallback.EVENT.register { context, _ ->
-                val client = MinecraftClient.getInstance()
+                val client = Minecraft.getInstance()
                 val player = client.player ?: return@register
                 if (player.hasEffect(JREffects.ESTRUS_EFFECT) || client.player!!.hasEffect(JREffects.ORGASM_EFFECT)) {
                     // 粉嫩粉嫩的
@@ -29,7 +35,7 @@ class ClientTickEvent {
                 }
                 if (player.hasEffect(JREffects.ORGASM_EFFECT)) {
                     // 抖起来！！！
-                    val intensity = client.window.scaledWidth * (0.00f + Random().nextFloat() * 0.005f)
+                    val intensity = client.window.width * (0.00f + Random().nextFloat() * 0.005f)
                     applyScreenShake(context, intensity)
                     applyViewShake(client.player!!, intensity)
                 }
@@ -40,11 +46,11 @@ class ClientTickEvent {
                     faintAlpha = 0f
                 }
                 if (player.electricShock > 0) {
-                    val time = client.world!!.time
+                    val time = client.level!!.gameTime
 
                     // 轻微屏幕抖动
                     if (time % 3L == 0L) {
-                        val intensity = client.window.scaledWidth * (0.0008f + Random().nextFloat() * 0.0012f)
+                        val intensity = client.window.width * (0.0008f + Random().nextFloat() * 0.0012f)
                         applyScreenShake(context, intensity)
                         applyViewShake(player, intensity * 0.4f)
                     }
@@ -87,22 +93,22 @@ class ClientTickEvent {
         private var flashAlpha = 0f
         private var targetFlashAlpha = 0f
         // 淡蓝色柔光闪
-        private fun renderSoftFlash(context: DrawContext, alpha: Float) {
+        private fun renderSoftFlash(context: GuiGraphics, alpha: Float) {
             RenderSystem.enableBlend()
             RenderSystem.defaultBlendFunc()
             RenderSystem.setShaderTexture(0, RIPPLE_TEXTURE) // 用波纹贴图
             RenderSystem.setShaderColor(0.8f, 0.95f, 1f, alpha) // 柔和蓝色
 
-            val client = MinecraftClient.getInstance()
-            val width = client.window.scaledWidth
-            val height = client.window.scaledHeight
+            val client = Minecraft.getInstance()
+            val width = client.window.width
+            val height = client.window.height
 
             // 放大到覆盖全屏
             val size = (hypot(width.toDouble(), height.toDouble()) * 2).toInt()
             val x = width / 2 - size / 2
             val y = height / 2 - size / 2
 
-            context.drawTexture(RIPPLE_TEXTURE, x, y, 0f, 0f, size, size, size, size)
+            context.blit(RIPPLE_TEXTURE, x, y, 0f, 0f, size, size, size, size)
 
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
             RenderSystem.disableBlend()
@@ -110,10 +116,10 @@ class ClientTickEvent {
 
 
         // 残影 + 噪声干扰
-        private fun renderAfterimageWithNoise(context: DrawContext, time: Long) {
-            val client = MinecraftClient.getInstance()
-            val width = client.window.scaledWidth
-            val height = client.window.scaledHeight
+        private fun renderAfterimageWithNoise(context: GuiGraphics, time: Long) {
+            val client = Minecraft.getInstance()
+            val width = client.window.width
+            val height = client.window.height
 
             // 残影透明度随时间衰减
             val alpha = 0.1f + 0.05f * kotlin.math.sin(time / 2.0).toFloat()
@@ -125,13 +131,13 @@ class ClientTickEvent {
             RenderSystem.setShaderColor(0.8f, 0.9f, 1f, alpha)
 
             // 噪声纹理
-            val noiseTex = Identifier.of("minecraft", "textures/block/obsidian.png")
+            val noiseTex = ResourceLocation.fromNamespaceAndPath("minecraft", "textures/block/obsidian.png")
             RenderSystem.setShaderTexture(0, noiseTex)
 
             val offsetX = (time % 8) / 8f
             val offsetY = ((time * 2) % 8) / 8f
 
-            context.drawTexture(
+            context.blit(
                 noiseTex,
                 0, 0,
                 offsetX * width,
@@ -146,10 +152,10 @@ class ClientTickEvent {
 
         // 电流波纹（淡蓝色）
         private val RIPPLE_TEXTURE = rodId("textures/misc/circle_ripple.png")
-        private fun renderElectricRipple(context: DrawContext, time: Long) {
-            val client = MinecraftClient.getInstance()
-            val width = client.window.scaledWidth
-            val height = client.window.scaledHeight
+        private fun renderElectricRipple(context: GuiGraphics, time: Long) {
+            val client = Minecraft.getInstance()
+            val width = client.window.width
+            val height = client.window.height
 
             RenderSystem.enableBlend()
             RenderSystem.defaultBlendFunc()
@@ -175,7 +181,7 @@ class ClientTickEvent {
                 val x = width / 2 - size / 2
                 val y = height / 2 - size / 2
 
-                context.drawTexture(RIPPLE_TEXTURE, x, y, 0f, 0f, size, size, size, size)
+                context.blit(RIPPLE_TEXTURE, x, y, 0f, 0f, size, size, size, size)
             }
 
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
@@ -185,28 +191,28 @@ class ClientTickEvent {
 
 
 
-        private fun renderSexText(context: DrawContext) {
-            val client = MinecraftClient.getInstance()
-            if (client.options.hudHidden) return
+        private fun renderSexText(context: GuiGraphics) {
+            val client = Minecraft.getInstance()
+            if (client.options.hideGui) return
 
             val isFemale = client.player!!.isFemale
             val isMale = client.player!!.isMale
 
             // 获取屏幕尺寸
-            val screenWidth = context.scaledWindowWidth
+            val screenWidth = context.guiWidth()
 
             // 设置文字大小（通过矩阵缩放）
             val scale = 2.0f // 2倍大小
-            context.matrices.push()
-            context.matrices.scale(scale, scale, 1.0f)
+            context.pose().pushPose()
+            context.pose().scale(scale, scale, 1.0f)
 
             // 计算基准宽度
             val scaledScreenWidth = screenWidth / scale
-            val textRenderer = client.textRenderer
+            val textRenderer = client.font
 
             // 符号和颜色准备
-            val femaleSymbol = Text.literal("♀")
-            val maleSymbol = Text.literal("♂")
+            val femaleSymbol = Component.literal("♀")
+            val maleSymbol = Component.literal("♂")
 
             val pinkColor = 0xFFC0CB // 粉色
             val blueColor = 0x0000FF // 蓝色
@@ -216,32 +222,32 @@ class ClientTickEvent {
 
             // 如果同时是男性和女性，两个符号都显示，女性符号在右，男性符号在左
             if (isFemale && isMale) {
-                val femaleWidth = textRenderer.getWidth(femaleSymbol)
-                val maleWidth = textRenderer.getWidth(maleSymbol)
+                val femaleWidth = textRenderer.width(femaleSymbol)
+                val maleWidth = textRenderer.width(maleSymbol)
 
                 // 先绘制女性符号（右边）
-                context.drawTextWithShadow(textRenderer, femaleSymbol, (x - femaleWidth).toInt(), 10, pinkColor)
+                context.drawString(textRenderer, femaleSymbol, (x - femaleWidth).toInt(), 10, pinkColor)
 
                 // 再绘制男性符号，向左推一个女性符号宽度和间距（比如5像素）
                 x -= (femaleWidth + 5)
-                context.drawTextWithShadow(textRenderer, maleSymbol, (x - maleWidth).toInt(), 10, blueColor)
+                context.drawString(textRenderer, maleSymbol, (x - maleWidth).toInt(), 10, blueColor)
             } else if (isFemale) {
-                val femaleWidth = textRenderer.getWidth(femaleSymbol)
-                context.drawTextWithShadow(textRenderer, femaleSymbol, (x - femaleWidth).toInt(), 10, pinkColor)
+                val femaleWidth = textRenderer.width(femaleSymbol)
+                context.drawString(textRenderer, femaleSymbol, (x - femaleWidth).toInt(), 10, pinkColor)
             } else if (isMale) {
-                val maleWidth = textRenderer.getWidth(maleSymbol)
-                context.drawTextWithShadow(textRenderer, maleSymbol, (x - maleWidth).toInt(), 10, blueColor)
+                val maleWidth = textRenderer.width(maleSymbol)
+                context.drawString(textRenderer, maleSymbol, (x - maleWidth).toInt(), 10, blueColor)
             }
 
-            context.matrices.pop()
+            context.pose().popPose()
         }
 
 
 
-        private val POWER_ICON = Identifier.of("textures/item/diamond_sword.png")
-        private fun renderPowerBar(context: DrawContext) {
-            val client = MinecraftClient.getInstance()
-            if (client.options.hudHidden) return
+        private val POWER_ICON = ResourceLocation.fromNamespaceAndPath(MODID,"textures/item/diamond_sword.png")
+        private fun renderPowerBar(context: GuiGraphics) {
+            val client = Minecraft.getInstance()
+            if (client.options.hideGui) return
             val player = client.player ?: return
             val power = player.power
             val maxPower = player.attributes?.getValue(JRAttributes.GENERIC_MAX_POWER) ?: return
@@ -250,7 +256,7 @@ class ClientTickEvent {
             if (power >= maxPower) return
 
             // 获取屏幕尺寸
-            val height = context.scaledWindowHeight
+            val height = context.guiHeight()
 
             // 设置位置和尺寸
             val barWidth = 91
@@ -261,7 +267,7 @@ class ClientTickEvent {
             val y = height - margin - barHeight
 
             // 绘制钻石剑图标
-            context.drawTexture(POWER_ICON, x - iconSize - 2, y - (iconSize - barHeight)/2, 0f, 0f, iconSize, iconSize, iconSize, iconSize)
+            context.blit(POWER_ICON, x - iconSize - 2, y - (iconSize - barHeight)/2, 0f, 0f, iconSize, iconSize, iconSize, iconSize)
 
             // 计算体力百分比
             val percent = power / maxPower
@@ -297,12 +303,12 @@ class ClientTickEvent {
             RenderSystem.enableBlend()
             RenderSystem.defaultBlendFunc()
             RenderSystem.setShaderColor(1.0f, 0.6f, 0.8f, 0.5f) // RGB + 透明度
-            RenderSystem.setShader(GameRenderer::getPositionProgram)
+            RenderSystem.setShader(GameRenderer::getPositionShader)
         }
-        private fun renderPinkOverlay(context: DrawContext) {
-            val client = MinecraftClient.getInstance()
-            val width = client.window.scaledWidth
-            val height = client.window.scaledHeight
+        private fun renderPinkOverlay(context: GuiGraphics) {
+            val client = Minecraft.getInstance()
+            val width = client.window.width
+            val height = client.window.height
 
             // 动态透明度，基于随机数波动
             val baseAlpha = 0.3f
@@ -317,16 +323,16 @@ class ClientTickEvent {
             RenderSystem.setShaderColor(1.0f, 0.71f, 0.76f, alpha) // 动态透明度
 
             // 使用 OpenGL 绘制一个覆盖整个屏幕的矩形
-            val bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION)
-            val matrix = context.matrices.peek().positionMatrix
+            val bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION)
+            val matrix = context.pose().last().pose()
 
             with(bufferBuilder) {
-                vertex(matrix, 0f, height.toFloat(), 0f)
-                vertex(matrix, width.toFloat(), height.toFloat(), 0f)
-                vertex(matrix, width.toFloat(), 0f, 0f)
-                vertex(matrix, 0f, 0f, 0f)
+                addVertex(matrix, 0f, height.toFloat(), 0f)
+                addVertex(matrix, width.toFloat(), height.toFloat(), 0f)
+                addVertex(matrix, width.toFloat(), 0f, 0f)
+                addVertex(matrix, 0f, 0f, 0f)
             }
-            BufferRenderer.drawWithGlobalProgram(bufferBuilder.end())
+            BufferUploader.drawWithShader(bufferBuilder.buildOrThrow())
 
             // 禁用混合模式
             RenderSystem.disableBlend()
@@ -335,16 +341,16 @@ class ClientTickEvent {
 
 
         // 高潮的时候全身会发抖... 不自觉的...
-        private fun applyScreenShake(context: DrawContext, intensity: Float) {
+        private fun applyScreenShake(context: GuiGraphics, intensity: Float) {
             val random = Random()
             val shakeX = (random.nextFloat() - 0.5f) * 2 * intensity // 随机偏移X，范围 [-intensity, intensity]
             val shakeY = (random.nextFloat() - 0.5f) * 2 * intensity // 随机偏移Y，范围 [-intensity, intensity]
 
             // 在当前渲染矩阵中应用偏移
-            context.matrices.translate(shakeX.toDouble(), shakeY.toDouble(), 0.0)
+            context.pose().translate(shakeX.toDouble(), shakeY.toDouble(), 0.0)
         }
 
-        private fun applyViewShake(player: PlayerEntity, intensity: Float) {
+        private fun applyViewShake(player: Player, intensity: Float) {
             val random = Random()
 
             // 随机生成偏移角度，控制范围为 [-intensity, intensity]
@@ -352,8 +358,8 @@ class ClientTickEvent {
             val shakePitch = (random.nextFloat() - 0.5f) * 2 * intensity
 
             // 修改玩家视角
-            player.yaw += shakeYaw
-            player.pitch = (player.pitch + shakePitch).coerceIn(-90f, 90f) // 限制 pitch 在 [-90, 90] 范围内
+            player.yya += shakeYaw
+            player.xRot = (player.xRot + shakePitch).coerceIn(-90f, 90f) // 限制 pitch 在 [-90, 90] 范围内
         }
 
 
@@ -362,10 +368,10 @@ class ClientTickEvent {
         /*
         说实话，咱做不出来那种晕倒后的效果，这里的话呢其实只是那种玩得太太太太多了的那种效果
          */
-        private fun renderFaintEffect(context: DrawContext) {
-            val client = MinecraftClient.getInstance()
-            val width = client.window.scaledWidth
-            val height = client.window.scaledHeight
+        private fun renderFaintEffect(context: GuiGraphics) {
+            val client = Minecraft.getInstance()
+            val width = client.window.width
+            val height = client.window.height
 
             // 淡入黑屏效果：通过帧时间线性增加 alpha
             val maxAlpha = 0.9f // 接近全黑
@@ -380,16 +386,16 @@ class ClientTickEvent {
             RenderSystem.setShaderColor(0f, 0f, 0f, faintAlpha)
 
             // 绘制全屏黑色覆盖层
-            val bufferBuilder = Tessellator.getInstance().begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION)
-            val matrix = context.matrices.peek().positionMatrix
+            val bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION)
+            val matrix = context.pose().last().pose()
 
             with(bufferBuilder) {
-                vertex(matrix, 0f, height.toFloat(), 0f)
-                vertex(matrix, width.toFloat(), height.toFloat(), 0f)
-                vertex(matrix, width.toFloat(), 0f, 0f)
-                vertex(matrix, 0f, 0f, 0f)
+                addVertex(matrix, 0f, height.toFloat(), 0f)
+                addVertex(matrix, width.toFloat(), height.toFloat(), 0f)
+                addVertex(matrix, width.toFloat(), 0f, 0f)
+                addVertex(matrix, 0f, 0f, 0f)
             }
-            BufferRenderer.drawWithGlobalProgram(bufferBuilder.end())
+            BufferUploader.drawWithShader(bufferBuilder.buildOrThrow())
 
             RenderSystem.disableBlend()
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f) // 重置颜色
@@ -398,8 +404,8 @@ class ClientTickEvent {
 
         private val CATARACT_TEXTURE = rodId("textures/misc/cataract_overlay.png")
 
-        private fun renderCataractOverlay(context: DrawContext) {
-            val client = MinecraftClient.getInstance()
+        private fun renderCataractOverlay(context: GuiGraphics) {
+            val client = Minecraft.getInstance()
             val player = client.player ?: return
 
             // 获取同步过来的病情值 (0 ~ 100% 对应的 tick)
@@ -412,14 +418,14 @@ class ClientTickEvent {
 
             if (severity < 0.1f) return // 初期不渲染，保证体验
 
-            val width = client.window.scaledWidth
-            val height = client.window.scaledHeight
-            val world = client.world ?: return
-            val pos = player.blockPos
+            val width = client.window.width
+            val height = client.window.height
+            val world = client.level ?: return
+            val pos = player.blockPosition()
 
             // --- 核心优化 1: 动态光感计算 ---
             // 获取当前位置亮度 (0~15)
-            val lightLevel = world.getLightLevel(pos)
+            val lightLevel = world.getBrightness(LightLayer.BLOCK,pos)
 
             // 基础不透明度：病情越重，底色越明显，但在暗处只有原来的 20%
             // 这样你在矿洞里或者家里不会觉得眼前全是白纸
@@ -434,7 +440,7 @@ class ClientTickEvent {
             }
 
             // 太阳直射惩罚：如果在白天且抬头看天
-            if (world.isDay && player.pitch < -15f && world.isSkyVisible(pos)) {
+            if (world.isDay && player.xRot < -15f && world.canSeeSky(pos)) {
                 alpha += 0.3f * severity
             }
 
@@ -454,7 +460,7 @@ class ClientTickEvent {
             // 这样玩家看正中间的准星时不会太难受
             RenderSystem.setShaderTexture(0, CATARACT_TEXTURE)
 
-            context.drawTexture(
+            context.blit(
                 CATARACT_TEXTURE,
                 0, 0, // x, y
                 0f, 0f, // u, v
@@ -476,10 +482,10 @@ class ClientTickEvent {
 
         // 记录上一次的着色器状态，防止每帧重复加载导致卡顿
         private var isShaderLoaded = false
-        private val BLUR_SHADER = Identifier.of("shaders/post/blur.json")
+        private val BLUR_SHADER = ResourceLocation.fromNamespaceAndPath(MODID,"shaders/post/blur.json")
 
         private fun updateCataractShader() {
-            val client = MinecraftClient.getInstance()
+            val client = Minecraft.getInstance()
             val player = client.player ?: return
             val pregnant = player as? org.cneko.justarod.entity.Pregnant ?: return
 
@@ -494,7 +500,7 @@ class ClientTickEvent {
                 if (!isShaderLoaded) {
                     // 加载模糊着色器
                     try {
-                        client.gameRenderer.loadPostProcessor(BLUR_SHADER)
+                        client.gameRenderer.loadEffect(BLUR_SHADER)
                         isShaderLoaded = true
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -503,7 +509,7 @@ class ClientTickEvent {
             } else {
                 // 如果病情好转，或者还没到严重程度，但Shader还开着 -> 关掉
                 if (isShaderLoaded) {
-                    client.gameRenderer.disablePostProcessor()
+                    client.gameRenderer.shutdownEffect()
                     isShaderLoaded = false
                 }
             }

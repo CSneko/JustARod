@@ -1,32 +1,29 @@
 package org.cneko.justarod.client.feature;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.feature.FeatureRenderer;
-import net.minecraft.client.render.entity.feature.FeatureRendererContext;
-import net.minecraft.client.render.entity.model.PlayerEntityModel;
-import net.minecraft.client.render.item.HeldItemRenderer;
-import net.minecraft.client.render.model.json.ModelTransformationMode;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.item.ItemStack;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.util.math.RotationAxis;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.ItemInHandRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import org.cneko.justarod.item.JRItems;
 import org.joml.Vector3f;
 
-public class HandcuffFeatureRenderer extends FeatureRenderer<AbstractClientPlayerEntity, PlayerEntityModel<AbstractClientPlayerEntity>> {
-    protected HeldItemRenderer heldItemRenderer;
-    public HandcuffFeatureRenderer(FeatureRendererContext<AbstractClientPlayerEntity, PlayerEntityModel<AbstractClientPlayerEntity>> context, HeldItemRenderer heldItemRenderer) {
+public class HandcuffFeatureRenderer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
+    protected ItemInHandRenderer heldItemRenderer;
+    public HandcuffFeatureRenderer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> context, ItemInHandRenderer heldItemRenderer) {
         super(context);
         this.heldItemRenderer = heldItemRenderer;
     }
 
     @Override
-    public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light,
-                       AbstractClientPlayerEntity player, float limbAngle, float limbDistance,
+    public void render(PoseStack matrices, MultiBufferSource vertexConsumers, int light,
+                       AbstractClientPlayer player, float limbAngle, float limbDistance,
                        float tickDelta, float animationProgress, float headYaw, float headPitch) {
 
         // 判断玩家是否需要显示
@@ -36,38 +33,38 @@ public class HandcuffFeatureRenderer extends FeatureRenderer<AbstractClientPlaye
         ItemStack chain = new ItemStack(JRItems.Companion.getHANDCUFFES_CHAIN());
 
         // 左手
-        matrices.push();
-        getContextModel().leftArm.rotate(matrices);
+        matrices.pushPose();
+        getParentModel().leftArm.translateAndRotate(matrices);
         matrices.translate(0.05, 0.6, 0.1);
         matrices.scale(0.8f, 0.8f, 0.8f);
-        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90f));
-        heldItemRenderer.renderItem(player, ring, ModelTransformationMode.THIRD_PERSON_LEFT_HAND, true, matrices, vertexConsumers, light);
-        matrices.pop();
+        matrices.mulPose(Axis.XP.rotationDegrees(90f));
+        heldItemRenderer.renderItem(player, ring, ItemDisplayContext.THIRD_PERSON_LEFT_HAND, true, matrices, vertexConsumers, light);
+        matrices.popPose();
 
         // 右手
-        matrices.push();
-        getContextModel().rightArm.rotate(matrices);
+        matrices.pushPose();
+        getParentModel().rightArm.translateAndRotate(matrices);
         matrices.translate(-0.05, 0.6, 0.1);
         matrices.scale(0.8f, 0.8f, 0.8f);
-        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90f));
-        heldItemRenderer.renderItem(player, ring, ModelTransformationMode.THIRD_PERSON_RIGHT_HAND, false, matrices, vertexConsumers, light);
-        matrices.pop();
+        matrices.mulPose(Axis.XP.rotationDegrees(90f));
+        heldItemRenderer.renderItem(player, ring, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, false, matrices, vertexConsumers, light);
+        matrices.popPose();
 
         // 链条（连接左右手）
-        matrices.push();
+        matrices.pushPose();
         // 使用玩家模型的手臂位置作为参考
-        Vec3d leftHandPos = new Vec3d(getContextModel().leftArm.pivotX, getContextModel().leftArm.pivotY, getContextModel().leftArm.pivotZ);
-        Vec3d rightHandPos = new Vec3d(getContextModel().rightArm.pivotX, getContextModel().rightArm.pivotY, getContextModel().rightArm.pivotZ);
+        Vec3 leftHandPos = new Vec3(getParentModel().leftArm.x, getParentModel().leftArm.y, getParentModel().leftArm.z);
+        Vec3 rightHandPos = new Vec3(getParentModel().rightArm.x, getParentModel().rightArm.y, getParentModel().rightArm.z);
 
         // 取两手的中点作为链条位置
-        double midX = (leftHandPos.getX() + rightHandPos.getX()) / 2.0;
-        double midY = (leftHandPos.getY() + rightHandPos.getY()) / 2.0 - 1.5;
-        double midZ = (leftHandPos.getZ() + rightHandPos.getZ()) / 2.0 - 0.33;
+        double midX = (leftHandPos.x() + rightHandPos.x()) / 2.0;
+        double midY = (leftHandPos.y() + rightHandPos.y()) / 2.0 - 1.5;
+        double midZ = (leftHandPos.z() + rightHandPos.z()) / 2.0 - 0.33;
 
         matrices.translate(midX, midY, midZ);
         matrices.scale(0.7f, 0.7f, 0.7f);
-        heldItemRenderer.renderItem(player, chain, ModelTransformationMode.THIRD_PERSON_RIGHT_HAND, false, matrices, vertexConsumers, light);
-        matrices.pop();
+        heldItemRenderer.renderItem(player, chain, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, false, matrices, vertexConsumers, light);
+        matrices.popPose();
     }
 
 }

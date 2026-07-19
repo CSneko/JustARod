@@ -1,11 +1,11 @@
 package org.cneko.justarod.entity.ai
 
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.ai.goal.Goal
-import net.minecraft.entity.effect.StatusEffectInstance
-import net.minecraft.entity.effect.StatusEffects
-import net.minecraft.particle.ParticleTypes
-import net.minecraft.server.world.ServerWorld
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.ai.goal.Goal
+import net.minecraft.world.effect.MobEffectInstance
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.core.particles.ParticleTypes
+import net.minecraft.server.level.ServerLevel
 import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.entity.Pregnant
 import org.cneko.toneko.common.mod.entities.NekoEntity
@@ -16,18 +16,18 @@ class SuckMilkGoal(private val baby: NekoEntity) : Goal() {
     private var suckTick = 0
 
     init {
-        this.controls = EnumSet.of(Control.MOVE, Control.LOOK)
+        this.flags = EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK)
     }
 
-    override fun canStart(): Boolean {
+    override fun canUse(): Boolean {
         // 只有幼年，且饥饿或血量不满时才找奶
         if (!baby.isBaby) return false
         if (baby.health >= baby.maxHealth && baby.random.nextInt(50) != 0) return false
 
         // 扫描附近 16 格内所有带有 Pregnant 接口且有奶的实体（有奶就是娘）
-        val potentialMothers = baby.world.getEntitiesByClass(
+        val potentialMothers = baby.level().getEntitiesOfClass(
             LivingEntity::class.java,
-            baby.boundingBox.expand(16.0)
+            baby.boundingBox.inflate(16.0)
         ) { entity ->
             entity != baby && entity is Pregnant && entity.milk > 50.0f
         }
@@ -39,10 +39,10 @@ class SuckMilkGoal(private val baby: NekoEntity) : Goal() {
         return targetMother != null
     }
 
-    override fun shouldContinue(): Boolean {
+    override fun canContinueToUse(): Boolean {
         if (targetMother == null || !targetMother!!.isAlive) return false
         val mother = targetMother as Pregnant
-        return baby.isBaby && mother.milk > 0f && baby.squaredDistanceTo(targetMother!!) < 256.0
+        return baby.isBaby && mother.milk > 0f && baby.distanceToSqr(targetMother!!) < 256.0
     }
 
     override fun start() {
@@ -53,11 +53,11 @@ class SuckMilkGoal(private val baby: NekoEntity) : Goal() {
         if (targetMother == null) return
         val mother = targetMother as Pregnant
 
-        baby.lookControl.lookAt(targetMother, 30.0f, 30.0f)
+        baby.lookGoal.Flag.lookAt(targetMother, 30.0f, 30.0f)
 
         // 距离大于 2 格，走过去
-        if (baby.squaredDistanceTo(targetMother!!) > 4.0) {
-            baby.navigation.startMovingTo(targetMother, 0.6)
+        if (baby.distanceToSqr(targetMother!!) > 4.0) {
+            baby.navigation.moveTo(targetMother, 0.6)
         } else {
             // 贴贴喝奶阶段
             baby.navigation.stop()
@@ -74,8 +74,8 @@ class SuckMilkGoal(private val baby: NekoEntity) : Goal() {
 
                     // 冒出爱心粒子
                     val world = baby.world
-                    if (world is ServerWorld) {
-                        world.spawnParticles(
+                    if (world is ServerLevel) {
+                        level().sendParticles(
                             ParticleTypes.HEART,
                             targetMother!!.x, targetMother!!.y + 1.0, targetMother!!.z,
                             1, 0.3, 0.5, 0.3, 0.0
@@ -97,8 +97,8 @@ class SuckMilkGoal(private val baby: NekoEntity) : Goal() {
                     }
                     // 3. 喝了严重乳腺炎的毒奶 -> 拉肚子/中毒
                     if (mother.mastitis > 20 * 60 * 10) {
-                        baby.addStatusEffect(StatusEffectInstance(StatusEffects.POISON, 20 * 5, 0))
-                        baby.addStatusEffect(StatusEffectInstance(StatusEffects.NAUSEA, 20 * 10, 0))
+                        baby.addEffect(MobEffectInstance(MobEffects.POISON, 20 * 5, 0))
+                        baby.addEffect(MobEffectInstance(MobEffects.CONFUSION, 20 * 10, 0))
                     }
                 }
             }

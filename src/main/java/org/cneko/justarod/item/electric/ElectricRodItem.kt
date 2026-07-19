@@ -1,12 +1,12 @@
 package org.cneko.justarod.item.electric
 
-import net.minecraft.entity.LivingEntity
-import net.minecraft.item.ItemStack
-import net.minecraft.item.tooltip.TooltipType
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
-import net.minecraft.util.Hand
-import net.minecraft.world.World
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.TooltipFlag
+import net.minecraft.network.chat.Component
+import net.minecraft.ChatFormatting
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.level.Level
 import org.cneko.justarod.item.rod.EndRodInstructions
 import org.cneko.justarod.item.rod.EndRodItem
 import org.cneko.justarod.item.rod.SelfUsedItemInterface
@@ -16,7 +16,7 @@ import team.reborn.energy.api.base.SimpleEnergyItem
 电动的就不需要自己动手啦... 不那么费力的说
 但是振动的话就是越快越爽呢
  */
-abstract class ElectricRodItem(settings: Settings) : EndRodItem(settings),SimpleEnergyItem {
+abstract class ElectricRodItem(properties: Properties) : EndRodItem(properties),SimpleEnergyItem {
     override fun getEnergyCapacity(stack: ItemStack?): Long {
         return stack?.maxDamage?.toLong()!!
     }
@@ -32,10 +32,10 @@ abstract class ElectricRodItem(settings: Settings) : EndRodItem(settings),Simple
     override fun appendTooltip(
         stack: ItemStack?,
         context: TooltipContext?,
-        tooltip: MutableList<Text>?,
-        type: TooltipType?
+        tooltip: MutableList<Component>?,
+        type: TooltipFlag?
     ) {
-        super.appendTooltip(stack, context, tooltip, type)
+        super.appendHoverText(stack, context, tooltip, type)
         val energy = getStoredEnergy(stack)
         val showEnergy: String = if (energy in 1000..1000000){
             "${energy / 1000}k"
@@ -52,16 +52,16 @@ abstract class ElectricRodItem(settings: Settings) : EndRodItem(settings),Simple
         }else{
             "$maxEnergy"
         }
-        tooltip?.add(Text.translatable("item.justarod.electric_rod.tooltip", showEnergy, maxShowEnergy).formatted(Formatting.GOLD))
+        tooltip?.add(Component.translatable("item.justarod.electric_rod.tooltip", showEnergy, maxShowEnergy).withStyle(ChatFormatting.GOLD))
     }
 
-    override fun onCraft(stack: ItemStack?, world: World?) {
+    override fun onCraftedPostProcess(stack: ItemStack?, world: Level?) {
         super.onCraft(stack, world)
         stack?.damage = stack?.maxDamage!!
     }
 
-    override fun damage(stack: ItemStack, amount: Int, world: World?) {
-        super.damage(stack, amount, world)
+    override fun damage(stack: ItemStack, amount: Int, world: Level?) {
+        super.hurt(stack, amount, world)
         this.setStoredEnergy(stack, (stack.maxDamage - stack.damage).toLong())
     }
 
@@ -71,8 +71,8 @@ abstract class ElectricRodItem(settings: Settings) : EndRodItem(settings),Simple
 
     override fun inventoryTick(
         stack: ItemStack?,
-        world: World?,
-        entity: net.minecraft.entity.Entity?,
+        world: Level?,
+        entity: net.minecraft.world.entity.Entity?,
         slot: Int,
         selected: Boolean
     ) {
@@ -82,22 +82,22 @@ abstract class ElectricRodItem(settings: Settings) : EndRodItem(settings),Simple
     }
 }
 
-abstract class SelfUsedElectricRodItem(settings: Settings) : ElectricRodItem(settings), SelfUsedItemInterface {
+abstract class SelfUsedElectricRodItem(properties: Properties) : ElectricRodItem(properties), SelfUsedItemInterface {
 
     override fun appendTooltip(
         stack: ItemStack?,
         context: TooltipContext?,
-        tooltip: MutableList<Text>?,
-        type: TooltipType?
+        tooltip: MutableList<Component>?,
+        type: TooltipFlag?
     ) {
-        super.appendTooltip(stack, context, tooltip, type)
+        super.appendHoverText(stack, context, tooltip, type)
         val speed = this.getRodSpeed(stack)
-        tooltip?.add(Text.translatable("item.justarod.end_rod.speed", speed).formatted(Formatting.LIGHT_PURPLE))
+        tooltip?.add(Component.translatable("item.justarod.end_rod.speed", speed).withStyle(ChatFormatting.LIGHT_PURPLE))
     }
     override fun inventoryTick(
         stack: ItemStack?,
-        world: World?,
-        entity: net.minecraft.entity.Entity?,
+        world: Level?,
+        entity: net.minecraft.world.entity.Entity?,
         slot: Int,
         selected: Boolean
     ) {
@@ -110,7 +110,7 @@ abstract class SelfUsedElectricRodItem(settings: Settings) : ElectricRodItem(set
 
         // 如果放在副手
         if (
-            e.getStackInHand(Hand.OFF_HAND) == stack //是的,直接用==
+            e.getItemInHand(InteractionHand.OFF_HAND) == stack //是的,直接用==
             || slot == Int.MIN_VALUE // now works with inserted rods
         ){
             // 减少一点耐久 (即使没耐久也不损坏)

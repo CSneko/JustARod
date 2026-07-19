@@ -1,14 +1,14 @@
 package org.cneko.justarod.entity
 
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityType
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.data.DataTracker
-import net.minecraft.entity.data.TrackedData
-import net.minecraft.entity.data.TrackedDataHandlerRegistry
-import net.minecraft.nbt.NbtCompound
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.world.World
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.network.syncher.SynchedEntityData
+import net.minecraft.network.syncher.EntityDataAccessor
+import net.minecraft.network.syncher.EntityDataSerializers
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.world.level.Level
 import org.cneko.toneko.common.mod.api.NekoSkinRegistry
 import org.cneko.toneko.common.mod.entities.INeko
 import org.cneko.toneko.common.mod.entities.NekoEntity
@@ -22,33 +22,33 @@ import org.spongepowered.asm.mixin.Unique
 /*
 我才不是呢~
  */
-class LoliNekoEntity(private val type: EntityType<LoliNekoEntity>, world: World): NekoEntity(type, world) {
+class LoliNekoEntity(private val type: EntityType<LoliNekoEntity>, world: Level): NekoEntity(type, world) {
     companion object{
-        val SHOWING_AGE: TrackedData<Int?> = DataTracker.registerData(LoliNekoEntity::class.java, TrackedDataHandlerRegistry.INTEGER)
+        val SHOWING_AGE: EntityDataAccessor<Int?> = SynchedEntityData.defineId(LoliNekoEntity::class.java, EntityDataSerializers.INT)
     }
     override fun getBreedOffspring(
-        p0: ServerWorld?,
+        p0: ServerLevel?,
         p1: INeko?
     ): NekoEntity? {
-        return LoliNekoEntity(type, world)
+        return p0?.let { LoliNekoEntity(type, it) }
     }
     fun getShowingAge(): Int {
-        return dataTracker.get(SHOWING_AGE)!!
+        return entityData.get(SHOWING_AGE)!!
     }
     fun setShowingAge(age: Int) {
-        dataTracker.set(SHOWING_AGE, age)
+        entityData.set(SHOWING_AGE, age)
     }
 
-    override fun initDataTracker(builder: DataTracker.Builder) {
-        super.initDataTracker(builder)
-        builder.add(SHOWING_AGE,18)
+    override fun defineSynchedData(builder: SynchedEntityData.Builder) {
+        super.defineSynchedData(builder)
+        builder.define(SHOWING_AGE,18)
     }
-    override fun writeCustomDataToNbt(compound: NbtCompound) {
-        super.writeCustomDataToNbt(compound)
+    override fun addAdditionalSaveData(compound: CompoundTag) {
+        super.addAdditionalSaveData(compound)
         compound.putInt("showing_age", this.getShowingAge())
     }
-    override fun readCustomDataFromNbt(compound: NbtCompound) {
-        super.readCustomDataFromNbt(compound)
+    override fun readAdditionalSaveData(compound: CompoundTag) {
+        super.readAdditionalSaveData(compound)
         if (compound.contains("showing_age")) {
             this.setShowingAge(compound.getInt("showing_age"))
         }else {
@@ -56,7 +56,7 @@ class LoliNekoEntity(private val type: EntityType<LoliNekoEntity>, world: World)
         }
     }
 
-    override fun getBreedingAge(): Int {
+    override fun getAge(): Int {
         return -1
     }
 

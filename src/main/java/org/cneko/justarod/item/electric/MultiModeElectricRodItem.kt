@@ -1,18 +1,18 @@
 package org.cneko.justarod.item.electric
 
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.ItemStack
-import net.minecraft.item.tooltip.TooltipType
-import net.minecraft.text.Text
-import net.minecraft.util.Hand
-import net.minecraft.util.TypedActionResult
-import net.minecraft.world.World
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.TooltipFlag
+import net.minecraft.network.chat.Component
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.InteractionResultHolder
+import net.minecraft.world.level.Level
 import org.cneko.justarod.item.JRComponents
 
 /*
 很智能的呢，多种模式任你选择~
  */
-abstract class MultiModeSelfUsedElectricRodItem(settings:Settings): SelfUsedElectricRodItem(settings) {
+abstract class MultiModeSelfUsedElectricRodItem(settings:Settings): SelfUsedElectricRodItem(properties) {
     fun getMode(stack: ItemStack): String {
         return stack.getOrDefault(JRComponents.MODE, this.getDefaultMode(stack))
     }
@@ -25,8 +25,8 @@ abstract class MultiModeSelfUsedElectricRodItem(settings:Settings): SelfUsedElec
         return listOf("none")
     }
 
-    fun getTranslatableMode(mode: String): Text {
-        return Text.translatable("item.justarod.multi_mode_rods.mode.$mode")
+    fun getTranslatableMode(mode: String): Component {
+        return Component.translatable("item.justarod.multi_mode_rods.mode.$mode")
     }
 
     fun switchMode(stack: ItemStack){
@@ -40,12 +40,12 @@ abstract class MultiModeSelfUsedElectricRodItem(settings:Settings): SelfUsedElec
         }
     }
 
-    override fun use(world: World?, user: PlayerEntity?, hand: Hand?): TypedActionResult<ItemStack> {
+    override fun use(world: Level?, user: Player?, hand: InteractionHand?): InteractionResultHolder<ItemStack> {
         user?.let {
-            if (user.isSneaking){
-                val stack = user.getStackInHand(hand)
+            if (user.isShiftKeyDown()){
+                val stack = user.getItemInHand(hand)
                 switchMode(stack)
-                return TypedActionResult.success(stack)
+                return InteractionResultHolder.success(stack)
             }
         }
         return super.use(world, user, hand)
@@ -54,15 +54,15 @@ abstract class MultiModeSelfUsedElectricRodItem(settings:Settings): SelfUsedElec
     override fun appendTooltip(
         stack: ItemStack?,
         context: TooltipContext?,
-        tooltip: MutableList<Text>?,
-        type: TooltipType?
+        tooltip: MutableList<Component>?,
+        type: TooltipFlag?
     ) {
-        super.appendTooltip(stack, context, tooltip, type)
+        super.appendHoverText(stack, context, tooltip, type)
         stack?.let {
             val mode = getTranslatableMode(getMode(stack)).string
-            tooltip?.add(Text.translatable("item.justarod.multi_mode_rods.current_mode", mode))
-            tooltip?.add(Text.translatable("item.justarod.multi_mode_rods.switch_mode"))
-            tooltip?.add(Text.translatable("item.justarod.multi_mode_rods.all_modes"))
+            tooltip?.add(Component.translatable("item.justarod.multi_mode_rods.current_mode", mode))
+            tooltip?.add(Component.translatable("item.justarod.multi_mode_rods.switch_mode"))
+            tooltip?.add(Component.translatable("item.justarod.multi_mode_rods.all_modes"))
             getModes(stack).forEach {
                 tooltip?.add(getTranslatableMode(it))
             }

@@ -1,18 +1,18 @@
 package org.cneko.justarod.item
 
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.inventory.StackReference
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.item.ItemUsageContext
-import net.minecraft.item.tooltip.TooltipType
-import net.minecraft.registry.Registries
-import net.minecraft.screen.slot.Slot
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
-import net.minecraft.util.*
-import net.minecraft.util.math.BlockPos
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.inventory.SlotAccess
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.context.UseOnContext
+import net.minecraft.world.item.TooltipFlag
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.world.inventory.Slot
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.network.chat.Component
+// FIXME: wildcard util.* needs manual import splitting
+import net.minecraft.core.BlockPos
 import org.cneko.justarod.damage.JRDamageTypes
 import org.cneko.justarod.entity.Insertable
 import org.cneko.justarod.item.rod.SelfUsedItemInterface
@@ -29,25 +29,25 @@ class InsertionPedestalItem:Item(Settings()),Ammunition {
         otherStack: ItemStack?,
         slot: Slot?,
         clickType: ClickType?,
-        player: PlayerEntity?,
-        cursorStackReference: StackReference?
+        player: Player?,
+        cursorStackReference: SlotAccess?
     ): Boolean {
-        if (player?.world?.isClient == false) {
+        if (player?.world?.isClientSide == false) {
             // 主手不是空的
-            if (player.getStackInHand(Hand.MAIN_HAND)?.isEmpty!!) {
-                player.sendMessage(Text.translatable("item.justarod.insertion_pedestal.must_be_thing_in_hand"))
+            if (player.getItemInHand(InteractionHand.MAIN_HAND)?.isEmpty!!) {
+                player.sendSystemMessage(Component.translatable("item.justarod.insertion_pedestal.must_be_thing_in_hand"))
                 return super.onClicked(probablyPedestalStack, otherStack, slot, clickType, player, cursorStackReference)
             }
-            val rodStack = player.getStackInHand(Hand.MAIN_HAND)
+            val rodStack = player.getItemInHand(InteractionHand.MAIN_HAND)
 
             if (rodStack.item !is SelfUsedItemInterface) {
-                player.sendMessage(Text.translatable("item.justarod.insertion_pedestal.must_be_rod"))
+                player.sendSystemMessage(Component.translatable("item.justarod.insertion_pedestal.must_be_rod"))
                 return super.onClicked(probablyPedestalStack, otherStack, slot, clickType, player, cursorStackReference)
             }
 
             probablyPedestalStack?.let { pedestalStack ->
                 if (pedestalStack.components.contains(JRComponents.ROD_INSIDE)) {
-                    player.dropStack(pedestalStack.getOrDefault(JRComponents.ROD_INSIDE, ItemStack.EMPTY))
+                    player.spawnAtLocation(pedestalStack.getOrDefault(JRComponents.ROD_INSIDE, ItemStack.EMPTY))
                 }
                 if (pedestalStack.count == 1){
                     pedestalStack.set(JRComponents.ROD_INSIDE, rodStack)
@@ -57,13 +57,13 @@ class InsertionPedestalItem:Item(Settings()),Ammunition {
                     val newPedestalStack = pedestalStack.copy()
                     newPedestalStack.count = 1
                     newPedestalStack.set(JRComponents.ROD_INSIDE, rodStack)
-                    if (!player.giveItemStack(newPedestalStack)){//usually inventory full,we cannot give stack
-                        player.dropStack(newPedestalStack)
+                    if (!player.addItem(newPedestalStack)){//usually inventory full,we cannot give stack
+                        player.spawnAtLocation(newPedestalStack)
                     }
                 }
                 // 去掉一个rod
                 if (rodStack.count > 1) {
-                    rodStack.decrement(1)
+                    rodStack.shrink(1)
                 } else {
                     player.inventory.removeOne(rodStack)
                 }
@@ -72,18 +72,18 @@ class InsertionPedestalItem:Item(Settings()),Ammunition {
         return super.onClicked(probablyPedestalStack, otherStack, slot, clickType, player, cursorStackReference)
     }
 
-    override fun useOnEntity(stack: ItemStack?, user: PlayerEntity?, entity: LivingEntity?, hand: Hand?): ActionResult {
-        if (entity is Insertable && user?.world?.isClient == false){
+    override fun useOnEntity(stack: ItemStack?, user: Player?, entity: LivingEntity?, hand: InteractionHand?): InteractionResult {
+        if (entity is Insertable && user?.world?.isClientSide == false){
             // 已经在里面了哇，塞不进去啦
             if(entity.hasRodInside()){
-                user.sendMessage(Text.translatable("item.justarod.insertion_pedestal.already_has_rod"))
-                return ActionResult.FAIL
+                user.sendSystemMessage(Component.translatable("item.justarod.insertion_pedestal.already_has_rod"))
+                return InteractionResult.FAIL
             }
             val rod: ItemStack? = stack?.getOrDefault(JRComponents.ROD_INSIDE, ItemStack.EMPTY)
             if (rod?.isEmpty == true){
                 // 什么也没有呢...
-                user.sendMessage(Text.translatable("item.justarod.insertion_pedestal.no_rod"))
-                return ActionResult.FAIL
+                user.sendSystemMessage(Component.translatable("item.justarod.insertion_pedestal.no_rod"))
+                return InteractionResult.FAIL
             }
             // 插入
             stack?.let { entity.insertRod(user, it) }
@@ -93,7 +93,7 @@ class InsertionPedestalItem:Item(Settings()),Ammunition {
         return super.useOnEntity(stack, user, entity, hand)
     }
     //我只能做到右键方块触发,因为我不知道有没有api能在右键不到方块的时候触发
-    override fun useOnBlock(context: ItemUsageContext?): ActionResult {
+    override fun useOnBlock(context: UseOnContext?): InteractionResult {
         if (context != null){
             if (
                 context.stack != null
@@ -101,12 +101,12 @@ class InsertionPedestalItem:Item(Settings()),Ammunition {
                 ) {
                 val player = context.player!!
                 val usingStack = context.stack!!
-                if (player.isSneaking) {
+                if (player.isShiftKeyDown()) {
                     if (usingStack.components.contains(JRComponents.ROD_INSIDE)) {
                         val givingStack = usingStack.getOrDefault(JRComponents.ROD_INSIDE, ItemStack.EMPTY)
                         if (!givingStack.isEmpty){
-                            if (!player.giveItemStack(givingStack)) {
-                                player.dropStack(givingStack)
+                            if (!player.addItem(givingStack)) {
+                                player.spawnAtLocation(givingStack)
                             }//我都想弄个static方法出来了,就叫giveOrDropStack
                             usingStack.remove(JRComponents.ROD_INSIDE)
                         }
@@ -120,22 +120,22 @@ class InsertionPedestalItem:Item(Settings()),Ammunition {
     override fun appendTooltip(
         stack: ItemStack?,
         context: TooltipContext?,
-        tooltip: MutableList<Text>?,
-        type: TooltipType?
+        tooltip: MutableList<Component>?,
+        type: TooltipFlag?
     ) {
-        super.appendTooltip(stack, context, tooltip, type)
+        super.appendHoverText(stack, context, tooltip, type)
         val rod = stack?.getOrDefault(JRComponents.ROD_INSIDE, ItemStack.EMPTY)
         if (rod?.isEmpty == true){
-            tooltip?.add(Text.translatable("item.justarod.insertion_pedestal.no_rod"))
+            tooltip?.add(Component.translatable("item.justarod.insertion_pedestal.no_rod"))
         } else {
-            tooltip?.add(Text.translatable("item.justarod.insertion_pedestal.has_rod",Text.translatable(rod?.item?.translationKey)))
-            rod?.item?.appendTooltip(rod,context,tooltip,type)
+            tooltip?.add(Component.translatable("item.justarod.insertion_pedestal.has_rod",Component.translatable(rod?.item?.translationKey)))
+            rod?.item?.appendHoverText(rod,context,tooltip,type)
         }
     }
 
     override fun hitOnEntity(shooter: LivingEntity?, target: LivingEntity?, bazooka: ItemStack?, ammo: ItemStack?) {
-        if (target is Insertable && shooter is PlayerEntity && !target.world.isClient){
-            useOnEntity(ammo,shooter,target,Hand.MAIN_HAND)
+        if (target is Insertable && shooter is Player && !target.level().isClientSide){
+            useOnEntity(ammo,shooter,target,InteractionHand.MAIN_HAND)
         }
     }
 
@@ -158,22 +158,22 @@ class InsertionPedestalItem:Item(Settings()),Ammunition {
     }
 }
 
-fun ServerPlayerEntity.hasRodInside(): Boolean{
+fun ServerPlayer.hasRodInside(): Boolean{
     return (this as Insertable).hasRodInside()
 }
-fun <T> T.insertRod(player: PlayerEntity,pedestal: ItemStack): TypedActionResult<ItemStack>
+fun <T> T.insertRod(player: Player,pedestal: ItemStack): InteractionResultHolder<ItemStack>
         where T : LivingEntity, T : Insertable {
     this.rodInside = pedestal.getOrDefault(JRComponents.ROD_INSIDE, ItemStack.EMPTY)
     if (!player.isCreative) {
         pedestal.remove(JRComponents.ROD_INSIDE)
     }
     // 受伤
-    this.damage(JRDamageTypes.sexualExcitement(this), 4f)
-    this.sendMessage(Text.translatable("item.justarod.insertion_pedestal.insert_rod"))
-    return TypedActionResult.success(pedestal)
+    this.hurt(JRDamageTypes.sexualExcitement(this), 4f)
+    this.sendSystemMessage(Component.translatable("item.justarod.insertion_pedestal.insert_rod"))
+    return InteractionResultHolder.success(pedestal)
 }
 
 
 private fun Item.getId(): String {
-    return Registries.ITEM.getId(this).path
+    return BuiltInRegistries.ITEM.getId(this).path
 }

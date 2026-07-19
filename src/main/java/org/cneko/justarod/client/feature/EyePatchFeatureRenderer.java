@@ -1,53 +1,53 @@
 package org.cneko.justarod.client.feature;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.feature.FeatureRenderer;
-import net.minecraft.client.render.entity.feature.FeatureRendererContext;
-import net.minecraft.client.render.entity.model.PlayerEntityModel;
-import net.minecraft.client.render.model.json.ModelTransformationMode;
-import net.minecraft.client.util.math.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.world.item.ItemDisplayContext;
 import org.cneko.justarod.entity.BDSMable;
 import org.cneko.justarod.item.JRItems;
 
-public class EyePatchFeatureRenderer extends FeatureRenderer<AbstractClientPlayerEntity, PlayerEntityModel<AbstractClientPlayerEntity>> {
+public class EyePatchFeatureRenderer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
 
 
-    public EyePatchFeatureRenderer(FeatureRendererContext<AbstractClientPlayerEntity, PlayerEntityModel<AbstractClientPlayerEntity>> context) {
+    public EyePatchFeatureRenderer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> context) {
         super(context);
     }
 
     @Override
-    public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light,
-                       AbstractClientPlayerEntity player, float limbAngle, float limbDistance,
+    public void render(PoseStack matrices, MultiBufferSource vertexConsumers, int light,
+                       AbstractClientPlayer player, float limbAngle, float limbDistance,
                        float tickDelta, float animationProgress, float headYaw, float headPitch) {
 
         if (!(player instanceof BDSMable bm) || bm.getEyePatch() <= 0) return;
 
-        matrices.push();
+        matrices.pushPose();
 
         // 跟随头部旋转
-        getContextModel().head.rotate(matrices);
+        getParentModel().head.translateAndRotate(matrices);
 
         // 平移：x 左右，y 上下，z 前后（单位是方块的 1/16）
         matrices.translate(0.0F, -0.3f, 0f);
         // 缩放：稍微小一点
         matrices.scale(0.7F, 0.7F, 0.7F);
 
-        MinecraftClient.getInstance().getItemRenderer().renderItem(
+        Minecraft.getInstance().getItemRenderer().renderStatic(
                 JRItems.Companion.getEYE_PATCH().getDefaultStack(),
-                ModelTransformationMode.FIXED,
+                ItemDisplayContext.FIXED,
                 light,
-                OverlayTexture.DEFAULT_UV,
+                OverlayTexture.NO_OVERLAY,
                 matrices,
                 vertexConsumers,
-                player.getWorld(),
+                player.level(),
                 0
         );
 
-        matrices.pop();
+        matrices.popPose();
     }
 
 }

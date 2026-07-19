@@ -1,9 +1,9 @@
 package org.cneko.justarod.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
 import org.cneko.justarod.Justarod;
 import org.cneko.justarod.entity.Pregnant;
 
@@ -14,15 +14,15 @@ public class UterusScanScreen extends MedicalScanScreen {
     // =========================================================================
 
     // 1. 基础器官
-    private static final Identifier TEX_UTERUS_BASE = id("uterus_base");           // 健康的子宫、阴道和输卵管底图
-    private static final Identifier TEX_OVARY_NORMAL = id("ovary_normal");         // 正常卵巢
+    private static final ResourceLocation TEX_UTERUS_BASE = id("uterus_base");           // 健康的子宫、阴道和输卵管底图
+    private static final ResourceLocation TEX_OVARY_NORMAL = id("ovary_normal");         // 正常卵巢
     //private static final Identifier TEX_OVARY_PCOS = id("ovary_pcos");             // 多囊卵巢(肿大，布满黑色未成熟小囊泡)
 
     // 2. 月经周期相关
-    private static final Identifier TEX_FOLLICLE = id("cycle_follicle");           // 卵泡期：卵巢上的小亮点
-    private static final Identifier TEX_OVUM = id("cycle_ovum");                   // 排卵期：悬浮在输卵管伞端的发光卵子
-    private static final Identifier TEX_CORPUS_LUTEUM = id("cycle_luteum");        // 黄体期：卵巢上的黄色斑块，以及增厚的子宫内膜
-    private static final Identifier TEX_MENSTRUAL_BLOOD = id("cycle_menstruation");// 月经期：宫腔和阴道内斑驳的暗红色液滴/血流
+    private static final ResourceLocation TEX_FOLLICLE = id("cycle_follicle");           // 卵泡期：卵巢上的小亮点
+    private static final ResourceLocation TEX_OVUM = id("cycle_ovum");                   // 排卵期：悬浮在输卵管伞端的发光卵子
+    private static final ResourceLocation TEX_CORPUS_LUTEUM = id("cycle_luteum");        // 黄体期：卵巢上的黄色斑块，以及增厚的子宫内膜
+    private static final ResourceLocation TEX_MENSTRUAL_BLOOD = id("cycle_menstruation");// 月经期：宫腔和阴道内斑驳的暗红色液滴/血流
 
     // 3. 孕产相关
     //private static final Identifier TEX_FETUS = id("preg_fetus");                  // 正常怀孕：宫腔内的胎儿剪影 (可根据孕期控制透明度/大小)
@@ -45,8 +45,8 @@ public class UterusScanScreen extends MedicalScanScreen {
 
     // =========================================================================
 
-    private static Identifier id(String name) {
-        return Identifier.of(Justarod.MODID, "textures/gui/medical/" + name + ".png");
+    private static ResourceLocation id(String name) {
+        return ResourceLocation.fromNamespaceAndPath(Justarod.MODID, "textures/gui/medical/" + name + ".png");
     }
 
     public UterusScanScreen(LivingEntity targetEntity) {
@@ -54,14 +54,14 @@ public class UterusScanScreen extends MedicalScanScreen {
     }
 
     @Override
-    protected void renderOrganLayers(DrawContext context, int x, int y, float delta) {
+    protected void renderOrganLayers(GuiGraphics context, int x, int y, float delta) {
         // 如果没有子宫，屏幕中心画个空的或者保持扫描仪黑屏即可
         if (!pregnantData.hasUterus() || !pregnantData.isFemale()) {
             return;
         }
 
         // 获取时间，用于做闪烁或脉冲动画
-        long time = targetEntity.getWorld().getTime();
+        long time = targetEntity.level().getGameTime();
 
         // -----------------------------------------------------------------
         // 第 1 层：卵巢与输卵管附件 (最底层)

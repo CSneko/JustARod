@@ -1,23 +1,23 @@
 package org.cneko.justarod.packet;
 
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
-
 import static org.cneko.justarod.Justarod.MODID;
 
-// 北朝了~
-public record PassiveMatingPayload(String uuid, String mateUuid) implements CustomPayload {
-    public static final CustomPayload.Id<PassiveMatingPayload> ID = new  CustomPayload.Id<>(Identifier.of(MODID, "neko_passive_mate"));
-    public static final PacketCodec<RegistryByteBuf, PassiveMatingPayload> CODEC;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-    public CustomPayload.Id<? extends CustomPayload> getId() {
+// 北朝了~
+public record PassiveMatingPayload(String uuid, String mateUuid) implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<PassiveMatingPayload> ID = new  CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(MODID, "neko_passive_mate"));
+    public static final StreamCodec<RegistryFriendlyByteBuf, PassiveMatingPayload> CODEC;
+
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 
     static {
-        CODEC = PacketCodec.tuple(PacketCodecs.STRING, PassiveMatingPayload::uuid, PacketCodecs.STRING, PassiveMatingPayload::mateUuid, PassiveMatingPayload::new);
+        CODEC = StreamCodec.composite(ByteBufCodecs.STRING_UTF8, PassiveMatingPayload::uuid, ByteBufCodecs.STRING_UTF8, PassiveMatingPayload::mateUuid, PassiveMatingPayload::new);
     }
 }

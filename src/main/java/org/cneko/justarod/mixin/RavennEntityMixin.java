@@ -1,9 +1,5 @@
 package org.cneko.justarod.mixin;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.MobEntity;
 import org.cneko.justarod.entity.Pregnant;
 import org.cneko.toneko.common.mod.entities.INeko;
 import org.cneko.toneko.common.mod.entities.RavennEntity;
@@ -15,6 +11,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 
 @SuppressWarnings({"AddedMixinMembersNamePattern", "DataFlowIssue"})
 @Mixin(RavennEntity.class)
@@ -217,15 +217,15 @@ public class RavennEntityMixin implements Pregnant {
     @Override
     public Entity createBaby() {
         RavennEntity ravenn = (RavennEntity) (Object) this;
-        var baby = (Entity) getChildrenType().create(ravenn.getWorld());
-        if (baby instanceof MobEntity mob) {
+        var baby = (Entity) getChildrenType().create(ravenn.level());
+        if (baby instanceof Mob mob) {
             mob.setBaby(true);
-            mob.age = -48000;
+            mob.tickCount = -48000;
             if (baby instanceof INeko neko) {
-                neko.addOwner(ravenn.getUuid(), new INeko.Owner(new ArrayList<>(), 0));
+                neko.addOwner(ravenn.getUUID(), new INeko.Owner(new ArrayList<>(), 0));
             }
         }
-        baby.setPos(ravenn.getX(), ravenn.getY(), ravenn.getZ());
+        baby.setPosRaw(ravenn.getX(), ravenn.getY(), ravenn.getZ());
         return baby;
     }
 

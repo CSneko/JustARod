@@ -1,17 +1,17 @@
 package org.cneko.justarod.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
 import org.cneko.justarod.Justarod;
 import org.cneko.justarod.entity.Pregnant;
 
 public abstract class MedicalScanScreen extends Screen {
-    public static final Identifier SCANNER_BG = Identifier.of(Justarod.MODID, "textures/gui/medical/scanner_bg.png");
+    public static final ResourceLocation SCANNER_BG = ResourceLocation.fromNamespaceAndPath(Justarod.MODID, "textures/gui/medical/scanner_bg.png");
 
     protected final LivingEntity targetEntity;
     protected final Pregnant pregnantData;
@@ -28,7 +28,7 @@ public abstract class MedicalScanScreen extends Screen {
     protected double panY = 0.0;
 
     public MedicalScanScreen(LivingEntity targetEntity) {
-        super(Text.literal("扫喵ing"));
+        super(Component.literal("扫喵ing"));
         this.targetEntity = targetEntity;
         this.pregnantData = (Pregnant) targetEntity;
     }
@@ -41,42 +41,42 @@ public abstract class MedicalScanScreen extends Screen {
     }
 
     @Override
-    public boolean shouldPause() {
+    public boolean isPauseScreen() {
         return false;
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         // 1. 绘制扫描仪外框底图 (固定不动)
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        context.drawTexture(SCANNER_BG, this.x, this.y, 0, 0, this.imageWidth, this.imageHeight);
+        context.blit(SCANNER_BG, this.x, this.y, 0, 0, this.imageWidth, this.imageHeight);
 
         // 2. 开启剪裁，防止放大或拖动的器官超出 256x256 的屏幕显示区域
         // （如果你的仪器外框有厚重的边框，可以在这里微调 x, y 和 width, height 来缩小剪裁区）
         context.enableScissor(this.x, this.y, this.x + this.imageWidth, this.y + this.imageHeight);
 
         // 3. 应用矩阵变换：平移与缩放
-        context.getMatrices().push();
+        context.pose().pushPose();
 
         // a. 将矩阵原点移动到显示区域的中心
         float centerX = this.x + this.imageWidth / 2.0F;
         float centerY = this.y + this.imageHeight / 2.0F;
-        context.getMatrices().translate(centerX, centerY, 0);
+        context.pose().translate(centerX, centerY, 0);
 
         // b. 应用缩放
-        context.getMatrices().scale(this.zoom, this.zoom, 1.0F);
+        context.pose().scale(this.zoom, this.zoom, 1.0F);
 
         // c. 应用平移（在缩放后的图像空间中平移）
-        context.getMatrices().translate(this.panX, this.panY, 0);
+        context.pose().translate(this.panX, this.panY, 0);
 
         // d. 将原点移回原来的位置，以便子类的 (x, y) 坐标能正常对齐
-        context.getMatrices().translate(-centerX, -centerY, 0);
+        context.pose().translate(-centerX, -centerY, 0);
 
         // 4. 调用子类的具体器官图层绘制
         this.renderOrganLayers(context, this.x, this.y, delta);
 
         // 5. 恢复矩阵并关闭剪裁
-        context.getMatrices().pop();
+        context.pose().popPose();
         context.disableScissor();
 
         // 6. 渲染其他上层 UI (如工具提示等)
@@ -93,7 +93,7 @@ public abstract class MedicalScanScreen extends Screen {
             float newZoom = this.zoom + (float) verticalAmount * zoomSensitivity;
 
             // 限制缩放级别在 0.5x 到 5.0x 之间
-            this.zoom = MathHelper.clamp(newZoom, 0.5F, 5.0F);
+            this.zoom = Mth.clamp(newZoom, 0.5F, 5.0F);
             return true;
         }
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
@@ -123,9 +123,9 @@ public abstract class MedicalScanScreen extends Screen {
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
-    protected abstract void renderOrganLayers(DrawContext context, int x, int y, float delta);
+    protected abstract void renderOrganLayers(GuiGraphics context, int x, int y, float delta);
 
-    protected void drawLayer(DrawContext context, Identifier texture, int x, int y) {
-        context.drawTexture(texture, x, y, 0, 0, this.imageWidth, this.imageHeight);
+    protected void drawLayer(GuiGraphics context, ResourceLocation texture, int x, int y) {
+        context.blit(texture, x, y, 0, 0, this.imageWidth, this.imageHeight);
     }
 }

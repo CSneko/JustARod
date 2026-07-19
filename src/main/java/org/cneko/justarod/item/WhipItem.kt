@@ -1,24 +1,24 @@
 package org.cneko.justarod.item
 
-import net.minecraft.entity.EquipmentSlot
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.effect.StatusEffectInstance
-import net.minecraft.entity.effect.StatusEffects
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.item.tooltip.TooltipType
-import net.minecraft.particle.DustParticleEffect
-import net.minecraft.particle.ParticleEffect
-import net.minecraft.particle.ParticleTypes
-import net.minecraft.sound.SoundCategory
-import net.minecraft.sound.SoundEvents
-import net.minecraft.text.Text
-import net.minecraft.util.Hand
-import net.minecraft.util.TypedActionResult
-import net.minecraft.util.UseAction
-import net.minecraft.world.World
-import net.minecraft.util.math.Vec3d
+import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.effect.MobEffectInstance
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.TooltipFlag
+import net.minecraft.core.particles.DustParticleOptions
+import net.minecraft.core.particles.ParticleOptions
+import net.minecraft.core.particles.ParticleTypes
+import net.minecraft.sounds.SoundSource
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.network.chat.Component
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.InteractionResultHolder
+import net.minecraft.world.item.UseAnim
+import net.minecraft.world.level.Level
+import net.minecraft.world.phys.Vec3
 import org.joml.Vector3f
 import kotlin.math.acos
 import kotlin.math.cos
@@ -28,7 +28,7 @@ import kotlin.math.sin
 /*
 啊~♡ 主人别打了喵~
  */
-open class WhipItem(settings: Settings) : Item(settings.maxCount(1).maxDamage(1000)) {
+open class WhipItem(properties: Properties) : Item(settings.maxCount(1).maxDamage(1000)) {
 
     override fun postHit(stack: ItemStack, target: LivingEntity, attacker: LivingEntity): Boolean {
         // 左键普通攻击：主目标满伤（4点），其他目标半伤（2点）
@@ -36,10 +36,10 @@ open class WhipItem(settings: Settings) : Item(settings.maxCount(1).maxDamage(10
         return super.postHit(stack, target, attacker)
     }
 
-    override fun inventoryTick(stack: ItemStack, world: World, entity: net.minecraft.entity.Entity, slot: Int, selected: Boolean) {
+    override fun inventoryTick(stack: ItemStack, world: Level, entity: net.minecraft.world.entity.Entity, slot: Int, selected: Boolean) {
         super.inventoryTick(stack, world, entity, slot, selected)
 
-        if (world.isClient && selected && entity is PlayerEntity && entity.isUsingItem && entity.activeItemStack == stack) {
+        if (level().isClientSide && selected && entity is Player && entity.isUsingItem && entity.useItem == stack) {
             val useTicks = entity.itemUseTime
             val chargeRatio =
                 min((getMaxUseTime(stack, entity) - useTicks).toDouble() / getMaxUseTime(stack, entity), 1.0)
@@ -61,8 +61,8 @@ open class WhipItem(settings: Settings) : Item(settings.maxCount(1).maxDamage(10
                 val b = (0.5 + 0.5 * chargeRatio).toFloat()
                 val size = 0.1f + 0.2f * chargeRatio.toFloat()
 
-                world.addParticle(
-                    DustParticleEffect(Vector3f(r, g, b), size),
+                level().addParticle(
+                    DustParticleOptions(Vector3f(r, g, b), size),
                     x, y, z,
                     0.0, 0.02, 0.0
                 )
@@ -70,25 +70,25 @@ open class WhipItem(settings: Settings) : Item(settings.maxCount(1).maxDamage(10
         }
     }
 
-    override fun use(world: World, user: PlayerEntity, hand: Hand): TypedActionResult<ItemStack> {
+    override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
         user.setCurrentHand(hand)
-        return TypedActionResult.consume(user.getStackInHand(hand))
+        return InteractionResultHolder.consume(user.getItemInHand(hand))
     }
 
-    override fun finishUsing(stack: ItemStack, world: World, user: LivingEntity): ItemStack {
+    override fun finishUsing(stack: ItemStack, world: Level, user: LivingEntity): ItemStack {
         return stack
     }
 
-    override fun getUseAction(stack: ItemStack): UseAction {
-        return UseAction.BOW
+    override fun getUseAction(stack: ItemStack): UseAnim {
+        return UseAnim.BOW
     }
 
     override fun getMaxUseTime(stack: ItemStack?, user: LivingEntity?): Int {
         return 30
     }
 
-    override fun onStoppedUsing(stack: ItemStack, world: World, user: LivingEntity, remainingUseTicks: Int) {
-        if (user !is PlayerEntity) return
+    override fun onStoppedUsing(stack: ItemStack, world: Level, user: LivingEntity, remainingUseTicks: Int) {
+        if (user !is Player) return
 
         val chargedTicks = getMaxUseTime(stack, user) - remainingUseTicks
         val chargeRatio = min(chargedTicks / getMaxUseTime(stack, user).toDouble(), 1.0)
@@ -102,10 +102,10 @@ open class WhipItem(settings: Settings) : Item(settings.maxCount(1).maxDamage(10
 
         applyWhipEffect(user, range, knockback, duration, 2, damage, charged = true)
 
-        world.playSound(null, user.blockPos, SoundEvents.ENTITY_FISHING_BOBBER_RETRIEVE, SoundCategory.PLAYERS, 1.0f, 0.8f + 0.4f * chargeRatio.toFloat())
-        world.playSound(null, user.blockPos, SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP, SoundCategory.PLAYERS, 0.8f, 1.0f)
+        level().playSound(null, user.blockPosition(), SoundEvents.ENTITY_FISHING_BOBBER_RETRIEVE, SoundSource.PLAYERS, 1.0f, 0.8f + 0.4f * chargeRatio.toFloat())
+        level().playSound(null, user.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 0.8f, 1.0f)
 
-        stack.damage(2 + (chargeRatio * 2).toInt(), user, EquipmentSlot.MAINHAND)
+        stack.hurt(2 + (chargeRatio * 2).toInt(), user, EquipmentSlot.MAINHAND)
     }
 
     private fun applyWhipEffect(
@@ -124,22 +124,22 @@ open class WhipItem(settings: Settings) : Item(settings.maxCount(1).maxDamage(10
         val arcParticle = if (charged) ParticleTypes.ELECTRIC_SPARK else ParticleTypes.SWEEP_ATTACK
         spawnWhipArcParticles(world, attacker, range, angleRange, arcParticle)
 
-        val entities = world.getEntitiesByClass(
+        val entities = level().getEntitiesOfClass(
             LivingEntity::class.java,
-            attacker.boundingBox.expand(range),
+            attacker.boundingBox.inflate(range),
         ) { it != attacker && attacker.isInRange(it, range) }
 
         for (entity in entities) {
             val directionToEntity = entity.pos.subtract(attacker.pos).normalize()
-            val attackerLookVec = Vec3d(-sin(attackerYaw), 0.0, cos(attackerYaw))
+            val attackerLookVec = Vec3(-sin(attackerYaw), 0.0, cos(attackerYaw))
             val dot = attackerLookVec.dotProduct(directionToEntity)
             val angle = acos(dot.coerceIn(-1.0, 1.0))
 
             if (angle <= angleRange / 2) {
                 world.addParticle(ParticleTypes.CRIT, entity.x, entity.eyeY, entity.z, 0.0, 0.0, 0.0)
 
-                entity.addStatusEffect(StatusEffectInstance(StatusEffects.SLOWNESS, slownessDuration, slownessLevel))
-                entity.addVelocity(-sin(attackerYaw) * knockbackStrength, 0.1, cos(attackerYaw) * knockbackStrength)
+                entity.addEffect(MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, slownessDuration, slownessLevel))
+                entity.addDeltaMovement(-sin(attackerYaw) * knockbackStrength, 0.1, cos(attackerYaw) * knockbackStrength)
                 entity.velocityModified = true
 
                 hitTarget(attacker, entity, damage)
@@ -149,10 +149,10 @@ open class WhipItem(settings: Settings) : Item(settings.maxCount(1).maxDamage(10
 
     protected open fun hitTarget(attacker: LivingEntity, target: LivingEntity, amount: Float) {
         val damageSource = attacker.damageSources.mobAttack(attacker)
-        target.damage(damageSource, amount)
+        target.hurt(damageSource, amount)
     }
 
-    private fun spawnWhipArcParticles(world: World, attacker: LivingEntity, range: Double, angleRange: Double, particle: ParticleEffect) {
+    private fun spawnWhipArcParticles(world: Level, attacker: LivingEntity, range: Double, angleRange: Double, particle: ParticleOptions) {
         val yawRad = Math.toRadians(attacker.yaw.toDouble())
         val steps = 10
         val arcSteps = 6
@@ -165,7 +165,7 @@ open class WhipItem(settings: Settings) : Item(settings.maxCount(1).maxDamage(10
                 val z = attacker.z + cos(yawRad + angleOffset) * radius
                 val y = attacker.eyeY - 0.3
 
-                world.addParticle(particle, x, y, z, 0.0, 0.0, 0.0)
+                level().addParticle(particle, x, y, z, 0.0, 0.0, 0.0)
             }
         }
     }

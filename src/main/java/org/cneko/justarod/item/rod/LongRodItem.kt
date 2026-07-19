@@ -1,12 +1,12 @@
 package org.cneko.justarod.item.rod
 
-import net.minecraft.entity.Entity
-import net.minecraft.entity.LivingEntity
-import net.minecraft.item.ItemStack
-import net.minecraft.item.tooltip.TooltipType
-import net.minecraft.text.Text
-import net.minecraft.util.ActionResult
-import net.minecraft.world.World
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.TooltipFlag
+import net.minecraft.network.chat.Component
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.level.Level
 import org.cneko.justarod.damage.JRDamageTypes
 import org.cneko.justarod.item.JRComponents
 
@@ -21,11 +21,11 @@ class LongRodItem : BothUsedItem(Settings().component(JRComponents.Companion.USE
     override fun canAcceptEntity(stack: ItemStack, entity: Entity): Boolean {
         return true
     }
-    override fun useOnSelf(stack: ItemStack, world: World?, entity: LivingEntity, slot: Int, selected: Boolean): ActionResult {
+    override fun useOnSelf(stack: ItemStack, world: Level?, entity: LivingEntity, slot: Int, selected: Boolean): InteractionResult {
         val result = super.useOnSelf(stack, world, entity, slot, selected)
-        if (result == ActionResult.SUCCESS){
-            entity.damage(JRDamageTypes.sexualExcitement(entity), 5.0f)
-            entity.sendMessage(Text.translatable("item.justarod.long_rod.already_top"))
+        if (result == InteractionResult.SUCCESS){
+            entity.hurt(JRDamageTypes.sexualExcitement(entity), 5.0f)
+            entity.sendSystemMessage(Component.translatable("item.justarod.long_rod.already_top"))
         }
         return result
     }
@@ -33,10 +33,10 @@ class LongRodItem : BothUsedItem(Settings().component(JRComponents.Companion.USE
     override fun appendTooltip(
         stack: ItemStack?,
         context: TooltipContext?,
-        tooltip: MutableList<Text>?,
-        type: TooltipType?
+        tooltip: MutableList<Component>?,
+        type: TooltipFlag?
     ) {
-        super.appendTooltip(stack, context, tooltip, type)
-        tooltip?.add(Text.translatable("item.justarod.long_rod.tooltip"))
+        super.appendHoverText(stack, context, tooltip, type)
+        tooltip?.add(Component.translatable("item.justarod.long_rod.tooltip"))
     }
 }

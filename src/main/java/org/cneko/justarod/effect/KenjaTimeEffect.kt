@@ -1,18 +1,18 @@
 package org.cneko.justarod.effect
 
-import net.minecraft.entity.attribute.EntityAttributeModifier
-import net.minecraft.entity.attribute.EntityAttributes
-import net.minecraft.entity.effect.StatusEffect
-import net.minecraft.entity.effect.StatusEffectCategory
+import net.minecraft.world.entity.ai.attributes.AttributeModifier
+import net.minecraft.world.entity.ai.attributes.Attributes
+import net.minecraft.world.effect.MobEffect
+import net.minecraft.world.effect.MobEffectCategory
 import org.cneko.toneko.common.mod.effects.ExcitingEffect
 
-class KenjaTimeEffect: StatusEffect(StatusEffectCategory.BENEFICIAL, 0x3cfa3c)  {
+class KenjaTimeEffect: MobEffect(MobEffectCategory.BENEFICIAL, 0x3cfa3c)  {
     init{
         this.addAttributeModifier(
-            EntityAttributes.GENERIC_MOVEMENT_SPEED,
+            Attributes.MOVEMENT_SPEED,
             ExcitingEffect.LOCATION,
             -0.15,
-            EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE
+            AttributeModifier.Operation.ADD_MULTIPLIED_BASE
         )
     }
 }

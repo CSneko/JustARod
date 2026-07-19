@@ -1,20 +1,20 @@
 package org.cneko.justarod.entity
 
 import kotlinx.coroutines.flow.merge
-import net.minecraft.entity.EntityPose
-import net.minecraft.entity.EntityType
-import net.minecraft.entity.data.DataTracker
-import net.minecraft.entity.data.TrackedData
-import net.minecraft.entity.data.TrackedDataHandlerRegistry
-import net.minecraft.entity.effect.StatusEffectInstance
-import net.minecraft.entity.effect.StatusEffects
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NbtCompound
-import net.minecraft.registry.tag.FluidTags
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.text.Text
-import net.minecraft.world.World
+import net.minecraft.world.entity.Pose
+import net.minecraft.world.entity.EntityType
+import net.minecraft.network.syncher.SynchedEntityData
+import net.minecraft.network.syncher.EntityDataAccessor
+import net.minecraft.network.syncher.EntityDataSerializers
+import net.minecraft.world.effect.MobEffectInstance
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.tags.FluidTags
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.network.chat.Component
+import net.minecraft.world.level.Level
 import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.entity.ai.SexualIntercourseGoal
 import org.cneko.justarod.entity.ai.SuckMilkGoal
@@ -32,10 +32,10 @@ import java.util.function.Predicate
 /*
 小猫娘~~ 可可爱爱
  */
-open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, world: World): NekoEntity(type, world),Sexual {
+open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, world: Level): NekoEntity(type, world),Sexual {
     companion object{
         const val SKIN:String = "shiuri_neko"
-        val SEXUAL_DESIRE_ID:TrackedData<Int> = DataTracker.registerData(SeeeeexNekoEntity::class.java, TrackedDataHandlerRegistry.INTEGER)
+        val SEXUAL_DESIRE_ID:EntityDataAccessor<Int> = SynchedEntityData.defineId(SeeeeexNekoEntity::class.java, EntityDataSerializers.INT)
 
         // 全局开关：是否允许自动和其他Neko交配
         var AUTO_MATE_WITH_NEKO = false
@@ -44,21 +44,21 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
     var sexualIntercourseGoal: SexualIntercourseGoal? = null
     var suckMilkGoal: SuckMilkGoal? = null
 
-    override fun getBreedOffspring(world: ServerWorld?, neko: INeko?): NekoEntity? {
+    override fun getBreedOffspring(world: ServerLevel?, neko: INeko?): NekoEntity? {
         return world?.let { SeeeeexNekoEntity(this.type, it) }
     }
 
-    override fun initGoals() {
-        super.initGoals()
+    override fun registerGoals() {
+        super.registerGoals()
         sexualIntercourseGoal = SexualIntercourseGoal(this)
-        this.goalSelector.add(5, sexualIntercourseGoal)
+        this.goalSelector.addGoal(5, sexualIntercourseGoal)
         suckMilkGoal = SuckMilkGoal(this)
-        this.goalSelector.add(5, suckMilkGoal)
+        this.goalSelector.addGoal(5, suckMilkGoal)
     }
 
-    override fun initDataTracker(builder: DataTracker.Builder) {
-        super.initDataTracker(builder)
-        builder.add(SEXUAL_DESIRE_ID, 20)
+    override fun defineSynchedData(builder: SynchedEntityData.Builder) {
+        super.defineSynchedData(builder)
+        builder.define(SEXUAL_DESIRE_ID, 20)
     }
 
     override fun canMate(other: INeko?): Boolean {
@@ -68,18 +68,18 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
         return super.canMate(other) && this.sexualDesire >= 40
     }
 
-    override fun breed(level: ServerWorld?, mate: INeko?) {
+    override fun breed(level: ServerLevel?, mate: INeko?) {
         if (mate is Pregnant){
-            if (mate is PlayerEntity){
-                if (mate.getInventory().offHand.stream()
-                        .anyMatch(Predicate { item: ItemStack? -> item!!.isOf(BYT) })
+            if (mate is Player){
+                if (mate.getInventory().offhand.stream()
+                        .anyMatch(Predicate { item: ItemStack? -> item!!.`is`(BYT) })
                 ){
                     NekoLevelRegistry.base().addRaw(this, 0.1)
                     NekoLevelRegistry.base().addRaw(mate, 0.1)
-                    this.addStatusEffect(StatusEffectInstance(StatusEffects.WEAKNESS, 3000, 0))
-                    mate.addStatusEffect(StatusEffectInstance(StatusEffects.WEAKNESS, 3000, 0))
-                    mate.entity.sendMessage(Text.of("§b你没有怀孕！"))
-                    mate.entity.sendMessage(Text.of("§d好感度+10，等级+0.1"))
+                    this.addEffect(MobEffectInstance(MobEffects.WEAKNESS, 3000, 0))
+                    mate.addEffect(MobEffectInstance(MobEffects.WEAKNESS, 3000, 0))
+                    mate.entity.sendSystemMessage(Component.literal("§b你没有怀孕！"))
+                    mate.entity.sendSystemMessage(Component.literal("§d好感度+10，等级+0.1"))
                     return
                 }
             }
@@ -88,24 +88,24 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
             mate.babyCount = mate.calculateBabyCount(this)
             NekoLevelRegistry.base().addRaw(this, 0.1)
             NekoLevelRegistry.base().addRaw(mate, 0.1)
-            this.addStatusEffect(StatusEffectInstance(StatusEffects.WEAKNESS, 3000, 0))
-            mate.entity.sendMessage(Text.of("§a你怀孕了！"))
+            this.addEffect(MobEffectInstance(MobEffects.WEAKNESS, 3000, 0))
+            mate.entity.sendSystemMessage(Component.literal("§a你怀孕了！"))
             // 获取自己的效果
-            val effects = this.statusEffects.filter { !it.effectType.value().isBeneficial }
+            val effects = this.activeEffects.filter { !it.effect.value().isBeneficial }
             if (effects.isNotEmpty()) {
                 // 添加到对方的
                 for (effect in effects) {
-                    mate.entity.addStatusEffect(effect)
+                    mate.entity.addEffect(effect)
                 }
             }
             // 如果自己有艾滋，就添加到对方
-            if (effects.stream().anyMatch { it -> it.effectType.value().equals(JREffects.AIDS_EFFECT) }){
+            if (effects.stream().anyMatch { it -> it.effect.value().equals(JREffects.AIDS_EFFECT) }){
                 if (mate.aids <= 0){
                     mate.aids = 1
                 }
             }
             // 如果有HPV，对方无免疫就添加
-            if (effects.stream().anyMatch { it -> it.effectType.value().equals(JREffects.HPV_EFFECT) }){
+            if (effects.stream().anyMatch { it -> it.effect.value().equals(JREffects.HPV_EFFECT) }){
                 if (!mate.isImmune2HPV){
                     mate.isImmune2HPV = true
                 }
@@ -116,14 +116,14 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
     }
 
 
-    override fun writeCustomDataToNbt(compound: NbtCompound) {
-        super.writeCustomDataToNbt(compound)
+    override fun addAdditionalSaveData(compound: CompoundTag) {
+        super.addAdditionalSaveData(compound)
         if (this.sexualDesire > 0) {
             compound.putInt("SexualDesire", this.sexualDesire)
         }
     }
-    override fun readCustomDataFromNbt(compound: NbtCompound) {
-        super.readCustomDataFromNbt(compound)
+    override fun readAdditionalSaveData(compound: CompoundTag) {
+        super.readAdditionalSaveData(compound)
         if (compound.contains("SexualDesire")) {
             this.sexualDesire = compound.getInt("SexualDesire")
         }
@@ -138,15 +138,15 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
         controllers?.add(AnimationController(this, 20) { state ->
             when {
                 this.isMasturbation -> state.setAndContinue(RawAnimation.begin().thenLoop("jr.mb"))
-                this.pose == EntityPose.SWIMMING && !this.isInFluid -> state.setAndContinue(DefaultAnimations.CRAWL)
-                this.isInFluid && this.isSubmergedIn(FluidTags.WATER) ->
+                this.pose == Pose.SWIMMING && !this.isInLiquid -> state.setAndContinue(DefaultAnimations.CRAWL)
+                this.isInLiquid && this.isEyeInFluid(FluidTags.WATER) ->
                     if (state.isMoving) state.setAndContinue(DefaultAnimations.SWIM)
                     else state.setAndContinue(DefaultAnimations.CRAWL)
                 !state.isMoving ->
                     if (this.isSitting) state.setAndContinue(RawAnimation.begin().thenLoop("misc.sit"))
                     else state.setAndContinue(DefaultAnimations.IDLE)
                 state.isMoving ->
-                    if (this.velocity.length() > 0.2) state.setAndContinue(DefaultAnimations.RUN)
+                    if (this.getDeltaMovement().length() > 0.2) state.setAndContinue(DefaultAnimations.RUN)
                     else state.setAndContinue(DefaultAnimations.WALK)
                 else -> PlayState.CONTINUE
             }
@@ -154,15 +154,15 @@ open class SeeeeexNekoEntity(private val type: EntityType<SeeeeexNekoEntity>, wo
     }
 
     override fun getSexualDesire(): Int {
-        return this.dataTracker.get(SEXUAL_DESIRE_ID)
+        return this.entityData.get(SEXUAL_DESIRE_ID)
     }
     override fun setSexualDesire(desire: Int) {
-        this.dataTracker.set(SEXUAL_DESIRE_ID, desire)
+        this.entityData.set(SEXUAL_DESIRE_ID, desire)
     }
 
     override fun slowTick(){
         super.slowTick()
-        if (!world.isClient()) {
+        if (!level().isClientSide()) {
             sexualDesire = sexualDesire
             sexualIntercourseGoal?.slowTick()
             this.sexualSlowTick(this)

@@ -4,9 +4,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.minecraft.client.MinecraftClient
-import net.minecraft.component.Component
-import net.minecraft.text.Text
+import net.minecraft.client.Minecraft
+import net.minecraft.network.chat.Component
 import org.cneko.ctlib.common.network.HttpGet.HttpGetObject
 import java.util.HashMap
 

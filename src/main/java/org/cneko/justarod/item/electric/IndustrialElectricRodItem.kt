@@ -1,6 +1,6 @@
 package org.cneko.justarod.item.electric
 
-import net.minecraft.item.ItemStack
+import net.minecraft.world.item.ItemStack
 import org.cneko.justarod.item.JRComponents
 
 /*

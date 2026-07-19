@@ -1,19 +1,19 @@
 package org.cneko.justarod.item.armor
 
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EquipmentSlot
-import net.minecraft.entity.LivingEntity
-import net.minecraft.item.ArmorMaterial
-import net.minecraft.item.ItemStack
-import net.minecraft.registry.entry.RegistryEntry
-import net.minecraft.world.World
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.EquipmentSlot
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.item.ArmorMaterial
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.Holder
+import net.minecraft.world.level.Level
 import org.cneko.justarod.client.renderer.armor.RodArmorRenderer
 import org.cneko.toneko.common.mod.items.NekoArmor
 
 /*
 好玩嘿嘿
  */
-abstract class RodArmorItem<T : RodArmorItem<T>>(material: RegistryEntry<ArmorMaterial>?,settings: Settings) : NekoArmor<T>(material,
+abstract class RodArmorItem<T : RodArmorItem<T>>(material: Holder<ArmorMaterial>?,settings: Properties) : NekoArmor<T>(material,
     Type.CHESTPLATE,
     settings) {
 
@@ -23,16 +23,16 @@ abstract class RodArmorItem<T : RodArmorItem<T>>(material: RegistryEntry<ArmorMa
 
     abstract fun getId(): String
 
-    override fun inventoryTick(stack: ItemStack?, world: World?, entity: Entity?, slot: Int, selected: Boolean) {
+    override fun inventoryTick(stack: ItemStack?, world: Level?, entity: Entity?, slot: Int, selected: Boolean) {
         // 降低耐久
         if (slot == 2){
             if (entity is LivingEntity) {
-                stack?.damage(1, entity, EquipmentSlot.CHEST)
+                stack?.hurt(1, entity, EquipmentSlot.CHEST)
                 onUse(stack, world, entity, slot, selected)
             }
         }
     }
-    open fun onUse(stack: ItemStack?, world: World?, entity: Entity?, slot: Int, selected: Boolean){
+    open fun onUse(stack: ItemStack?, world: Level?, entity: Entity?, slot: Int, selected: Boolean){
 
     }
 }

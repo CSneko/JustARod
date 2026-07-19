@@ -1,30 +1,32 @@
 package org.cneko.justarod.entity
 
-import net.minecraft.entity.*
-import net.minecraft.entity.ai.goal.*
-import net.minecraft.entity.attribute.DefaultAttributeContainer
-import net.minecraft.entity.attribute.EntityAttributes
-import net.minecraft.entity.damage.DamageSource
-import net.minecraft.entity.data.DataTracker
-import net.minecraft.entity.data.TrackedDataHandlerRegistry
-import net.minecraft.entity.mob.Angerable
-import net.minecraft.entity.mob.HostileEntity
-import net.minecraft.entity.mob.Monster
-import net.minecraft.entity.passive.PassiveEntity
-import net.minecraft.entity.passive.TameableEntity
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.nbt.NbtCompound
-import net.minecraft.particle.ParticleTypes
-import net.minecraft.registry.tag.FluidTags
-import net.minecraft.server.world.ServerWorld
-import net.minecraft.util.ActionResult
-import net.minecraft.util.Hand
-import net.minecraft.util.TimeHelper
-import net.minecraft.world.LocalDifficulty
-import net.minecraft.world.ServerWorldAccess
-import net.minecraft.world.World
+import net.minecraft.world.entity.*
+import net.minecraft.world.entity.ai.goal.*
+import net.minecraft.world.entity.ai.goal.target.*
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier
+import net.minecraft.world.entity.ai.attributes.Attributes
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.network.syncher.SynchedEntityData
+import net.minecraft.network.syncher.EntityDataSerializers
+import net.minecraft.world.entity.NeutralMob
+import net.minecraft.world.entity.monster.Monster
+import net.minecraft.world.entity.monster.Enemy
+import net.minecraft.world.entity.AgeableMob
+import net.minecraft.world.entity.TamableAnimal
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.nbt.CompoundTag
+import net.minecraft.core.particles.ParticleTypes
+import net.minecraft.network.syncher.EntityDataAccessor
+import net.minecraft.tags.FluidTags
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.InteractionHand
+import net.minecraft.util.TimeUtil
+import net.minecraft.world.DifficultyInstance
+import net.minecraft.world.level.ServerLevelAccessor
+import net.minecraft.world.level.Level
 import org.cneko.justarod.genetics.RodGenetics
 import org.cneko.toneko.common.mod.genetics.api.*
 import org.cneko.justarod.block.JRBlocks
@@ -48,8 +50,8 @@ import java.util.*
 我不敢想象，如果它真的活了过来
 哇哦哇哦，那可得太爽了呀~
  */
-class RodEntity(private val entityType:EntityType<RodEntity>, world: World):TameableEntity(entityType,world),GeoEntity,Angerable,
-    Monster, SlowTickable, IGeneticEntity {
+class RodEntity(private val entityType:EntityType<RodEntity>, world: Level):TamableAnimal(entityType,world),GeoEntity,NeutralMob,
+    Enemy, SlowTickable, IGeneticEntity {
     private val animCache: AnimatableInstanceCache = GeckoLibUtil.createInstanceCache(this)
     private val defSpeed:Double = 0.8
     private val slowSpeed:Double = 0.6
@@ -57,26 +59,26 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
 
     // ========== 遗传学相关 ==========
     private var genome: Genome = Genome()
-    private val geneticData: NbtCompound = NbtCompound()
+    private val geneticData: CompoundTag = CompoundTag()
     private val activeTraits: MutableList<IGeneticEntity.ExpressedTrait> = ArrayList()
-    private val activeGeneticGoals: MutableList<net.minecraft.entity.ai.goal.Goal> = ArrayList()
+    private val activeGeneticGoals: MutableList<net.minecraft.world.entity.ai.goal.Goal> = ArrayList()
 
     override fun getGenome(): Genome = genome
     override fun setGenome(genome: Genome) { this.genome = genome }
-    override fun getGeneticData(): NbtCompound = geneticData
+    override fun getGeneticData(): CompoundTag = geneticData
     override fun getActiveTraits(): MutableList<IGeneticEntity.ExpressedTrait> = activeTraits
-    override fun getActiveGeneticGoals(): MutableList<net.minecraft.entity.ai.goal.Goal> = activeGeneticGoals
+    override fun getActiveGeneticGoals(): MutableList<net.minecraft.world.entity.ai.goal.Goal> = activeGeneticGoals
     override fun expressTraits() {
-        if (!world.isClient) {
+        if (!level().isClientSide) {
             genome.express(this)
             // 同步计算值到客户端，方便渲染
-            dataTracker.set(LENGTH_BONUS, RodGenetics.getTotalLengthBonus(geneticData).toFloat())
-            dataTracker.set(WIDTH_BONUS, RodGenetics.getTotalWidthBonus(geneticData).toFloat())
-            dataTracker.set(ORGASM_INTENSITY, RodGenetics.getOrgasmMultiplier(geneticData).toFloat())
+            entityData.set(LENGTH_BONUS, RodGenetics.getTotalLengthBonus(geneticData).toFloat())
+            entityData.set(WIDTH_BONUS, RodGenetics.getTotalWidthBonus(geneticData).toFloat())
+            entityData.set(ORGASM_INTENSITY, RodGenetics.getOrgasmMultiplier(geneticData).toFloat())
         }
     }
 
-    override fun createChild(world: ServerWorld?, entity: PassiveEntity?): PassiveEntity {
+    override fun getBreedOffspring(world: ServerLevel?, entity: AgeableMob?): AgeableMob {
         val baby = RodEntity(entityType, world!!)
         if (entity is IGeneticEntity) {
             val paternal = genome.createGamete(random)
@@ -91,74 +93,74 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
         return baby
     }
 
-    override fun isBreedingItem(stack: ItemStack?): Boolean {
-        return stack?.isOf(Items.END_ROD) == true
+    override fun isFood(stack: ItemStack?): Boolean {
+        return stack?.`is`(Items.END_ROD) == true
     }
 
-    override fun initGoals() {
-        super.initGoals()
-        goalSelector.add(3, AnimalMateGoal(this, slowSpeed))
-        goalSelector.add(5, FollowParentGoal(this, slowSpeed))
-        goalSelector.add(6, WanderAroundFarGoal(this, 0.1))
-        goalSelector.add(
-            7, LookAtEntityGoal(
+    override fun registerGoals() {
+        super.registerGoals()
+        goalSelector.addGoal(3, BreedGoal(this, slowSpeed))
+        goalSelector.addGoal(5, FollowParentGoal(this, slowSpeed))
+        goalSelector.addGoal(6, WaterAvoidingRandomStrollGoal(this, 0.1))
+        goalSelector.addGoal(
+            7, LookAtPlayerGoal(
                 this,
-                PlayerEntity::class.java, 6.0f
+                Player::class.java, 6.0f
             )
         )
-        goalSelector.add(2, MeleeAttackGoal(this, defSpeed, true))
-        goalSelector.add(8, LookAroundGoal(this))
-        goalSelector.add(2,TemptGoal(this, defSpeed, {stack->stack.isOf(Items.END_ROD)||stack.isOf(JRBlocks.GOLDEN_LEAVES.asItem())},false))
-        goalSelector.add(1,FollowOwnerGoal(this, defSpeed, 10.0f, 2.0f))
+        goalSelector.addGoal(2, MeleeAttackGoal(this, defSpeed, true))
+        goalSelector.addGoal(8, RandomLookAroundGoal(this))
+        goalSelector.addGoal(2,TemptGoal(this, defSpeed, {stack->stack.`is`(Items.END_ROD)||stack.`is`(JRBlocks.GOLDEN_LEAVES.asItem())},false))
+        goalSelector.addGoal(1,FollowOwnerGoal(this, defSpeed, 10.0f, 2.0f))
 
 
-        targetSelector.add(2, AttackWithOwnerGoal(this))
+        targetSelector.addGoal(2, OwnerHurtByTargetGoal(this))
 
         targetSelector.apply {
-            add(1, TrackOwnerAttackerGoal(this@RodEntity)) // 跟踪攻击主人的目标
-            add(2, AttackWithOwnerGoal(this@RodEntity))    // 攻击主人攻击的目标
-            add(3, RevengeGoal(this@RodEntity).setGroupRevenge()) // 被攻击时复仇
-            add(10, ActiveTargetGoal(
+            addGoal(1, OwnerHurtTargetGoal(this@RodEntity)) // 跟踪攻击主人的目标
+            addGoal(2, OwnerHurtByTargetGoal(this@RodEntity))    // 攻击主人攻击的目标
+            addGoal(3, HurtByTargetGoal(this@RodEntity).setAlertOthers()) // 被攻击时复仇
+            addGoal(10, NearestAttackableTargetGoal(
                 this@RodEntity,
-                HostileEntity::class.java,  // 主动攻击所有敌对生物
+                Monster::class.java,  // 主动攻击所有敌对生物
                 true
             ) { _ -> true })
 
             // 修改后的玩家目标选择条件
-            add(1, ActiveTargetGoal(
+            addGoal(1, NearestAttackableTargetGoal(
                 this@RodEntity,
-                PlayerEntity::class.java,
+                Player::class.java,
                 false
             ) { entity ->
-                shouldAngerAt(entity as LivingEntity) // 移除!isTamed条件
+                isAngryAt(entity as LivingEntity) // 移除!isTamed条件
             })
 
-            add(5, UniversalAngerGoal(this@RodEntity, true)) // 通用愤怒机制
+            addGoal(5, ResetUniversalAngerTargetGoal(this@RodEntity, true)) // 通用愤怒机制
         }
     }
 
-    override fun tryAttack(target: Entity?): Boolean {
+    override fun doHurtTarget(target: Entity?): Boolean {
         if (target is LivingEntity){
             val intensity = getOrgasmIntensity()
             target.addEffect(JREffects.ORGASM_EFFECT, (100 * intensity).toInt(), 0)
         }
-        return super.tryAttack(target)
+        return super.doHurtTarget(target)
     }
 
     override fun registerControllers(controllers: AnimatableManager.ControllerRegistrar?) {
         controllers!!.add(AnimationController<RodEntity>(this, 20, AnimationStateHandler { state: AnimationState<*>? ->
-            if (this.pose == EntityPose.SWIMMING && !this.isInFluid) {
+            if (this.pose == Pose.SWIMMING && !this.isInLiquid) {
                 return@AnimationStateHandler state!!.setAndContinue(DefaultAnimations.CRAWL)
-            } else if (this.isInFluid && this.isSubmergedIn(FluidTags.WATER)) {
+            } else if (this.isInLiquid && this.isEyeInFluid(FluidTags.WATER)) {
                 return@AnimationStateHandler if (state!!.isMoving) state.setAndContinue(DefaultAnimations.SWIM) else state.setAndContinue(
                     DefaultAnimations.CRAWL
                 )
             } else if (!state!!.isMoving) {
-                return@AnimationStateHandler if (this.isSitting) state.setAndContinue(
+                return@AnimationStateHandler if (this.isInSittingPose) state.setAndContinue(
                     RawAnimation.begin().thenLoop("misc.sit")
                 ) else state.setAndContinue(DefaultAnimations.IDLE)
             } else {
-                return@AnimationStateHandler if (this.velocity.length() > 0.2) state.setAndContinue(
+                return@AnimationStateHandler if (this.getDeltaMovement().length() > 0.2) state.setAndContinue(
                     DefaultAnimations.RUN
                 ) else state.setAndContinue(DefaultAnimations.WALK)
             }
@@ -172,7 +174,7 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
     override fun tick() {
         super.tick()
         if (random.nextInt(10) == 0) {
-            world.addParticle(
+            level().addParticle(
                 ParticleTypes.END_ROD,
                 this.x + (random.nextDouble() - 0.5) * 0.5,
                 this.y + random.nextDouble() * 0.5,
@@ -182,7 +184,7 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
                 0.0
             )
         }
-        tickAnger()
+        tickPersistentAnger()
         // 如果头上有生物，给予orgasm（强度受基因影响）
         if (firstPassenger is LivingEntity) {
             val intensity = getOrgasmIntensity()
@@ -196,9 +198,9 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
 
     override fun `toneko$slowTick`() {
         // 如果周围有猫娘，则缓慢回血
-        if (world.isClient) return
+        if (level().isClientSide) return
         var nekoCount = 0
-        if (world.getEntitiesByClass(NekoEntity::class.java, this.boundingBox.expand(10.0)) {
+        if (level().getEntitiesOfClass(NekoEntity::class.java, this.boundingBox.inflate(10.0)) {
             nekoCount ++
             true
         }.isNotEmpty()  ) {
@@ -208,137 +210,137 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
         }
     }
 
-    override fun interactMob(player: PlayerEntity?, hand: Hand?): ActionResult {
-        val stack = player?.getStackInHand(hand!!)
-        if (!isTamed && stack?.isOf(Items.END_ROD) == true) {
-            if (!world.isClient) {
+    override fun mobInteract(player: Player?, hand: InteractionHand?): InteractionResult {
+        val stack = player?.getItemInHand(hand!!)
+        if (!isTame && stack?.`is`(Items.END_ROD) == true) {
+            if (!level().isClientSide) {
                 if (random.nextInt(3) == 0) {
                     tryTame(player)
-                    world.sendEntityStatus(this, EntityStatuses.ADD_POSITIVE_PLAYER_REACTION_PARTICLES)
+                    level().broadcastEntityEvent(this, EntityEvent.TAMING_SUCCEEDED)
                     if (!player.isCreative) {
-                        stack.decrement(1)
+                        stack.shrink(1)
                     }
-                    return ActionResult.SUCCESS
+                    return InteractionResult.SUCCESS
                 } else {
-                    world.sendEntityStatus(this, EntityStatuses.ADD_NEGATIVE_PLAYER_REACTION_PARTICLES)
+                    level().broadcastEntityEvent(this, EntityEvent.TAMING_FAILED)
                 }
             }
-            return ActionResult.success(world.isClient)
+            return InteractionResult.SUCCESS
         }
-        if (isTamed && isOwner(player)) {
-            if (stack?.isOf(JRBlocks.GOLDEN_LEAVES.asItem()) == true && health < maxHealth) {
-                if (!world.isClient) {
+        if (isTame && isOwnedBy(player)) {
+            if (stack?.`is`(JRBlocks.GOLDEN_LEAVES.asItem()) == true && health < maxHealth) {
+                if (!level().isClientSide) {
                     heal(4.0f)
                     if (!player.isCreative) {
-                        stack.decrement(1)
+                        stack.shrink(1)
                     }
                 }
-                return ActionResult.success(world.isClient)
+                return InteractionResult.SUCCESS
             }
         }
         if (player?.isHolding{
                     i -> i.item == ToNekoItems.NEKO_POTION
             } == true){
             if (!player.isCreative) {
-                player.getStackInHand(hand!!).decrement(1)
-                player.giveItemStack(ItemStack(Items.GLASS_BOTTLE))
+                player.getItemInHand(hand!!).shrink(1)
+                player.addItem(ItemStack(Items.GLASS_BOTTLE))
             }
-            if (world is ServerWorld) {
-                world as ServerWorld
+            if (level() is ServerLevel) {
+                level() as ServerLevel
                 this.remove(RemovalReason.DISCARDED)
-                val neko = SeeeeexNekoEntity(JREntities.SEEEEEX_NEKO, world)
+                val neko = SeeeeexNekoEntity(JREntities.SEEEEEX_NEKO, level())
                 neko.setPos(this.x, this.y, this.z)
                 neko.sexualDesire = 200
-                world.spawnEntity(neko)
+                level().addFreshEntity(neko)
                 if (this.hasCustomName()){
                     neko.customName = this.customName
                 }
             }
         }
-        return super.interactMob(player, hand)
+        return super.mobInteract(player, hand)
     }
 
-    override fun onDamaged(damageSource: DamageSource?) {
-        super.onDamaged(damageSource)
-        if (damageSource?.attacker is PlayerEntity && !isOwner((damageSource.attacker as PlayerEntity))) {
-            angryAt = (damageSource.attacker as PlayerEntity).uuid
-            chooseRandomAngerTime()
+    override fun handleDamageEvent(damageSource: DamageSource?) {
+        super.handleDamageEvent(damageSource)
+        if (damageSource?.entity is Player && !isOwnedBy((damageSource.entity as Player))) {
+            angryAt = (damageSource.entity as Player).uuid
+            startPersistentAngerTimer()
         }
-        if (damageSource?.attacker is NekoEntity){
+        if (damageSource?.entity is NekoEntity){
             // 变大
-            this.getAttributeInstance(EntityAttributes.GENERIC_SCALE)?.let {
+            this.getAttribute(Attributes.SCALE)?.let {
                 it.baseValue = it.baseValue + 0.2
             }
-            this.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH)?.let {
+            this.getAttribute(Attributes.MAX_HEALTH)?.let {
                 it.baseValue = it.baseValue + 2.0
             }
             this.health = this.health + 2.0f
-            angryAt = damageSource.attacker?.uuid
+            angryAt = damageSource.entity?.uuid
         }
 
     }
 
     // ========== 遗传学初始化（自然生成时分配随机基因） ==========
-    override fun initialize(
-        world: ServerWorldAccess,
-        difficulty: LocalDifficulty,
-        reason: SpawnReason,
-        entityData: EntityData?
-    ): EntityData? {
+    override fun finalizeSpawn(
+        world: ServerLevelAccessor,
+        difficulty: DifficultyInstance,
+        reason: MobSpawnType,
+        entityData: SpawnGroupData?
+    ): SpawnGroupData? {
         val g1 = Genome.generateFallbackGamete(random, RodGenetics.KARYOTYPE)
         val g2 = Genome.generateFallbackGamete(random, RodGenetics.KARYOTYPE)
         genome = Genome.combine(g1, g2, RodGenetics.KARYOTYPE)
         expressTraits()
-        return super.initialize(world, difficulty, reason, entityData)
+        return super.finalizeSpawn(world, difficulty, reason, entityData)
     }
 
     // ========== 基因值查询（供渲染/效果使用） ==========
 
     /** 总长度加成 */
-    fun getLengthBonus(): Float = dataTracker.get(LENGTH_BONUS)
+    fun getLengthBonus(): Float = entityData.get(LENGTH_BONUS)
     /** 总宽度加成 */
-    fun getWidthBonus(): Float = dataTracker.get(WIDTH_BONUS)
+    fun getWidthBonus(): Float = entityData.get(WIDTH_BONUS)
     /** 高潮强度倍率 (1.0 = 普通) */
-    fun getOrgasmIntensity(): Float = dataTracker.get(ORGASM_INTENSITY)
+    fun getOrgasmIntensity(): Float = entityData.get(ORGASM_INTENSITY)
 
-    private fun tryTame(player: PlayerEntity) {
-        ownerUuid = player.uuid
-        setTamed(true,true)
-        setOwner(player)
+    private fun tryTame(player: Player) {
+        ownerUUID = player.uuid
+        setTame(true,true)
+        tame(player)
         target = null
-        isSitting = false
+        isInSittingPose = false
     }
 
-    override fun updateAttributesForTamed() {
-        super.updateAttributesForTamed()
-        getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH)?.baseValue = 40.0
+    override fun applyTamingSideEffects() {
+        super.applyTamingSideEffects()
+        getAttribute(Attributes.MAX_HEALTH)?.baseValue = 40.0
         // 添加移动速度调整
-        getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED)?.baseValue = defSpeed
+        getAttribute(Attributes.MOVEMENT_SPEED)?.baseValue = defSpeed
     }
-    override fun initDataTracker(builder: DataTracker.Builder?) {
-        super.initDataTracker(builder)
-        builder?.add(ANGER_TIME,0)
-        builder?.add(LENGTH_BONUS, 0.0f)
-        builder?.add(WIDTH_BONUS, 0.0f)
-        builder?.add(ORGASM_INTENSITY, 1.0f)
+    override fun defineSynchedData(builder: SynchedEntityData.Builder) {
+        super.defineSynchedData(builder)
+        builder.define(ANGER_TIME,0)
+        builder.define(LENGTH_BONUS, 0.0f)
+        builder.define(WIDTH_BONUS, 0.0f)
+        builder.define(ORGASM_INTENSITY, 1.0f)
     }
 
-    override fun writeCustomDataToNbt(nbt: NbtCompound) {
-        super.writeCustomDataToNbt(nbt)
-        writeAngerToNbt(nbt)
+    override fun addAdditionalSaveData(nbt: CompoundTag) {
+        super.addAdditionalSaveData(nbt)
+        addPersistentAngerSaveData(nbt)
         nbt.put("Genome", genome.save())
         nbt.put("GeneticData", geneticData)
     }
 
-    override fun readCustomDataFromNbt(nbt: NbtCompound) {
-        super.readCustomDataFromNbt(nbt)
-        readAngerFromNbt(world, nbt)
+    override fun readAdditionalSaveData(nbt: CompoundTag) {
+        super.readAdditionalSaveData(nbt)
+        readPersistentAngerSaveData(level(), nbt)
         if (nbt.contains("Genome")) {
             genome.load(nbt.getCompound("Genome"))
         }
         if (nbt.contains("GeneticData")) {
             val loaded = nbt.getCompound("GeneticData")
-            for (key in loaded.keys) {
+            for (key in loaded.allKeys) {
                 geneticData.put(key, loaded.get(key))
             }
         }
@@ -348,25 +350,25 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
     private var angerTime = 0
     private var angryAt: UUID? = null
 
-    override fun getAngerTime(): Int = dataTracker.get(ANGER_TIME)
-    override fun setAngerTime(time: Int) = dataTracker.set(ANGER_TIME, time)
+    override fun getRemainingPersistentAngerTime(): Int = entityData.get(ANGER_TIME)
+    override fun setRemainingPersistentAngerTime(time: Int) = entityData.set(ANGER_TIME, time)
 
-    override fun getAngryAt() = angryAt
-    override fun setAngryAt(uuid: UUID?) { angryAt = uuid }
+    override fun getPersistentAngerTarget() = angryAt
+    override fun setPersistentAngerTarget(uuid: UUID?) { angryAt = uuid }
 
-    override fun chooseRandomAngerTime() {
-        setAngerTime(ANGER_TIME_RANGE.get(random))
+    override fun startPersistentAngerTimer() {
+        remainingPersistentAngerTime = ANGER_TIME_RANGE.sample(this.random)
     }
 
-    override fun shouldAngerAt(entity: LivingEntity?): Boolean {
-        return this.hasAngerTime() && this.angryAt?.equals(entity?.uuid) == true
+    override fun isAngryAt(entity: LivingEntity?): Boolean {
+        return this.isAngry && this.angryAt?.equals(entity?.uuid) == true
     }
 
-    fun tickAnger() {
-        if (world.isClient) return
-        if (hasAngerTime()) {
-            setAngerTime(getAngerTime() - 1)
-            if (!hasAngerTime()) {
+    fun tickPersistentAnger() {
+        if (level().isClientSide) return
+        if (isAngry) {
+            remainingPersistentAngerTime = (remainingPersistentAngerTime - 1)
+            if (!isAngry) {
                 onAngerRemoved()
             }
         }
@@ -376,16 +378,17 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: World):Tame
         target = null
     }
 
+
     companion object{
-        fun createRodAttribute():DefaultAttributeContainer.Builder{
-            return createMobAttributes().add(EntityAttributes.GENERIC_ATTACK_DAMAGE,4.0)
+        fun createRodAttribute():AttributeSupplier.Builder{
+            return createMobAttributes().add(Attributes.ATTACK_DAMAGE,4.0)
         }
-        private val ANGER_TIME = DataTracker.registerData(RodEntity::class.java, TrackedDataHandlerRegistry.INTEGER)
-        private val ANGER_TIME_RANGE = TimeHelper.betweenSeconds(20, 39)
+        private val ANGER_TIME = SynchedEntityData.defineId(RodEntity::class.java, EntityDataSerializers.INT)
+        private val ANGER_TIME_RANGE = TimeUtil.rangeOfSeconds(20, 39)
 
         // 遗传学同步数据
-        private val LENGTH_BONUS = DataTracker.registerData(RodEntity::class.java, TrackedDataHandlerRegistry.FLOAT)
-        private val WIDTH_BONUS = DataTracker.registerData(RodEntity::class.java, TrackedDataHandlerRegistry.FLOAT)
-        private val ORGASM_INTENSITY = DataTracker.registerData(RodEntity::class.java, TrackedDataHandlerRegistry.FLOAT)
+        private val LENGTH_BONUS = SynchedEntityData.defineId(RodEntity::class.java, EntityDataSerializers.FLOAT)
+        private val WIDTH_BONUS = SynchedEntityData.defineId(RodEntity::class.java, EntityDataSerializers.FLOAT)
+        private val ORGASM_INTENSITY = SynchedEntityData.defineId(RodEntity::class.java, EntityDataSerializers.FLOAT)
     }
 }

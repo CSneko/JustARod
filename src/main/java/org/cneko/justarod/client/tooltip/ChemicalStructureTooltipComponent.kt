@@ -1,13 +1,13 @@
 package org.cneko.justarod.client.tooltip
 
-import net.minecraft.client.font.TextRenderer
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.tooltip.TooltipComponent
+import net.minecraft.client.gui.Font
+import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import org.cneko.justarod.item.tooltip.ChemicalStructureTooltipData
 import kotlin.math.max
 import kotlin.math.min
 
-class ChemicalStructureTooltipComponent(data: ChemicalStructureTooltipData) : TooltipComponent {
+class ChemicalStructureTooltipComponent(data: ChemicalStructureTooltipData) : ClientTooltipComponent {
     private val texture = data.texture
 
     // 1. 直接定义 Tooltip 框框的最大尺寸限制
@@ -42,7 +42,7 @@ class ChemicalStructureTooltipComponent(data: ChemicalStructureTooltipData) : To
 
     // === 核心：限制 Tooltip 框框的大小 ===
 
-    override fun getWidth(textRenderer: TextRenderer): Int {
+    override fun getWidth(textRenderer: Font): Int {
         // 框框的宽度：直接使用图片缩放后的宽度
         return imageRenderWidth
     }
@@ -54,7 +54,7 @@ class ChemicalStructureTooltipComponent(data: ChemicalStructureTooltipData) : To
 
     // === 核心：在框框内渲染图片 ===
 
-    override fun drawItems(textRenderer: TextRenderer, x: Int, y: Int, context: DrawContext) {
+    override fun renderImage(textRenderer: Font, x: Int, y: Int, context: GuiGraphics) {
         if (imageRenderWidth <= 0 || imageRenderHeight <= 0) return
 
         // 计算居中的偏移量 (如果图片比框框小，让它在框框的正中间)
@@ -67,7 +67,7 @@ class ChemicalStructureTooltipComponent(data: ChemicalStructureTooltipData) : To
         val drawY = y + offsetY + 2 // +2 是为了上下留一点空隙
 
         // 使用最底层的渲染方法，把图片精准地塞进计算好的区域里
-        context.drawTexture(
+        context.blit(
             texture,
             drawX, drawY,               // 在屏幕上的坐标
             imageRenderWidth, imageRenderHeight, // 在屏幕上画多大

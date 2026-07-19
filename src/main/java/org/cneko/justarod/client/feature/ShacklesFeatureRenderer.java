@@ -1,30 +1,30 @@
 package org.cneko.justarod.client.feature;
 
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.feature.FeatureRenderer;
-import net.minecraft.client.render.entity.feature.FeatureRendererContext;
-import net.minecraft.client.render.entity.model.PlayerEntityModel;
-import net.minecraft.client.render.item.HeldItemRenderer;
-import net.minecraft.client.render.model.json.ModelTransformationMode;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.RotationAxis;
-import net.minecraft.util.math.Vec3d;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.ItemInHandRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.RenderLayerParent;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import org.cneko.justarod.item.JRItems;
 
-public class ShacklesFeatureRenderer extends FeatureRenderer<AbstractClientPlayerEntity, PlayerEntityModel<AbstractClientPlayerEntity>> {
-    protected HeldItemRenderer heldItemRenderer;
+public class ShacklesFeatureRenderer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
+    protected ItemInHandRenderer heldItemRenderer;
 
-    public ShacklesFeatureRenderer(FeatureRendererContext<AbstractClientPlayerEntity, PlayerEntityModel<AbstractClientPlayerEntity>> context,
-                                   HeldItemRenderer heldItemRenderer) {
+    public ShacklesFeatureRenderer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> context,
+                                   ItemInHandRenderer heldItemRenderer) {
         super(context);
         this.heldItemRenderer = heldItemRenderer;
     }
 
     @Override
-    public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light,
-                       AbstractClientPlayerEntity player, float limbAngle, float limbDistance,
+    public void render(PoseStack matrices, MultiBufferSource vertexConsumers, int light,
+                       AbstractClientPlayer player, float limbAngle, float limbDistance,
                        float tickDelta, float animationProgress, float headYaw, float headPitch) {
 
         // 判断玩家是否被脚镣束缚
@@ -34,39 +34,39 @@ public class ShacklesFeatureRenderer extends FeatureRenderer<AbstractClientPlaye
         ItemStack chain = new ItemStack(JRItems.Companion.getHANDCUFFES_CHAIN());
 
         // 左脚
-        matrices.push();
-        getContextModel().leftLeg.rotate(matrices);
+        matrices.pushPose();
+        getParentModel().leftLeg.translateAndRotate(matrices);
 
         matrices.translate(0.03, 0.7, 0.1);
         matrices.scale(0.8f, 0.8f, 0.8f);
-        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90f));
-        heldItemRenderer.renderItem(player, ring, ModelTransformationMode.THIRD_PERSON_LEFT_HAND, true, matrices, vertexConsumers, light);
-        matrices.pop();
+        matrices.mulPose(Axis.XP.rotationDegrees(90f));
+        heldItemRenderer.renderItem(player, ring, ItemDisplayContext.THIRD_PERSON_LEFT_HAND, true, matrices, vertexConsumers, light);
+        matrices.popPose();
 
 
-        matrices.push();
-        getContextModel().rightLeg.rotate(matrices);
+        matrices.pushPose();
+        getParentModel().rightLeg.translateAndRotate(matrices);
 
         matrices.translate(-0.03, 0.7, 0.1);
         matrices.scale(0.8f, 0.8f, 0.8f);
-        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90f));
-        heldItemRenderer.renderItem(player, ring, ModelTransformationMode.THIRD_PERSON_RIGHT_HAND, false, matrices, vertexConsumers, light);
-        matrices.pop();
+        matrices.mulPose(Axis.XP.rotationDegrees(90f));
+        heldItemRenderer.renderItem(player, ring, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, false, matrices, vertexConsumers, light);
+        matrices.popPose();
 
 
-        matrices.push();
-        Vec3d leftLegPos = new Vec3d(getContextModel().leftLeg.pivotX, getContextModel().leftLeg.pivotY, getContextModel().leftLeg.pivotZ);
-        Vec3d rightLegPos = new Vec3d(getContextModel().rightLeg.pivotX, getContextModel().rightLeg.pivotY, getContextModel().rightLeg.pivotZ);
+        matrices.pushPose();
+        Vec3 leftLegPos = new Vec3(getParentModel().leftLeg.x, getParentModel().leftLeg.y, getParentModel().leftLeg.z);
+        Vec3 rightLegPos = new Vec3(getParentModel().rightLeg.x, getParentModel().rightLeg.y, getParentModel().rightLeg.z);
 
 
-        double midX = (leftLegPos.getX() + rightLegPos.getX()) / 2.0;
-        double midY = (leftLegPos.getY() + rightLegPos.getY()) / 2.0 - 0.2;
-        double midZ = (leftLegPos.getZ() + rightLegPos.getZ()) / 2.0;
+        double midX = (leftLegPos.x() + rightLegPos.x()) / 2.0;
+        double midY = (leftLegPos.y() + rightLegPos.y()) / 2.0 - 0.2;
+        double midZ = (leftLegPos.z() + rightLegPos.z()) / 2.0;
 
         matrices.translate(midX, midY, midZ);
         matrices.scale(0.7f, 0.7f, 0.7f);
-        heldItemRenderer.renderItem(player, chain, ModelTransformationMode.THIRD_PERSON_RIGHT_HAND, false, matrices, vertexConsumers, light);
-        matrices.pop();
+        heldItemRenderer.renderItem(player, chain, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, false, matrices, vertexConsumers, light);
+        matrices.popPose();
 
 
     }

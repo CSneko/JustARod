@@ -1,10 +1,10 @@
 package org.cneko.justarod.mixin;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.item.ItemStack;
 import org.cneko.justarod.JRAttributes;
 import org.cneko.justarod.entity.BDSMable;
 import org.cneko.justarod.entity.Insertable;
@@ -35,20 +35,20 @@ public class LivingEntityMixin implements Insertable {
 
 
     @Inject(method = "readCustomDataFromNbt", at = @At("HEAD"))
-    public void readCustomDataFromNbt(NbtCompound nbt, CallbackInfo ci) {
+    public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
         LivingEntity self = (LivingEntity) (Object) this;
         if (nbt.contains("rodInside")) {
-            var rod = ItemStack.fromNbt(self.getRegistryManager(),nbt.getCompound("rodInside"));
+            var rod = ItemStack.parse(self.registryAccess(),nbt.getCompound("rodInside"));
             rod.ifPresent(this::setRodInside);
         }
     }
 
     @Inject(method = "writeCustomDataToNbt", at = @At("HEAD"))
-    public void writeCustomDataToNbt(NbtCompound nbt, CallbackInfo ci) {
+    public void addAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
         LivingEntity self = (LivingEntity) (Object) this;
         if (!getRodInside().isEmpty()) {
-            nbt.put("rodInside", getRodInside().encode(
-                    self.getRegistryManager()
+            nbt.put("rodInside", getRodInside().save(
+                    self.registryAccess()
             ));
         }
     }
@@ -62,8 +62,8 @@ public class LivingEntityMixin implements Insertable {
     }
 
     @Inject(method = "createLivingAttributes",at = @At("RETURN"))
-    private static void createLivingAttributes(CallbackInfoReturnable<DefaultAttributeContainer.Builder> cir) {
-        DefaultAttributeContainer.Builder builder = cir.getReturnValue();
+    private static void createLivingAttributes(CallbackInfoReturnable<AttributeSupplier.Builder> cir) {
+        AttributeSupplier.Builder builder = cir.getReturnValue();
         builder.add(JRAttributes.Companion.getPLAYER_LUBRICATING());
         builder.add(JRAttributes.Companion.getGENERIC_MAX_POWER());
     }

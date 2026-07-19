@@ -1,11 +1,11 @@
 package org.cneko.justarod.client.renderer
 
-import net.minecraft.client.render.RenderLayer
-import net.minecraft.client.render.VertexConsumer
-import net.minecraft.client.render.VertexConsumerProvider
-import net.minecraft.client.render.entity.EntityRendererFactory
-import net.minecraft.client.util.math.MatrixStack
-import net.minecraft.util.Identifier
+import net.minecraft.client.renderer.RenderType
+import com.mojang.blaze3d.vertex.VertexConsumer
+import net.minecraft.client.renderer.MultiBufferSource
+import net.minecraft.client.renderer.entity.EntityRendererProvider
+import com.mojang.blaze3d.vertex.PoseStack
+import net.minecraft.resources.ResourceLocation
 import org.cneko.justarod.entity.RodEntity
 import software.bernie.geckolib.model.GeoModel
 import software.bernie.geckolib.renderer.GeoEntityRenderer
@@ -13,12 +13,12 @@ import org.cneko.justarod.JRUtil.Companion.rodId
 import org.cneko.toneko.common.mod.util.ResourceLocationUtil.toNekoLoc
 import software.bernie.geckolib.cache.`object`.BakedGeoModel
 
-class RodRenderer(renderManager: EntityRendererFactory.Context?): GeoEntityRenderer<RodEntity>(renderManager,RodModel()) {
+class RodRenderer(renderManager: EntityRendererProvider.Context?): GeoEntityRenderer<RodEntity>(renderManager,RodModel()) {
     override fun preRender(
-        poseStack: MatrixStack?,
+        poseStack: PoseStack?,
         animatable: RodEntity?,
         model: BakedGeoModel?,
-        bufferSource: VertexConsumerProvider?,
+        bufferSource: MultiBufferSource?,
         buffer: VertexConsumer?,
         isReRender: Boolean,
         partialTick: Float,
@@ -53,15 +53,15 @@ class RodRenderer(renderManager: EntityRendererFactory.Context?): GeoEntityRende
 
 }
 class RodModel : GeoModel<RodEntity>() {
-    override fun getModelResource(animatable: RodEntity): Identifier {
+    override fun getModelResource(animatable: RodEntity): ResourceLocation {
         return rodId("geo/entity/rod.geo.json")
     }
 
-    override fun getTextureResource(animatable: RodEntity): Identifier {
+    override fun getTextureResource(animatable: RodEntity): ResourceLocation {
         return rodId("textures/entity/rod.png")
     }
 
-    override fun getAnimationResource(animatable: RodEntity): Identifier {
+    override fun getAnimationResource(animatable: RodEntity): ResourceLocation {
         return toNekoLoc("animations/neko/common.animation.json")
     }
 

@@ -8,16 +8,16 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.context.CommandContext
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
-import net.minecraft.command.argument.EntityArgumentType
-import net.minecraft.entity.Entity
-import net.minecraft.entity.LivingEntity
-import net.minecraft.server.command.CommandManager.argument
-import net.minecraft.server.command.CommandManager.literal
-import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.ClickEvent
-import net.minecraft.text.HoverEvent
-import net.minecraft.text.Text
+import net.minecraft.commands.arguments.EntityArgument
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.commands.Commands.argument
+import net.minecraft.commands.Commands.literal
+import net.minecraft.commands.CommandSourceStack
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.network.chat.ClickEvent
+import net.minecraft.network.chat.HoverEvent
+import net.minecraft.network.chat.Component
 import org.cneko.justarod.client.gui.ScanType
 import org.cneko.justarod.entity.Pregnant
 import org.cneko.justarod.item.JRItems
@@ -82,23 +82,23 @@ class PregnantCommand {
         }
 
         // ==================== 帮助系统命令实现 ====================
-        private fun registerHelp(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
+        private fun registerHelp(baseCmd: LiteralArgumentBuilder<CommandSourceStack>) {
             val helpCmd = literal("help")
 
             // /jr help
             helpCmd.executes { ctx ->
                 val source = ctx.source
-                source.sendMessage(Text.of("§e=== JustARod 命令帮助列表 ==="))
-                source.sendMessage(Text.of("§7(提示：点击绿色命令即可快速查看用法)"))
+                source.sendSystemMessage(Component.literal("§e=== JustARod 命令帮助列表 ==="))
+                source.sendSystemMessage(Component.literal("§7(提示：点击绿色命令即可快速查看用法)"))
 
                 helpData.toSortedMap().forEach { (name, info) ->
                     // 创建可点击的文本
-                    val text = Text.literal("§a/jr $name §f- ${info.displayName}")
-                        .styled { style ->
+                    val text = Component.literal("§a/jr $name §f- ${info.displayName}")
+                        .withStyle { style ->
                             style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/jr help $name"))
-                                .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.of("点击查看该命令具体用法")))
+                                .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("点击查看该命令具体用法")))
                         }
-                    source.sendMessage(text)
+                    source.sendSystemMessage(text)
                 }
                 1
             }
@@ -111,13 +111,13 @@ class PregnantCommand {
                     val info = helpData[cmdName]
 
                     if (info == null) {
-                        source.sendMessage(Text.of("§c未找到子命令: $cmdName。请输入 /jr help 查看列表。"))
+                        source.sendSystemMessage(Component.literal("§c未找到子命令: $cmdName。请输入 /jr help 查看列表。"))
                         return@executes 0
                     }
 
-                    source.sendMessage(Text.of("§e=== /jr $cmdName (${info.displayName}) ==="))
+                    source.sendSystemMessage(Component.literal("§e=== /jr $cmdName (${info.displayName}) ==="))
                     info.usages.forEach { usage ->
-                        source.sendMessage(Text.of("§b$usage"))
+                        source.sendSystemMessage(Component.literal("§b$usage"))
                     }
                     1
                 }
@@ -128,20 +128,20 @@ class PregnantCommand {
 
 
         // ==================== 核心 Helper ====================
-        private fun run(ctx: CommandContext<ServerCommandSource>, targetName: String? = null, action: (Pregnant, ServerCommandSource) -> Unit): Int {
+        private fun run(ctx: CommandContext<CommandSourceStack>, targetName: String? = null, action: (Pregnant, CommandSourceStack) -> Unit): Int {
             val source = ctx.source
-            val entity = if (targetName != null) EntityArgumentType.getEntity(ctx, targetName) else source.entity
+            val entity = if (targetName != null) EntityArgument.getEntity(ctx, targetName) else source.entity
             if (entity is Pregnant) action(entity, source)
             return 1
         }
 
         private fun buildSelfAndTarget(
-            builder: LiteralArgumentBuilder<ServerCommandSource>,
-            action: (Pregnant, ServerCommandSource) -> Unit
-        ): LiteralArgumentBuilder<ServerCommandSource> {
+            builder: LiteralArgumentBuilder<CommandSourceStack>,
+            action: (Pregnant, CommandSourceStack) -> Unit
+        ): LiteralArgumentBuilder<CommandSourceStack> {
             return builder
                 .executes { run(it, null, action) }
-                .then(argument("target", EntityArgumentType.entity())
+                .then(argument("target", EntityArgument.entity())
                     .executes { run(it, "target", action) }
                 )
         }
@@ -149,18 +149,18 @@ class PregnantCommand {
         private fun <T> buildSetter(
             argName: String,
             argType: com.mojang.brigadier.arguments.ArgumentType<T>,
-            getter: (CommandContext<ServerCommandSource>, String) -> T,
+            getter: (CommandContext<CommandSourceStack>, String) -> T,
             setterAction: (Pregnant, T) -> Unit
-        ): LiteralArgumentBuilder<ServerCommandSource> {
+        ): LiteralArgumentBuilder<CommandSourceStack> {
             return literal("set")
                 // 修复：原为 4(控制台)，现改为 2(普通OP)，否则管理员无法使用
-                .requires { s -> s.hasPermissionLevel(2) }
+                .requires { s -> s.hasPermission(2) }
                 .then(argument(argName, argType)
                     .executes { ctx ->
                         val value = getter(ctx, argName)
                         run(ctx, null) { p, _ -> setterAction(p, value) }
                     }
-                    .then(argument("target", EntityArgumentType.entity())
+                    .then(argument("target", EntityArgument.entity())
                         .executes { ctx ->
                             val value = getter(ctx, argName)
                             run(ctx, "target") { p, _ -> setterAction(p, value) }
@@ -171,7 +171,7 @@ class PregnantCommand {
 
         // ==================== 具体业务模块 ====================
 
-        private fun registerSex(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
+        private fun registerSex(baseCmd: LiteralArgumentBuilder<CommandSourceStack>) {
             val cmd = literal("sex")
             addHelp("sex", "基础性别管理",
                 "/jr sex [target] §7- 查看性别",
@@ -179,14 +179,14 @@ class PregnantCommand {
                 "/jr sex female set <true/false> [target] §7- 设置女性状态"
             )
 
-            val showSex: (Pregnant, ServerCommandSource) -> Unit = { p, s ->
+            val showSex: (Pregnant, CommandSourceStack) -> Unit = { p, s ->
                 val gender = when {
                     p.isMale && p.isFemale -> "§b男§d女"
                     p.isMale -> "§b男"
                     p.isFemale -> "§d女"
                     else -> "无"
                 }
-                s.sendMessage(Text.of("§a性别为：$gender"))
+                s.sendSystemMessage(Component.literal("§a性别为：$gender"))
             }
             buildSelfAndTarget(cmd, showSex)
 
@@ -200,7 +200,7 @@ class PregnantCommand {
             baseCmd.then(cmd)
         }
 
-        private fun registerPregnant(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
+        private fun registerPregnant(baseCmd: LiteralArgumentBuilder<CommandSourceStack>) {
             val cmd = literal("pregnant")
             addHelp("pregnant", "怀孕详细管理",
                 "/jr pregnant [target] §7- 查看剩余孕期",
@@ -212,26 +212,26 @@ class PregnantCommand {
             )
 
             buildSelfAndTarget(cmd) { p, s ->
-                s.sendMessage(Text.of("剩余孕期：${p.pregnant / 20 / 60 / 20}天"))
+                s.sendSystemMessage(Component.literal("剩余孕期：${p.pregnant / 20 / 60 / 20}天"))
             }
             cmd.then(buildSetter("time", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.pregnant = v })
 
             val statusCmd = literal("status")
-            statusCmd.requires { it.hasPermissionLevel(2) }
+            statusCmd.requires { it.hasPermission(2) }
             buildSelfAndTarget(statusCmd) { p, s ->
                 val msg = when {
                     p.isEctopicPregnancy -> "§c当前怀孕状态为宫外孕！"
                     p.isHydatidiformMole -> "§c当前怀孕状态为葡萄胎！"
                     else -> "§a当前怀孕状态正常"
                 }
-                s.sendMessage(Text.of(msg))
+                s.sendSystemMessage(Component.literal(msg))
             }
 
             val setStatusCmd = literal("set")
                 .then(argument("type", StringArgumentType.word())
                     .then(argument("is", BoolArgumentType.bool())
                         .executes { ctx -> run(ctx, null) { p, _ -> setPregnancyStatus(p, ctx) } }
-                        .then(argument("target", EntityArgumentType.entity())
+                        .then(argument("target", EntityArgument.entity())
                             .executes { ctx -> run(ctx, "target") { p, _ -> setPregnancyStatus(p, ctx) } }
                         )
                     )
@@ -241,7 +241,7 @@ class PregnantCommand {
 
             val countCmd = literal("count")
             buildSelfAndTarget(countCmd) { p, s ->
-                if (p.isPregnant) s.sendMessage(Text.of("§a怀了${p.babyCount}胞胎！"))
+                if (p.isPregnant) s.sendSystemMessage(Component.literal("§a怀了${p.babyCount}胞胎！"))
             }
             countCmd.then(buildSetter("count", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.babyCount = v })
             cmd.then(countCmd)
@@ -249,7 +249,7 @@ class PregnantCommand {
             baseCmd.then(cmd)
         }
 
-        private fun setPregnancyStatus(p: Pregnant, ctx: CommandContext<ServerCommandSource>) {
+        private fun setPregnancyStatus(p: Pregnant, ctx: CommandContext<CommandSourceStack>) {
             val type = StringArgumentType.getString(ctx, "type").lowercase()
             val value = BoolArgumentType.getBool(ctx, "is")
             if (type.contains("ect")) p.isEctopicPregnancy = value
@@ -257,7 +257,7 @@ class PregnantCommand {
         }
 
 
-        private fun registerExcretion(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
+        private fun registerExcretion(baseCmd: LiteralArgumentBuilder<CommandSourceStack>) {
             val cmd = literal("excretion")
             addHelp("excretion", "排泄管理",
                 "/jr excretion [target] §7- 查看憋屎时间",
@@ -270,21 +270,21 @@ class PregnantCommand {
                     if (p.excretion > 20 * 60 * 10) {
                         p.excretion -= 20 * 60 * 10
                         p.doDefecationPain()
-                        s.sendMessage(Text.of("你排泄了"))
-                        (p as LivingEntity).dropStack(JRItems.EXCREMENT.defaultStack)
+                        s.sendSystemMessage(Component.literal("你排泄了"))
+                        (p as LivingEntity).spawnAtLocation(JRItems.EXCREMENT.defaultInstance)
                     } else {
-                        s.sendMessage(Text.of("你目前无需排泄"))
+                        s.sendSystemMessage(Component.literal("你目前无需排泄"))
                     }
                 }
             })
 
-            buildSelfAndTarget(cmd) { p, s -> s.sendMessage(Text.of("当前憋粑粑时间：${p.excretion / 20 / 60}分钟")) }
+            buildSelfAndTarget(cmd) { p, s -> s.sendSystemMessage(Component.literal("当前憋粑粑时间：${p.excretion / 20 / 60}分钟")) }
             cmd.then(buildSetter("time", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.excretion = v })
 
             baseCmd.then(cmd)
         }
 
-        private fun registerUrination(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
+        private fun registerUrination(baseCmd: LiteralArgumentBuilder<CommandSourceStack>) {
             val cmd = literal("urination")
             addHelp("urination", "排尿与括约肌管理",
                 "/jr urination [target] §7- 查看憋尿时间与括约肌状态",
@@ -298,9 +298,9 @@ class PregnantCommand {
                 run(ctx, null) { p, s ->
                     if (p.urination > 20 * 60 * 10) {
                         p.urination = 0
-                        s.sendMessage(Text.of("你排尿了，感觉一身轻！"))
+                        s.sendSystemMessage(Component.literal("你排尿了，感觉一身轻！"))
                     } else {
-                        s.sendMessage(Text.of("你目前无需排尿"))
+                        s.sendSystemMessage(Component.literal("你目前无需排尿"))
                     }
                 }
             })
@@ -319,9 +319,9 @@ class PregnantCommand {
                     else -> "§4重度 (完全失禁 - 随时都在滴答)"
                 }
 
-                s.sendMessage(Text.of("§e[排尿系统] §7===================="))
-                s.sendMessage(Text.of("§f 当前憋尿时间：§b$urineMinutes 分钟"))
-                s.sendMessage(Text.of("§f 括约肌状态：$stage §7(积累值: $incTime tick)"))
+                s.sendSystemMessage(Component.literal("§e[排尿系统] §7===================="))
+                s.sendSystemMessage(Component.literal("§f 当前憋尿时间：§b$urineMinutes 分钟"))
+                s.sendSystemMessage(Component.literal("§f 括约肌状态：$stage §7(积累值: $incTime tick)"))
             }
 
             // 3. 设置憋尿时间
@@ -337,7 +337,7 @@ class PregnantCommand {
             baseCmd.then(cmd)
         }
 
-        private fun registerHymen(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
+        private fun registerHymen(baseCmd: LiteralArgumentBuilder<CommandSourceStack>) {
             val cmd = literal("hymen")
             addHelp("hymen", "处女膜状态",
                 "/jr hymen [target] §7- 查看状态与是否畸形",
@@ -348,25 +348,25 @@ class PregnantCommand {
             buildSelfAndTarget(cmd) { p, s ->
                 val has = if (p.hasHymen()) "§a完整" else "§c已破裂"
                 val imp = if (p.isImperforateHymen) "§c是 (严重畸形)" else "§b否 (正常)"
-                s.sendMessage(Text.of("§e[生理检查] §f处女膜: $has §f| 闭锁畸形: $imp"))
+                s.sendSystemMessage(Component.literal("§e[生理检查] §f处女膜: $has §f| 闭锁畸形: $imp"))
             }
 
-            val setCmd = literal("set").requires { it.hasPermissionLevel(2) }
+            val setCmd = literal("set").requires { it.hasPermission(2) }
 
             setCmd.then(literal("has").then(argument("value", BoolArgumentType.bool())
                 .executes { ctx -> run(ctx, null) { p, _ -> p.setHasHymen(BoolArgumentType.getBool(ctx, "value")) } }
-                .then(argument("target", EntityArgumentType.entity())
+                .then(argument("target", EntityArgument.entity())
                     .executes { ctx -> run(ctx, "target") { p, s ->
-                        p.setHasHymen(BoolArgumentType.getBool(ctx, "value")); s.sendMessage(Text.of("§a已设置"))
+                        p.setHasHymen(BoolArgumentType.getBool(ctx, "value")); s.sendSystemMessage(Component.literal("§a已设置"))
                     } }
                 )
             ))
 
             setCmd.then(literal("imperforate").then(argument("value", BoolArgumentType.bool())
                 .executes { ctx -> run(ctx, null) { p, _ -> p.setImperforateHymen(BoolArgumentType.getBool(ctx, "value")) } }
-                .then(argument("target", EntityArgumentType.entity())
+                .then(argument("target", EntityArgument.entity())
                     .executes { ctx -> run(ctx, "target") { p, s ->
-                        p.setImperforateHymen(BoolArgumentType.getBool(ctx, "value")); s.sendMessage(Text.of("§a已设置"))
+                        p.setImperforateHymen(BoolArgumentType.getBool(ctx, "value")); s.sendSystemMessage(Component.literal("§a已设置"))
                     } }
                 )
             ))
@@ -375,7 +375,7 @@ class PregnantCommand {
             baseCmd.then(cmd)
         }
 
-        private fun registerProtogyny(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
+        private fun registerProtogyny(baseCmd: LiteralArgumentBuilder<CommandSourceStack>) {
             val cmd = literal("protogyny")
             addHelp("protogyny", "雌转雄机制",
                 "/jr protogyny enable [target] §7- 查看是否激活雌转雄",
@@ -385,19 +385,19 @@ class PregnantCommand {
             )
 
             val enableCmd = literal("enable")
-            buildSelfAndTarget(enableCmd) { p, s -> s.sendMessage(Text.of("§e[性别特征] §f雌转雄启用: ${if (p.isProtogynyEnabled) "§a是" else "§c否"}")) }
+            buildSelfAndTarget(enableCmd) { p, s -> s.sendSystemMessage(Component.literal("§e[性别特征] §f雌转雄启用: ${if (p.isProtogynyEnabled) "§a是" else "§c否"}")) }
             enableCmd.then(buildSetter("is", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v -> p.isProtogynyEnabled = v })
             cmd.then(enableCmd)
 
             val undergoingCmd = literal("undergoing")
-            buildSelfAndTarget(undergoingCmd) { p, s -> s.sendMessage(Text.of("§e[性别特征] §f正在雌转雄: ${if (p.isUndergoingProtogyny) "§a是" else "§c否"}")) }
+            buildSelfAndTarget(undergoingCmd) { p, s -> s.sendSystemMessage(Component.literal("§e[性别特征] §f正在雌转雄: ${if (p.isUndergoingProtogyny) "§a是" else "§c否"}")) }
             undergoingCmd.then(buildSetter("is", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v -> p.isUndergoingProtogyny = v })
             cmd.then(undergoingCmd)
 
             val progressCmd = literal("progress")
             buildSelfAndTarget(progressCmd) { p, s ->
                 val percent = (p.protogynyProgress.toDouble() / Pregnant.PROTOGYNY_TOTAL_DURATION * 100).toInt()
-                s.sendMessage(Text.of("§e[性别特征] §f雌转雄进度: $percent% (${p.protogynyProgress}/${Pregnant.PROTOGYNY_TOTAL_DURATION})"))
+                s.sendSystemMessage(Component.literal("§e[性别特征] §f雌转雄进度: $percent% (${p.protogynyProgress}/${Pregnant.PROTOGYNY_TOTAL_DURATION})"))
             }
             progressCmd.then(buildSetter("val", IntegerArgumentType.integer(0, Pregnant.PROTOGYNY_TOTAL_DURATION), IntegerArgumentType::getInteger) { p, v -> p.protogynyProgress = v })
             cmd.then(progressCmd)
@@ -408,7 +408,7 @@ class PregnantCommand {
         // ====================================================
         // 生理周期与子宫内膜 管理
         // ====================================================
-        private fun registerMenstruation(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
+        private fun registerMenstruation(baseCmd: LiteralArgumentBuilder<CommandSourceStack>) {
             val cmd = literal("menstruation")
             addHelp("menstruation", "生理周期与内膜管理",
                 "/jr menstruation [target] §7- 查看当前周期、时钟与内膜状态",
@@ -420,7 +420,7 @@ class PregnantCommand {
             // 查看生理周期综合面板
             buildSelfAndTarget(cmd) { p, s ->
                 if (!p.isFemale || !p.hasUterus()) {
-                    s.sendMessage(Text.of("§c目标不具备女性生理特征或子宫，没有生理周期。"))
+                    s.sendSystemMessage(Component.literal("§c目标不具备女性生理特征或子宫，没有生理周期。"))
                     return@buildSelfAndTarget
                 }
 
@@ -428,10 +428,10 @@ class PregnantCommand {
                 val thick = String.format("%.2f", p.uterineThickness)
                 val cycleName = p.menstruationCycle.text // 如果你的Java改成了 getCurrentCycle()，这里对应 currentCycle.text
 
-                s.sendMessage(Text.of("§d[生理周期面板] §7===================="))
-                s.sendMessage(Text.of("§f 当前状态: §b$cycleName"))
-                s.sendMessage(Text.of("§f 卵巢时钟: 第 §e$clockDays §f天 §7(满14天一循环)"))
-                s.sendMessage(Text.of("§f 内膜厚度: §c$thick mm §7(跌破厚度且激素撤退时出血)"))
+                s.sendSystemMessage(Component.literal("§d[生理周期面板] §7===================="))
+                s.sendSystemMessage(Component.literal("§f 当前状态: §b$cycleName"))
+                s.sendSystemMessage(Component.literal("§f 卵巢时钟: 第 §e$clockDays §f天 §7(满14天一循环)"))
+                s.sendSystemMessage(Component.literal("§f 内膜厚度: §c$thick mm §7(跌破厚度且激素撤退时出血)"))
             }
 
             // 修改卵巢时钟 (0 ~ 14天)
@@ -446,7 +446,7 @@ class PregnantCommand {
 
             // 卫生巾相关 (保留原逻辑)
             val comfortCmd = literal("comfort")
-            buildSelfAndTarget(comfortCmd) { p, s -> s.sendMessage(Text.of("卫生巾剩余有效时间：${p.menstruationComfort / 20}秒")) }
+            buildSelfAndTarget(comfortCmd) { p, s -> s.sendSystemMessage(Component.literal("卫生巾剩余有效时间：${p.menstruationComfort / 20}秒")) }
             cmd.then(comfortCmd)
 
             baseCmd.then(cmd)
@@ -455,7 +455,7 @@ class PregnantCommand {
         // ====================================================
         // 内外源激素 管理
         // ====================================================
-        private fun registerHormones(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
+        private fun registerHormones(baseCmd: LiteralArgumentBuilder<CommandSourceStack>) {
             val cmd = literal("hormone")
             addHelp("hormone", "内分泌与激素系统",
                 "/jr hormone [target] §7- 查看激素综合面板(内外源分离)",
@@ -491,17 +491,17 @@ class PregnantCommand {
                 val ftm = p.hrtFtmProgress
                 val atrophy = p.vaginalAtrophy
 
-                s.sendMessage(Text.of("§e[激素浓度面板 (单位:pg/mL或ng/mL)] §7========="))
-                s.sendMessage(Text.of("§d 雌二醇(E2): 总 §l$tE2§r §7(内:$inE2 + 外:$exE2)"))
-                s.sendMessage(Text.of("§b 孕酮(P):   总 §l$tP§r §7(内:$inP + 外:$exP)"))
-                s.sendMessage(Text.of("§c 睾酮(T):   总 §l$tT§r §7(内:$inT + 外:$exT)"))
-                s.sendMessage(Text.of("§8 阻断剂(Blocker): §l$blocker§r"))
-                s.sendMessage(Text.of("§6 当前散发吸引力: $attr"))
-                s.sendMessage(Text.of("§a[HRT 变性与病理状态] §7========="))
-                s.sendMessage(Text.of("§d 男转女(MTF) 进度: $mtf Ticks"))
-                s.sendMessage(Text.of("§b 女转男(FTM) 进度: $ftm Ticks"))
+                s.sendSystemMessage(Component.literal("§e[激素浓度面板 (单位:pg/mL或ng/mL)] §7========="))
+                s.sendSystemMessage(Component.literal("§d 雌二醇(E2): 总 §l$tE2§r §7(内:$inE2 + 外:$exE2)"))
+                s.sendSystemMessage(Component.literal("§b 孕酮(P):   总 §l$tP§r §7(内:$inP + 外:$exP)"))
+                s.sendSystemMessage(Component.literal("§c 睾酮(T):   总 §l$tT§r §7(内:$inT + 外:$exT)"))
+                s.sendSystemMessage(Component.literal("§8 阻断剂(Blocker): §l$blocker§r"))
+                s.sendSystemMessage(Component.literal("§6 当前散发吸引力: $attr"))
+                s.sendSystemMessage(Component.literal("§a[HRT 变性与病理状态] §7========="))
+                s.sendSystemMessage(Component.literal("§d 男转女(MTF) 进度: $mtf Ticks"))
+                s.sendSystemMessage(Component.literal("§b 女转男(FTM) 进度: $ftm Ticks"))
                 if (atrophy > 0) {
-                    s.sendMessage(Text.of("§4 缺乏雌激素导致的萎缩症: $atrophy Ticks"))
+                    s.sendSystemMessage(Component.literal("§4 缺乏雌激素导致的萎缩症: $atrophy Ticks"))
                 }
             }
 
@@ -543,7 +543,7 @@ class PregnantCommand {
             baseCmd.then(cmd)
         }
 
-        private fun registerCorpusLuteumRupture(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
+        private fun registerCorpusLuteumRupture(baseCmd: LiteralArgumentBuilder<CommandSourceStack>) {
             val cmd = literal("corpus_luteum_rupture")
             addHelp("corpus_luteum_rupture", "黄体破裂",
                 "/jr corpus_luteum_rupture [target] §7- 查看状态",
@@ -558,34 +558,34 @@ class PregnantCommand {
                 val severe = p.isSevereCorpusLuteumRupture
                 if (time > 0) {
                     val sevStr = if (severe) "§c重症 (大血管破裂)" else "§e轻症"
-                    s.sendMessage(Text.of("§c[生理检查] §f黄体破裂: $sevStr §f| 积血时间: $time tick"))
+                    s.sendSystemMessage(Component.literal("§c[生理检查] §f黄体破裂: $sevStr §f| 积血时间: $time tick"))
                 } else {
-                    s.sendMessage(Text.of("§a[生理检查] §f黄体完好 (无破裂内出血)"))
+                    s.sendSystemMessage(Component.literal("§a[生理检查] §f黄体完好 (无破裂内出血)"))
                 }
             }
 
             cmd.then(literal("time").then(buildSetter("val", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.corpusLuteumRupture = v }))
             cmd.then(literal("severe").then(buildSetter("val", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v -> p.isSevereCorpusLuteumRupture = v }))
 
-            val triggerCmd = literal("trigger").requires { it.hasPermissionLevel(2) }
+            val triggerCmd = literal("trigger").requires { it.hasPermission(2) }
             buildSelfAndTarget(triggerCmd) { p, s ->
                 if (!p.ruptureCorpusLuteum("")) {
-                    s.sendMessage(Text.of("§e触发失败：目标可能并非处于黄体期，或者没有子宫，或已经处于破裂状态。"))
+                    s.sendSystemMessage(Component.literal("§e触发失败：目标可能并非处于黄体期，或者没有子宫，或已经处于破裂状态。"))
                 }
             }
             cmd.then(triggerCmd)
 
-            val cureCmd = literal("cure").requires { it.hasPermissionLevel(2) }
+            val cureCmd = literal("cure").requires { it.hasPermission(2) }
             buildSelfAndTarget(cureCmd) { p, s ->
                 if (p.corpusLuteumRupture > 0) p.cureCorpusLuteumRupture()
-                else s.sendMessage(Text.of("§a目标没有黄体破裂，无需治疗。"))
+                else s.sendSystemMessage(Component.literal("§a目标没有黄体破裂，无需治疗。"))
             }
             cmd.then(cureCmd)
 
             baseCmd.then(cmd)
         }
 
-        private fun registerXRayScan(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
+        private fun registerXRayScan(baseCmd: LiteralArgumentBuilder<CommandSourceStack>) {
             val cmd = literal("xray_scan")
             addHelp("xray_scan", "B超扫描",
                 "/jr xray_scan uterus [target] §7- 打开B超扫描UI界面"
@@ -593,15 +593,15 @@ class PregnantCommand {
 
             val uterusCmd = literal("uterus")
             buildSelfAndTarget(uterusCmd) { p, s ->
-                if (p.hasUterus() && s.entity is ServerPlayerEntity) {
-                    ServerPlayNetworking.send(s.entity as ServerPlayerEntity, XRayScanScreenPayload(ScanType.UTERUS, (p as Entity).id))
+                if (p.hasUterus() && s.entity is ServerPlayer) {
+                    ServerPlayNetworking.send(s.entity as ServerPlayer, XRayScanScreenPayload(ScanType.UTERUS, (p as Entity).id))
                 }
             }
             cmd.then(uterusCmd)
             baseCmd.then(cmd)
         }
 
-        private fun registerLactation(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
+        private fun registerLactation(baseCmd: LiteralArgumentBuilder<CommandSourceStack>) {
             val cmd = literal("lactation")
 
             // 1. 注册帮助信息
@@ -620,10 +620,10 @@ class PregnantCommand {
                 val mastitis = p.mastitis
                 val stim = p.lactationStimulation
 
-                s.sendMessage(Text.of("§e[泌乳面板] §7===================="))
-                s.sendMessage(Text.of("§f 当前储奶量: §b$milk §f/ §3$max"))
-                s.sendMessage(Text.of("§c 乳腺炎病程: $mastitis tick"))
-                s.sendMessage(Text.of("§d 泌乳刺激度: $stim tick (一直吸一直有)"))
+                s.sendSystemMessage(Component.literal("§e[泌乳面板] §7===================="))
+                s.sendSystemMessage(Component.literal("§f 当前储奶量: §b$milk §f/ §3$max"))
+                s.sendSystemMessage(Component.literal("§c 乳腺炎病程: $mastitis tick"))
+                s.sendSystemMessage(Component.literal("§d 泌乳刺激度: $stim tick (一直吸一直有)"))
             }
 
             // 3. 属性 Setter
@@ -643,28 +643,28 @@ class PregnantCommand {
             ))
 
             // 4. 执行动作：手动挤奶 (/jr lactation extract <amount> [target])
-            val extractCmd = literal("extract").requires { it.hasPermissionLevel(2) }
+            val extractCmd = literal("extract").requires { it.hasPermission(2) }
                 .then(argument("amount", FloatArgumentType.floatArg(0.1f))
                     .executes { ctx ->
                         val amount = FloatArgumentType.getFloat(ctx, "amount")
                         run(ctx, null) { p, s ->
                             val extracted = p.extractMilk(amount)
                             if (extracted > 0) {
-                                s.sendMessage(Text.of("§a成功挤出了 ${String.format("%.1f", extracted)} ml乳汁！感觉一阵轻松..."))
+                                s.sendSystemMessage(Component.literal("§a成功挤出了 ${String.format("%.1f", extracted)} ml乳汁！感觉一阵轻松..."))
                             } else {
-                                s.sendMessage(Text.of("§c一滴也没有了..."))
+                                s.sendSystemMessage(Component.literal("§c一滴也没有了..."))
                             }
                         }
                     }
-                    .then(argument("target", EntityArgumentType.entity())
+                    .then(argument("target", EntityArgument.entity())
                         .executes { ctx ->
                             val amount = FloatArgumentType.getFloat(ctx, "amount")
                             run(ctx, "target") { p, s ->
                                 val extracted = p.extractMilk(amount)
                                 if (extracted > 0) {
-                                    s.sendMessage(Text.of("§a成功从目标身上挤出了 ${String.format("%.1f", extracted)} ml乳汁！"))
+                                    s.sendSystemMessage(Component.literal("§a成功从目标身上挤出了 ${String.format("%.1f", extracted)} ml乳汁！"))
                                 } else {
-                                    s.sendMessage(Text.of("§c目标一滴也没有了..."))
+                                    s.sendSystemMessage(Component.literal("§c目标一滴也没有了..."))
                                 }
                             }
                         }
@@ -679,7 +679,7 @@ class PregnantCommand {
         // ====================================================
         // 甲沟炎系统 (Paronychia)
         // ====================================================
-        private fun registerParonychia(baseCmd: LiteralArgumentBuilder<ServerCommandSource>) {
+        private fun registerParonychia(baseCmd: LiteralArgumentBuilder<CommandSourceStack>) {
             val cmd = literal("paronychia")
             addHelp("paronychia", "甲沟炎系统",
                 "/jr paronychia [target] §7- 查看当前感染状态",
@@ -710,17 +710,17 @@ class PregnantCommand {
 
                 val days = String.format("%.1f", time / (20.0 * 60.0 * 20.0))
 
-                s.sendMessage(Text.of("§e[甲沟炎面板] §7===================="))
-                s.sendMessage(Text.of("§f 感染严重度: $stageStr"))
-                s.sendMessage(Text.of("§f 病程计时: §b${time} ticks §7(约${days}天)"))
+                s.sendSystemMessage(Component.literal("§e[甲沟炎面板] §7===================="))
+                s.sendSystemMessage(Component.literal("§f 感染严重度: $stageStr"))
+                s.sendSystemMessage(Component.literal("§f 病程计时: §b${time} ticks §7(约${days}天)"))
                 if (bumpChance > 0) {
-                    s.sendMessage(Text.of("§f 🔥磕到概率: §c1/$bumpChance §7(每次受击)"))
+                    s.sendSystemMessage(Component.literal("§f 🔥磕到概率: §c1/$bumpChance §7(每次受击)"))
                 }
                 if (nailRemoved) {
                     val regrowDays = String.format("%.1f", regrow / (20.0 * 60.0 * 20.0))
-                    s.sendMessage(Text.of("§f 趾甲状态: §4已脱落 §7(再生剩余: ${regrow} ticks / 约${regrowDays}天)"))
+                    s.sendSystemMessage(Component.literal("§f 趾甲状态: §4已脱落 §7(再生剩余: ${regrow} ticks / 约${regrowDays}天)"))
                 } else {
-                    s.sendMessage(Text.of("§f 趾甲状态: §a完好"))
+                    s.sendSystemMessage(Component.literal("§f 趾甲状态: §a完好"))
                 }
             }
 
@@ -730,7 +730,7 @@ class PregnantCommand {
             ))
 
             // 3. /jr paronychia bump [cause] [target] — 🔥 戏剧性触发
-            val bumpCmd = literal("bump").requires { it.hasPermissionLevel(2) }
+            val bumpCmd = literal("bump").requires { it.hasPermission(2) }
                 .executes { ctx ->
                     run(ctx, null) { p, _ -> p.triggerParonychiaBump("命令触发") }
                 }
@@ -739,40 +739,40 @@ class PregnantCommand {
                         val cause = StringArgumentType.getString(ctx, "cause")
                         run(ctx, null) { p, _ -> p.triggerParonychiaBump(cause) }
                     }
-                    .then(argument("target", EntityArgumentType.entity())
+                    .then(argument("target", EntityArgument.entity())
                         .executes { ctx ->
                             val cause = StringArgumentType.getString(ctx, "cause")
                             run(ctx, "target") { p, _ -> p.triggerParonychiaBump(cause) }
                         }
                     )
                 )
-                .then(argument("target", EntityArgumentType.entity())
+                .then(argument("target", EntityArgument.entity())
                     .executes { ctx -> run(ctx, "target") { p, _ -> p.triggerParonychiaBump("命令触发") } }
                 )
             cmd.then(bumpCmd)
 
             // 4. /jr paronychia drain [target] — 🔪 切开引流
-            val drainCmd = literal("drain").requires { it.hasPermissionLevel(2) }
+            val drainCmd = literal("drain").requires { it.hasPermission(2) }
             buildSelfAndTarget(drainCmd) { p, s ->
                 if (p.paronychia <= 0) {
-                    s.sendMessage(Text.of("§e目标没有甲沟炎，无需引流。"))
+                    s.sendSystemMessage(Component.literal("§e目标没有甲沟炎，无需引流。"))
                 } else {
                     p.drainParonychiaAbscess()
                     val remaining = p.paronychia
                     val days = String.format("%.1f", remaining / (20.0 * 60.0 * 20.0))
-                    s.sendMessage(Text.of("§e已执行切开引流，剩余病程约${days}天。"))
+                    s.sendSystemMessage(Component.literal("§e已执行切开引流，剩余病程约${days}天。"))
                 }
             }
             cmd.then(drainCmd)
 
             // 5. /jr paronychia nail_remove [target] — 🏥 拔甲手术
-            val nailRemoveCmd = literal("nail_remove").requires { it.hasPermissionLevel(2) }
+            val nailRemoveCmd = literal("nail_remove").requires { it.hasPermission(2) }
             buildSelfAndTarget(nailRemoveCmd) { p, s ->
                 if (p.paronychia <= 0 && !p.isNailRemoved) {
-                    s.sendMessage(Text.of("§e目标不需要拔甲（既无甲沟炎，趾甲也完好）。"))
+                    s.sendSystemMessage(Component.literal("§e目标不需要拔甲（既无甲沟炎，趾甲也完好）。"))
                 } else {
                     p.removeNail()
-                    s.sendMessage(Text.of("§e已执行拔甲手术，感染已清除。趾甲将在约7天后重新长出。"))
+                    s.sendSystemMessage(Component.literal("§e已执行拔甲手术，感染已清除。趾甲将在约7天后重新长出。"))
                 }
             }
             cmd.then(nailRemoveCmd)
@@ -789,28 +789,28 @@ class PregnantCommand {
             cmd.then(nailCmd)
 
             // 7. /jr paronychia infect <probability> [target] — 🦠 尝试感染
-            val infectCmd = literal("infect").requires { it.hasPermissionLevel(2) }
+            val infectCmd = literal("infect").requires { it.hasPermission(2) }
                 .then(argument("probability", FloatArgumentType.floatArg(0f, 1f))
                     .executes { ctx ->
                         val prob = FloatArgumentType.getFloat(ctx, "probability")
                         run(ctx, null) { p, s ->
                             p.tryInfectParonychia(prob)
                             if (p.paronychia > 0) {
-                                s.sendMessage(Text.of("§c目标感染了甲沟炎！"))
+                                s.sendSystemMessage(Component.literal("§c目标感染了甲沟炎！"))
                             } else {
-                                s.sendMessage(Text.of("§a运气不错，目标没有感染（概率: $prob）。"))
+                                s.sendSystemMessage(Component.literal("§a运气不错，目标没有感染（概率: $prob）。"))
                             }
                         }
                     }
-                    .then(argument("target", EntityArgumentType.entity())
+                    .then(argument("target", EntityArgument.entity())
                         .executes { ctx ->
                             val prob = FloatArgumentType.getFloat(ctx, "probability")
                             run(ctx, "target") { p, s ->
                                 p.tryInfectParonychia(prob)
                                 if (p.paronychia > 0) {
-                                    s.sendMessage(Text.of("§c目标感染了甲沟炎！"))
+                                    s.sendSystemMessage(Component.literal("§c目标感染了甲沟炎！"))
                                 } else {
-                                    s.sendMessage(Text.of("§a运气不错，目标没有感染（概率: $prob）。"))
+                                    s.sendSystemMessage(Component.literal("§a运气不错，目标没有感染（概率: $prob）。"))
                                 }
                             }
                         }

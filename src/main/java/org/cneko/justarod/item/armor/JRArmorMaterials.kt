@@ -1,20 +1,20 @@
 package org.cneko.justarod.item.armor
 
-import net.minecraft.item.ArmorItem
-import net.minecraft.item.ArmorMaterial
-import net.minecraft.item.Items
-import net.minecraft.recipe.Ingredient
-import net.minecraft.registry.Registries
-import net.minecraft.registry.Registry
-import net.minecraft.registry.entry.RegistryEntry
-import net.minecraft.sound.SoundEvent
-import net.minecraft.sound.SoundEvents
+import net.minecraft.world.item.ArmorItem
+import net.minecraft.world.item.ArmorMaterial
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.crafting.Ingredient
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.core.Registry
+import net.minecraft.core.Holder
+import net.minecraft.sounds.SoundEvent
+import net.minecraft.sounds.SoundEvents
 import java.util.function.Supplier
 import org.cneko.justarod.JRUtil.Companion.rodId
 
 class JRArmorMaterials {
     companion object{
-        val FIREWORKS_ROD_MATERIAL:RegistryEntry<ArmorMaterial> = register(
+        val FIREWORKS_ROD_MATERIAL:Holder<ArmorMaterial> = register(
             "fireworks_rod",
             mapOf(
                 ArmorItem.Type.BOOTS to 1,
@@ -30,7 +30,7 @@ class JRArmorMaterials {
             false
         )
 
-        val PANTSU_MATERIAL:RegistryEntry<ArmorMaterial> = register(
+        val PANTSU_MATERIAL:Holder<ArmorMaterial> = register(
             "pantsu",
             mapOf(
                 ArmorItem.Type.BOOTS to 1,
@@ -46,7 +46,7 @@ class JRArmorMaterials {
             true
         )
 
-        val DIAPER_MATERIAL:RegistryEntry<ArmorMaterial> = register(
+        val DIAPER_MATERIAL:Holder<ArmorMaterial> = register(
             "diaper",
             mapOf(
                 ArmorItem.Type.BOOTS to 1,
@@ -66,12 +66,12 @@ class JRArmorMaterials {
             id: String,
             defensePoints: Map<ArmorItem.Type?, Int?>?,
             enchantability: Int,
-            equipSound: RegistryEntry<SoundEvent?>?,
+            equipSound: Holder<SoundEvent?>?,
             repairIngredientSupplier: Supplier<Ingredient?>?,
             toughness: Float,
             knockbackResistance: Float,
             dyeable: Boolean
-        ): RegistryEntry<ArmorMaterial> {
+        ): Holder<ArmorMaterial> {
             val layers = listOf(ArmorMaterial.Layer(rodId(id), "", dyeable))
             var material = ArmorMaterial(
                 defensePoints,
@@ -83,8 +83,8 @@ class JRArmorMaterials {
                 knockbackResistance
             )
             material =
-                Registry.register(Registries.ARMOR_MATERIAL, rodId(id), material) as ArmorMaterial
-            return RegistryEntry.of(material)
+                Registry.register(BuiltInRegistries.ARMOR_MATERIAL, rodId(id), material) as ArmorMaterial
+            return Holder.direct(material)
         }
     }
 }

@@ -1,9 +1,5 @@
 package org.cneko.justarod.mixin;
 
-import net.minecraft.network.message.MessageType;
-import net.minecraft.network.message.SignedMessage;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 import org.cneko.toneko.common.Stats;
 import org.cneko.toneko.common.mod.entities.INeko;
 import org.cneko.toneko.common.mod.events.CommonChatEvent;
@@ -17,6 +13,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
+import net.minecraft.network.chat.ChatType;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.PlayerChatMessage;
+import net.minecraft.server.level.ServerPlayer;
 
 import static org.cneko.toneko.common.mod.events.CommonChatEvent.sendMessage;
 
@@ -36,14 +36,14 @@ public class CommonChatEventMixin {
             "唔…啾…"
     );
     @Inject(method = "onChatMessage", at = @At("HEAD"),cancellable = true)
-    private static void onChatMessage(SignedMessage message, ServerPlayerEntity sender, MessageType.Parameters params, CallbackInfo ci) {
+    private static void onChatMessage(PlayerChatMessage message, ServerPlayer sender, ChatType.Bound params, CallbackInfo ci) {
         if (sender.getBallMouth()>0){
             ci.cancel();
             String msg = MESSAGES.get(sender.getRandom().nextInt(MESSAGES.size()));
             msg = Messaging.prepareMessage(msg, (INeko) sender);
             msg = Messaging.format(msg, (INeko) sender, Messaging.getChatPrefixes((INeko) sender), ConfigUtil.getChatFormat());
 
-            sendMessage(Text.of(msg));
+            sendMessage(Component.nullToEmpty(msg));
         }
     }
 }

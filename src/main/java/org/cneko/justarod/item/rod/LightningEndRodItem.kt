@@ -1,15 +1,15 @@
 package org.cneko.justarod.item.rod
 
-import net.minecraft.entity.EntityType
-import net.minecraft.entity.LightningEntity
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.effect.StatusEffectInstance
-import net.minecraft.entity.effect.StatusEffects
-import net.minecraft.item.ItemStack
-import net.minecraft.item.tooltip.TooltipType
-import net.minecraft.text.Text
-import net.minecraft.util.ActionResult
-import net.minecraft.world.World
+import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.LightningBolt
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.effect.MobEffectInstance
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.TooltipFlag
+import net.minecraft.network.chat.Component
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.level.Level
 import org.cneko.justarod.item.JRComponents
 
 /*
@@ -18,21 +18,21 @@ import org.cneko.justarod.item.JRComponents
 class LightningEndRodItem: SelfUsedItem(Settings().maxCount(1).maxDamage(2000).component(JRComponents.Companion.USED_TIME_MARK,0)) {
     override fun useOnSelf(
         stack: ItemStack,
-        world: World?,
+        world: Level?,
         entity: LivingEntity,
         slot: Int,
         selected: Boolean
-    ): ActionResult {
-        val result:ActionResult = super.useOnSelf(stack, world, entity, slot, selected)
-        if (result == ActionResult.SUCCESS){
+    ): InteractionResult {
+        val result:InteractionResult = super.useOnSelf(stack, world, entity, slot, selected)
+        if (result == InteractionResult.SUCCESS){
             // 中毒中毒~
-            val e = StatusEffectInstance(StatusEffects.POISON, 200, 0)
-            entity.addStatusEffect(e)
+            val e = MobEffectInstance(MobEffects.POISON, 200, 0)
+            entity.addEffect(e)
             // 雷雨天，召唤雷电
-            if (entity.world.isThundering && world?.random?.nextInt(3) == 0){
-                val light = LightningEntity(EntityType.LIGHTNING_BOLT,world)
+            if (entity.level().isThundering && world?.random?.nextInt(3) == 0){
+                val light = LightningBolt(EntityType.LIGHTNING_BOLT,world)
                 light.setPos(entity.x, entity.y, entity.z)
-                entity.world.spawnEntity(light)
+                entity.level().addFreshEntity(light)
             }
             return result
         }
@@ -42,10 +42,10 @@ class LightningEndRodItem: SelfUsedItem(Settings().maxCount(1).maxDamage(2000).c
     override fun appendTooltip(
         stack: ItemStack?,
         context: TooltipContext?,
-        tooltip: MutableList<Text>?,
-        type: TooltipType?
+        tooltip: MutableList<Component>?,
+        type: TooltipFlag?
     ) {
-        super.appendTooltip(stack, context, tooltip, type)
-        tooltip?.add(Text.translatable("item.justarod.lightning_end_rod.tooltip"))
+        super.appendHoverText(stack, context, tooltip, type)
+        tooltip?.add(Component.translatable("item.justarod.lightning_end_rod.tooltip"))
     }
 }

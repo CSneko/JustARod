@@ -1,12 +1,12 @@
 package org.cneko.justarod.item.electric
 
 import net.minecraft.component.DataComponentTypes
-import net.minecraft.entity.LivingEntity
-import net.minecraft.item.ItemStack
-import net.minecraft.item.tooltip.TooltipType
-import net.minecraft.text.Text
-import net.minecraft.util.ActionResult
-import net.minecraft.world.World
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.TooltipFlag
+import net.minecraft.network.chat.Component
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.level.Level
 import org.cneko.justarod.damage.JRDamageTypes
 import org.cneko.justarod.item.JRComponents
 
@@ -19,15 +19,15 @@ open class BasicElectricRodItem: SelfUsedElectricRodItem(Settings().component(JR
     override fun appendTooltip(
         stack: ItemStack?,
         context: TooltipContext?,
-        tooltip: MutableList<Text>?,
-        type: TooltipType?
+        tooltip: MutableList<Component>?,
+        type: TooltipFlag?
     ) {
-        tooltip?.add(Text.translatable("item.justarod.basic_electric_rod.tooltip"))
-        super.appendTooltip(stack, context, tooltip, type)
+        tooltip?.add(Component.translatable("item.justarod.basic_electric_rod.tooltip"))
+        super.appendHoverText(stack, context, tooltip, type)
     }
 
-    override fun damage(stack: ItemStack, amount: Int, world: World?) {
-        super<SelfUsedElectricRodItem>.damage(stack, amount, world)
+    override fun damage(stack: ItemStack, amount: Int, world: Level?) {
+        super<SelfUsedElectricRodItem>.hurt(stack, amount, world)
         // 随机额外减少
         if (stack.damage!=stack.maxDamage){
             val random = world?.random?.nextInt(500)
@@ -41,17 +41,17 @@ open class BasicElectricRodItem: SelfUsedElectricRodItem(Settings().component(JR
 
     override fun useOnSelf(
         stack: ItemStack,
-        world: World?,
+        world: Level?,
         entity: LivingEntity,
         slot: Int,
         selected: Boolean
-    ): ActionResult {
+    ): InteractionResult {
         val result = super.useOnSelf(stack, world, entity, slot, selected)
-        if (result == ActionResult.SUCCESS){
+        if (result == InteractionResult.SUCCESS){
             // 减少实体0.1~1.5血量
             val random = world?.random?.nextInt(5)?.plus(1)
             if (random != null) {
-                entity.damage(JRDamageTypes.sexualExcitement(entity), random.toFloat())
+                entity.hurt(JRDamageTypes.sexualExcitement(entity), random.toFloat())
             }
         }
         return result

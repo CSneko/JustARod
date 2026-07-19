@@ -1,27 +1,27 @@
 package org.cneko.justarod.effect
 
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.effect.StatusEffect
-import net.minecraft.entity.effect.StatusEffectCategory
-import net.minecraft.particle.ParticleTypes
-import net.minecraft.server.world.ServerWorld
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.effect.MobEffect
+import net.minecraft.world.effect.MobEffectCategory
+import net.minecraft.core.particles.ParticleTypes
+import net.minecraft.server.level.ServerLevel
 import org.cneko.justarod.entity.Pregnant
 import kotlin.math.max
 
-class LilyPheromoneEffect : StatusEffect(StatusEffectCategory.BENEFICIAL, 0xFFC0CB) {
+class LilyPheromoneEffect : MobEffect(MobEffectCategory.BENEFICIAL, 0xFFC0CB) {
 
     // 决定效果多久执行一次
     // 设定为每 40 tick (2秒) 触发一次核心逻辑，避免每 tick 运算消耗性能
-    override fun canApplyUpdateEffect(duration: Int, amplifier: Int): Boolean {
+    override fun shouldApplyEffectTickThisTick(duration: Int, amplifier: Int): Boolean {
         return duration % 40 == 0
     }
 
     // 每次触发时执行的具体逻辑
-    override fun applyUpdateEffect(entity: LivingEntity, amplifier: Int): Boolean {
-        super.applyUpdateEffect(entity, amplifier)
+    override fun applyEffectTick(entity: LivingEntity, amplifier: Int): Boolean {
+        super.applyEffectTick(entity, amplifier)
 
         // 仅在服务端处理数值和粒子
-        if (entity.world.isClient) return true
+        if (entity.level().isClientSide) return true
 
         // 1. 基础治愈：微量回血 (百合的治愈之力)
         if (entity.health < entity.maxHealth) {
@@ -30,8 +30,8 @@ class LilyPheromoneEffect : StatusEffect(StatusEffectCategory.BENEFICIAL, 0xFFC0
 
         // 2. 视觉表现：散发阵阵花香
         // 樱花花瓣 (CHERRY_LEAVES)非常适合百合氛围
-        val serverWorld = entity.world as? ServerWorld
-        serverWorld?.spawnParticles(
+        val serverWorld = entity.level() as? ServerLevel
+        serverWorld?.sendParticles(
             ParticleTypes.CHERRY_LEAVES,
             entity.x, entity.y + 1.0, entity.z,
             2, 0.4, 0.5, 0.4, 0.05

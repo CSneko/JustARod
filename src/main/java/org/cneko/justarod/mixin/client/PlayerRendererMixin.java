@@ -1,27 +1,27 @@
 package org.cneko.justarod.mixin.client;
 
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.PlayerEntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import org.cneko.justarod.client.feature.*;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(PlayerEntityRenderer.class)
+@Mixin(PlayerRenderer.class)
 public abstract class PlayerRendererMixin {
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    private void onInit(EntityRendererFactory.Context ctx, boolean slim, CallbackInfo ci) {
-        PlayerEntityRenderer self = (PlayerEntityRenderer) (Object) this;
-        self.addFeature(new RashFeatureRenderer(self));
-        self.addFeature(new BallMouthFeatureRenderer(self));
-        self.addFeature(new ElectricShockFeatureRenderer(self));
-        self.addFeature(new BundledFeatureRenderer(self));
-        self.addFeature(new EyePatchFeatureRenderer(self));
-        self.addFeature(new EarplugFeatureRenderer(self));
-        self.addFeature(new HandcuffFeatureRenderer(self,ctx.getHeldItemRenderer()));
-        self.addFeature(new ShacklesFeatureRenderer(self,ctx.getHeldItemRenderer()));
+    private void onInit(EntityRendererProvider.Context ctx, boolean slim, CallbackInfo ci) {
+        PlayerRenderer self = (PlayerRenderer) (Object) this;
+        self.addLayer(new RashFeatureRenderer(self));
+        self.addLayer(new BallMouthFeatureRenderer(self));
+        self.addLayer(new ElectricShockFeatureRenderer(self));
+        self.addLayer(new BundledFeatureRenderer(self));
+        self.addLayer(new EyePatchFeatureRenderer(self));
+        self.addLayer(new EarplugFeatureRenderer(self));
+        self.addLayer(new HandcuffFeatureRenderer(self,ctx.getItemInHandRenderer()));
+        self.addLayer(new ShacklesFeatureRenderer(self,ctx.getItemInHandRenderer()));
     }
 
 }

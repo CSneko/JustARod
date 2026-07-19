@@ -1,11 +1,11 @@
 package org.cneko.justarod.mixin;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.boss.WitherEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.boss.wither.WitherBoss;
 import org.cneko.justarod.entity.Pregnant;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @SuppressWarnings({"AddedMixinMembersNamePattern", "DataFlowIssue"})
-@Mixin(WitherEntity.class)
+@Mixin(WitherBoss.class)
 public class WitherEntityMixin implements Pregnant {
 
     // ==================== 性别 ====================
@@ -740,13 +740,13 @@ public class WitherEntityMixin implements Pregnant {
     // ==================== createBaby ====================
     @Override
     public Entity createBaby() {
-        WitherEntity self = (WitherEntity) (Object) this;
-        Entity baby = getChildrenType().create(self.getWorld());
-        if (baby instanceof MobEntity mob) {
+        WitherBoss self = (WitherBoss) (Object) this;
+        Entity baby = getChildrenType().create(self.level());
+        if (baby instanceof Mob mob) {
             mob.setBaby(true);
         }
         if (baby != null) {
-            baby.setPos(self.getX(), self.getY(), self.getZ());
+            baby.setPosRaw(self.getX(), self.getY(), self.getZ());
         }
         return baby;
     }
@@ -754,7 +754,7 @@ public class WitherEntityMixin implements Pregnant {
     // ==================== Tick ====================
     @Inject(method = "mobTick", at = @At("HEAD"))
     public void mobTick(CallbackInfo ci) {
-        WitherEntity self = (WitherEntity) (Object) this;
+        WitherBoss self = (WitherBoss) (Object) this;
         Pregnant.pregnantTick((LivingEntity & Pregnant) self);
         Pregnant.aidsTick((LivingEntity & Pregnant) self);
         Pregnant.HPVTick((LivingEntity & Pregnant) self);
@@ -765,12 +765,12 @@ public class WitherEntityMixin implements Pregnant {
 
     // ==================== NBT Persistence ====================
     @Inject(method = "readCustomDataFromNbt", at = @At("HEAD"))
-    public void readCustomDataFromNbt(NbtCompound nbt, CallbackInfo ci) {
+    public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
         this.readPregnantFromNbt(nbt);
     }
 
     @Inject(method = "writeCustomDataToNbt", at = @At("HEAD"))
-    public void writeCustomDataToNbt(NbtCompound nbt, CallbackInfo ci) {
+    public void addAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
         this.writePregnantToNbt(nbt);
     }
 }

@@ -2,27 +2,27 @@ package org.cneko.justarod.item.bdsm
 
 import net.fabricmc.fabric.api.item.v1.EnchantingContext
 import net.minecraft.component.DataComponentTypes
-import net.minecraft.enchantment.Enchantment
-import net.minecraft.enchantment.EnchantmentHelper
-import net.minecraft.enchantment.Enchantments
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.registry.BuiltinRegistries
-import net.minecraft.registry.Registries
-import net.minecraft.registry.RegistryKeys
-import net.minecraft.registry.entry.RegistryEntry
-import net.minecraft.text.Text
-import net.minecraft.util.ActionResult
-import net.minecraft.util.Hand
-import net.minecraft.util.TypedActionResult
-import net.minecraft.world.World
+import net.minecraft.world.item.enchantment.Enchantment
+import net.minecraft.world.item.enchantment.EnchantmentHelper
+import net.minecraft.world.item.enchantment.Enchantments
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.core.registries.Registries
+import net.minecraft.core.Holder
+import net.minecraft.network.chat.Component
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.InteractionResultHolder
+import net.minecraft.world.level.Level
 import org.cneko.justarod.entity.BDSMable
 import kotlin.jvm.optionals.getOrNull
 
 abstract class AbstractBDSMItem(
-    settings: Settings,
+    settings: Properties,
     private val fieldGetter: (BDSMable) -> Int,
     private val fieldSetter: (BDSMable, Int) -> Unit,
     private val alreadyHasMessage: String,
@@ -30,46 +30,46 @@ abstract class AbstractBDSMItem(
     private val durationTicks: Int = 20 * 60 * 5, // 默认 5 分钟
     private val alreadyHasColor: String = "§c",  // 默认红色
     private val successColor: String = "§a"      // 默认绿色
-) : Item(settings) {
+) : Item(properties) {
 
     override fun useOnEntity(
         stack: ItemStack?,
-        user: PlayerEntity?,
+        user: Player?,
         entity: LivingEntity?,
-        hand: Hand?
-    ): ActionResult {
-        if (entity is BDSMable && !entity.world.isClient) {
+        hand: InteractionHand?
+    ): InteractionResult {
+        if (entity is BDSMable && !entity.level().isClientSide) {
             val finalDuration = getExtendedDuration(stack)
             if (fieldGetter(entity) > 0) {
-                user?.sendMessage(Text.of("$alreadyHasColor$alreadyHasMessage"))
-                return ActionResult.FAIL
+                user?.sendSystemMessage(Component.literal("$alreadyHasColor$alreadyHasMessage"))
+                return InteractionResult.FAIL
             } else {
                 fieldSetter(entity, finalDuration)
-                user?.sendMessage(Text.of("$successColor$successMessage"))
+                user?.sendSystemMessage(Component.literal("$successColor$successMessage"))
                 if (user?.isCreative == false) {
-                    stack?.decrement(1)
+                    stack?.shrink(1)
                 }
-                return ActionResult.SUCCESS
+                return InteractionResult.SUCCESS
             }
         }
         return super.useOnEntity(stack, user, entity, hand)
     }
 
-    override fun use(world: World, user: PlayerEntity, hand: Hand): TypedActionResult<ItemStack?>? {
-        val stack = user.getStackInHand(hand)
+    override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResultHolder<ItemStack?>? {
+        val stack = user.getItemInHand(hand)
         // shift + 右键作用于自己
-        if (!world.isClient && user.isSneaking) {
+        if (!level().isClientSide && user.isShiftKeyDown()) {
             val finalDuration = getExtendedDuration(stack)
             if (fieldGetter(user) > 0) {
-                user.sendMessage(Text.of("$alreadyHasColor$alreadyHasMessage"))
-                return TypedActionResult.fail(stack)
+                user.sendSystemMessage(Component.literal("$alreadyHasColor$alreadyHasMessage"))
+                return InteractionResultHolder.fail(stack)
             } else {
                 fieldSetter(user, finalDuration)
-                user.sendMessage(Text.of("$successColor$successMessage"))
+                user.sendSystemMessage(Component.literal("$successColor$successMessage"))
                 if (!user.isCreative) {
-                    stack.decrement(1)
+                    stack.shrink(1)
                 }
-                return TypedActionResult.success(stack)
+                return InteractionResultHolder.success(stack)
             }
         }
         return super.use(world, user, hand)
@@ -99,7 +99,7 @@ abstract class AbstractBDSMItem(
 
     override fun canBeEnchantedWith(
         stack: ItemStack?,
-        enchantment: RegistryEntry<Enchantment?>?,
+        enchantment: Holder<Enchantment?>?,
         context: EnchantingContext?
     ): Boolean {
         return super.canBeEnchantedWith(stack, enchantment, context) || enchantment?.key?.getOrNull() == Enchantments.UNBREAKING

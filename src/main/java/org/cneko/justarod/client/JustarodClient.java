@@ -3,7 +3,7 @@ package org.cneko.justarod.client;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.TooltipComponentCallback;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
 import org.cneko.justarod.client.event.ClientTickEvent;
 import org.cneko.justarod.client.event.JRClientNetworkingEvents;
 import org.cneko.justarod.client.event.RealClientTickEvent;
@@ -52,7 +52,7 @@ public class JustarodClient implements ClientModInitializer {
         });
     }
 
-    public static PlayerEntity getClientPlayer() {
-        return net.minecraft.client.MinecraftClient.getInstance().player;
+    public static Player getClientPlayer() {
+        return net.minecraft.client.Minecraft.getInstance().player;
     }
 }

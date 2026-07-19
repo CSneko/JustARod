@@ -2,21 +2,15 @@ package org.cneko.justarod.datagen;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricAdvancementProvider;
-import net.minecraft.advancement.Advancement;
-import net.minecraft.advancement.AdvancementEntry;
-import net.minecraft.advancement.AdvancementFrame;
-import net.minecraft.advancement.AdvancementManager;
-import net.minecraft.advancement.criterion.InventoryChangedCriterion;
-import net.minecraft.entity.EntityType;
-import net.minecraft.item.Items;
-import net.minecraft.predicate.entity.EntityPredicate;
-import net.minecraft.predicate.item.ItemPredicate;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.advancements.AdvancementType;
+import net.minecraft.advancements.critereon.EntityPredicate;
+import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
 import org.cneko.justarod.JRCriteria;
 import org.cneko.justarod.advancment.criterion.ItemUsedOnEntityCriterion;
 import org.cneko.justarod.item.JRItems;
@@ -28,12 +22,12 @@ import java.util.function.Consumer;
 import static org.cneko.justarod.Justarod.MODID;
 
 public class AdvanceProvider extends FabricAdvancementProvider {
-    protected AdvanceProvider(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
+    protected AdvanceProvider(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registryLookup) {
         super(output, registryLookup);
     }
 
     @Override
-    public void generateAdvancement(RegistryWrapper.WrapperLookup wrapperLookup, Consumer<AdvancementEntry> consumer) {
+    public void generateAdvancement(HolderLookup.Provider wrapperLookup, Consumer<AdvancementHolder> consumer) {
 //        // 获取进度注册表包装器
 //        var advancementRegistry = wrapperLookup.getWrapperOrThrow(RegistryKeys.ADVANCEMENT);
 //        // 获取 rods/root 的 AdvancementEntry
@@ -45,22 +39,22 @@ public class AdvanceProvider extends FabricAdvancementProvider {
 //        var rootRef = rootRefOpt.get();
 //        AdvancementEntry rootEntry = new AdvancementEntry(Identifier.of(MODID, "rods/root"),rootRef.value());
 
-        AdvancementEntry grassSheep = Advancement.Builder.create()
+        AdvancementHolder grassSheep = Advancement.Builder.advancement()
                 .display(
                         JRItems.Companion.getINSERTION_PEDESTAL(),
-                        Text.literal("草羊机"),
-                        Text.literal("对羊使用插入底座"),
-                        Identifier.ofVanilla("textures/gui/advancements/backgrounds/adventure.png"),
-                        AdvancementFrame.TASK,
+                        Component.literal("草羊机"),
+                        Component.literal("对羊使用插入底座"),
+                        ResourceLocation.withDefaultNamespace("textures/gui/advancements/backgrounds/adventure.png"),
+                        AdvancementType.TASK,
                         true,
                         true,
                         false
                 )
                 .criterion("grass_sheep",
-                        JRCriteria.ITEM_USED_ON_ENTITY_CRITERION.create(
+                        JRCriteria.ITEM_USED_ON_ENTITY_CRITERION.createCriterion(
                         ItemUsedOnEntityCriterion.create(
-                            ItemPredicate.Builder.create().items(JRItems.Companion.getINSERTION_PEDESTAL()).build(),
-                            EntityPredicate.Builder.create().type(EntityType.SHEEP).build()
+                            ItemPredicate.Builder.item().of(JRItems.Companion.getINSERTION_PEDESTAL()).build(),
+                            EntityPredicate.Builder.entity().of(EntityType.SHEEP).build()
                         )
                 ))
                 .build(consumer, MODID + ":grass_sheep");

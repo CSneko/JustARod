@@ -1,11 +1,5 @@
 package org.cneko.justarod.mixin;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
 import org.cneko.justarod.client.JustarodClient;
 import org.cneko.justarod.damage.JRDamageTypes;
 import org.cneko.justarod.entity.Fallible;
@@ -19,6 +13,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Arrays;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.entity.player.Player;
 
 @Mixin(Entity.class)
 public class EntityMixin implements Fallible, Insertable {
@@ -46,8 +45,8 @@ public class EntityMixin implements Fallible, Insertable {
         Entity self = (Entity) (Object) this;
         // 只在第一次被坠机时记录并禁用
         if (justARod$originalNoClip == null) {
-            justARod$originalNoClip = self.noClip;
-            self.noClip = false;
+            justARod$originalNoClip = self.noPhysics;
+            self.noPhysics = false;
         }
     }
 
@@ -58,15 +57,15 @@ public class EntityMixin implements Fallible, Insertable {
             fallTicks++;
 
             // 持续禁用noClip，防止被其他mod/AI改回
-            self.noClip = false;
+            self.noPhysics = false;
 
             if (fallTicks < 100) {
                 // 让y速度为负，模拟持续下落
-                self.addVelocity(0f, -0.1, 0f);
+                self.push(0f, -0.1, 0f);
             }
 
             boolean shouldApplyFallDamage = false;
-            if (self instanceof EnderDragonEntity) {
+            if (self instanceof EnderDragon) {
                 // 末影龙：只要Y坐标下降超过3格就直接判定为落地
                 double fallDistance = startFallHeight - self.getY();
                 if (fallDistance > 3) {
@@ -74,7 +73,7 @@ public class EntityMixin implements Fallible, Insertable {
                 }
             } else {
                 // 其他实体：正常落地判定
-                if (self.isOnGround()) {
+                if (self.onGround()) {
                     shouldApplyFallDamage = true;
                 }
             }
@@ -83,17 +82,17 @@ public class EntityMixin implements Fallible, Insertable {
                 double fallDistance = startFallHeight - self.getY();
                 if (fallDistance > 3) {
                     float damage = (float) (fallDistance - 3);
-                    if (self instanceof EnderDragonEntity dragon) {
+                    if (self instanceof EnderDragon dragon) {
                         float newHealth = dragon.getHealth() - damage;
                         dragon.setHealth(newHealth);
                         if (newHealth <= 0.0F) {
-                            dragon.onDeath(JRDamageTypes.icedTea(fallenBy));
+                            dragon.die(JRDamageTypes.icedTea(fallenBy));
                         }
                     } else {
-                        self.damage(JRDamageTypes.icedTea(fallenBy), damage);
+                        self.hurt(JRDamageTypes.icedTea(fallenBy), damage);
                     }
                     if (self instanceof LivingEntity livingSelf) {
-                        fallenBy.sendMessage(Text.of("§c"+livingSelf.getName().getString()+"坠机了！"));
+                        fallenBy.sendSystemMessage(Component.nullToEmpty("§c"+livingSelf.getName().getString()+"坠机了！"));
                     }
                 }
                 // 重置
@@ -101,7 +100,7 @@ public class EntityMixin implements Fallible, Insertable {
                 fallTicks = 0;
                 startFallHeight = 0;
                 if (justARod$originalNoClip != null) {
-                    self.noClip = justARod$originalNoClip;
+                    self.noPhysics = justARod$originalNoClip;
                     justARod$originalNoClip = null;
                 }
             } else if (fallTicks >= 100) {
@@ -110,7 +109,7 @@ public class EntityMixin implements Fallible, Insertable {
                 fallTicks = 0;
                 startFallHeight = 0;
                 if (justARod$originalNoClip != null) {
-                    self.noClip = justARod$originalNoClip;
+                    self.noPhysics = justARod$originalNoClip;
                     justARod$originalNoClip = null;
                 }
             }
@@ -120,8 +119,8 @@ public class EntityMixin implements Fallible, Insertable {
     @Inject(method = "isGlowing", at = @At("RETURN"), cancellable = true)
     private void justARod$isGlowing(CallbackInfoReturnable<Boolean> cir) {
         Entity self = (Entity) (Object) this;
-        if (self.getWorld().isClient){
-            PlayerEntity clientPlayer = JustarodClient.getClientPlayer();
+        if (self.level().isClientSide){
+            Player clientPlayer = JustarodClient.getClientPlayer();
             if (clientPlayer.getEyePatch() >0 && clientPlayer.getEarplug() <= 0 && self.distanceTo(clientPlayer) < 22){
                 cir.setReturnValue(true);
             }

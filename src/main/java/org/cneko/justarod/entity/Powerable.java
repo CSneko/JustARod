@@ -1,9 +1,9 @@
 package org.cneko.justarod.entity;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.LivingEntity;
 import org.cneko.justarod.JRAttributes;
 import org.cneko.justarod.effect.JREffects;
 import org.jetbrains.annotations.NotNull;
@@ -23,12 +23,12 @@ public interface Powerable{
         return true;
     }
 
-    default double readPowerFromNbt(@NotNull NbtCompound nbt){
+    default double readPowerFromNbt(@NotNull CompoundTag nbt){
         if (nbt.contains("power")) {
             return nbt.getDouble("power");
         }else return 100;
     }
-    default void writePowerToNbt(@NotNull NbtCompound nbt){
+    default void writePowerToNbt(@NotNull CompoundTag nbt){
         nbt.putDouble("power", getPower());
     }
 
@@ -40,7 +40,7 @@ public interface Powerable{
         // 如果能量低于0了，晕倒
         if (entity.getPower() <= 0) {
             entity.setPower(0);
-            entity.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getFAINT_EFFECT()), 1000, 1));
+            entity.addEffect(new MobEffectInstance(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getFAINT_EFFECT()), 1000, 1));
         }
     }
 

@@ -89,7 +89,7 @@ object JRRegistry {
         PROPERTIES.add(p)
         return p
     }
-    private fun registerOptEntity(name: String, desc: String, get: (Pregnant) -> java.util.Optional<net.minecraft.entity.EntityType<*>>, set: (Pregnant, java.util.Optional<net.minecraft.entity.EntityType<*>>) -> Unit): JRProperty<java.util.Optional<net.minecraft.entity.EntityType<*>>> {
+    private fun registerOptEntity(name: String, desc: String, get: (Pregnant) -> java.util.Optional<net.minecraft.world.entity.EntityType<*>>, set: (Pregnant, java.util.Optional<net.minecraft.world.entity.EntityType<*>>) -> Unit): JRProperty<java.util.Optional<net.minecraft.world.entity.EntityType<*>>> {
         val p = JREntityTypeProperty(name, desc, get, set)
         PROPERTIES.add(p)
         return p

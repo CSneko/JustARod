@@ -1,7 +1,7 @@
 package org.cneko.justarod.item.syringe
 
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.effect.StatusEffects
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.effect.MobEffects
 import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.item.rod.addEffect
 
@@ -18,7 +18,7 @@ class BremelanotideItem : BaseSyringeItem(Settings()){
     }
 
     override fun applyEffect(target: LivingEntity) {
-        target.addEffect(StatusEffects.NAUSEA, 600, 1)
+        target.addEffect(MobEffects.CONFUSION, 600, 1)
         target.addEffect(JREffects.ESTRUS_EFFECT, 5000, 1)
     }
 }

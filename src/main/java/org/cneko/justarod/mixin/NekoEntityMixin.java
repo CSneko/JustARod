@@ -1,9 +1,9 @@
 package org.cneko.justarod.mixin;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.item.ItemStack;
 import org.cneko.justarod.JRAttributes;
 import org.cneko.justarod.entity.Insertable;
 import org.cneko.justarod.entity.Pregnant;
@@ -41,9 +41,9 @@ public abstract class NekoEntityMixin implements Insertable{
     }
 
     @Inject(method = "readCustomDataFromNbt", at = @At("HEAD"))
-    public void readCustomDataFromNbt(NbtCompound nbt, CallbackInfo ci) {
+    public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
         if (nbt.contains("rodInside")) {
-            var rod = ItemStack.fromNbt(this.getEntity().getRegistryManager(),nbt.getCompound("rodInside"));
+            var rod = ItemStack.parse(this.getEntity().registryAccess(),nbt.getCompound("rodInside"));
             rod.ifPresent(this::setRodInside);
         }
         if (this.getEntity() instanceof Pregnant pregnant){
@@ -52,10 +52,10 @@ public abstract class NekoEntityMixin implements Insertable{
     }
 
     @Inject(method = "writeCustomDataToNbt", at = @At("HEAD"))
-    public void writeCustomDataToNbt(NbtCompound nbt, CallbackInfo ci) {
+    public void addAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
         if (!getRodInside().isEmpty()) {
-            nbt.put("rodInside", getRodInside().encode(
-                    this.getEntity().getRegistryManager()
+            nbt.put("rodInside", getRodInside().save(
+                    this.getEntity().registryAccess()
             ));
         }
         if (this.getEntity() instanceof Pregnant pregnant){
@@ -63,7 +63,7 @@ public abstract class NekoEntityMixin implements Insertable{
         }
     }
     @Inject(method = "createNekoAttributes",at = @At("RETURN"))
-    private static void createNekoAttributes(CallbackInfoReturnable<DefaultAttributeContainer.Builder> cir) {
+    private static void createNekoAttributes(CallbackInfoReturnable<AttributeSupplier.Builder> cir) {
         cir.getReturnValue().add(JRAttributes.Companion.getPLAYER_LUBRICATING(), 1);
     }
 }

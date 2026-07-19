@@ -1,37 +1,37 @@
 package org.cneko.justarod.item.medical
 
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.ItemStack
-import net.minecraft.text.Text
-import net.minecraft.util.Hand
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.network.chat.Component
+import net.minecraft.world.InteractionHand
 import org.cneko.justarod.entity.Pregnant
 import kotlin.random.Random
 
-class GenderChangePotionItem(settings: Settings, val gender: Gender): MedicalItem(settings) {
+class GenderChangePotionItem(properties: Properties, val gender: Gender): MedicalItem(properties) {
     override fun canApply(
-        user: PlayerEntity,
+        user: Player,
         target: LivingEntity,
         stack: ItemStack,
-        hand: Hand
+        hand: InteractionHand
     ): Boolean {
         // 不需要条件，任何目标都能使用
         return target is Pregnant
     }
 
     override fun getFailureMessage(
-        user: PlayerEntity,
+        user: Player,
         target: LivingEntity,
         stack: ItemStack
-    ): Text? {
+    ): Component? {
         return null
     }
 
     override fun applyEffect(
-        user: PlayerEntity,
+        user: Player,
         target: LivingEntity,
         stack: ItemStack,
-        hand: Hand
+        hand: InteractionHand
     ) {
         if (target is Pregnant) {
             // 20% 概率出现性别异常
@@ -57,23 +57,23 @@ class GenderChangePotionItem(settings: Settings, val gender: Gender): MedicalIte
     }
 
     override fun consumeItem(
-        user: PlayerEntity,
+        user: Player,
         target: LivingEntity,
         stack: ItemStack,
-        hand: Hand
+        hand: InteractionHand
     ) {
         // 使用一次后减少数量
-        stack.decrement(1)
+        stack.shrink(1)
     }
 
     override fun getSuccessMessages(
-        user: PlayerEntity,
+        user: Player,
         target: LivingEntity,
         stack: ItemStack
     ): ActionMessages {
         return ActionMessages(
-            userSuccessMessage = Text.literal("你使用了变性药水，成功改变了 ${target.name.string} 的性别！"),
-            targetSuccessMessage = Text.literal("你的性别被改变了！")
+            userSuccessMessage = Component.literal("你使用了变性药水，成功改变了 ${target.name.string} 的性别！"),
+            targetSuccessMessage = Component.literal("你的性别被改变了！")
         )
     }
 

@@ -1,16 +1,16 @@
 package org.cneko.justarod.damage
 
-import net.minecraft.entity.Entity
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.damage.DamageSource
-import net.minecraft.entity.damage.DamageType
-import net.minecraft.registry.entry.RegistryEntry
-import net.minecraft.text.Text
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.world.damagesource.DamageType
+import net.minecraft.core.Holder
+import net.minecraft.network.chat.Component
 
 // 奇怪の名字
-class KilledByGrass(type: RegistryEntry<DamageType>?, attacker: Entity?) :
+class KilledByGrass(type: Holder<DamageType>?,val attacker: Entity?) :
     DamageSource(type, attacker) {
-    override fun getDeathMessage(killed: LivingEntity?): Text {
-        return Text.translatable("death.attack.grass", killed!!.displayName,attacker?.displayName)
-    }
+        override fun getLocalizedDeathMessage(killed: LivingEntity?): Component {
+            return Component.translatable("death.attack.grass", killed!!.displayName,attacker?.displayName)
+        }
 }

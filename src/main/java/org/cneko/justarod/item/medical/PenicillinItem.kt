@@ -1,36 +1,36 @@
 package org.cneko.justarod.item.medical
 
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.text.Text
-import net.minecraft.util.Hand
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.network.chat.Component
+import net.minecraft.world.InteractionHand
 import org.cneko.justarod.entity.Pregnant
 
-class PenicillinItem(settings: Item.Settings): MedicalItem(settings) {
+class PenicillinItem(settings: Item.Properties): MedicalItem(properties) {
     override fun canApply(
-        user: PlayerEntity,
+        user: Player,
         target: LivingEntity,
         stack: ItemStack,
-        hand: Hand
+        hand: InteractionHand
     ): Boolean {
         return true
     }
 
     override fun getFailureMessage(
-        user: PlayerEntity,
+        user: Player,
         target: LivingEntity,
         stack: ItemStack
-    ): Text? {
+    ): Component? {
         return null
     }
 
     override fun applyEffect(
-        user: PlayerEntity,
+        user: Player,
         target: LivingEntity,
         stack: ItemStack,
-        hand: Hand
+        hand: InteractionHand
     ) {
         target as Pregnant
         if (target.syphilis < 20*60*20*2){
@@ -39,16 +39,16 @@ class PenicillinItem(settings: Item.Settings): MedicalItem(settings) {
     }
 
     override fun consumeItem(
-        user: PlayerEntity,
+        user: Player,
         target: LivingEntity,
         stack: ItemStack,
-        hand: Hand
+        hand: InteractionHand
     ) {
-        stack.decrement(1)
+        stack.shrink(1)
     }
 
     override fun getSuccessMessages(
-        user: PlayerEntity,
+        user: Player,
         target: LivingEntity,
         stack: ItemStack
     ): ActionMessages? {

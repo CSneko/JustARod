@@ -1,13 +1,12 @@
 package org.cneko.justarod.event;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.Registries;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.player.Player;
 import org.cneko.justarod.client.screen.MateScreen;
 import org.cneko.justarod.effect.JREffects;
 import org.cneko.justarod.entity.JREntities;
@@ -32,16 +31,16 @@ public class JRNetWorkingEvents {
     public static void init(){
         ServerPlayNetworking.registerGlobalReceiver(FullHeatPayload.ID, (payload,context) -> {
             // 消耗体力
-            PlayerEntity player = context.player();
+            Player player = context.player();
             player.setPower(player.getPower()-80);
         });
         ServerPlayNetworking.registerGlobalReceiver(MatePayload.ID,((payload, context) -> {
-            ServerPlayerEntity player = context.player();
+            ServerPlayer player = context.player();
             // 计算概率（与量和时间成正比）
             double probability = payload.amount() * payload.time() / 150;
             if (probability >= 1 || Math.random() < probability) {
                 // 添加状态效果
-                player.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, payload.time()*20));
+                player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, payload.time()*20));
                 // 减少体力
                 player.setPower(player.getPower()-payload.amount()*30);
                 String uuid = payload.nekoUuid();
@@ -50,31 +49,31 @@ public class JRNetWorkingEvents {
                     UUID nekoUuid = UUID.fromString(uuid);
                     NekoEntity neko = ToNekoNetworkEvents.findNearbyNekoByUuid(player, nekoUuid,32);
                     if (neko != null){
-                        neko.tryMating((ServerWorld) player.getWorld(),neko);
+                        neko.tryMating((ServerLevel) player.level(),neko);
                     }
                 }catch (Exception ignored){}
             }else {
                 player.setPower(player.getPower()-payload.amount()*5);
-                player.sendMessage(Text.of("§c配种失败！"));
+                player.sendSystemMessage(Component.nullToEmpty("§c配种失败！"));
             }
         }));
 
         ServerPlayNetworking.registerGlobalReceiver(PassiveMatingPayload.ID,((payload, context) -> {
-            ServerPlayerEntity player = context.player();
+            ServerPlayer player = context.player();
             try {
                 UUID nekoUuid = UUID.fromString(payload.uuid());
                 NekoEntity neko = ToNekoNetworkEvents.findNearbyNekoByUuid(player, nekoUuid,32);
                 if (neko != null){
                     var queue = new TickTaskQueue();
-                    player.sendMessage(Text.of("§a已发送请求"));
+                    player.sendSystemMessage(Component.nullToEmpty("§a已发送请求"));
                     if (!neko.canMate((INeko) player)){
                         queue.addTask(20,()->{
-                            player.sendMessage(Text.of("§c对方拒绝了你的请求！"));
+                            player.sendSystemMessage(Component.nullToEmpty("§c对方拒绝了你的请求！"));
                         });
                     }else {
                         queue.addTask(20, () -> {
-                            player.sendMessage(Text.of("§a对方已接受请求，正在生成参数"));
-                            player.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 1000,4));
+                            player.sendSystemMessage(Component.nullToEmpty("§a对方已接受请求，正在生成参数"));
+                            player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 1000,4));
                         });
                         // TODO 射我里面
                         queue.addTask(40, () -> {
@@ -84,10 +83,10 @@ public class JRNetWorkingEvents {
                             player.setPower(player.getPower()-probability*25);
                             // 大于3.0直接成功，小于3.0则概率成功
                             if (probability >= 3 || player.getRandom().nextBoolean()) {
-                                player.sendMessage(Text.of("§a配种成功！消耗参数量："+probability+"亿"));
-                                neko.breed((ServerWorld) player.getWorld(), (INeko) player);
+                                player.sendSystemMessage(Component.nullToEmpty("§a配种成功！消耗参数量："+probability+"亿"));
+                                neko.breed((ServerLevel) player.level(), (INeko) player);
                             }else {
-                                player.sendMessage(Text.of("§c配种失败！消耗参数量："+probability+"亿"));
+                                player.sendSystemMessage(Component.nullToEmpty("§c配种失败！消耗参数量："+probability+"亿"));
                             }
                         });
                     }
@@ -97,7 +96,7 @@ public class JRNetWorkingEvents {
         }));
 
         ServerPlayNetworking.registerGlobalReceiver(RavennPassiveMatingPayload.ID,(payload,context)->{
-            ServerPlayerEntity player = context.player();
+            ServerPlayer player = context.player();
             try {
                 UUID nekoUuid = UUID.fromString(payload.uuid());
                 NekoEntity neko = ToNekoNetworkEvents.findNearbyNekoByUuid(player, nekoUuid,16);
@@ -106,11 +105,11 @@ public class JRNetWorkingEvents {
                     if (preRavenn.canPregnant() && player.canPregnant()){
                         var queue = new TickTaskQueue();
                         queue.addTask(20,()->{
-                            player.sendMessage(Text.of("§a已发送请求"));
+                            player.sendSystemMessage(Component.nullToEmpty("§a已发送请求"));
                         });
                         queue.addTask(40,()->{
-                            player.sendMessage(Text.of("§a对方已接受请求"));
-                            player.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 1000,4));
+                            player.sendSystemMessage(Component.nullToEmpty("§a对方已接受请求"));
+                            player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 1000,4));
                             preRavenn.tryPregnant();
                             if (player.getName().getString().equalsIgnoreCase("Crystal_Neko")){
                                 preRavenn.setChildrenType(ToNekoEntities.CRYSTAL_NEKO);
@@ -122,11 +121,11 @@ public class JRNetWorkingEvents {
 
                         });
                         queue.addTask(60,()->{
-                            player.sendMessage(Text.of("§a双方已怀孕！"));
+                            player.sendSystemMessage(Component.nullToEmpty("§a双方已怀孕！"));
                         });
                         TickTasks.add(queue);
                     }else {
-                        player.sendMessage(Text.of("§c已尝试交配，但无法怀孕"));
+                        player.sendSystemMessage(Component.nullToEmpty("§c已尝试交配，但无法怀孕"));
                     }
                 }
             }catch (Exception ignored){}

@@ -1,28 +1,32 @@
 package org.cneko.justarod.entity;
 
 import lombok.Getter;
-import net.minecraft.command.argument.EntityAnchorArgumentType;
-import net.minecraft.entity.*;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.PlainTextContent;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
-import net.minecraft.block.Blocks;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.commands.arguments.EntityAnchorArgument;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.contents.PlainTextContents;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import org.cneko.justarod.Justarod;
 import org.cneko.justarod.damage.JRDamageTypes;
 import org.cneko.justarod.effect.JREffects;
@@ -121,8 +125,8 @@ public interface Pregnant{
             setPregnant(getPregnant() - 1);
             if (getPregnant() == 0 && !isEctopicPregnancy() && !isHydatidiformMole()) {
                 if (this instanceof LivingEntity liv){
-                    liv.sendMessage(Text.of("§a分娩完成！"));
-                    liv.damage(liv.getDamageSources().generic(),6.0f);
+                    liv.sendSystemMessage(Component.nullToEmpty("§a分娩完成！"));
+                    liv.hurt(liv.damageSources().generic(),6.0f);
                 }
                 makeBaby();
             }
@@ -133,7 +137,7 @@ public interface Pregnant{
         // 流产
         if (this instanceof LivingEntity pregnantEntity) {
             pregnantEntity.setHealth(pregnantEntity.getHealth()-10);
-            pregnantEntity.sendMessage(Text.of("§c你流产了！"));
+            pregnantEntity.sendSystemMessage(Component.nullToEmpty("§c你流产了！"));
         }
         setPregnant(0);
     }
@@ -147,12 +151,12 @@ public interface Pregnant{
             if (baby != null) {
                 if (baby instanceof LivingEntity babyLiving && getParthenogenesisVariance() > 0) {
                     float variance = getParthenogenesisVariance();
-                    List<RegistryEntry<EntityAttribute>> attributes = new ArrayList<>();
+                    List<Holder<Attribute>> attributes = new ArrayList<>();
 
                     // 始终可选的其他属性
-                    attributes.add(EntityAttributes.GENERIC_ATTACK_DAMAGE);
-                    attributes.add(EntityAttributes.GENERIC_MOVEMENT_SPEED);
-                    attributes.add(EntityAttributes.GENERIC_SCALE);
+                    attributes.add(Attributes.ATTACK_DAMAGE);
+                    attributes.add(Attributes.MOVEMENT_SPEED);
+                    attributes.add(Attributes.SCALE);
 
                     // 随机决定额外选择几个属性（0~3个），总变异数为 1~4（因为生命值必选）
                     Random random = new Random();
@@ -160,12 +164,12 @@ public interface Pregnant{
 
                     // 打乱并选取 extraCount 个其他属性
                     Collections.shuffle(attributes, random);
-                    List<RegistryEntry<EntityAttribute>> selected = new ArrayList<>();
-                    selected.add(EntityAttributes.GENERIC_MAX_HEALTH); // 必选
+                    List<Holder<Attribute>> selected = new ArrayList<>();
+                    selected.add(Attributes.MAX_HEALTH); // 必选
                     selected.addAll(attributes.subList(0, extraCount));
 
                     // 应用变异
-                    for (RegistryEntry<EntityAttribute> attr : selected) {
+                    for (Holder<Attribute> attr : selected) {
                         applyAttributeVariance(babyLiving, attr, variance);
                     }
 
@@ -173,27 +177,27 @@ public interface Pregnant{
                     babyLiving.setHealth(babyLiving.getMaxHealth());
                 }
                 // 产仔
-                baby.getWorld().spawnEntity(baby);
+                baby.level().addFreshEntity(baby);
                 if (baby instanceof LivingEntity b && pretermBirth){
                     // 永久性的缓慢
-                    b.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, Integer.MAX_VALUE, 1));
+                    b.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, Integer.MAX_VALUE, 1));
                     // 1/10几率死亡
                     if (b.getRandom().nextInt(10) == 0) {
                         b.kill();
                     }
                     // 1/4的概率中毒
                     if (b.getRandom().nextInt(4) == 0) {
-                        b.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, 20*60, 0));
+                        b.addEffect(new MobEffectInstance(MobEffects.POISON, 20*60, 0));
                     }
                 }
                 // 受伤
                 if (this instanceof LivingEntity pregnantEntity) {
-                    if (baby instanceof EnderDragonEntity){
+                    if (baby instanceof EnderDragon){
                         // 玩家爆炸
-                        pregnantEntity.getWorld().createExplosion(baby, pregnantEntity.getX(), pregnantEntity.getY(), pregnantEntity.getZ(), 10.0F, World.ExplosionSourceType.MOB);
-                        FOREVER_BABY.add(baby.getUuid());
+                        pregnantEntity.level().explode(baby, pregnantEntity.getX(), pregnantEntity.getY(), pregnantEntity.getZ(), 10.0F, Level.ExplosionInteraction.MOB);
+                        FOREVER_BABY.add(baby.getUUID());
                     }else {
-                        pregnantEntity.damage(pregnantEntity.getDamageSources().generic(), 2.0F);
+                        pregnantEntity.hurt(pregnantEntity.damageSources().generic(), 2.0F);
                     }
                     // 每次分娩造成巨大的盆底肌损伤（约增加3天到5天的失禁值），生得越多损伤越重
                     int trauma = 20 * 60 * 20 * (3 + pregnantEntity.getRandom().nextInt(3)) * getBabyCount();
@@ -215,11 +219,11 @@ public interface Pregnant{
     }
 
 
-    default void writePregnantToNbt(NbtCompound nbt) {
+    default void writePregnantToNbt(CompoundTag nbt) {
         nbt.putBoolean("Female", isFemale());
         nbt.putBoolean("Male", isMale());
         nbt.putInt("Pregnant", getPregnant());
-        nbt.putString("ChildrenType", EntityType.getId(getChildrenType()).toString());
+        nbt.putString("ChildrenType", EntityType.getKey(getChildrenType()).toString());
         nbt.putInt("MenstruationComfort", getMenstruationComfort());
         nbt.putBoolean("Sterilization", isSterilization());
         nbt.putBoolean("EctopicPregnancy", isEctopicPregnancy());
@@ -278,16 +282,16 @@ public interface Pregnant{
         nbt.putInt("HrtFtmProgress", getHrtFtmProgress());
         nbt.putInt("VaginalAtrophy", getVaginalAtrophy());
     }
-    default void readPregnantFromNbt(NbtCompound nbt) {
+    default void readPregnantFromNbt(CompoundTag nbt) {
         setFemale(nbt.getBoolean("Female"));
         setMale(nbt.getBoolean("Male"));
         if (nbt.contains("Pregnant")) {
             setPregnant(nbt.getInt("Pregnant"));
         }
         if (nbt.contains("ChildrenType")) {
-            Identifier id = Identifier.tryParse(nbt.getString("ChildrenType"));
+            ResourceLocation id = ResourceLocation.tryParse(nbt.getString("ChildrenType"));
             if (id != null) {
-                EntityType<?> childrenType = Registries.ENTITY_TYPE.get(id);
+                EntityType<?> childrenType = BuiltInRegistries.ENTITY_TYPE.get(id);
                 setChildrenType(childrenType);
             }
         }
@@ -447,13 +451,13 @@ public interface Pregnant{
     default float getEctopicPregnancyProbability(){
         float probability = 0.02f;
         if (this instanceof LivingEntity entity){
-            if (entity.getAttributeValue(EntityAttributes.GENERIC_SCALE) < 1){
+            if (entity.getAttributeValue(Attributes.SCALE) < 1){
                 probability += 0.1f;
             }
-            if (entity.getStatusEffects().stream().anyMatch(effect -> !effect.getEffectType().value().isBeneficial())){
+            if (entity.getActiveEffects().stream().anyMatch(effect -> !effect.getEffect().value().isBeneficial())){
                 probability += 0.1f;
             }
-            var luck = entity.getAttributeInstance(EntityAttributes.GENERIC_LUCK);
+            var luck = entity.getAttribute(Attributes.LUCK);
             if (luck != null){
                 probability -= (float) (luck.getValue() * 0.01f);
             }
@@ -462,7 +466,7 @@ public interface Pregnant{
                 probability += 0.15f;
             }
         }
-        if (this instanceof MobEntity mob){
+        if (this instanceof Mob mob){
             if (mob.isBaby()){
                 probability += 0.1f;
             }
@@ -472,10 +476,10 @@ public interface Pregnant{
     default float getHydatidiformMoleProbability(){
         float probability = 0.01f;
         if (this instanceof LivingEntity entity){
-            if (entity.getAttributeValue(EntityAttributes.GENERIC_SCALE) < 1){
+            if (entity.getAttributeValue(Attributes.SCALE) < 1){
                 probability += 0.1f;
             }
-            if (entity.getStatusEffects().stream().anyMatch(effect -> !effect.getEffectType().value().isBeneficial())){
+            if (entity.getActiveEffects().stream().anyMatch(effect -> !effect.getEffect().value().isBeneficial())){
                 probability += 0.05f;
             }
         }
@@ -483,14 +487,14 @@ public interface Pregnant{
     }
     default int calculateBabyCount(LivingEntity target){
         // 获取对方目前的体型
-        double targetScale = target.getAttributeBaseValue(EntityAttributes.GENERIC_SCALE);
+        double targetScale = target.getAttributeBaseValue(Attributes.SCALE);
         // 计算对方真实体积
         EntityDimensions targetDimensions = target.getDimensions(target.getPose());
         double targetVolume = targetDimensions.width() * targetDimensions.height() * targetDimensions.height();
         // 真实体积
         double targetRealVolume = targetScale * targetVolume;
         // 获取自己目前的体型
-        double selfScale = ((LivingEntity)this).getAttributeValue(EntityAttributes.GENERIC_SCALE);
+        double selfScale = ((LivingEntity)this).getAttributeValue(Attributes.SCALE);
         // 自己的体型与(对方体积除以4)相除
         double r = selfScale*selfScale*selfScale / (targetRealVolume / 4);
         // 向上取整
@@ -628,7 +632,7 @@ public interface Pregnant{
             setImperforateHymen(false);
             setHasHymen(false);
             if (this instanceof LivingEntity entity) {
-                entity.sendMessage(Text.of("§a手术成功，处女膜闭锁已解除。"));
+                entity.sendSystemMessage(Component.nullToEmpty("§a手术成功，处女膜闭锁已解除。"));
             }
         }
     }
@@ -646,16 +650,16 @@ public interface Pregnant{
 
         if (this instanceof LivingEntity entity) {
             // 1. 扣血 (撕裂痛)
-            entity.damage(entity.getDamageSources().generic(), 2.0f);
+            entity.hurt(entity.damageSources().generic(), 2.0f);
 
             // 2. 负面效果 (疼痛导致的虚弱)
-            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 30, 0));
-            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 10, 0));
+            entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 20 * 30, 0));
+            entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20 * 10, 0));
 
-            entity.sendMessage(Text.of("§c下体感到一阵撕裂般的剧痛... (" + cause + ")"));
+            entity.sendSystemMessage(Component.nullToEmpty("§c下体感到一阵撕裂般的剧痛... (" + cause + ")"));
 
             // 3. 弄脏胖次 / 落红逻辑
-            ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
+            ItemStack legStack = entity.getItemBySlot(EquipmentSlot.LEGS);
             boolean hasPantsu = !legStack.isEmpty() && legStack.getItem() instanceof PantsuItem;
 
             if (hasPantsu) {
@@ -666,7 +670,7 @@ public interface Pregnant{
                 }
             } else {
                 // 没穿胖
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 10, 0));
+                entity.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 20 * 10, 0));
             }
         }
         return true;
@@ -713,8 +717,8 @@ public interface Pregnant{
             setProstatitis(time);
 
             if (time == 0 && this instanceof LivingEntity entity) {
-                entity.removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getPROSTATITIS_EFFECT()));
-                entity.sendMessage(Text.of("§a你的前列腺不再疼痛了。"));
+                entity.removeEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getPROSTATITIS_EFFECT()));
+                entity.sendSystemMessage(Component.nullToEmpty("§a你的前列腺不再疼痛了。"));
             }
         }
     }
@@ -822,16 +826,16 @@ public interface Pregnant{
         }
 
         // 使用自定义伤害类型——死亡提示词："666，磕到甲沟炎了"
-        entity.damage(JRDamageTypes.paronychia(entity), damage);
+        entity.hurt(JRDamageTypes.paronychia(entity), damage);
         // 痛到失明（眼泪模糊视线）
-        entity.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, blindDuration, 0));
+        entity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, blindDuration, 0));
         // 抱着脚跳（剧痛导致的行动障碍）
-        entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 15, 2));
+        entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20 * 15, 2));
         // 痛到虚脱
-        entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 10, 1));
+        entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 20 * 10, 1));
         // 痛到想吐
-        entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 5, 0));
-        entity.sendMessage(Text.of("§c" + message + " (" + cause + ")"));
+        entity.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 20 * 5, 0));
+        entity.sendSystemMessage(Component.nullToEmpty("§c" + message + " (" + cause + ")"));
 
         return true;
     }
@@ -861,23 +865,23 @@ public interface Pregnant{
         int reduction = current / 2; // 减少一半病程
         float damage = current < PARONYCHIA_STAGE_2 ? 2.0f : 4.0f;
 
-        entity.damage(entity.getDamageSources().generic(), damage);
+        entity.hurt(entity.damageSources().generic(), damage);
         setParonychia(Math.max(0, current - reduction));
-        entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 5, 1));
-        entity.sendMessage(Text.of("§e你用剪刀切开了肿胀的脓包...剧痛中混合着一种奇异的解脱感，脓液缓缓流出。"));
+        entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20 * 5, 1));
+        entity.sendSystemMessage(Component.nullToEmpty("§e你用剪刀切开了肿胀的脓包...剧痛中混合着一种奇异的解脱感，脓液缓缓流出。"));
 
         // 排出脓液弄脏地面/胖次
-        ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
+        ItemStack legStack = entity.getItemBySlot(EquipmentSlot.LEGS);
         if (!legStack.isEmpty() && legStack.getItem() instanceof PantsuItem) {
             JRComponents.PantsuState currentState = legStack.get(JRComponents.Companion.getPANTSU_STATE());
             if (currentState == null || currentState == JRComponents.PantsuState.CLEAN) {
                 legStack.set(JRComponents.Companion.getPANTSU_STATE(), JRComponents.PantsuState.SOILED);
-                entity.sendMessage(Text.of("§c脓液弄脏了胖次..."));
+                entity.sendSystemMessage(Component.nullToEmpty("§c脓液弄脏了胖次..."));
             }
         }
 
         if (getParonychia() <= 0) {
-            entity.sendMessage(Text.of("§a甲沟炎的感染终于被清除了！"));
+            entity.sendSystemMessage(Component.nullToEmpty("§a甲沟炎的感染终于被清除了！"));
         }
     }
 
@@ -892,7 +896,7 @@ public interface Pregnant{
         boolean alreadyMissing = isNailRemoved();
 
         // 巨大的手术痛苦
-        entity.damage(entity.getDamageSources().generic(), alreadyMissing ? 2.0f : 8.0f);
+        entity.hurt(entity.damageSources().generic(), alreadyMissing ? 2.0f : 8.0f);
         // 清除感染
         setParonychia(0);
         // 移除趾甲
@@ -900,24 +904,24 @@ public interface Pregnant{
         setNailRegrowTime(0); // 立即开始再生计时
 
         if (alreadyMissing) {
-            entity.sendMessage(Text.of("§e趾甲已经不在了...你只能等待它慢慢长出来。"));
+            entity.sendSystemMessage(Component.nullToEmpty("§e趾甲已经不在了...你只能等待它慢慢长出来。"));
         } else {
-            entity.sendMessage(Text.of("§4眼一闭心一横，你把那颗折磨你许久的趾甲拔了下来！混合着血和脓液的趾甲落在了地上..."));
-            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 20 * 3, 0));
-            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 20, 2));
+            entity.sendSystemMessage(Component.nullToEmpty("§4眼一闭心一横，你把那颗折磨你许久的趾甲拔了下来！混合着血和脓液的趾甲落在了地上..."));
+            entity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 20 * 3, 0));
+            entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 20 * 20, 2));
             // 掉落一个"奇怪的趾甲"物品
-            entity.dropItem(JRItems.Companion.getMOLE());
+            entity.spawnAtLocation(JRItems.Companion.getMOLE());
         }
     }
 
     // 手动排便时调用此方法检测是否疼痛
     default void doDefecationPain() {
         if (this instanceof LivingEntity entity && getHemorrhoids() > 20 * 60 * 20 * 2) { // 严重程度超过2天
-            entity.damage(entity.getDamageSources().generic(), 2.0f);
-            entity.sendMessage(Text.of("§c肛门像撕裂一样疼痛..."));
+            entity.hurt(entity.damageSources().generic(), 2.0f);
+            entity.sendSystemMessage(Component.nullToEmpty("§c肛门像撕裂一样疼痛..."));
             // 严重的会有流血效果（缓慢+虚弱）
             if (getHemorrhoids() > 20 * 60 * 20 * 5) {
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 10, 0));
+                entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 20 * 10, 0));
             }
         }
     }
@@ -967,8 +971,8 @@ public interface Pregnant{
     default float getParthenogenesisVariance() {
         return 0.0f;
     }
-    private void applyAttributeVariance(LivingEntity entity, RegistryEntry<EntityAttribute> attribute, float variance) {
-        var instance = entity.getAttributeInstance(attribute);
+    private void applyAttributeVariance(LivingEntity entity, Holder<Attribute> attribute, float variance) {
+        var instance = entity.getAttribute(attribute);
         if (instance != null) {
             double base = instance.getBaseValue();
             // 生成 -1.0 到 1.0 之间的随机数
@@ -980,8 +984,8 @@ public interface Pregnant{
     }
 
     // ----------------- 激素系统 (Hormones) -----------------
-    Identifier TESTOSTERONE_ID = Identifier.of(Justarod.MODID,"testosterone");
-    Identifier ESTROGEN_ID = Identifier.of(Justarod.MODID,"estrogen");
+    ResourceLocation TESTOSTERONE_ID = ResourceLocation.fromNamespaceAndPath(Justarod.MODID,"testosterone");
+    ResourceLocation ESTROGEN_ID = ResourceLocation.fromNamespaceAndPath(Justarod.MODID,"estrogen");
 
     // 卵巢时钟：14个Minecraft天 (14 * 24000 = 336000 ticks)
     int CYCLE_TOTAL_TICKS = 14 * 24000;
@@ -1053,12 +1057,12 @@ public interface Pregnant{
             // 如释重负的反馈
             if (getMastitis() > 0) {
                 setMastitis(0); // 排空后乳腺炎瞬间缓解
-                entity.sendMessage(Text.of("§a淤积的乳汁被排空，胸部的胀痛感消失了..."));
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 20 * 5, 0));
+                entity.sendSystemMessage(Component.nullToEmpty("§a淤积的乳汁被排空，胸部的胀痛感消失了..."));
+                entity.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 20 * 5, 0));
             }
             // 移除胀奶导致的缓慢和虚弱
-            entity.removeStatusEffect(StatusEffects.SLOWNESS);
-            entity.removeStatusEffect(StatusEffects.WEAKNESS);
+            entity.removeEffect(MobEffects.MOVEMENT_SLOWDOWN);
+            entity.removeEffect(MobEffects.WEAKNESS);
         }
         return extracted;
     }
@@ -1192,7 +1196,7 @@ public interface Pregnant{
      */
     private void applySexChangeAttributeModifier(LivingEntity entity, boolean isBonus) {
         // 修改生命上限
-        var healthAttr = entity.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
+        var healthAttr = entity.getAttribute(Attributes.MAX_HEALTH);
         if (healthAttr != null) {
             double currentBase = healthAttr.getBaseValue();
             double modifier = isBonus ? 4.0 : -4.0;
@@ -1206,7 +1210,7 @@ public interface Pregnant{
         }
 
         // 修改攻击力
-        var attackAttr = entity.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE);
+        var attackAttr = entity.getAttribute(Attributes.ATTACK_DAMAGE);
         if (attackAttr != null) {
             double currentBase = attackAttr.getBaseValue();
             double modifier = isBonus ? 1.0 : -1.0;
@@ -1229,9 +1233,9 @@ public interface Pregnant{
     default void cureCataract() {
         setCataract(0);
         if (this instanceof LivingEntity entity) {
-            entity.sendMessage(Text.of("§a手术成功，眼前变得清晰了！"));
+            entity.sendSystemMessage(Component.nullToEmpty("§a手术成功，眼前变得清晰了！"));
             // 手术后眼睛敏感，给予短时间畏光（失明/夜视闪烁）
-            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 20 * 5, 0));
+            entity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 20 * 5, 0));
         }
     }
 
@@ -1265,13 +1269,13 @@ public interface Pregnant{
 
         if (this instanceof LivingEntity entity) {
             // 瞬间的高额伤害 (重症 6点/3心，轻症 4点/2心)
-            entity.damage(entity.getDamageSources().generic(), severe ? 6.0f : 4.0f);
+            entity.hurt(entity.damageSources().generic(), severe ? 6.0f : 4.0f);
 
             // 痛得无法动弹
-            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 15, 2));
-            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 15, 1));
+            entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20 * 15, 2));
+            entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 20 * 15, 1));
 
-            entity.sendMessage(Text.of("§c你的下腹部突然传来一阵撕裂般的剧痛... (" + cause + ")"));
+            entity.sendSystemMessage(Component.nullToEmpty("§c你的下腹部突然传来一阵撕裂般的剧痛... (" + cause + ")"));
         }
         return true;
     }
@@ -1284,8 +1288,8 @@ public interface Pregnant{
             setCorpusLuteumRupture(0);
             setSevereCorpusLuteumRupture(false);
             if (this instanceof LivingEntity entity) {
-                entity.sendMessage(Text.of("§a经过及时治疗，腹腔内的出血停止了。"));
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.INSTANT_HEALTH, 1, 0));
+                entity.sendSystemMessage(Component.nullToEmpty("§a经过及时治疗，腹腔内的出血停止了。"));
+                entity.addEffect(new MobEffectInstance(MobEffects.HEAL, 1, 0));
             }
         }
     }
@@ -1324,7 +1328,7 @@ public interface Pregnant{
         }
 
         if (this instanceof LivingEntity entity) {
-            entity.sendMessage(Text.of("§d纯洁的羁绊创造了奇迹..."));
+            entity.sendSystemMessage(Component.nullToEmpty("§d纯洁的羁绊创造了奇迹..."));
         }
         return true;
     }
@@ -1338,7 +1342,7 @@ public interface Pregnant{
             // 清除怀孕效果（如果有的话）
             pregnant.setEctopicPregnancy(false);
             pregnant.setHydatidiformMole(false);
-            pregnant.removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getPREGNANT_EFFECT()));
+            pregnant.removeEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getPREGNANT_EFFECT()));
             return;
         }
         pregnant.updatePregnant();
@@ -1346,12 +1350,12 @@ public interface Pregnant{
             // 清除怀孕效果（如果有的话）
             pregnant.setEctopicPregnancy(false);
             pregnant.setHydatidiformMole(false);
-            pregnant.removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getPREGNANT_EFFECT()));
+            pregnant.removeEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getPREGNANT_EFFECT()));
         }else {
             // 设置怀孕效果
-            if (!pregnant.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getPREGNANT_EFFECT()))) {
-                pregnant.addStatusEffect(new StatusEffectInstance(
-                        Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getPREGNANT_EFFECT()),
+            if (!pregnant.hasEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getPREGNANT_EFFECT()))) {
+                pregnant.addEffect(new MobEffectInstance(
+                        BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getPREGNANT_EFFECT()),
                         pregnant.getPregnant(),
                         0,
                         false,
@@ -1362,15 +1366,15 @@ public interface Pregnant{
             if (pregnant.isHydatidiformMole()) {
                 // 1/200的概率随机掉1~3血
                 if (pregnant.getRandom().nextInt(200) == 0) {
-                    pregnant.damage(pregnant.getDamageSources().generic(), pregnant.getRandom().nextInt(3) + 1);
+                    pregnant.hurt(pregnant.damageSources().generic(), pregnant.getRandom().nextInt(3) + 1);
                 }
                 // 1/400的概率反胃
                 if (pregnant.getRandom().nextInt(400) == 0) {
-                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20*20, 0));
+                    pregnant.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 20*20, 0));
                 }
                 // 1/600的概率掉落奇怪物品
                 if (pregnant.getRandom().nextInt(600) == 0) {
-                    pregnant.dropItem(JRItems.Companion.getMOLE());
+                    pregnant.spawnAtLocation(JRItems.Companion.getMOLE());
                 }
             }
             if (pregnant.isEctopicPregnancy()) {
@@ -1378,29 +1382,29 @@ public interface Pregnant{
                 if (20 * 60 * 20 * 8 > time && time > 20 * 60 * 20 * 7) {
                     // 怀孕2~3天时1/1000概率掉血
                     if (pregnant.getRandom().nextInt(1000) == 0) {
-                        pregnant.damage(pregnant.getDamageSources().generic(), 1.0F);
+                        pregnant.hurt(pregnant.damageSources().generic(), 1.0F);
                     }
                     // 1/2000概率反胃
                     if (pregnant.getRandom().nextInt(2000) == 0) {
-                        pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20*10, 0));
+                        pregnant.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 20*10, 0));
                     }
                 }else if (20 * 60 * 20 * 7 > time && time > 20 * 60 * 20 * 6){
                     // 怀孕3~4天时1/200概率掉血
                     if (pregnant.getRandom().nextInt(200) == 0) {
-                        pregnant.damage(pregnant.getDamageSources().generic(), 2.0F);
+                        pregnant.hurt(pregnant.damageSources().generic(), 2.0F);
                     }
                 } else if (20 * 60 * 20 * 6 > time) {
                     // 怀孕4~5天时1/50概率掉血
                     if (pregnant.getRandom().nextInt(50) == 0) {
-                        pregnant.damage(pregnant.getDamageSources().generic(), 6.0F);
+                        pregnant.hurt(pregnant.damageSources().generic(), 6.0F);
                     }
                     // 1/400概率昏迷
                     if (pregnant.getRandom().nextInt(400) == 0) {
-                        pregnant.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getFAINT_EFFECT()), 20*60, 0));
+                        pregnant.addEffect(new MobEffectInstance(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getFAINT_EFFECT()), 20*60, 0));
                     }
                 }
             }
-            if (pregnant.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getVAGINITIS_EFFECT())) && pregnant.getPregnant() < 20*60*20*3){
+            if (pregnant.hasEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getVAGINITIS_EFFECT())) && pregnant.getPregnant() < 20*60*20*3){
                 // 阴道炎&小于3天，有几率早产
                 pregnant.setPregnant(pregnant.getPregnant() + 1);
                 if (pregnant.getRandom().nextInt(500) == 0) {
@@ -1417,7 +1421,7 @@ public interface Pregnant{
             if (pregnant.getAids() > 0) {
                 pregnant.setAids(0);
                 // 顺便移除已有的药水效果
-                pregnant.removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getAIDS_EFFECT()));
+                pregnant.removeEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getAIDS_EFFECT()));
             }
             return; // 直接返回，不执行后续 AIDS 逻辑
         }
@@ -1425,25 +1429,25 @@ public interface Pregnant{
         int aids = pregnant.getAids();
         if (aids > 0){
             // 给予效果
-            pregnant.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getAIDS_EFFECT()), pregnant.getAids(), 0));
+            pregnant.addEffect(new MobEffectInstance(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getAIDS_EFFECT()), pregnant.getAids(), 0));
             if (aids < 20 * 60 * 20){
                 // 1~2天内1/500反胃，缓慢，失明，虚弱
                 if (pregnant.getRandom().nextInt(500) == 0) {
-                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20*10, 0));
-                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20*10, 0));
-                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 20*10, 0));
-                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20*10, 0));
+                    pregnant.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 20*10, 0));
+                    pregnant.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20*10, 0));
+                    pregnant.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 20*10, 0));
+                    pregnant.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 20*10, 0));
                 }
             }
             if (aids > 20*60*20*10){
                 // 大于10天后1/20随机凋零，缓慢，失明，虚弱，剧毒，反胃
                 if (pregnant.getRandom().nextInt(20) == 0) {
-                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.WITHER, 20*10, 2));
-                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20*10, 2));
-                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 20*10, 2));
-                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20*10, 2));
-                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, 20*10, 2));
-                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20*10, 2));
+                    pregnant.addEffect(new MobEffectInstance(MobEffects.WITHER, 20*10, 2));
+                    pregnant.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20*10, 2));
+                    pregnant.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 20*10, 2));
+                    pregnant.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 20*10, 2));
+                    pregnant.addEffect(new MobEffectInstance(MobEffects.POISON, 20*10, 2));
+                    pregnant.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 20*10, 2));
                 }
             }
         }
@@ -1459,32 +1463,32 @@ public interface Pregnant{
         int hpv = pregnant.getHPV();
         if (20 * 60 * 20 * 3 <= hpv){
             // 设置效果
-            pregnant.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getHPV_EFFECT()), hpv, 0));
+            pregnant.addEffect(new MobEffectInstance(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getHPV_EFFECT()), hpv, 0));
         }
         if (20 * 60 * 20 * 3 <= hpv && hpv < 20 * 60 * 20 * 6){
             // 4~6天内1/40低级挖掘疲劳
             if (pregnant.getRandom().nextInt(40) == 0) {
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20*10, 0));
+                pregnant.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 20*10, 0));
             }
         }else if (hpv >= 20 * 60 * 20 * 6 && hpv < 20 * 60 * 20 * 10){
             // 7~10天内1/80低级挖掘疲劳+掉血
             if (pregnant.getRandom().nextInt(80) == 0) {
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20*20, 0));
-                pregnant.damage(pregnant.getDamageSources().generic(), 1);
+                pregnant.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 20*20, 0));
+                pregnant.hurt(pregnant.damageSources().generic(), 1);
             }
         }else if (hpv >= 20 * 60 * 20 * 10){
             // 10~12天内1/10高级挖掘疲劳+缓慢
             if (pregnant.getRandom().nextInt(10) == 0) {
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20*20, 1));
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20*20, 1));
+                pregnant.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 20*20, 1));
+                pregnant.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20*20, 1));
             }
             // 1/400晕倒
             if (pregnant.getRandom().nextInt(400) == 0) {
-                pregnant.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getFAINT_EFFECT()), 20*30, 0));
+                pregnant.addEffect(new MobEffectInstance(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getFAINT_EFFECT()), 20*30, 0));
             }
             // 1/40掉血
             if (pregnant.getRandom().nextInt(40) == 0) {
-                pregnant.damage(pregnant.getDamageSources().magic(), 1.0F);
+                pregnant.hurt(pregnant.damageSources().magic(), 1.0F);
             }
             // 大于12天直接死亡
             if (hpv > 20 * 60 *20 *12){
@@ -1501,34 +1505,34 @@ public interface Pregnant{
         pregnant.updateOvarianCancer();
         int oc = pregnant.getOvarianCancer();
         if (oc <= 0){
-            pregnant.removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getOVARIAN_CANCER_EFFECT()));
+            pregnant.removeEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getOVARIAN_CANCER_EFFECT()));
         }
         if (oc > 20*60*20*2){
-            pregnant.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getOVARIAN_CANCER_EFFECT()), oc, 0));
+            pregnant.addEffect(new MobEffectInstance(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getOVARIAN_CANCER_EFFECT()), oc, 0));
         }
         if (oc >20*60*20*2 && oc <20*60*20*4){
             // 2～4天1/200出现恶心
             if (pregnant.getRandom().nextInt(200) == 0) {
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20*30));
+                pregnant.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 20*30));
             }
             // 1/200扣血0.1
             if (pregnant.getRandom().nextInt(200) == 0) {
-                pregnant.damage(pregnant.getDamageSources().magic(),0.1f);
+                pregnant.hurt(pregnant.damageSources().magic(),0.1f);
             }
             // 1/200挖掘疲劳
             if (pregnant.getRandom().nextInt(200) == 0) {
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20*30));
+                pregnant.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 20*30));
             }
         }else if (oc >= 20 * 60 * 20 *4){
             // 1/100恶心
             if (pregnant.getRandom().nextInt(100) == 0) {
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 10));
+                pregnant.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 20 * 10));
             }
             // 1/2呼吸困难
             if (pregnant.getRandom().nextBoolean()) {
-                int air = pregnant.getAir();
+                int air = pregnant.getAirSupply();
                 if (air > 9) {
-                    pregnant.setAir(air - 9);
+                    pregnant.setAirSupply(air - 9);
                 }
             }
         }
@@ -1541,23 +1545,23 @@ public interface Pregnant{
         if (bc>20*60*20*2 && bc<20*60*20*4){
             // 1/200分泌物
             if (pregnant.getRandom().nextInt(200) == 0) {
-                pregnant.dropStack(JRItems.Companion.getMOLE().getDefaultStack());
+                pregnant.spawnAtLocation(JRItems.Companion.getMOLE().getDefaultStack());
             }
         }else if (bc>=20*60*20*4){
             // 1/100缓慢
             if (pregnant.getRandom().nextInt(100) == 0) {
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20*30));
+                pregnant.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20*30));
             }
             // 1/2呼吸困难
             if (pregnant.getRandom().nextBoolean()) {
-                int air = pregnant.getAir();
+                int air = pregnant.getAirSupply();
                 if (air > 9) {
-                    pregnant.setAir(air - 9);
+                    pregnant.setAirSupply(air - 9);
                 }
             }
             // 1/100挖掘疲劳
             if (pregnant.getRandom().nextInt(100) == 0) {
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20*30));
+                pregnant.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 20*30));
             }
         }
     }
@@ -1573,22 +1577,22 @@ public interface Pregnant{
 
         if (syphilis > 0){
             // 给予效果
-            pregnant.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSYPHILIS_EFFECT()), syphilis, 0));
+            pregnant.addEffect(new MobEffectInstance(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getSYPHILIS_EFFECT()), syphilis, 0));
         }else {
             // 移除效果
-            pregnant.removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSYPHILIS_EFFECT()));
+            pregnant.removeEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getSYPHILIS_EFFECT()));
         }
         if (syphilis > midStage) {
             // 中期及以上：每隔一段时间轻微伤害
             if (pregnant.getRandom().nextInt(200) == 0) { // 大约每10秒触发一次
-                pregnant.damage(pregnant.getDamageSources().magic(), 1.0F);
+                pregnant.hurt(pregnant.damageSources().magic(), 1.0F);
             }
         }
 
         if (syphilis > lateStage) {
             // 晚期：持续掉血
             if (pregnant.getRandom().nextInt(40) == 0) { // 每2秒掉一次
-                pregnant.damage(pregnant.getDamageSources().magic(), 1.0F);
+                pregnant.hurt(pregnant.damageSources().magic(), 1.0F);
             }
 
             // 晚期并怀孕，有小概率流产
@@ -1603,50 +1607,50 @@ public interface Pregnant{
         int excretion = pregnant.getExcretion();
         if (excretion > 20*60*20*2){
             // 开始缓慢...
-            pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20*10, 0, false, false, true));
+            pregnant.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20*10, 0, false, false, true));
             if (pregnant.getRandom().nextInt(300) == 0) {
-                pregnant.sendMessage(MutableText.of(new PlainTextContent.Literal("§a提示：按下")).append(Text.keybind("key.justarod.excrement"))
-                        .append(Text.of("§a可以排便哦！")));
+                pregnant.sendSystemMessage(MutableComponent.create(new PlainTextContents.LiteralContents("§a提示：按下")).append(Component.keybind("key.justarod.excrement"))
+                        .append(Component.nullToEmpty("§a可以排便哦！")));
             }
         }
         if (excretion > 20*60*20*5){
             // 开始不适...
             if (pregnant.getRandom().nextInt(100) == 0) {
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20*10, 0));
+                pregnant.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 20*10, 0));
             }
         }
         if (excretion > 20*60*20*8){
             // 开始剧烈不适...
             if (pregnant.getRandom().nextInt(50) == 0) {
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20*20, 1));
+                pregnant.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 20*20, 1));
             }
             if (pregnant.getRandom().nextInt(200) == 0) {
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20*20, 1));
+                pregnant.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20*20, 1));
             }
         }
         if (excretion > 20*60*20*12){
             // 掉血
             if (pregnant.getRandom().nextInt(100) == 0) {
-                pregnant.damage(pregnant.getDamageSources().magic(), 1.0F);
+                pregnant.hurt(pregnant.damageSources().magic(), 1.0F);
             }
             // 掉粑粑
             if (pregnant.getRandom().nextInt(200) == 0) {
                 pregnant.doDefecationPain();
                 // 检查是否穿着胖次
-                ItemStack legStack = pregnant.getEquippedStack(EquipmentSlot.LEGS);
+                ItemStack legStack = pregnant.getItemBySlot(EquipmentSlot.LEGS);
                 boolean hasPantsu = !legStack.isEmpty() && legStack.getItem() instanceof PantsuItem;
 
                 if (hasPantsu) {
                     // 如果有胖次，不会掉落物品，而是弄脏胖次
                     legStack.set(JRComponents.Companion.getPANTSU_STATE(), JRComponents.PantsuState.SOILED);
 
-                    pregnant.sendMessage(Text.of("§c糟糕，把胖次弄脏了..."));
+                    pregnant.sendSystemMessage(Component.nullToEmpty("§c糟糕，把胖次弄脏了..."));
                     // 给予更严重的恶心/缓慢效果因为身上有脏东西
-                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 60, 2));
-                    pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 60, 2));
+                    pregnant.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 20 * 60, 2));
+                    pregnant.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20 * 60, 2));
                 } else {
                     // 没有胖次，正常掉落
-                    pregnant.dropItem(JRItems.Companion.getEXCREMENT());
+                    pregnant.spawnAtLocation(JRItems.Companion.getEXCREMENT());
                 }
             }
         }
@@ -1668,19 +1672,19 @@ public interface Pregnant{
         if (urination > day * 0.5) {
             // 5. 需要提示
             if (pregnant.getRandom().nextInt(300) == 0) {
-                pregnant.sendMessage(MutableText.of(new PlainTextContent.Literal("§e提示：按下"))
-                        .append(Text.keybind("key.justarod.urinate")) // 对应按键
-                        .append(Text.of("§e可以排尿哦！")));
+                pregnant.sendSystemMessage(MutableComponent.create(new PlainTextContents.LiteralContents("§e提示：按下"))
+                        .append(Component.keybind("key.justarod.urinate")) // 对应按键
+                        .append(Component.nullToEmpty("§e可以排尿哦！")));
             }
         }
 
         // 阶段 2: 憋不住了 (0.8天) -> 负面效果: 缓慢 & 跳跃降低
         if (urination > day * 0.8) {
             // 缓慢 I
-            pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 10, 0, false, false, true));
+            pregnant.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20 * 10, 0, false, false, true));
             // 2. 跳跃能力降低 (JUMP_NERF)
-            pregnant.addStatusEffect(new StatusEffectInstance(
-                    Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getJUMP_NERF_EFFECT()),
+            pregnant.addEffect(new MobEffectInstance(
+                    BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getJUMP_NERF_EFFECT()),
                     20 * 10,
                     0,
                     false,
@@ -1693,31 +1697,31 @@ public interface Pregnant{
         if (urination > day * 1.2) {
             // 剧烈不适，加大缓慢等级
             if (pregnant.getRandom().nextInt(50) == 0) {
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 20, 1));
+                pregnant.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20 * 20, 1));
             }
             // 2. 只有毒效果符合尿毒症/膀胱受损的设定
             if (pregnant.getRandom().nextInt(200) == 0) {
-                pregnant.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, 20 * 20, 0));
+                pregnant.addEffect(new MobEffectInstance(MobEffects.POISON, 20 * 20, 0));
             }
         }
 
         // 阶段 4: 失禁 (1.5天)
         if (urination > day * 1.5) {
             if (pregnant.getRandom().nextInt(100) == 0) {
-                pregnant.sendMessage(Text.of("§c你失禁了..."));
+                pregnant.sendSystemMessage(Component.nullToEmpty("§c你失禁了..."));
 
                 // 检查胖次
-                ItemStack legStack = pregnant.getEquippedStack(EquipmentSlot.LEGS);
+                ItemStack legStack = pregnant.getItemBySlot(EquipmentSlot.LEGS);
                 if (!legStack.isEmpty() && legStack.getItem() instanceof PantsuItem) {
                     // 如果还没脏，就变成湿的；如果已经脏了，保持脏的状态（假设脏优先级更高）
                     JRComponents.PantsuState currentState = legStack.get(JRComponents.Companion.getPANTSU_STATE());
                     if (currentState == null || currentState == JRComponents.PantsuState.CLEAN) {
                         legStack.set(JRComponents.Companion.getPANTSU_STATE(), JRComponents.PantsuState.WET);
-                        pregnant.sendMessage(Text.of("§c胖次湿透了..."));
+                        pregnant.sendSystemMessage(Component.nullToEmpty("§c胖次湿透了..."));
                     }
                 }
-                pregnant.addStatusEffect(new StatusEffectInstance(
-                        Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSMEARY_EFFECT()),
+                pregnant.addEffect(new MobEffectInstance(
+                        BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getSMEARY_EFFECT()),
                         20 * 60 * 5,
                         0, false, false, true
                 ));
@@ -1735,14 +1739,14 @@ public interface Pregnant{
         }
 
         int currentCold = entity.getUterineCold();
-        World world = entity.getWorld();
-        net.minecraft.util.math.BlockPos pos = entity.getBlockPos();
+        Level world = entity.level();
+        net.minecraft.core.BlockPos pos = entity.blockPosition();
 
         // 1. 寒气积累逻辑 (每 Tick 更新)
         boolean isEnvironmentCold = false;
 
         // 环境判断：寒冷群系 或 水中
-        if (world.getBiome(pos).value().isCold(pos) || entity.isSubmergedInWater()) {
+        if (world.getBiome(pos).value().coldEnoughToSnow(pos) || entity.isUnderWater()) {
             isEnvironmentCold = true;
             // 基础增加
             if (entity.getRandom().nextInt(2) == 0) { // 减缓一下增长速度
@@ -1751,7 +1755,7 @@ public interface Pregnant{
         }
         // 胖次保暖逻辑
         if (isEnvironmentCold) {
-            ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
+            ItemStack legStack = entity.getItemBySlot(EquipmentSlot.LEGS);
             if (!legStack.isEmpty() && legStack.getItem() instanceof PantsuItem) {
                 // 如果穿着胖次，有几率抵消这次寒气增加
                 if (entity.getRandom().nextInt(4) != 0) {
@@ -1761,13 +1765,13 @@ public interface Pregnant{
         }
 
         // 接触判断：脚下是冰、雪、雪块
-        net.minecraft.block.Block blockBelow = world.getBlockState(pos.down()).getBlock();
-        if (blockBelow == net.minecraft.block.Blocks.ICE ||
-                blockBelow == net.minecraft.block.Blocks.PACKED_ICE ||
-                blockBelow == net.minecraft.block.Blocks.BLUE_ICE ||
-                blockBelow == net.minecraft.block.Blocks.SNOW_BLOCK ||
-                blockBelow == net.minecraft.block.Blocks.SNOW ||
-                blockBelow == net.minecraft.block.Blocks.POWDER_SNOW) {
+        net.minecraft.world.level.block.Block blockBelow = world.getBlockState(pos.below()).getBlock();
+        if (blockBelow == net.minecraft.world.level.block.Blocks.ICE ||
+                blockBelow == net.minecraft.world.level.block.Blocks.PACKED_ICE ||
+                blockBelow == net.minecraft.world.level.block.Blocks.BLUE_ICE ||
+                blockBelow == net.minecraft.world.level.block.Blocks.SNOW_BLOCK ||
+                blockBelow == net.minecraft.world.level.block.Blocks.SNOW ||
+                blockBelow == net.minecraft.world.level.block.Blocks.POWDER_SNOW) {
             isEnvironmentCold = true;
             currentCold += 2; // 接触寒冷源增加更快
         }
@@ -1775,13 +1779,13 @@ public interface Pregnant{
         // 2. 暖宫/恢复逻辑
         // 搜索周围小范围是否有热源 (火、岩浆、营火)
         boolean isWarm = false;
-        if (world.getStatesInBoxIfLoaded(entity.getBoundingBox().expand(2.0)).anyMatch(state ->
-                state.isOf(net.minecraft.block.Blocks.FIRE) ||
-                        state.isOf(net.minecraft.block.Blocks.SOUL_FIRE) ||
-                        state.isOf(net.minecraft.block.Blocks.LAVA) ||
-                        state.isOf(net.minecraft.block.Blocks.CAMPFIRE) ||
-                        state.isOf(net.minecraft.block.Blocks.SOUL_CAMPFIRE) ||
-                        state.isOf(net.minecraft.block.Blocks.MAGMA_BLOCK)
+        if (world.getBlockStatesIfLoaded(entity.getBoundingBox().inflate(2.0)).anyMatch(state ->
+                state.is(net.minecraft.world.level.block.Blocks.FIRE) ||
+                        state.is(net.minecraft.world.level.block.Blocks.SOUL_FIRE) ||
+                        state.is(net.minecraft.world.level.block.Blocks.LAVA) ||
+                        state.is(net.minecraft.world.level.block.Blocks.CAMPFIRE) ||
+                        state.is(net.minecraft.world.level.block.Blocks.SOUL_CAMPFIRE) ||
+                        state.is(net.minecraft.world.level.block.Blocks.MAGMA_BLOCK)
         )) {
             isWarm = true;
             currentCold -= 5; // 恢复速度快于积累速度
@@ -1804,8 +1808,8 @@ public interface Pregnant{
         // 3. 状态效果逻辑
         // 如果寒气值超过阈值（积累了1天），给予宫寒效果
         if (entity.isUterineCold()) {
-            entity.addStatusEffect(new StatusEffectInstance(
-                    Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getUTERINE_COLD_EFFECT()),
+            entity.addEffect(new MobEffectInstance(
+                    BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getUTERINE_COLD_EFFECT()),
                     20 * 5, // 持续时间短，保持刷新
                     0,
                     false,
@@ -1815,8 +1819,8 @@ public interface Pregnant{
 
             // 如果寒气非常严重（超过3天），加深效果等级
             if (currentCold > 20 * 60 * 20 * 3) {
-                entity.addStatusEffect(new StatusEffectInstance(
-                        Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getUTERINE_COLD_EFFECT()),
+                entity.addEffect(new MobEffectInstance(
+                        BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getUTERINE_COLD_EFFECT()),
                         20 * 5,
                         1,
                         false,
@@ -1844,9 +1848,9 @@ public interface Pregnant{
             if (entity.getRandom().nextInt(10) == 0) {
                 entity.setUrination(entity.getUrination() + 1);
             }
-            entity.addStatusEffect(
-                    new StatusEffectInstance(
-                            Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getURETHRITIS_EFFECT()),
+            entity.addEffect(
+                    new MobEffectInstance(
+                            BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getURETHRITIS_EFFECT()),
                             time,
                             0,
                             false,
@@ -1860,7 +1864,7 @@ public interface Pregnant{
         if (time > stage2) {
             // 每 5~10 分钟一次判定
             if (entity.getRandom().nextInt(20 * 10 * 5) == 0) {
-                ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
+                ItemStack legStack = entity.getItemBySlot(EquipmentSlot.LEGS);
                 boolean hasPantsu = !legStack.isEmpty() && legStack.getItem() instanceof PantsuItem;
 
                 if (hasPantsu) {
@@ -1872,12 +1876,12 @@ public interface Pregnant{
                     }
                 } else {
                     // 没穿胖次，分泌物留在大腿上 -> 给予 SMEARY (粘腻) 效果
-                    entity.addStatusEffect(new StatusEffectInstance(
-                            Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSMEARY_EFFECT()),
+                    entity.addEffect(new MobEffectInstance(
+                            BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getSMEARY_EFFECT()),
                             20 * 60 * 5, // 持续5分钟
                             0, false, false, true
                     ));
-                    entity.sendMessage(Text.of("§e流出了奇怪的脓液..."));
+                    entity.sendSystemMessage(Component.nullToEmpty("§e流出了奇怪的脓液..."));
                 }
             }
         }
@@ -1888,9 +1892,9 @@ public interface Pregnant{
             // 尿意越浓，炎症刺激越痛
             if (entity.getUrination() > 20 * 60 * 10) { // 憋了一点尿的时候
                 if (entity.getRandom().nextInt(200) == 0) {
-                    entity.damage(entity.getDamageSources().magic(), 1.0f);
+                    entity.hurt(entity.damageSources().magic(), 1.0f);
                     // 偶尔伴随缓慢（痛得走不动）
-                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 5, 0));
+                    entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20 * 5, 0));
                 }
             }
 
@@ -1900,20 +1904,20 @@ public interface Pregnant{
                     // 平均每分钟检测一次
                     if (entity.getRandom().nextInt(1200) == 0) {
                         entity.setProstatitis(1); // 激活前列腺炎
-                        entity.sendMessage(Text.of("§c你感觉会阴深处传来一阵坠胀感，炎症似乎蔓延了..."));
+                        entity.sendSystemMessage(Component.nullToEmpty("§c你感觉会阴深处传来一阵坠胀感，炎症似乎蔓延了..."));
                     }
                 }
 
                 // 受到额外伤害 (男性尿道更长，炎症不仅痛苦且难以痊愈)
                 if (entity.getRandom().nextInt(100) == 0) {
-                    entity.damage(entity.getDamageSources().generic(), 1.0f);
+                    entity.hurt(entity.damageSources().generic(), 1.0f);
                 }
             }
             if (entity.isFemale()){
                 // 女性虽然也有痛感，但通常比男性轻微一点点
                 // 仅仅是偶尔的刺痛
                 if (entity.getRandom().nextInt(300) == 0) {
-                    entity.damage(entity.getDamageSources().magic(), 0.5f);
+                    entity.hurt(entity.damageSources().magic(), 0.5f);
                 }
             }
         }
@@ -1931,8 +1935,8 @@ public interface Pregnant{
 
         if (time <= 0) return;
 
-        entity.addStatusEffect(new StatusEffectInstance(
-                Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getPROSTATITIS_EFFECT()),
+        entity.addEffect(new MobEffectInstance(
+                BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getPROSTATITIS_EFFECT()),
                 time,
                 0,
                 false,
@@ -1942,14 +1946,14 @@ public interface Pregnant{
 
         // 物理治疗 (温水坐浴) ---
         // 判定条件：身体在水中 (SubmergedInWater) 或者下半身在水中
-        if (entity.isSubmergedInWater() || entity.isTouchingWater()) {
+        if (entity.isUnderWater() || entity.isInWater()) {
             // 加速恢复：每 tick 额外减少 5 点病程
             // 正常情况下病程是增加的 (updateProstatitis)，这里减去更多就能实现“慢慢治愈”
             entity.setProstatitis(Math.max(0, entity.getProstatitis() - 5));
 
             // 给予舒适提示 (偶尔)
             if (entity.getRandom().nextInt(600) == 0) {
-                entity.sendMessage(Text.of("§a温水缓解了你的下半身胀痛..."));
+                entity.sendSystemMessage(Component.nullToEmpty("§a温水缓解了你的下半身胀痛..."));
             }
             return;
         }
@@ -1967,9 +1971,9 @@ public interface Pregnant{
         // 即使尿意不高，也会有不适感
         if (entity.getUrination() > 20 * 60 * 5) { // 稍微有一点尿意时
             if (entity.getRandom().nextInt(400) == 0) { // 偶尔刺痛
-                entity.damage(entity.getDamageSources().magic(), 1.0f);
+                entity.hurt(entity.damageSources().magic(), 1.0f);
                 // 痛得缩了一下 (瞬间缓慢)
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 2, 1, false, false, false));
+                entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20 * 2, 1, false, false, false));
             }
         }
 
@@ -1979,30 +1983,30 @@ public interface Pregnant{
         // 阶段 1: 早期 (1天后) - 出现腰酸背痛 (挖掘疲劳)
         if (time > 20 * 60 * 20) {
             // 持续给予挖掘疲劳 I
-            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20 * 20, 0, false, false, true));
+            entity.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 20 * 20, 0, false, false, true));
         }
 
         // 阶段 2: 慢性期 (3天后) - 精神萎靡、身体虚弱 (虚弱)
         if (time > 20 * 60 * 20 * 3) {
             // 持续给予虚弱 I
-            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 20, 0, false, false, true));
+            entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 20 * 20, 0, false, false, true));
 
             // 加重挖掘疲劳到 II 级
-            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20 * 20, 1, false, false, true));
+            entity.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 20 * 20, 1, false, false, true));
         }
 
         // 阶段 3: 长期未愈 (7天后) - 严重影响生活
         if (time > 20 * 60 * 20 * 7) {
             // 精神衰弱，偶尔反胃
             if (entity.getRandom().nextInt(600) == 0) {
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 10, 0));
+                entity.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 20 * 10, 0));
             }
         }
     }
 
     static <T extends LivingEntity & Pregnant> void hemorrhoidsTick(T entity) {
         int current = entity.getHemorrhoids();
-        boolean isSitting = entity.hasVehicle(); // 检查是否坐在载具上（矿车、船、椅子模组等）
+        boolean isSitting = entity.isPassenger(); // 检查是否坐在载具上（矿车、船、椅子模组等）
 
         // 1. 诱因机制：久坐 & 高排便值 & 怀孕压迫
         int increaseRate = 0;
@@ -2043,7 +2047,7 @@ public interface Pregnant{
         // 没什么明显症状，偶尔瘙痒
         if (current > 20 * 60 * 20 && current < 20 * 60 * 20 * 3) {
             if (entity.getRandom().nextInt(2400*5) == 0) { // 约10分钟一次
-                entity.sendMessage(Text.of("§7感觉后面有些瘙痒..."));
+                entity.sendSystemMessage(Component.nullToEmpty("§7感觉后面有些瘙痒..."));
             }
         }
 
@@ -2053,10 +2057,10 @@ public interface Pregnant{
             if (isSitting) {
                 // 每60秒一次刺痛
                 if (entity.getRandom().nextInt(1200) == 0) {
-                    entity.damage(entity.getDamageSources().generic(), 1.0f);
-                    entity.sendMessage(Text.of("§c坐得太久了，下面好痛！"));
+                    entity.hurt(entity.damageSources().generic(), 1.0f);
+                    entity.sendSystemMessage(Component.nullToEmpty("§c坐得太久了，下面好痛！"));
                     // 站起来的冲动（给予反胃）
-                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 10, 0));
+                    entity.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 20 * 10, 0));
                 }
             }
         }
@@ -2065,34 +2069,34 @@ public interface Pregnant{
         if (current >= 20 * 60 * 20 * 5) {
             // 偶尔弄脏胖次 (出血)
             if (entity.getRandom().nextInt(3000) == 0) { // 约2.5分钟
-                ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
+                ItemStack legStack = entity.getItemBySlot(EquipmentSlot.LEGS);
                 if (!legStack.isEmpty() && legStack.getItem() instanceof PantsuItem) {
                     // 弄脏胖次
                     legStack.set(JRComponents.Companion.getPANTSU_STATE(), JRComponents.PantsuState.SOILED);
-                    entity.sendMessage(Text.of("§c糟糕，痔疮破裂出血弄脏了胖次..."));
+                    entity.sendSystemMessage(Component.nullToEmpty("§c糟糕，痔疮破裂出血弄脏了胖次..."));
                 } else {
-                    entity.sendMessage(Text.of("§c感觉后面流血了..."));
+                    entity.sendSystemMessage(Component.nullToEmpty("§c感觉后面流血了..."));
                 }
                 // 虚弱效果
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 30, 0));
+                entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 20 * 30, 0));
             }
         }
     }
 
     static <T extends LivingEntity & Pregnant> void amputatedTick(T entity) {
         if (entity.isAmputated()){
-            entity.addStatusEffect(
-                    new StatusEffectInstance(
-                            Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getJUMP_NERF_EFFECT()),
+            entity.addEffect(
+                    new MobEffectInstance(
+                            BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getJUMP_NERF_EFFECT()),
                             20,
                             10, // 1秒刷新一次
                             true,
                             false
                     )
             );
-            entity.addStatusEffect(
-                    new StatusEffectInstance(
-                            StatusEffects.SLOWNESS,
+            entity.addEffect(
+                    new MobEffectInstance(
+                            MobEffects.MOVEMENT_SLOWDOWN,
                             20,
                             10,
                             true,
@@ -2112,7 +2116,7 @@ public interface Pregnant{
         if (entity.isImperforateHymen()) return;
 
         // 1. 骑乘判定 (骑马、矿车等颠簸)
-        if (entity.hasVehicle()) {
+        if (entity.isPassenger()) {
             // 骑乘时极低概率破裂 (1/10000 每tic)
             if (entity.getRandom().nextInt(10000) == 0) {
                 entity.ruptureHymen("剧烈颠簸");
@@ -2151,22 +2155,22 @@ public interface Pregnant{
             // 2. 周期性剧痛 (每 30秒 - 1分钟)
             if (entity.getRandom().nextInt(600) == 0) {
                 // 魔法伤害（无视护甲，模拟内脏疼痛）
-                entity.damage(entity.getDamageSources().magic(), 2.0f);
-                entity.sendMessage(Text.of("§c下腹部因经血无法排出而肿胀剧痛！"));
+                entity.hurt(entity.damageSources().magic(), 2.0f);
+                entity.sendSystemMessage(Component.nullToEmpty("§c下腹部因经血无法排出而肿胀剧痛！"));
 
                 // 3. 伴随效果
                 // 反胃 (疼痛引起)
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 20, 0));
+                entity.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 20 * 20, 0));
                 // 缓慢 (痛得走不动)
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 30, 2));
+                entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20 * 30, 2));
                 // 虚弱
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 30, 1));
+                entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 20 * 30, 1));
             }
 
             // 4. 极度严重情况 (如果不治疗，可能导致持续掉血)
             // 模拟“处女膜闭锁导致的阴道积血/子宫积血”
             if (entity.getRandom().nextInt(100) == 0) {
-                entity.damage(entity.getDamageSources().magic(), 0.5f);
+                entity.hurt(entity.damageSources().magic(), 0.5f);
             }
         }
     }
@@ -2186,11 +2190,11 @@ public interface Pregnant{
             if (entity.isPregnant()) return;
 
             // 检测 Scale 属性
-            double currentScale = entity.getAttributeValue(EntityAttributes.GENERIC_SCALE);
+            double currentScale = entity.getAttributeValue(Attributes.SCALE);
             if (currentScale >= entity.getProtogynyScaleThreshold()) {
                 // 触发变性！
                 entity.setUndergoingProtogyny(true);
-                entity.sendMessage(Text.of("§c你感觉到体内燥热难耐，似乎正在发生某种剧变..."));
+                entity.sendSystemMessage(Component.nullToEmpty("§c你感觉到体内燥热难耐，似乎正在发生某种剧变..."));
 
                 // 特殊情况处理：如果已经是双性 (Male=true, Female=true)
                 // 直接快进到 3分钟 阶段，跳过单纯雌性阶段
@@ -2207,7 +2211,7 @@ public interface Pregnant{
             if (entity.isPregnant()) {
                 entity.setUndergoingProtogyny(false);
                 entity.setProtogynyProgress(0);
-                entity.sendMessage(Text.of("§c由于受孕，身体的重塑停止了。"));
+                entity.sendSystemMessage(Component.nullToEmpty("§c由于受孕，身体的重塑停止了。"));
                 return;
             }
 
@@ -2216,21 +2220,21 @@ public interface Pregnant{
 
             // 伴随效果：变性消耗大量能量，给予饥饿感
             if (entity.getRandom().nextInt(100) == 0) {
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 20 * 10, 0));
+                entity.addEffect(new MobEffectInstance(MobEffects.HUNGER, 20 * 10, 0));
             }
 
             // --- 阶段 A: 0 ~ 3分钟 (纯雌性阶段，但在积累雄激素) ---
             if (progress < PROTOGYNY_MALE_DEVELOP_TIME) { // 0 ~ 3600 tick
                 // 偶尔给予微弱力量提示 (模拟雄激素逐渐起效)
                 if (entity.getRandom().nextInt(600) == 0) {
-                    if(entity.getWorld() instanceof ServerWorld sw){
-                        sw.spawnParticles(ParticleTypes.HAPPY_VILLAGER,
+                    if(entity.level() instanceof ServerLevel sw){
+                        sw.sendParticles(ParticleTypes.HAPPY_VILLAGER,
                                 entity.getX(), entity.getY() + 1.0, entity.getZ(),
                                 5,
                                 0.3, 0.5, 0.3,
                                 0.1);
                     }
-                    entity.sendMessage(Text.of("§e你感觉体内有股力量在涌动..."));
+                    entity.sendSystemMessage(Component.nullToEmpty("§e你感觉体内有股力量在涌动..."));
                 }
             }
 
@@ -2238,14 +2242,14 @@ public interface Pregnant{
             if (progress == PROTOGYNY_MALE_DEVELOP_TIME) { // 3600 tick
                 if (!entity.isMale()) {
                     entity.setMale(true);
-                    entity.sendMessage(Text.of("§6你的身体生长出了雄性特征..."));
+                    entity.sendSystemMessage(Component.nullToEmpty("§6你的身体生长出了雄性特征..."));
                     // 给予瞬间治疗，模拟激素激增
-                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.INSTANT_HEALTH, 1, 0));
+                    entity.addEffect(new MobEffectInstance(MobEffects.HEAL, 1, 0));
                     // 给予力量 I，因为有了雄激素
-                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, PROTOGYNY_TOTAL_DURATION - progress, 0));
-                    if(entity.getWorld() instanceof ServerWorld sw){
+                    entity.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, PROTOGYNY_TOTAL_DURATION - progress, 0));
+                    if(entity.level() instanceof ServerLevel sw){
                         // 生成粒子
-                        sw.spawnParticles(ParticleTypes.HEART,
+                        sw.sendParticles(ParticleTypes.HEART,
                                 entity.getX(), entity.getY() + 1.0, entity.getZ(),
                                 20,
                                 0.5, 1.0, 0.5,
@@ -2269,18 +2273,18 @@ public interface Pregnant{
                 }
 
                 // 3. 疾病清理
-                entity.removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getUTERINE_COLD_EFFECT()));
-                entity.removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getOVARIAN_CANCER_EFFECT()));
+                entity.removeEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getUTERINE_COLD_EFFECT()));
+                entity.removeEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getOVARIAN_CANCER_EFFECT()));
 
                 // 4. 重置变性状态
                 entity.setUndergoingProtogyny(false);
                 entity.setProtogynyProgress(0);
 
                 // 5. 最终结算与奖励
-                entity.sendMessage(Text.of("§b彻底的转变完成了！你现在是雄性了。"));
+                entity.sendSystemMessage(Component.nullToEmpty("§b彻底的转变完成了！你现在是雄性了。"));
 
                 // 奖励：体型略微再增大一点
-                var scaleAttr = entity.getAttributeInstance(EntityAttributes.GENERIC_SCALE);
+                var scaleAttr = entity.getAttribute(Attributes.SCALE);
                 if (scaleAttr != null) {
                     // 永久性增加 10% 体型作为“阿尔法雄性”的标志
                     // 注意：需要使用 AttributeModifier 防止重复叠加，这里简化处理直接改Base
@@ -2288,14 +2292,14 @@ public interface Pregnant{
                 }
 
                 // 奖励：生命上限提升
-                var healthAttr = entity.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
+                var healthAttr = entity.getAttribute(Attributes.MAX_HEALTH);
                 if (healthAttr != null) {
                     healthAttr.setBaseValue(healthAttr.getBaseValue() + 4.0); // +2心
                     entity.setHealth(entity.getMaxHealth()); // 回满血
                 }
 
                 // 奖励：获得 2分钟 力量 II
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.STRENGTH, 20 * 60 * 2, 1));
+                entity.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 20 * 60 * 2, 1));
             }
         }
     }
@@ -2411,7 +2415,7 @@ public interface Pregnant{
                 entity.setMale(false);
                 entity.setFemale(true);
                 // 注意：绝对不给子宫，保留生物学限制
-                entity.sendMessage(Text.of("§d长期的雌激素重塑了你的身体外观，你获得了女性的特征。"));
+                entity.sendSystemMessage(Component.nullToEmpty("§d长期的雌激素重塑了你的身体外观，你获得了女性的特征。"));
             }
         }
 
@@ -2426,7 +2430,7 @@ public interface Pregnant{
                 entity.setFemale(false);
                 entity.setMale(true);
                 // 注意：子宫被保留，但由于高 T，它处于休眠状态
-                entity.sendMessage(Text.of("§b长期的雄激素重塑了你的身体，声带增厚，你获得了男性的特征。"));
+                entity.sendSystemMessage(Component.nullToEmpty("§b长期的雄激素重塑了你的身体，声带增厚，你获得了男性的特征。"));
             }
 
             // FTM 专属病理：雌激素极度缺乏导致的阴道/子宫萎缩症 (Vaginal Atrophy)
@@ -2439,17 +2443,17 @@ public interface Pregnant{
 
             // 萎缩症的惩罚：剧痛
             if (entity.getVaginalAtrophy() > 20 * 60 * 20 * 5) { // 持续萎缩 5 天以上
-                if ((entity.isSprinting() || entity.hasVehicle()) && entity.getRandom().nextInt(1200) == 0) {
-                    entity.damage(entity.getDamageSources().magic(), 1.0f);
-                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 5, 0));
-                    entity.sendMessage(Text.of("§c由于长期缺乏雌激素，萎缩的生殖道在剧烈运动中传来了撕裂般的刺痛..."));
+                if ((entity.isSprinting() || entity.isPassenger()) && entity.getRandom().nextInt(1200) == 0) {
+                    entity.hurt(entity.damageSources().magic(), 1.0f);
+                    entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20 * 5, 0));
+                    entity.sendSystemMessage(Component.nullToEmpty("§c由于长期缺乏雌激素，萎缩的生殖道在剧烈运动中传来了撕裂般的刺痛..."));
                 }
             }
 
             // 孕期误服大量雄激素 -> 强制流产
             if (entity.isPregnant() && totalT > 150.0f) {
                 if (entity.getRandom().nextInt(500) == 0) { // 极高概率
-                    entity.sendMessage(Text.of("§4高浓度的雄激素导致了严重的胎儿畸形与宫缩，你流产了..."));
+                    entity.sendSystemMessage(Component.nullToEmpty("§4高浓度的雄激素导致了严重的胎儿畸形与宫缩，你流产了..."));
                     entity.miscarry();
                 }
             }
@@ -2478,13 +2482,13 @@ public interface Pregnant{
             boolean isHemorrhage = (thickness > 80.0f);
             if (isHemorrhage) {
                 if (entity.getRandom().nextInt(20) == 0) {
-                    entity.damage(entity.getDamageSources().magic(), 2.0f);
-                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 10, 1));
-                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 20 * 5, 0));
+                    entity.hurt(entity.damageSources().magic(), 2.0f);
+                    entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 20 * 10, 1));
+                    entity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 20 * 5, 0));
                     if (entity.getRandom().nextInt(5) == 0) {
-                        entity.sendMessage(Text.of("§4由于内膜过度增生，发生了极其严重的撤退性血崩..."));
+                        entity.sendSystemMessage(Component.nullToEmpty("§4由于内膜过度增生，发生了极其严重的撤退性血崩..."));
                     }
-                    ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
+                    ItemStack legStack = entity.getItemBySlot(EquipmentSlot.LEGS);
                     if (!legStack.isEmpty() && legStack.getItem() instanceof PantsuItem) {
                         JRComponents.PantsuState currentState = legStack.get(JRComponents.Companion.getPANTSU_STATE());
                         if (currentState == null || currentState == JRComponents.PantsuState.CLEAN) {
@@ -2494,8 +2498,8 @@ public interface Pregnant{
                 }
             } else {
                 if (entity.getRandom().nextInt(100) == 0) {
-                    entity.damage(entity.getDamageSources().magic(), 1.0f);
-                    ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
+                    entity.hurt(entity.damageSources().magic(), 1.0f);
+                    ItemStack legStack = entity.getItemBySlot(EquipmentSlot.LEGS);
                     if (!legStack.isEmpty() && legStack.getItem() instanceof PantsuItem) {
                         JRComponents.PantsuState currentState = legStack.get(JRComponents.Companion.getPANTSU_STATE());
                         if (currentState == null || currentState == JRComponents.PantsuState.CLEAN) {
@@ -2516,13 +2520,13 @@ public interface Pregnant{
             else if (totalP > 5.0f) {
                 cycle = MenstruationCycle.LUTEINIZATION;
                 if (entity.getRandom().nextInt(300) == 0) {
-                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 20*60, 0));
+                    entity.addEffect(new MobEffectInstance(MobEffects.HUNGER, 20*60, 0));
                 }
             }
             else if (totalE2 > 150.0f && totalP >= 1.0f && totalP <= 5.0f) {
                 cycle = MenstruationCycle.OVULATION;
                 if (entity.getRandom().nextInt(300) == 0) {
-                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 20*60, 0));
+                    entity.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 20*60, 0));
                 }
             }
             else if (totalE2 > 50.0f && totalP < 1.0f) {
@@ -2550,16 +2554,16 @@ public interface Pregnant{
         if (tLevel > 1200.0f) {
             // 1. 通用：代谢过载与严重心血管负担
             if (entity.getRandom().nextInt(100) == 0) { // 暴怒饥饿
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 20 * 15, 2));
+                entity.addEffect(new MobEffectInstance(MobEffects.HUNGER, 20 * 15, 2));
             }
             if (entity.getRandom().nextInt(200) == 0) { // 心脏抽痛
-                entity.damage(entity.getDamageSources().magic(), 3.0f);
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 5, 0));
-                entity.sendMessage(Text.of("§c心脏因为药物负荷传来一阵危险的抽痛..."));
+                entity.hurt(entity.damageSources().magic(), 3.0f);
+                entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 20 * 5, 0));
+                entity.sendSystemMessage(Component.nullToEmpty("§c心脏因为药物负荷传来一阵危险的抽痛..."));
             }
             if (entity.getRandom().nextInt(800) == 0) { // 高血压晕厥
-                entity.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getFAINT_EFFECT()), 20 * 10, 0));
-                entity.sendMessage(Text.of("§c过高的激素引发了高血压，你眼前一黑..."));
+                entity.addEffect(new MobEffectInstance(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getFAINT_EFFECT()), 20 * 10, 0));
+                entity.sendSystemMessage(Component.nullToEmpty("§c过高的激素引发了高血压，你眼前一黑..."));
             }
 
             // 2. 男性专属：毁灭性的前列腺刺激
@@ -2572,7 +2576,7 @@ public interface Pregnant{
             // 3. 女性专属：多囊卵巢与不可逆的男性化
             if (entity.isFemale() && !entity.isPCOS()) {
                 entity.setPCOS(true);
-                entity.sendMessage(Text.of("§c严重过量的雄激素彻底破坏了你的卵巢功能..."));
+                entity.sendSystemMessage(Component.nullToEmpty("§c严重过量的雄激素彻底破坏了你的卵巢功能..."));
             }
         }
 
@@ -2582,17 +2586,17 @@ public interface Pregnant{
         if (eLevel > 800.0f) {
             // 1. 通用：激素中毒与神经刺激
             if (entity.getRandom().nextInt(100) == 0) {
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 15, 1));
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 15, 0));
+                entity.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 20 * 15, 1));
+                entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 20 * 15, 0));
             }
             // 2. 通用：严重水肿与深静脉血栓风险
             if (entity.getRandom().nextInt(150) == 0) {
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 20, 1));
+                entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20 * 20, 1));
             }
             if (entity.getRandom().nextInt(1200) == 0) { // 血栓脱落（致命危险）
-                entity.damage(entity.getDamageSources().generic(), 6.0f);
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, 20 * 5, 1));
-                entity.sendMessage(Text.of("§4胸口一阵剧痛，极高雌激素引发的血栓脱落了！"));
+                entity.hurt(entity.damageSources().generic(), 6.0f);
+                entity.addEffect(new MobEffectInstance(MobEffects.POISON, 20 * 5, 1));
+                entity.sendSystemMessage(Component.nullToEmpty("§4胸口一阵剧痛，极高雌激素引发的血栓脱落了！"));
             }
 
             // 3. 女性专属：生殖系统病变
@@ -2630,22 +2634,22 @@ public interface Pregnant{
         }
 
         // 应用攻击力
-        var damageAttr = entity.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE);
+        var damageAttr = entity.getAttribute(Attributes.ATTACK_DAMAGE);
         if (damageAttr != null) {
             damageAttr.removeModifier(TESTOSTERONE_ID);
             if (tBonusDamage > 0) {
-                damageAttr.addTemporaryModifier(new EntityAttributeModifier(
-                        TESTOSTERONE_ID,  tBonusDamage, EntityAttributeModifier.Operation.ADD_VALUE));
+                damageAttr.addTransientModifier(new AttributeModifier(
+                        TESTOSTERONE_ID,  tBonusDamage, AttributeModifier.Operation.ADD_VALUE));
             }
         }
 
         // 应用血量
-        var healthAttr = entity.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
+        var healthAttr = entity.getAttribute(Attributes.MAX_HEALTH);
         if (healthAttr != null) {
             healthAttr.removeModifier(TESTOSTERONE_ID);
             if (tBonusHealth > 0) {
-                healthAttr.addTemporaryModifier(new EntityAttributeModifier(
-                        TESTOSTERONE_ID, tBonusHealth, EntityAttributeModifier.Operation.ADD_VALUE));
+                healthAttr.addTransientModifier(new AttributeModifier(
+                        TESTOSTERONE_ID, tBonusHealth, AttributeModifier.Operation.ADD_VALUE));
             }
         }
 
@@ -2661,22 +2665,22 @@ public interface Pregnant{
         }
 
         // 应用速度
-        var speedAttr = entity.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);
+        var speedAttr = entity.getAttribute(Attributes.MOVEMENT_SPEED);
         if (speedAttr != null) {
             speedAttr.removeModifier(ESTROGEN_ID);
             if (eBonusSpeed > 0) {
-                speedAttr.addTemporaryModifier(new EntityAttributeModifier(
-                        ESTROGEN_ID,  eBonusSpeed, EntityAttributeModifier.Operation.ADD_VALUE));
+                speedAttr.addTransientModifier(new AttributeModifier(
+                        ESTROGEN_ID,  eBonusSpeed, AttributeModifier.Operation.ADD_VALUE));
             }
         }
 
         // 应用幸运
-        var luckAttr = entity.getAttributeInstance(EntityAttributes.GENERIC_LUCK);
+        var luckAttr = entity.getAttribute(Attributes.LUCK);
         if (luckAttr != null) {
             luckAttr.removeModifier(ESTROGEN_ID);
             if (eBonusLuck > 0) {
-                luckAttr.addTemporaryModifier(new EntityAttributeModifier(
-                        ESTROGEN_ID, eBonusLuck, EntityAttributeModifier.Operation.ADD_VALUE));
+                luckAttr.addTransientModifier(new AttributeModifier(
+                        ESTROGEN_ID, eBonusLuck, AttributeModifier.Operation.ADD_VALUE));
             }
         }
     }
@@ -2705,9 +2709,9 @@ public interface Pregnant{
         // 只有轻微的尿意/便意可能是某种特殊的"费洛蒙" (癖好加成)
         // 但如果已经失禁 (SOILED/WET)，则大幅扣分
         if (this instanceof LivingEntity living) {
-            if (living.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSMEARY_EFFECT())) ||
-                    living.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getAIDS_EFFECT())) ||
-                    living.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSYPHILIS_EFFECT()))) {
+            if (living.hasEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getSMEARY_EFFECT())) ||
+                    living.hasEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getAIDS_EFFECT())) ||
+                    living.hasEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getSYPHILIS_EFFECT()))) {
                 score -= 50.0f; // 有病或脏了，没人喜欢
             } else {
                 // 轻微味道加成
@@ -2729,26 +2733,26 @@ public interface Pregnant{
         if (myScore < 40.0f) return; // 魅力太低，没人理
 
         // 扫描周围 16 格的生物
-        World world = entity.getWorld();
-        List<MobEntity> nearbyEntities = world.getEntitiesByClass(
-                MobEntity.class,
-                entity.getBoundingBox().expand(16.0),
+        Level world = entity.level();
+        List<Mob> nearbyEntities = world.getEntitiesOfClass(
+                Mob.class,
+                entity.getBoundingBox().inflate(16.0),
                 e -> e != entity && e instanceof INeko
         );
 
-        for (MobEntity target : nearbyEntities) {
+        for (Mob target : nearbyEntities) {
             // 只要是 Neko 就被吸引
             if (target instanceof INeko) {
                 // 让 Neko看向你
-                target.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES, entity.getEyePos());
+                target.lookAt(EntityAnchorArgument.Anchor.EYES, entity.getEyePosition());
 
                 // 如果吸引力极高 (排卵期/高激素)，让它们靠近
                 if (myScore > 80.0f) {
-                    target.getNavigation().startMovingTo(entity, 0.3); // 以正常速度靠近
+                    target.getNavigation().moveTo(entity, 0.3); // 以正常速度靠近
 
                     // 极低概率发出爱心 (1/10)
-                    if (entity.getRandom().nextInt(10) == 0 && world instanceof ServerWorld sw) {
-                        sw.spawnParticles(ParticleTypes.HEART,
+                    if (entity.getRandom().nextInt(10) == 0 && world instanceof ServerLevel sw) {
+                        sw.sendParticles(ParticleTypes.HEART,
                                 target.getX(), target.getY() + 1.0, target.getZ(),
                                 1, 0.5, 0.5, 0.5, 0.1);
                     }
@@ -2760,14 +2764,14 @@ public interface Pregnant{
     static <T extends LivingEntity & Pregnant> void cataractTick(T entity) {
         int current = entity.getCataract();
         int increase = 0;
-        World world = entity.getWorld();
-        net.minecraft.util.math.BlockPos pos = entity.getBlockPos();
+        Level world = entity.level();
+        net.minecraft.core.BlockPos pos = entity.blockPosition();
 
         // --- 1. 紫外线诱因 (光照) ---
         // 判定：白天 + 露天 + 亮度高
-        if (world.isDay() && world.getLightLevel(net.minecraft.world.LightType.SKY, pos) >= 14 && world.isSkyVisible(pos)) {
+        if (world.isDay() && world.getBrightness(net.minecraft.world.level.LightLayer.SKY, pos) >= 14 && world.canSeeSky(pos)) {
             // 检查是否有头部装备 (视为墨镜/帽子)
-            ItemStack headStack = entity.getEquippedStack(EquipmentSlot.HEAD);
+            ItemStack headStack = entity.getItemBySlot(EquipmentSlot.HEAD);
             if (headStack.isEmpty()) {
                 // 无保护，UV 伤害积累
                 if (entity.getRandom().nextInt(100) == 0) increase++;
@@ -2788,9 +2792,9 @@ public interface Pregnant{
         // --- 4. 高亮度眩光惩罚 (逻辑层) ---
         // 如果到了中期(Stage 2)，且直视阳光或高亮环境，偶尔给予反胃
         if (current > CATARACT_STAGE_2) {
-            if (world.getLightLevel(pos) > 12) {
+            if (world.getMaxLocalRawBrightness(pos) > 12) {
                 if (entity.getRandom().nextInt(1200) == 0) { // 1分钟一次
-                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 5));
+                    entity.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 20 * 5));
                 }
             }
         }
@@ -2822,7 +2826,7 @@ public interface Pregnant{
             }
         }
         // 3. 颠簸判定 (骑乘)
-        if (entity.hasVehicle()) {
+        if (entity.isPassenger()) {
             if (entity.getRandom().nextInt(5000) == 0) {
                 entity.ruptureCorpusLuteum("剧烈颠簸");
             }
@@ -2839,14 +2843,14 @@ public interface Pregnant{
 
         boolean isSevere = entity.isSevereCorpusLuteumRupture();
         // 判定是否处于静养状态（睡觉、潜行，或速度极慢且没疾跑没骑乘）
-        boolean isResting = entity.isSleeping() || entity.isSneaking() ||
-                (!entity.isSprinting() && !entity.hasVehicle() && entity.getVelocity().lengthSquared() < 0.01);
+        boolean isResting = entity.isSleeping() || entity.isShiftKeyDown() ||
+                (!entity.isSprinting() && !entity.isPassenger() && entity.getDeltaMovement().lengthSqr() < 0.01);
 
         // 1. 出血量变化逻辑
         int delta = 1; // 默认每 tick 出血量增加 1
         if (!isSevere && isResting) {
             delta = -2; // 轻症且静养，身体自我吸收（数值下降，加速愈合）
-        } else if (entity.isSprinting() || entity.hasVehicle()) {
+        } else if (entity.isSprinting() || entity.isPassenger()) {
             delta = 3;  // 不管轻重症，剧烈运动都会加速出血
         }
 
@@ -2856,7 +2860,7 @@ public interface Pregnant{
         if (current <= 0) {
             entity.setCorpusLuteumRupture(0);
             entity.setSevereCorpusLuteumRupture(false);
-            entity.sendMessage(Text.of("§a经过休息，腹部的隐痛逐渐消失了...（黄体破裂已自愈）"));
+            entity.sendSystemMessage(Component.nullToEmpty("§a经过休息，腹部的隐痛逐渐消失了...（黄体破裂已自愈）"));
             return;
         }
 
@@ -2865,7 +2869,7 @@ public interface Pregnant{
         // 2. 并发症：引发流产
         // 现实中黄体主要维持早孕，黄体破裂极易导致流产
         if (entity.isPregnant() && entity.getRandom().nextInt(2000) == 0) {
-            entity.sendMessage(Text.of("§c内出血与黄体受损导致了流产..."));
+            entity.sendSystemMessage(Component.nullToEmpty("§c内出血与黄体受损导致了流产..."));
             entity.miscarry();
         }
 
@@ -2873,7 +2877,7 @@ public interface Pregnant{
         // 给玩家造成强烈的虚假便意（肛门坠胀感）
         if (entity.getRandom().nextInt(800) == 0) {
             entity.setExcretion(entity.getExcretion() + 20 * 60); // 强行增加1分钟的便意值
-            entity.sendMessage(Text.of("§e腹腔积血压迫直肠，传来强烈的坠胀感..."));
+            entity.sendSystemMessage(Component.nullToEmpty("§e腹腔积血压迫直肠，传来强烈的坠胀感..."));
         }
 
         // 4. 症状表现
@@ -2881,43 +2885,43 @@ public interface Pregnant{
             // 【轻症症状】
             // 偶尔隐痛
             if (entity.getRandom().nextInt(1200) == 0) {
-                entity.damage(entity.getDamageSources().magic(), 0.5f);
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20 * 5, 0));
+                entity.hurt(entity.damageSources().magic(), 0.5f);
+                entity.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 20 * 5, 0));
             }
 
             // 轻症作死惩罚：积血多且剧烈活动，有概率恶化为重症
             if (current > 20 * 60 * 3 && (entity.isSprinting() || entity.fallDistance > 2.0f)) {
                 if (entity.getRandom().nextInt(200) == 0) {
                     entity.setSevereCorpusLuteumRupture(true);
-                    entity.sendMessage(Text.of("§c糟糕！剧烈活动导致黄体破裂口扩大，转为大出血！"));
-                    entity.damage(entity.getDamageSources().generic(), 2.0f);
-                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 10, 0));
+                    entity.sendSystemMessage(Component.nullToEmpty("§c糟糕！剧烈活动导致黄体破裂口扩大，转为大出血！"));
+                    entity.hurt(entity.damageSources().generic(), 2.0f);
+                    entity.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 20 * 10, 0));
                 }
             }
         } else {
             // 【重症症状】
             // 频繁的内出血伤害
             if (entity.getRandom().nextInt(200) == 0) {
-                entity.damage(entity.getDamageSources().magic(), 1.0f);
+                entity.hurt(entity.damageSources().magic(), 1.0f);
             }
 
             // 阶段 A: 失血 3 分钟以上 -> 头晕目眩
             if (current > 20 * 60 * 3) {
                 if (entity.getRandom().nextInt(400) == 0) {
-                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 15, 0));
-                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 20 * 5, 0));
+                    entity.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 20 * 15, 0));
+                    entity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 20 * 5, 0));
                 }
             }
 
             // 阶段 B: 失血 8 分钟以上 -> 休克昏迷，濒死
             if (current > 20 * 60 * 8) {
                 if (entity.getRandom().nextInt(400) == 0) {
-                    entity.addStatusEffect(new StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getFAINT_EFFECT()), 20 * 30, 0));
-                    entity.sendMessage(Text.of("§c由于大量内出血，你陷入了失血性休克..."));
+                    entity.addEffect(new MobEffectInstance(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getFAINT_EFFECT()), 20 * 30, 0));
+                    entity.sendSystemMessage(Component.nullToEmpty("§c由于大量内出血，你陷入了失血性休克..."));
                 }
                 // 不治疗有极高致死率
                 if (entity.getRandom().nextInt(600) == 0) {
-                    entity.damage(entity.getDamageSources().generic(), 4.0f);
+                    entity.hurt(entity.damageSources().generic(), 4.0f);
                 }
             }
         }
@@ -2935,13 +2939,13 @@ public interface Pregnant{
         // 意味着核心扫描逻辑平均每 100 tick (5秒) 才会真正执行一次，极大节省服务器性能
         if (entity.getRandom().nextInt(10) != 0) return;
 
-        World world = entity.getWorld();
-        if (world.isClient) return; // 只在服务端执行逻辑
+        Level world = entity.level();
+        if (world.isClientSide) return; // 只在服务端执行逻辑
 
         // 3. 雷达扫描：寻找半径 8 格内的“贴贴”对象
-        List<LivingEntity> partners = world.getEntitiesByClass(
+        List<LivingEntity> partners = world.getEntitiesOfClass(
                 LivingEntity.class,
-                entity.getBoundingBox().expand(8.0),
+                entity.getBoundingBox().inflate(8.0),
                 e -> e != entity && e instanceof Pregnant p && p.isYuri()
         );
 
@@ -2956,15 +2960,15 @@ public interface Pregnant{
         int criticalUrination = (int) (20 * 60 * 20 * 1.2);
         int criticalExcretion = (int) (20 * 60 * 20 * 0.8);
 
-        boolean entityDirty = entity.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSMEARY_EFFECT())) ||
-                entity.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getAIDS_EFFECT())) ||
-                entity.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSYPHILIS_EFFECT())) ||
+        boolean entityDirty = entity.hasEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getSMEARY_EFFECT())) ||
+                entity.hasEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getAIDS_EFFECT())) ||
+                entity.hasEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getSYPHILIS_EFFECT())) ||
                 entity.getUrination() > criticalUrination ||
                 entity.getExcretion() > criticalExcretion;
 
-        boolean partnerDirty = partnerEntity.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSMEARY_EFFECT())) ||
-                partnerEntity.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getAIDS_EFFECT())) ||
-                partnerEntity.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSYPHILIS_EFFECT())) ||
+        boolean partnerDirty = partnerEntity.hasEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getSMEARY_EFFECT())) ||
+                partnerEntity.hasEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getAIDS_EFFECT())) ||
+                partnerEntity.hasEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getSYPHILIS_EFFECT())) ||
                 partner.getUrination() > criticalUrination ||
                 partner.getExcretion() > criticalExcretion;
 
@@ -2972,8 +2976,8 @@ public interface Pregnant{
         if (!entityDirty && !partnerDirty) {
             // 只要双方干净健康，每次扫描到就赋予 200 tick (10秒) 的百合花香效果
             // 这样只要贴在一起，Buff 就会不断刷新
-            entity.addStatusEffect(new StatusEffectInstance(
-                    Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getLILY_PHEROMONE_EFFECT()),
+            entity.addEffect(new MobEffectInstance(
+                    BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getLILY_PHEROMONE_EFFECT()),
                     200,
                     0,
                     false,
@@ -3016,7 +3020,7 @@ public interface Pregnant{
 
             // 产奶消耗身体能量，给予饥饿效果
             if (entity.getRandom().nextInt(800) == 0) {
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.HUNGER, 20 * 10, 0));
+                entity.addEffect(new MobEffectInstance(MobEffects.HUNGER, 20 * 10, 0));
             }
         }
         // 4. 胀奶与溢乳惩罚
@@ -3027,10 +3031,10 @@ public interface Pregnant{
             // 阶段 A: 溢乳 (弄湿衣服)
             if (entity.getRandom().nextInt(1200) == 0) {
                 entity.setMilk(maxMilk * 0.9f); // 溢出一点点
-                entity.sendMessage(Text.of("§e胸前湿透了...乳汁不受控制地溢了出来..."));
+                entity.sendSystemMessage(Component.nullToEmpty("§e胸前湿透了...乳汁不受控制地溢了出来..."));
 
                 // 弄湿胖次 (复用你的排泄弄脏逻辑)
-                ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
+                ItemStack legStack = entity.getItemBySlot(EquipmentSlot.LEGS);
                 if (!legStack.isEmpty() && legStack.getItem() instanceof PantsuItem) {
                     JRComponents.PantsuState currentState = legStack.get(JRComponents.Companion.getPANTSU_STATE());
                     if (currentState == null || currentState == JRComponents.PantsuState.CLEAN) {
@@ -3042,17 +3046,17 @@ public interface Pregnant{
             // 阶段 B: 严重胀痛
             if (mastitis > 20 * 60 * 5) { // 憋奶 5 分钟
                 if (entity.getRandom().nextInt(400) == 0) {
-                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 15, 0));
-                    entity.sendMessage(Text.of("§c由于严重胀奶，胸部感到沉甸甸的痛楚，急需排空..."));
+                    entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20 * 15, 0));
+                    entity.sendSystemMessage(Component.nullToEmpty("§c由于严重胀奶，胸部感到沉甸甸的痛楚，急需排空..."));
                 }
             }
 
             // 阶段 C: 乳腺炎发烧
             if (mastitis > 20 * 60 * 10) { // 憋奶 10 分钟
                 if (entity.getRandom().nextInt(200) == 0) {
-                    entity.damage(entity.getDamageSources().magic(), 1.0f); // 持续掉血
-                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 20, 1));
-                    entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 5, 0)); // 发烧反胃
+                    entity.hurt(entity.damageSources().magic(), 1.0f); // 持续掉血
+                    entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 20 * 20, 1));
+                    entity.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 20 * 5, 0)); // 发烧反胃
                 }
             }
         }
@@ -3077,11 +3081,11 @@ public interface Pregnant{
                 if (entity.getRandom().nextInt(10) == 0) incontinence--;
 
                 // 凯格尔运动：如果玩家在潜行（蹲起），模拟锻炼盆底肌，恢复速度提升 10 倍！
-                if (entity.isSneaking() && entity.getRandom().nextInt(2) == 0) {
+                if (entity.isShiftKeyDown() && entity.getRandom().nextInt(2) == 0) {
                     incontinence -= 2;
                     // 偶尔给一点正反馈
                     if (entity.getRandom().nextInt(1000) == 0) {
-                        entity.sendMessage(Text.of("§a随着不断的收缩锻炼，你感觉盆底肌肉逐渐恢复了力量..."));
+                        entity.sendSystemMessage(Component.nullToEmpty("§a随着不断的收缩锻炼，你感觉盆底肌肉逐渐恢复了力量..."));
                     }
                 }
             }
@@ -3096,7 +3100,7 @@ public interface Pregnant{
         int stage3 = 20 * 60 * 20 * 12; // 重度：积累 > 12天
 
         int currentUrine = entity.getUrination();
-        ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
+        ItemStack legStack = entity.getItemBySlot(EquipmentSlot.LEGS);
         boolean hasDiaper = !legStack.isEmpty() && legStack.getItem() instanceof DiaperItem;
         boolean hasPantsu = !legStack.isEmpty() && legStack.getItem() instanceof PantsuItem;
 
@@ -3108,18 +3112,18 @@ public interface Pregnant{
             if (hasDiaper) {
                 // 漏进尿布
                 legStack.set(JRComponents.Companion.getPANTSU_STATE(), JRComponents.PantsuState.SOILED);
-                entity.sendMessage(Text.of("§e啊...尿布湿透了..."));
+                entity.sendSystemMessage(Component.nullToEmpty("§e啊...尿布湿透了..."));
             } else if (hasPantsu) {
                 // 弄湿胖次
                 JRComponents.PantsuState currentState = legStack.get(JRComponents.Companion.getPANTSU_STATE());
                 if (currentState == null || currentState == JRComponents.PantsuState.CLEAN) {
                     legStack.set(JRComponents.Companion.getPANTSU_STATE(), JRComponents.PantsuState.WET);
-                    entity.sendMessage(Text.of("§e没忍住...漏出来把胖次弄湿了..."));
+                    entity.sendSystemMessage(Component.nullToEmpty("§e没忍住...漏出来把胖次弄湿了..."));
                 }
             } else {
                 // 光着身子漏尿，流到腿上
-                entity.addStatusEffect(new StatusEffectInstance(
-                        Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getSMEARY_EFFECT()),
+                entity.addEffect(new MobEffectInstance(
+                        BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getSMEARY_EFFECT()),
                         20 * 60 * 2, 0, false, false, true
                 ));
             }
@@ -3141,7 +3145,7 @@ public interface Pregnant{
             // 原本能憋 1.5 天，现在只要达到 0.4 天，随时可能失控全尿出来
             if (currentUrine > 20 * 60 * 20 * 0.4) {
                 if (entity.getRandom().nextInt(600) == 0) {
-                    entity.sendMessage(Text.of("§c一阵强烈的尿意突然袭来，括约肌彻底失守了！"));
+                    entity.sendSystemMessage(Component.nullToEmpty("§c一阵强烈的尿意突然袭来，括约肌彻底失守了！"));
                     doLeak.accept(currentUrine); // 全部漏光
                 }
             }
@@ -3155,11 +3159,11 @@ public interface Pregnant{
                 String cause = "";
 
                 // 受到伤害（比如被打、摔伤）
-                if (entity.hurtTime == entity.maxHurtTime && entity.maxHurtTime > 0) {
+                if (entity.hurtTime == entity.hurtDuration && entity.hurtDuration > 0) {
                     if (entity.getRandom().nextInt(3) == 0) { pressureEvent = true; cause = "遭到猛烈撞击"; }
                 }
                 // 从高处坠落落地瞬间
-                else if (entity.fallDistance > 3.0f && entity.isOnGround()) {
+                else if (entity.fallDistance > 3.0f && entity.onGround()) {
                     if (entity.getRandom().nextInt(2) == 0) { pressureEvent = true; cause = "落地冲击"; }
                 }
                 // 疾跑拉扯盆底肌
@@ -3171,7 +3175,7 @@ public interface Pregnant{
                     // 漏出部分尿液 (大约 10 分钟的量)
                     doLeak.accept(20 * 60 * 10);
                     if (!hasDiaper) {
-                        entity.sendMessage(Text.of("§7因为" + cause + "，腹部一紧，不小心漏出了一点尿..."));
+                        entity.sendSystemMessage(Component.nullToEmpty("§7因为" + cause + "，腹部一紧，不小心漏出了一点尿..."));
                     }
                 }
             }
@@ -3196,20 +3200,20 @@ public interface Pregnant{
             entity.setNailRegrowTime(regrow);
             if (regrow <= 0) {
                 entity.setNailRemoved(false);
-                entity.sendMessage(Text.of("§a经过了漫长的等待，你的趾甲终于重新长好了！"));
+                entity.sendSystemMessage(Component.nullToEmpty("§a经过了漫长的等待，你的趾甲终于重新长好了！"));
             }
         }
 
         // --- 1. 无活动感染时的诱因检测 ---
         if (current <= 0) {
-            entity.removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getPARONYCHIA_EFFECT()));
+            entity.removeEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getPARONYCHIA_EFFECT()));
             // 如果趾甲缺失，甲床仍然脆弱，但没有活动感染时就是健康的
             return;
         }
 
         // --- 2. 给予甲沟炎状态效果图标 ---
-        entity.addStatusEffect(new StatusEffectInstance(
-                Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getPARONYCHIA_EFFECT()),
+        entity.addEffect(new MobEffectInstance(
+                BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getPARONYCHIA_EFFECT()),
                 current, 0, false, false, true
         ));
 
@@ -3217,11 +3221,11 @@ public interface Pregnant{
         int envAccel = 0;
 
         // A. 赤脚在粗糙地面上 → 加速感染
-        ItemStack footStack = entity.getEquippedStack(EquipmentSlot.FEET);
+        ItemStack footStack = entity.getItemBySlot(EquipmentSlot.FEET);
         boolean isBarefoot = footStack.isEmpty();
-        if (isBarefoot && entity.isOnGround()) {
-            BlockPos pos = entity.getBlockPos();
-            net.minecraft.block.Block blockBelow = entity.getWorld().getBlockState(pos.down()).getBlock();
+        if (isBarefoot && entity.onGround()) {
+            BlockPos pos = entity.blockPosition();
+            net.minecraft.world.level.block.Block blockBelow = entity.level().getBlockState(pos.below()).getBlock();
             boolean isRough = blockBelow == Blocks.STONE || blockBelow == Blocks.COBBLESTONE
                     || blockBelow == Blocks.GRAVEL || blockBelow == Blocks.DIRT_PATH
                     || blockBelow == Blocks.ANDESITE || blockBelow == Blocks.GRANITE
@@ -3236,7 +3240,7 @@ public interface Pregnant{
         }
 
         // B. 潮湿环境 → 细菌滋生
-        if (entity.isTouchingWater() || entity.isSubmergedInWater()) {
+        if (entity.isInWater() || entity.isUnderWater()) {
             if (entity.getRandom().nextInt(300) == 0) envAccel++;
         }
 
@@ -3252,15 +3256,15 @@ public interface Pregnant{
 
         // --- 4. 温水浸泡治疗 ---
         boolean isInWarmWater = false;
-        if (entity.isSubmergedInWater() || entity.isTouchingWater()) {
+        if (entity.isUnderWater() || entity.isInWater()) {
             // 检测附近是否有热源
-            World world = entity.getWorld();
-            boolean nearHeat = world.getStatesInBoxIfLoaded(entity.getBoundingBox().expand(3.0)).anyMatch(state ->
-                    state.isOf(Blocks.FIRE) || state.isOf(Blocks.SOUL_FIRE)
-                            || state.isOf(Blocks.LAVA) || state.isOf(Blocks.CAMPFIRE)
-                            || state.isOf(Blocks.SOUL_CAMPFIRE) || state.isOf(Blocks.MAGMA_BLOCK)
-                            || state.isOf(Blocks.TORCH) || state.isOf(Blocks.SOUL_TORCH)
-                            || state.isOf(Blocks.LANTERN) || state.isOf(Blocks.SOUL_LANTERN)
+            Level world = entity.level();
+            boolean nearHeat = world.getBlockStatesIfLoaded(entity.getBoundingBox().inflate(3.0)).anyMatch(state ->
+                    state.is(Blocks.FIRE) || state.is(Blocks.SOUL_FIRE)
+                            || state.is(Blocks.LAVA) || state.is(Blocks.CAMPFIRE)
+                            || state.is(Blocks.SOUL_CAMPFIRE) || state.is(Blocks.MAGMA_BLOCK)
+                            || state.is(Blocks.TORCH) || state.is(Blocks.SOUL_TORCH)
+                            || state.is(Blocks.LANTERN) || state.is(Blocks.SOUL_LANTERN)
             );
             if (nearHeat) {
                 isInWarmWater = true;
@@ -3268,7 +3272,7 @@ public interface Pregnant{
                 entity.setParonychia(Math.max(0, current - 5));
                 current = entity.getParonychia();
                 if (entity.getRandom().nextInt(3000) == 0) {
-                    entity.sendMessage(Text.of("§a温水缓解了脚趾的胀痛..."));
+                    entity.sendSystemMessage(Component.nullToEmpty("§a温水缓解了脚趾的胀痛..."));
                 }
             }
         }
@@ -3282,8 +3286,8 @@ public interface Pregnant{
         }
 
         if (current <= 0) {
-            entity.removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getPARONYCHIA_EFFECT()));
-            entity.sendMessage(Text.of("§a你的甲沟炎终于痊愈了！脚趾不再疼痛。"));
+            entity.removeEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getPARONYCHIA_EFFECT()));
+            entity.sendSystemMessage(Component.nullToEmpty("§a你的甲沟炎终于痊愈了！脚趾不再疼痛。"));
             return;
         }
 
@@ -3292,11 +3296,11 @@ public interface Pregnant{
         // === 第一阶段：红肿期 (0-2天) ===
         if (current < entity.PARONYCHIA_STAGE_1) {
             // 赤脚走路偶尔磕到
-            if (isBarefoot && entity.isOnGround() && entity.getRandom().nextInt(1200) == 0) {
+            if (isBarefoot && entity.onGround() && entity.getRandom().nextInt(1200) == 0) {
                 entity.triggerParonychiaBump("走路时脚趾蹭到了地面");
             }
             // 疾跑更容易踢到东西
-            if (entity.isSprinting() && entity.isOnGround() && entity.getRandom().nextInt(800) == 0) {
+            if (entity.isSprinting() && entity.onGround() && entity.getRandom().nextInt(800) == 0) {
                 entity.triggerParonychiaBump("疾跑时狠狠踢到了石头");
             }
         }
@@ -3304,15 +3308,15 @@ public interface Pregnant{
         // === 第二阶段：化脓期 (2-5天) ===
         if (current >= entity.PARONYCHIA_STAGE_1 && current < entity.PARONYCHIA_STAGE_2) {
             // 走路很容易磕到
-            if (entity.isOnGround() && entity.getRandom().nextInt(800) == 0) {
+            if (entity.onGround() && entity.getRandom().nextInt(800) == 0) {
                 entity.triggerParonychiaBump("走路时不小心磕到了发炎的脚趾");
             }
             // 疾跑更加危险
-            if (entity.isSprinting() && entity.isOnGround() && entity.getRandom().nextInt(400) == 0) {
+            if (entity.isSprinting() && entity.onGround() && entity.getRandom().nextInt(400) == 0) {
                 entity.triggerParonychiaBump("疾跑中脚趾狠狠撞上了地面");
             }
             // 穿鞋挤压
-            if (!isBarefoot && entity.isOnGround() && entity.getRandom().nextInt(600) == 0) {
+            if (!isBarefoot && entity.onGround() && entity.getRandom().nextInt(600) == 0) {
                 entity.triggerParonychiaBump("靴子挤压到了肿胀的趾头");
             }
         }
@@ -3320,25 +3324,25 @@ public interface Pregnant{
         // === 第三阶段：严重感染 (5-8天) ===
         if (current >= entity.PARONYCHIA_STAGE_2 && current < entity.PARONYCHIA_STAGE_3) {
             // 持续缓慢效果
-            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 10, 0, false, false, true));
+            entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20 * 10, 0, false, false, true));
             // 走路就是赌博
-            if (entity.isOnGround() && entity.getRandom().nextInt(400) == 0) {
+            if (entity.onGround() && entity.getRandom().nextInt(400) == 0) {
                 entity.triggerParonychiaBump("走路的每一步都在蹂躏着感染的脚趾");
             }
             // 疾跑非常危险
-            if (entity.isSprinting() && entity.isOnGround() && entity.getRandom().nextInt(150) == 0) {
+            if (entity.isSprinting() && entity.onGround() && entity.getRandom().nextInt(150) == 0) {
                 entity.triggerParonychiaBump("疾跑的冲击让感染的趾头几乎炸开");
             }
             // 全身感染症状（极少突袭）
             if (entity.getRandom().nextInt(4000) == 0) {
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 20, 0));
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, 20 * 5, 0));
+                entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 20 * 20, 0));
+                entity.addEffect(new MobEffectInstance(MobEffects.POISON, 20 * 5, 0));
             }
             // 自发性脓肿破裂（极少，不提示）
             if (entity.getRandom().nextInt(4000) == 0) {
-                entity.damage(entity.getDamageSources().generic(), 2.0f);
+                entity.hurt(entity.damageSources().generic(), 2.0f);
                 // 弄脏胖次
-                ItemStack legStack = entity.getEquippedStack(EquipmentSlot.LEGS);
+                ItemStack legStack = entity.getItemBySlot(EquipmentSlot.LEGS);
                 if (!legStack.isEmpty() && legStack.getItem() instanceof PantsuItem) {
                     JRComponents.PantsuState pantsuState = legStack.get(JRComponents.Companion.getPANTSU_STATE());
                     if (pantsuState == null || pantsuState == JRComponents.PantsuState.CLEAN) {
@@ -3353,38 +3357,38 @@ public interface Pregnant{
         // === 第四阶段：危险期 (8天+) ===
         if (current >= entity.PARONYCHIA_STAGE_3) {
             // 持续 debuff
-            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 10, 0, false, false, true));
-            entity.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 10, 1, false, false, true));
+            entity.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 20 * 10, 0, false, false, true));
+            entity.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20 * 10, 1, false, false, true));
             // 败血症风险（极少但致命）
             if (entity.getRandom().nextInt(6000) == 0) {
-                entity.damage(entity.getDamageSources().generic(), 6.0f);
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, 20 * 30, 1));
-                entity.addStatusEffect(new StatusEffectInstance(StatusEffects.NAUSEA, 20 * 30, 2));
+                entity.hurt(entity.damageSources().generic(), 6.0f);
+                entity.addEffect(new MobEffectInstance(MobEffects.POISON, 20 * 30, 1));
+                entity.addEffect(new MobEffectInstance(MobEffects.CONFUSION, 20 * 30, 2));
             }
             // 走路就是在玩命
-            if (entity.isOnGround() && entity.getRandom().nextInt(250) == 0) {
+            if (entity.onGround() && entity.getRandom().nextInt(250) == 0) {
                 entity.triggerParonychiaBump("每一步都像踩在刀尖上");
             }
             // 疾跑 = 自杀
-            if (entity.isSprinting() && entity.isOnGround() && entity.getRandom().nextInt(100) == 0) {
+            if (entity.isSprinting() && entity.onGround() && entity.getRandom().nextInt(100) == 0) {
                 entity.triggerParonychiaBump("疾跑让感染的脚趾彻底崩溃");
             }
             // 趾甲自发脱落（极少）
             if (!nailRemoved && entity.getRandom().nextInt(12000) == 0) {
-                entity.damage(entity.getDamageSources().generic(), 6.0f);
+                entity.hurt(entity.damageSources().generic(), 6.0f);
                 entity.setNailRemoved(true);
                 entity.setNailRegrowTime(0);
                 entity.setParonychia(current - 20 * 60 * 20 * 3);
-                entity.dropItem(JRItems.Companion.getMOLE());
+                entity.spawnAtLocation(JRItems.Companion.getMOLE());
             }
 
             // 感染超过12天有致命风险
             if (current >= entity.PARONYCHIA_STAGE_4) {
                 if (entity.getRandom().nextInt(8000) == 0) {
-                    entity.damage(JRDamageTypes.paronychia(entity), 10.0f);
+                    entity.hurt(JRDamageTypes.paronychia(entity), 10.0f);
                 }
                 // 走路几乎必磕
-                if (entity.isOnGround() && entity.getRandom().nextInt(120) == 0) {
+                if (entity.onGround() && entity.getRandom().nextInt(120) == 0) {
                     entity.triggerParonychiaBump("腐烂的脚趾再也经不起任何触碰");
                 }
             }
@@ -3393,7 +3397,7 @@ public interface Pregnant{
         // --- 6. 趾甲缺失时的额外敏感 ---
         if (nailRemoved && current > 0) {
             // 裸露的甲床极为敏感
-            if (isBarefoot && entity.isOnGround() && entity.getRandom().nextInt(600) == 0) {
+            if (isBarefoot && entity.onGround() && entity.getRandom().nextInt(600) == 0) {
                 entity.triggerParonychiaBump("裸露的甲床直接摩擦着地面");
             }
         }
@@ -3421,7 +3425,7 @@ public interface Pregnant{
         if (((Entity)this).getRandom().nextFloat() < effectiveProb) {
             setParonychia(1);
             if (this instanceof LivingEntity entity) {
-                entity.sendMessage(Text.of("§c你的脚趾甲边缘感到一阵灼热和红肿...怕是甲沟炎来了。"));
+                entity.sendSystemMessage(Component.nullToEmpty("§c你的脚趾甲边缘感到一阵灼热和红肿...怕是甲沟炎来了。"));
             }
         }
     }

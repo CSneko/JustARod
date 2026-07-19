@@ -1,13 +1,12 @@
 package org.cneko.justarod.client.screen;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 import org.cneko.justarod.effect.JREffects;
 import org.cneko.justarod.entity.LoliNekoEntity;
 import org.cneko.justarod.entity.Sexual;
@@ -25,7 +24,7 @@ import org.cneko.toneko.common.mod.entities.ToNekoEntities;
 import org.cneko.toneko.common.mod.packets.interactives.NekoMatePayload;
 import java.util.Random;
 
-import static net.minecraft.client.MinecraftClient.getInstance;
+import static net.minecraft.client.Minecraft.getInstance;
 
 public class JRScreenBuilders {
     public static final NekoScreenBuilder SEEEEEX_NEKO_INTERACTIVE_SCREEN = ScreenBuilders.COMMON_START.clone()
@@ -53,74 +52,74 @@ public class JRScreenBuilders {
             .addButton(JRButtonFactories.RAVENN_BREED_RECEIVING_BUTTON);
 
     public static final class JRButtonFactories {
-        public static final ButtonFactory SEEEEEX_NEKO_BREED_BUTTON = screen -> ButtonWidget.builder(Text.translatable("screen.toneko.seeeeeex_neko_entity_interactive.button.breed"), (btn) -> {
+        public static final ButtonFactory SEEEEEX_NEKO_BREED_BUTTON = screen -> Button.builder(Component.translatable("screen.toneko.seeeeeex_neko_entity_interactive.button.breed"), (btn) -> {
             if (screen.getNeko() instanceof Sexual) {
-                if (getInstance().player.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getKENJA_TIME_EFFECT()))){
-                    getInstance().player.sendMessage(Text.of("§c你现在还不想交配!"));
+                if (getInstance().player.hasEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getKENJA_TIME_EFFECT()))){
+                    getInstance().player.sendSystemMessage(Component.nullToEmpty("§c你现在还不想交配!"));
                 }
-                MinecraftClient.getInstance().setScreen(new InteractionScreen(Text.empty(), screen.getNeko(), screen.lastScreen, SEEEEEX_NEKO_BREED_SCREEN));
+                Minecraft.getInstance().setScreen(new InteractionScreen(Component.empty(), screen.getNeko(), screen.lastScreen, SEEEEEX_NEKO_BREED_SCREEN));
             }
         });
-        public static final ButtonFactory SEEEEEX_NEKO_ATTACKING_BUTTON = screen -> ButtonWidget.builder(Text.translatable("screen.toneko.neko_entity_interactive.button.attacking"), (btn) -> {
+        public static final ButtonFactory SEEEEEX_NEKO_ATTACKING_BUTTON = screen -> Button.builder(Component.translatable("screen.toneko.neko_entity_interactive.button.attacking"), (btn) -> {
             // 设置为灰色
             if (getInstance().player.getPower() < 60) {
                 btn.active = false;
-                btn.setTooltip(Tooltip.of(Text.translatable("screen.toneko.neko_entity_interactive.button.attacking.fail"))); // 哼哼~ 不持久我都看不上呢
+                btn.setTooltip(Tooltip.create(Component.translatable("screen.toneko.neko_entity_interactive.button.attacking.fail"))); // 哼哼~ 不持久我都看不上呢
             }else {
                 getInstance().setScreen(new MateScreen(screen.getNeko()));
             }
         });
-        public static final ButtonFactory SEEEEEX_NEKO_RECEIVING_BUTTON = screen -> ButtonWidget.builder(Text.translatable("screen.toneko.neko_entity_interactive.button.receiving"), (btn) -> {
-            PlayerEntity entity = MinecraftClient.getInstance().player;
+        public static final ButtonFactory SEEEEEX_NEKO_RECEIVING_BUTTON = screen -> Button.builder(Component.translatable("screen.toneko.neko_entity_interactive.button.receiving"), (btn) -> {
+            Player entity = Minecraft.getInstance().player;
             if (screen.getNeko().isBaby()) {
                 int i = (new Random()).nextInt(13);
-                MinecraftClient.getInstance().player.sendMessage(Text.translatable("message.toneko.neko.breed_fail_baby." + i)); // FBI! Open door!
+                Minecraft.getInstance().player.sendSystemMessage(Component.translatable("message.toneko.neko.breed_fail_baby." + i)); // FBI! Open door!
             } else {
-                ClientPlayNetworking.send(new PassiveMatingPayload(screen.getNeko().getEntity().getUuid().toString(), entity.getUuid().toString()));
-                MinecraftClient.getInstance().setScreen(screen.lastScreen);
+                ClientPlayNetworking.send(new PassiveMatingPayload(screen.getNeko().getEntity().getUUID().toString(), entity.getUUID().toString()));
+                Minecraft.getInstance().setScreen(screen.lastScreen);
             }
         });
 
-        public static final ButtonFactory RAVENN_BREED_BUTTON = screen -> ButtonWidget.builder(Text.translatable("screen.toneko.neko_entity_interactive.button.breed"), (btn) -> {
+        public static final ButtonFactory RAVENN_BREED_BUTTON = screen -> Button.builder(Component.translatable("screen.toneko.neko_entity_interactive.button.breed"), (btn) -> {
             if (screen.getNeko() instanceof RavennEntity) {
-                MinecraftClient.getInstance().setScreen(new InteractionScreen(Text.empty(), screen.getNeko(), screen.lastScreen, RAVENN_BREED_SCREEN));
+                Minecraft.getInstance().setScreen(new InteractionScreen(Component.empty(), screen.getNeko(), screen.lastScreen, RAVENN_BREED_SCREEN));
             }
         });
-        public static final ButtonFactory RAVENN_BREED_ATTACKING_BUTTON = screen -> ButtonWidget.builder(Text.translatable("screen.toneko.neko_entity_interactive.button.attacking"), (btn) -> {
+        public static final ButtonFactory RAVENN_BREED_ATTACKING_BUTTON = screen -> Button.builder(Component.translatable("screen.toneko.neko_entity_interactive.button.attacking"), (btn) -> {
             // 设置为灰色
             if (getInstance().player.getPower() < 60) {
                 btn.active = false;
-                btn.setTooltip(Tooltip.of(Text.translatable("screen.toneko.neko_entity_interactive.button.attacking.fail"))); // 哼哼~ 不持久我都看不上呢
+                btn.setTooltip(Tooltip.create(Component.translatable("screen.toneko.neko_entity_interactive.button.attacking.fail"))); // 哼哼~ 不持久我都看不上呢
             }
         });
-        public static final ButtonFactory RAVENN_BREED_RECEIVING_BUTTON = screen -> ButtonWidget.builder(Text.translatable("screen.toneko.neko_entity_interactive.button.receiving"), (btn) -> {
-            ClientPlayNetworking.send(new RavennPassiveMatingPayload(screen.getNeko().getEntity().getUuid().toString(), screen.getNeko().getUuid().toString()));
+        public static final ButtonFactory RAVENN_BREED_RECEIVING_BUTTON = screen -> Button.builder(Component.translatable("screen.toneko.neko_entity_interactive.button.receiving"), (btn) -> {
+            ClientPlayNetworking.send(new RavennPassiveMatingPayload(screen.getNeko().getEntity().getUUID().toString(), screen.getNeko().getUUID().toString()));
         });
     }
     public static final class JRTooltipFactories{
         public static final TooltipFactory SEEEEEX_NEKO_SEXUAL_DESIRE_TOOLTIP = screen -> {
             if (screen.getNeko() instanceof Sexual neko){
-                return Text.translatable("screen.justarod.seeeeex_neko_mating.tooltip.sexual_desire",neko.getSexualDesire());
+                return Component.translatable("screen.justarod.seeeeex_neko_mating.tooltip.sexual_desire",neko.getSexualDesire());
             }
-            return Text.translatable("screen.justarod.seeeeex_neko_mating.tooltip.sexual_desire",0);
+            return Component.translatable("screen.justarod.seeeeex_neko_mating.tooltip.sexual_desire",0);
         };
         public static final TooltipFactory SEEEEEX_NEKO_COMPLETE_PRECESS_TOOLTIP = screen -> {
             if (screen.getNeko() instanceof Sexual neko){
-                return Text.translatable("screen.justarod.seeeeex_neko_mating.tooltip.enable_complete_process",neko.enableCompleteProcess()? Text.translatable("misc.toneko.is_or_not.is").getString() : Text.translatable("misc.toneko.is_or_not.not"));
+                return Component.translatable("screen.justarod.seeeeex_neko_mating.tooltip.enable_complete_process",neko.enableCompleteProcess()? Component.translatable("misc.toneko.is_or_not.is").getString() : Component.translatable("misc.toneko.is_or_not.not"));
             }
-            return Text.translatable("screen.justarod.seeeeex_neko_mating.tooltip.enable_complete_process",Text.translatable("misc.toneko.is_or_not.not.not"));
+            return Component.translatable("screen.justarod.seeeeex_neko_mating.tooltip.enable_complete_process",Component.translatable("misc.toneko.is_or_not.not.not"));
         };
         public static final TooltipFactory SEEEEEX_NEKO_AGE_LIMIT_TOOLTIP = screen -> {
             if (screen.getNeko() instanceof Sexual neko){
-                return Text.translatable("screen.justarod.seeeeex_neko_mating.tooltip.enable_age_limit",neko.enableAgeLimit()? Text.translatable("misc.toneko.is_or_not.is").getString() : Text.translatable("misc.toneko.is_or_not.not"));
+                return Component.translatable("screen.justarod.seeeeex_neko_mating.tooltip.enable_age_limit",neko.enableAgeLimit()? Component.translatable("misc.toneko.is_or_not.is").getString() : Component.translatable("misc.toneko.is_or_not.not"));
             }
-            return Text.translatable("screen.justarod.seeeeex_neko_mating.tooltip.enable_age_limit",Text.translatable("misc.toneko.is_or_not.not.not"));
+            return Component.translatable("screen.justarod.seeeeex_neko_mating.tooltip.enable_age_limit",Component.translatable("misc.toneko.is_or_not.not.not"));
         };
         public static final TooltipFactory LOLI_NEKO_SHOWING_AGE = screen -> {
             if (screen.getNeko() instanceof LoliNekoEntity neko){
-                return Text.translatable("screen.justarod.loli_neko.tooltip.showing_age",neko.getShowingAge());
+                return Component.translatable("screen.justarod.loli_neko.tooltip.showing_age",neko.getShowingAge());
             }
-            return Text.translatable("screen.justarod.loli_neko.tooltip.showing_age",18);
+            return Component.translatable("screen.justarod.loli_neko.tooltip.showing_age",18);
         };
     }
 }

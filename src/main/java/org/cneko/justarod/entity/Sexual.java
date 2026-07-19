@@ -1,6 +1,6 @@
 package org.cneko.justarod.entity;
 
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.world.entity.LivingEntity;
 
 /*
 写这个的时候起星雨了

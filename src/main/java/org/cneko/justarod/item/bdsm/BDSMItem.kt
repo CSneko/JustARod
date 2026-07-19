@@ -1,6 +1,6 @@
 package org.cneko.justarod.item.bdsm
 
-import net.minecraft.item.Item
+import net.minecraft.world.item.Item
 
 /*
 这个的话... 名字叫禁言口罩吧... 其实就是... 口求
@@ -8,7 +8,7 @@ import net.minecraft.item.Item
 对方看来的话，甚至还有点... 可爱呢？
 哎呀，戴久了要流口水的喵~
  */
-class BallMouthItem(settings: Settings) : AbstractBDSMItem(
+class BallMouthItem(properties: Properties) : AbstractBDSMItem(
     settings,
     { it.ballMouth },
     { e, v -> e.ballMouth = v },
@@ -19,7 +19,7 @@ class BallMouthItem(settings: Settings) : AbstractBDSMItem(
 /*
 喂喂，你还在想什么不正经的用途呢
  */
-class EarplugItem(settings: Settings) : AbstractBDSMItem(
+class EarplugItem(properties: Properties) : AbstractBDSMItem(
     settings,
     { it.earplug },
     { e, v -> e.earplug = v },
@@ -30,7 +30,7 @@ class EarplugItem(settings: Settings) : AbstractBDSMItem(
 /*
 我没试过...
  */
-class BindingRopeItem(settings: Settings) : AbstractBDSMItem(
+class BindingRopeItem(properties: Properties) : AbstractBDSMItem(
     settings,
     { it.bundled },
     { e, v -> e.bundled = v },
@@ -38,7 +38,7 @@ class BindingRopeItem(settings: Settings) : AbstractBDSMItem(
     "成功插入封禁绳~"
 )
 
-class ElectricShockDeviceItem(settings: Settings) : AbstractBDSMItem(
+class ElectricShockDeviceItem(properties: Properties) : AbstractBDSMItem(
     settings,
     { it.electricShock },
     { e, v -> e.electricShock = v },
@@ -47,7 +47,7 @@ class ElectricShockDeviceItem(settings: Settings) : AbstractBDSMItem(
     20 * 60 * 20
 )
 
-class EyePatchItem(settings: Settings) : AbstractBDSMItem(
+class EyePatchItem(properties: Properties) : AbstractBDSMItem(
     settings,
     { it.eyePatch },
     { e, v -> e.eyePatch = v },
@@ -58,7 +58,7 @@ class EyePatchItem(settings: Settings) : AbstractBDSMItem(
 /*
 大哥哥，喝茶~
  */
-class HandcuffesItem(settings: Settings) : AbstractBDSMItem(
+class HandcuffesItem(properties: Properties) : AbstractBDSMItem(
     settings,
     { it.handcuffed },
     { e, v -> e.handcuffed = v },
@@ -66,7 +66,7 @@ class HandcuffesItem(settings: Settings) : AbstractBDSMItem(
     "成功插入手铐~"
 )
 
-class ShacklesItem(settings: Settings) : AbstractBDSMItem(
+class ShacklesItem(properties: Properties) : AbstractBDSMItem(
     settings,
     { it.shackled },
     { e, v -> e.shackled = v },
@@ -77,7 +77,7 @@ class ShacklesItem(settings: Settings) : AbstractBDSMItem(
 /*
 听说你们小南梁喜欢这个？
  */
-class NoMatingPlz(settings: Item.Settings): AbstractBDSMItem(
+class NoMatingPlz(settings: Item.Properties): AbstractBDSMItem(
     settings,
     { it.noMatingPlz },
     { e, v -> e.noMatingPlz = v },

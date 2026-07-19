@@ -1,17 +1,17 @@
 package org.cneko.justarod.item.rod
 
-import net.minecraft.entity.Entity
-import net.minecraft.entity.EntityType
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.effect.StatusEffectInstance
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.item.tooltip.TooltipType
-import net.minecraft.registry.Registries
-import net.minecraft.text.Text
-import net.minecraft.util.ActionResult
-import net.minecraft.world.World
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.effect.MobEffectInstance
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.TooltipFlag
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.network.chat.Component
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.level.Level
 import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.item.JRComponents
 
@@ -23,19 +23,19 @@ class GiantRodItem: OtherUsedItem(Settings().maxCount(1).maxDamage(1000).compone
         return entity.type.equals(EntityType.ENDER_DRAGON)
     }
 
-    override fun useOnOther(stack: ItemStack, world: World?, user: PlayerEntity, target: LivingEntity): ActionResult {
-        if (super.useOnOther(stack, world, user, target) == ActionResult.FAIL) {
-            user.sendMessage(Text.translatable("item.justarod.giant_rod.too_big"))
-            return ActionResult.FAIL
+    override fun useOnOther(stack: ItemStack, world: Level?, user: Player, target: LivingEntity): InteractionResult {
+        if (super.useOnOther(stack, world, user, target) == InteractionResult.FAIL) {
+            user.sendSystemMessage(Component.translatable("item.justarod.giant_rod.too_big"))
+            return InteractionResult.FAIL
         }
         // 给目标实体高潮效果
         JREffects.ORGASM_EFFECT?.let {
-            val orgasm = StatusEffectInstance(Registries.STATUS_EFFECT.getEntry(it), 100, 0)
-            target.addStatusEffect(orgasm)
+            val orgasm = MobEffectInstance(BuiltInRegistries.MOB_EFFECT.getOrThrow(it), 100, 0)
+            target.addEffect(orgasm)
         }
         // 掉一颗龙蛋
         target.dropItem(Items.DRAGON_EGG)
-        return ActionResult.SUCCESS
+        return InteractionResult.SUCCESS
     }
 
     override fun getInstruction(): EndRodInstructions {
@@ -45,11 +45,11 @@ class GiantRodItem: OtherUsedItem(Settings().maxCount(1).maxDamage(1000).compone
     override fun appendTooltip(
         stack: ItemStack?,
         context: TooltipContext?,
-        tooltip: MutableList<Text>?,
-        type: TooltipType?
+        tooltip: MutableList<Component>?,
+        type: TooltipFlag?
     ) {
-        super.appendTooltip(stack, context, tooltip, type)
-        tooltip?.add(Text.translatable("item.justarod.giant_rod.tooltip"))
+        super.appendHoverText(stack, context, tooltip, type)
+        tooltip?.add(Component.translatable("item.justarod.giant_rod.tooltip"))
     }
 
 

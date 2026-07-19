@@ -1,15 +1,15 @@
 package org.cneko.justarod.damage
 
-import net.minecraft.entity.Entity
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.damage.DamageSource
-import net.minecraft.entity.damage.DamageType
-import net.minecraft.registry.entry.RegistryEntry
-import net.minecraft.text.Text
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.damagesource.DamageSource
+import net.minecraft.world.damagesource.DamageType
+import net.minecraft.core.Holder
+import net.minecraft.network.chat.Component
 
-class KilledByParonychia(type: RegistryEntry<DamageType>?, entity: Entity?) :
+class KilledByParonychia(type: Holder<DamageType>?, entity: Entity?) :
     DamageSource(type, entity) {
-    override fun getDeathMessage(killed: LivingEntity?): Text {
-        return Text.translatable("death.attack.paronychia", killed!!.displayName)
+    override fun getLocalizedDeathMessage(killed: LivingEntity?): Component {
+        return Component.translatable("death.attack.paronychia", killed!!.displayName)
     }
 }

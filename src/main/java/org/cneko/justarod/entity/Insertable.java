@@ -1,7 +1,7 @@
 package org.cneko.justarod.entity;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 /*
@@ -23,7 +23,7 @@ public interface Insertable {
         if (hasRodInside()){
             var stack = this.getRodInside();
             var item = stack.getItem();
-            item.inventoryTick(stack, entity.getWorld(), entity, Integer.MIN_VALUE, false);
+            item.inventoryTick(stack, entity.level(), entity, Integer.MIN_VALUE, false);
         }
     }
 }

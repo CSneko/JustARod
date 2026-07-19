@@ -1,9 +1,9 @@
 package org.cneko.justarod.event
 
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.particle.ParticleTypes
-import net.minecraft.server.world.ServerWorld
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.entity.player.Player
+import net.minecraft.core.particles.ParticleTypes
+import net.minecraft.server.level.ServerLevel
 import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.entity.Pregnant
 import org.cneko.justarod.item.rod.addEffect
@@ -17,17 +17,17 @@ object YuriKissManager {
     // 记录实体上一次触发亲亲的时间戳，防止每 tick 都在疯狂冒爱心（冷却设为 1 秒）
     private val lastKissTime = ConcurrentHashMap<UUID, Long>()
 
-    fun onWorldTick(world: ServerWorld) {
+    fun onWorldTick(world: ServerLevel) {
         // 每 10 tick (0.5秒) 检查一次，大幅节省服务器性能
-        if (world.time % 10L != 0L) return
+        if (world.gameTime % 10L != 0L) return
 
         // 遍历世界中的玩家，以玩家为中心搜索附近 32 格的实体。
         // 这样既能实现 玩家x玩家、玩家x猫娘，也能实现玩家视距内的 猫娘x猫娘。
-        for (player in world.players) {
-            val box = player.boundingBox.expand(32.0)
+        for (player in world.players()) {
+            val box = player.boundingBox.inflate(32.0)
 
             // 找出所有正在潜行（蹲下）且符合百合条件的实体
-            val candidates = world.getEntitiesByClass(LivingEntity::class.java, box) {
+            val candidates = world.getEntitiesOfClass(LivingEntity::class.java, box) {
                 isReadyYuriKiss(it)
             }
 
@@ -44,16 +44,16 @@ object YuriKissManager {
 
                     // 检查 e2 的冷却
                     val time2 = lastKissTime[e2.uuid] ?: 0L
-                    if (world.time - time2 < 20L) continue
+                    if (world.gameTime - time2 < 20L) continue
 
                     // 1. 距离判定 (距离平方 < 2.25，即实际距离 < 1.5格)
-                    if (e1.squaredDistanceTo(e2) > 2.25) continue
+                    if (e1.distanceToSqr(e2) > 2.25) continue
 
                     // 2. 面朝向判定 (互相看着对方)
                     if (isFaceToFace(e1, e2)) {
                         // 触发贴贴！重置冷却时间
-                        lastKissTime[e1.uuid] = world.time
-                        lastKissTime[e2.uuid] = world.time
+                        lastKissTime[e1.uuid] = world.gameTime
+                        lastKissTime[e2.uuid] = world.gameTime
 
                         applyKissEffect(e1, e2, world)
                         break // e1 已经匹配成功，跳出内层循环，不再同时和第三个人亲
@@ -77,7 +77,7 @@ object YuriKissManager {
 
         // 如果是玩家，还要蹲下
         var sneaking = true
-        if (entity is PlayerEntity && !entity.isSneaking) {
+        if (entity is Player && !entity.isShiftKeyDown()) {
             sneaking = false
         }
         return pregnant != null && pregnant.isYuri && sneaking
@@ -92,7 +92,7 @@ object YuriKissManager {
         val look2 = e2.rotationVector.normalize()
 
         // 计算 e1 指向 e2 的位置方向向量
-        val vec1To2 = e2.eyePos.subtract(e1.eyePos).normalize()
+        val vec1To2 = e2.getEyePosition().subtract(e1.eyePos).normalize()
         val vec2To1 = vec1To2.negate() // 反过来就是 e2 指向 e1
 
         // 计算点乘（判断视线和位置方向是否基本一致）
@@ -106,14 +106,14 @@ object YuriKissManager {
     /**
      * 应用亲亲效果（纯粒子和药水，无提示）
      */
-    private fun applyKissEffect(e1: LivingEntity, e2: LivingEntity, world: ServerWorld) {
+    private fun applyKissEffect(e1: LivingEntity, e2: LivingEntity, world: ServerLevel) {
         // 在两者正中间偏上的位置（大概在头部高度）生成爱心粒子
         val midX = (e1.x + e2.x) / 2.0
         val midY = (e1.y + e2.y) / 2.0 + 1.2
         val midZ = (e1.z + e2.z) / 2.0
 
         // 参数：粒子类型，X，Y，Z，数量，X偏移，Y偏移，Z偏移，速度
-        world.spawnParticles(ParticleTypes.HEART, midX, midY, midZ, 8, 0.3, 0.3, 0.3, 0.05)
+        world.sendParticles(ParticleTypes.HEART, midX, midY, midZ, 8, 0.3, 0.3, 0.3, 0.05)
 
         // 赋予百合花香效果 (持续 5 秒 = 100 tick)
         e1.addEffect(JREffects.LILY_PHEROMONE_EFFECT, 20 * 5, 0)

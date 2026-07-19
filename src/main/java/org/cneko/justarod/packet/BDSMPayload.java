@@ -1,20 +1,19 @@
 package org.cneko.justarod.packet;
 
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
-
 import static org.cneko.justarod.Justarod.MODID;
 
-public record BDSMPayload(String uuid, boolean ballMouth, boolean electricShock,boolean bundled,boolean eyePatch,boolean earplug,boolean handcuffed,boolean shackled,boolean noMatingPlz) implements CustomPayload{
-    public static final CustomPayload.Id<BDSMPayload> ID = new CustomPayload.Id<>(Identifier.of(MODID, "bdsm"));
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-    public static final PacketCodec<RegistryByteBuf, BDSMPayload> CODEC = PacketCodec.of(
+public record BDSMPayload(String uuid, boolean ballMouth, boolean electricShock,boolean bundled,boolean eyePatch,boolean earplug,boolean handcuffed,boolean shackled,boolean noMatingPlz) implements CustomPacketPayload{
+    public static final CustomPacketPayload.Type<BDSMPayload> ID = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(MODID, "bdsm"));
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, BDSMPayload> CODEC = StreamCodec.ofMember(
             // 编码（写入）
             (payload, buf) -> {
-                buf.writeString(payload.uuid());
+                buf.writeUtf(payload.uuid());
 
                 int flags = 0;
                 flags |= (payload.ballMouth() ? 1 : 0);
@@ -30,7 +29,7 @@ public record BDSMPayload(String uuid, boolean ballMouth, boolean electricShock,
             },
             // 解码（读取）
             buf -> {
-                String uuid = buf.readString();
+                String uuid = buf.readUtf();
                 int flags = buf.readInt();
 
                 return new BDSMPayload(
@@ -49,7 +48,7 @@ public record BDSMPayload(String uuid, boolean ballMouth, boolean electricShock,
 
 
     @Override
-    public CustomPayload.Id<? extends CustomPayload> getId() {
+    public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 }

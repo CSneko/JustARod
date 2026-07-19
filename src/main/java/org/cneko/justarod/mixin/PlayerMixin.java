@@ -1,19 +1,19 @@
 package org.cneko.justarod.mixin;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.component.type.FoodComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.Registries;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import org.cneko.justarod.effect.JREffects;
 import org.cneko.justarod.entity.*;
 import org.cneko.justarod.packet.JRSyncPayload;
@@ -35,7 +35,7 @@ import java.util.List;
 import static org.cneko.justarod.JRAttributes.Companion;
 
 @SuppressWarnings({"AddedMixinMembersNamePattern", "DataFlowIssue"})
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
 
     @Unique
@@ -149,8 +149,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
 
     @Override
     public boolean canPowerUp() {
-        PlayerEntity player = (PlayerEntity) (Object) this;
-        return player.getHungerManager().getFoodLevel() >= 3;
+        Player player = (Player) (Object) this;
+        return player.getFoodData().getFoodLevel() >= 3;
     }
 
     @Override
@@ -830,35 +830,35 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
 
     @Override
     public Entity createBaby() {
-        PlayerEntity player = (PlayerEntity) (Object) this;
-        var baby = (Entity) getChildrenType().create(player.getWorld());
-        if (baby instanceof MobEntity mob) {
+        Player player = (Player) (Object) this;
+        var baby = (Entity) getChildrenType().create(player.level());
+        if (baby instanceof Mob mob) {
             mob.setBaby(true);
-            mob.age = -48000;
+            mob.tickCount = -48000;
             if (baby instanceof INeko neko) {
-                neko.addOwner(player.getUuid(), new INeko.Owner(new ArrayList<>(), 0));
+                neko.addOwner(player.getUUID(), new INeko.Owner(new ArrayList<>(), 0));
             }
         }
-        baby.setPos(player.getX(), player.getY(), player.getZ());
+        baby.setPosRaw(player.getX(), player.getY(), player.getZ());
         return baby;
     }
 
     @Inject(method = "readCustomDataFromNbt", at = @At("HEAD"))
-    public void readCustomDataFromNbt(NbtCompound nbt, CallbackInfo ci) {
+    public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
         power = this.readPowerFromNbt(nbt);
         this.readPregnantFromNbt(nbt);
         this.readBDSMFromNbt(nbt);
     }
 
     @Inject(method = "writeCustomDataToNbt", at = @At("HEAD"))
-    public void writeCustomDataToNbt(NbtCompound nbt, CallbackInfo ci) {
+    public void addAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
         this.writePowerToNbt(nbt);
         this.writePregnantToNbt(nbt);
         this.writeBDSMToNbt(nbt);
     }
 
     @Unique
-    private static void syncToClient(ServerPlayerEntity player) {
+    private static void syncToClient(ServerPlayer player) {
         List<Object> currentValues = new ArrayList<>();
 
         // 自动采集所有数据
@@ -874,10 +874,10 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
 
     @Inject(method = "tick",at = @At("HEAD"))
     public void tick(CallbackInfo ci) {
-        PlayerEntity player = (PlayerEntity) (Object) this;
+        Player player = (Player) (Object) this;
         if (slowTick++ >= 10){
             slowTick = 0;
-            if (player instanceof ServerPlayerEntity sp) {
+            if (player instanceof ServerPlayer sp) {
                 // 同步power
                 syncToClient(sp);
                 // slowTick区域
@@ -885,7 +885,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
                 Pregnant.yuriSlowTick(player);
             }
         }
-        if (player.getWorld() instanceof ServerWorld) {
+        if (player.level() instanceof ServerLevel) {
             Powerable.tickPower(player);
             Pregnant.pregnantTick(player);
             Pregnant.aidsTick(player);
@@ -921,26 +921,26 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     }
 
     @Inject(method = "eatFood",at = @At("HEAD"))
-    public void eatFood(World world, ItemStack stack, FoodComponent foodComponent, CallbackInfoReturnable<ItemStack> cir) {
-        if (stack.isOf(Items.MILK_BUCKET)){
+    public void eatFood(Level world, ItemStack stack, FoodProperties foodComponent, CallbackInfoReturnable<ItemStack> cir) {
+        if (stack.is(Items.MILK_BUCKET)){
             // 如果有HPV且在3天内
             if (this.getHPV() > 0 && this.getHPV() < 20*60*20*3) {
                 this.setHPV(0);
                 // 移除HPV效果
-                ((PlayerEntity)(Object)this).removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getHPV_EFFECT()));
+                ((Player)(Object)this).removeEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getHPV_EFFECT()));
             }
         }
-        if (stack.isOf(Items.ENCHANTED_GOLDEN_APPLE)){
+        if (stack.is(Items.ENCHANTED_GOLDEN_APPLE)){
             // 如果有HPV且在6天内
             if (this.getHPV() > 0 && this.getHPV() < 20*60*20*6) {
                 this.setHPV(0);
-                ((PlayerEntity)(Object)this).removeStatusEffect(Registries.STATUS_EFFECT.getEntry(JREffects.Companion.getHPV_EFFECT()));
+                ((Player)(Object)this).removeEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getHPV_EFFECT()));
             }
         }
     }
 
     @Inject(method = "createPlayerAttributes", at = @At("RETURN"))
-    private static void createPlayerAttributes(CallbackInfoReturnable<DefaultAttributeContainer.Builder> cir) {
+    private static void createPlayerAttributes(CallbackInfoReturnable<AttributeSupplier.Builder> cir) {
         cir.getReturnValue()
                 .add(Companion.getPLAYER_LUBRICATING())
                 .add(Companion.getGENERIC_MAX_POWER());

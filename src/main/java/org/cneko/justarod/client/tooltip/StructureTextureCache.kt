@@ -1,23 +1,23 @@
 package org.cneko.justarod.client.tooltip
 
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.texture.NativeImage
-import net.minecraft.util.Identifier
+import net.minecraft.client.Minecraft
+import com.mojang.blaze3d.platform.NativeImage
+import net.minecraft.resources.ResourceLocation
 
 object StructureTextureCache {
     // 用于缓存图片原始尺寸的 Map
-    private val dimensions = mutableMapOf<Identifier, Pair<Int, Int>>()
+    private val dimensions = mutableMapOf<ResourceLocation, Pair<Int, Int>>()
 
-    fun getOriginalSize(id: Identifier): Pair<Int, Int> {
+    fun getOriginalSize(id: ResourceLocation): Pair<Int, Int> {
         return dimensions.getOrPut(id) {
             try {
                 // 获取客户端的资源管理器
-                val resourceManager = MinecraftClient.getInstance().resourceManager
+                val resourceManager = Minecraft.getInstance().resourceManager
                 val resource = resourceManager.getResource(id)
 
                 if (resource.isPresent) {
                     // 读取图片文件
-                    resource.get().inputStream.use { stream ->
+                    resource.get().open().use { stream ->
                         val image = NativeImage.read(stream)
                         val w = image.width
                         val h = image.height

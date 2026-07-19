@@ -1,27 +1,26 @@
 package org.cneko.justarod.command;
 
 import com.mojang.brigadier.CommandDispatcher;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-
 import java.util.Objects;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 
 import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 import static org.cneko.toneko.common.mod.util.PermissionUtil.has;
 
 public class RodCommand {
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(CommandManager.literal("rod")
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        dispatcher.register(Commands.literal("rod")
                 .requires(source-> has(source,Permissions.COMMAND_ROD))
-                .then(CommandManager.literal("item")
+                .then(Commands.literal("item")
                         .requires(source-> has(source,Permissions.COMMAND_ROD_ITEM))
-                        .then(CommandManager.literal("get").executes(context -> {
+                        .then(Commands.literal("get").executes(context -> {
                             return getRodItem(Objects.requireNonNull(context.getSource().getPlayer()));
                         }))
-                        .then(CommandManager.literal("remove").executes(context -> {
+                        .then(Commands.literal("remove").executes(context -> {
                             return removeRodItem(Objects.requireNonNull(context.getSource().getPlayer()));
                         }))
                         // TODO: 后续添加 set 命令
@@ -29,28 +28,28 @@ public class RodCommand {
         );
     }
 
-    private static int getRodItem(ServerPlayerEntity player) {
+    private static int getRodItem(ServerPlayer player) {
         ItemStack stack = player.getRodInside();
         if (stack!= null && stack!= ItemStack.EMPTY) {
-            Text message = Text.translatable("command.justarod.rod.get.success",stack.getItem().getName().getString());
-            player.sendMessage(message, false);
+            Component message = Component.translatable("command.justarod.rod.get.success",stack.getItem().getDescription().getString());
+            player.displayClientMessage(message, false);
             return SINGLE_SUCCESS;
         }
         else {
-            player.sendMessage(Text.translatable("command.justarod.rod.get.failure"), false);
+            player.displayClientMessage(Component.translatable("command.justarod.rod.get.failure"), false);
             return 0;
         }
     }
 
-    private static int setRodItem(ServerPlayerEntity player, ItemStack stack) {
+    private static int setRodItem(ServerPlayer player, ItemStack stack) {
         player.setRodInside(stack);
-        player.sendMessage(Text.translatable("command.justarod.rod.set.success"), false);
+        player.displayClientMessage(Component.translatable("command.justarod.rod.set.success"), false);
         return SINGLE_SUCCESS;
     }
 
-    private static int removeRodItem(ServerPlayerEntity player) {
+    private static int removeRodItem(ServerPlayer player) {
         player.setRodInside(ItemStack.EMPTY);
-        player.sendMessage(Text.translatable("command.justarod.rod.remove.success"), false);
+        player.displayClientMessage(Component.translatable("command.justarod.rod.remove.success"), false);
         // 出来了出来了
         return SINGLE_SUCCESS;
     }

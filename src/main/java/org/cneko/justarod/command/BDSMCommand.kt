@@ -2,10 +2,10 @@ package org.cneko.justarod.command
 
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
-import net.minecraft.command.argument.EntityArgumentType
-import net.minecraft.server.command.CommandManager.argument
-import net.minecraft.server.command.CommandManager.literal
-import net.minecraft.text.Text
+import net.minecraft.commands.arguments.EntityArgument
+import net.minecraft.commands.Commands.argument
+import net.minecraft.commands.Commands.literal
+import net.minecraft.network.chat.Component
 import org.cneko.justarod.entity.BDSMable
 
 class BDSMCommand {
@@ -17,16 +17,16 @@ class BDSMCommand {
                         .executes { context ->
                             val entity = context.source.entity
                             if (entity is BDSMable){
-                                entity.sendMessage(Text.of("§a口球剩余时间：${entity.ballMouth/20}秒~"))
+                                entity.sendSystemMessage(Component.literal("§a口球剩余时间：${entity.ballMouth/20}秒~"))
                             }
                             return@executes 1
                         }
-                        .then(argument("target", EntityArgumentType.entity())
+                        .then(argument("target", EntityArgument.entity())
                             .executes { context ->
                                 val source = context.source
-                                val target = EntityArgumentType.getEntity(context, "target")
+                                val target = EntityArgument.getEntity(context, "target")
                                 if (target is BDSMable){
-                                    source.sendMessage(Text.of("§a对方口球剩余时间：${target.ballMouth/20}秒~"))
+                                    source.sendSystemMessage(Component.literal("§a对方口球剩余时间：${target.ballMouth/20}秒~"))
                                 }
                                 return@executes 1
                             }
@@ -41,9 +41,9 @@ class BDSMCommand {
                                     }
                                     return@executes 1
                                 }
-                                .then(argument("target", EntityArgumentType.entity())
+                                .then(argument("target", EntityArgument.entity())
                                     .executes { context ->
-                                        val target = EntityArgumentType.getEntity(context, "target")
+                                        val target = EntityArgument.getEntity(context, "target")
                                         if (target is BDSMable){
                                             val time = IntegerArgumentType.getInteger(context, "time")
                                             target.ballMouth = time
@@ -58,15 +58,15 @@ class BDSMCommand {
                         .executes { context ->
                             val source = context.source.entity
                             if (source is BDSMable){
-                                source.sendMessage(Text.of("§a电击剩余时间：${source.electricShock/20}秒~"))
+                                source.sendSystemMessage(Component.literal("§a电击剩余时间：${source.electricShock/20}秒~"))
                             }
                             return@executes 1
                         }
-                        .then(argument("target", EntityArgumentType.entity())
+                        .then(argument("target", EntityArgument.entity())
                             .executes { context ->
-                                val target = EntityArgumentType.getEntity(context, "target")
+                                val target = EntityArgument.getEntity(context, "target")
                                 if (target is BDSMable){
-                                    target.sendMessage(Text.of("§a电击剩余时间：${target.electricShock/20}秒~"))
+                                    target.sendSystemMessage(Component.literal("§a电击剩余时间：${target.electricShock/20}秒~"))
                                 }
                                 return@executes 1
                             }
@@ -81,9 +81,9 @@ class BDSMCommand {
                                     }
                                     return@executes 1
                                 }
-                                .then(argument("target", EntityArgumentType.entity())
+                                .then(argument("target", EntityArgument.entity())
                                     .executes { context ->
-                                        val target = EntityArgumentType.getEntity(context, "target")
+                                        val target = EntityArgument.getEntity(context, "target")
                                         if (target is BDSMable){
                                             val time = IntegerArgumentType.getInteger(context, "time")
                                             target.electricShock = time
@@ -99,15 +99,15 @@ class BDSMCommand {
                         .executes { context ->
                             val source = context.source.entity
                             if (source is BDSMable){
-                                source.sendMessage(Text.of("§a捆绑剩余时间：${source.bundled/20}秒~"))
+                                source.sendSystemMessage(Component.literal("§a捆绑剩余时间：${source.bundled/20}秒~"))
                             }
                             return@executes 1
                         }
-                        .then(argument("target", EntityArgumentType.entity())
+                        .then(argument("target", EntityArgument.entity())
                             .executes { context ->
-                                val target = EntityArgumentType.getEntity(context, "target")
+                                val target = EntityArgument.getEntity(context, "target")
                                 if (target is BDSMable){
-                                    target.sendMessage(Text.of("§a捆绑剩余时间：${target.bundled/20}秒~"))
+                                    target.sendSystemMessage(Component.literal("§a捆绑剩余时间：${target.bundled/20}秒~"))
                                 }
                                 return@executes 1
                             }
@@ -122,9 +122,9 @@ class BDSMCommand {
                                     }
                                     return@executes 1
                                 }
-                                .then(argument("target", EntityArgumentType.entity())
+                                .then(argument("target", EntityArgument.entity())
                                     .executes { context ->
-                                        val target = EntityArgumentType.getEntity(context, "target")
+                                        val target = EntityArgument.getEntity(context, "target")
                                         if (target is BDSMable){
                                             val time = IntegerArgumentType.getInteger(context, "time")
                                             target.bundled = time
@@ -140,15 +140,15 @@ class BDSMCommand {
                         .executes { context ->
                             val entity = context.source.entity
                             if (entity is BDSMable){
-                                entity.sendMessage(Text.of("§a眼罩剩余时间：${entity.eyePatch/20}秒~"))
+                                entity.sendSystemMessage(Component.literal("§a眼罩剩余时间：${entity.eyePatch/20}秒~"))
                             }
                             return@executes 1
                         }
-                        .then(argument("target", EntityArgumentType.entity())
+                        .then(argument("target", EntityArgument.entity())
                             .executes { context ->
-                                val target = EntityArgumentType.getEntity(context, "target")
+                                val target = EntityArgument.getEntity(context, "target")
                                 if (target is BDSMable){
-                                    target.sendMessage(Text.of("§a眼罩剩余时间：${target.eyePatch/20}秒~"))
+                                    target.sendSystemMessage(Component.literal("§a眼罩剩余时间：${target.eyePatch/20}秒~"))
                                 }
                                 return@executes 1
                             }
@@ -163,9 +163,9 @@ class BDSMCommand {
                                     }
                                     return@executes 1
                                 }
-                                .then(argument("target", EntityArgumentType.entity())
+                                .then(argument("target", EntityArgument.entity())
                                     .executes { context ->
-                                        val target = EntityArgumentType.getEntity(context, "target")
+                                        val target = EntityArgument.getEntity(context, "target")
                                         if (target is BDSMable){
                                             val time = IntegerArgumentType.getInteger(context, "time")
                                             target.eyePatch = time
@@ -181,15 +181,15 @@ class BDSMCommand {
                         .executes { context ->
                             val entity = context.source.entity
                             if (entity is BDSMable){
-                                entity.sendMessage(Text.of("§a耳塞剩余时间：${entity.earplug/20}秒~"))
+                                entity.sendSystemMessage(Component.literal("§a耳塞剩余时间：${entity.earplug/20}秒~"))
                             }
                             return@executes 1
                         }
-                        .then(argument("target", EntityArgumentType.entity())
+                        .then(argument("target", EntityArgument.entity())
                             .executes { context ->
-                                val target = EntityArgumentType.getEntity(context, "target")
+                                val target = EntityArgument.getEntity(context, "target")
                                 if (target is BDSMable){
-                                    target.sendMessage(Text.of("§a耳塞剩余时间：${target.earplug/20}秒~"))
+                                    target.sendSystemMessage(Component.literal("§a耳塞剩余时间：${target.earplug/20}秒~"))
                                 }
                                 return@executes 1
                             }
@@ -204,9 +204,9 @@ class BDSMCommand {
                                     }
                                     return@executes 1
                                 }
-                                .then(argument("target", EntityArgumentType.entity())
+                                .then(argument("target", EntityArgument.entity())
                                     .executes { context ->
-                                        val target = EntityArgumentType.getEntity(context, "target")
+                                        val target = EntityArgument.getEntity(context, "target")
                                         if (target is BDSMable){
                                             val time = IntegerArgumentType.getInteger(context, "time")
                                             target.earplug = time
@@ -223,15 +223,15 @@ class BDSMCommand {
                         .executes { context ->
                             val entity = context.source.entity
                             if (entity is BDSMable){
-                                entity.sendMessage(Text.of("§a手铐剩余时间：${entity.handcuffed/20}秒~"))
+                                entity.sendSystemMessage(Component.literal("§a手铐剩余时间：${entity.handcuffed/20}秒~"))
                             }
                             return@executes 1
                         }
-                        .then(argument("target", EntityArgumentType.entity())
+                        .then(argument("target", EntityArgument.entity())
                             .executes { context ->
-                                val target = EntityArgumentType.getEntity(context, "target")
+                                val target = EntityArgument.getEntity(context, "target")
                                 if (target is BDSMable){
-                                    target.sendMessage(Text.of("§a手铐剩余时间：${target.handcuffed/20}秒~"))
+                                    target.sendSystemMessage(Component.literal("§a手铐剩余时间：${target.handcuffed/20}秒~"))
                                 }
                                 return@executes 1
                             }
@@ -246,9 +246,9 @@ class BDSMCommand {
                                     }
                                     return@executes 1
                                 }
-                                .then(argument("target", EntityArgumentType.entity())
+                                .then(argument("target", EntityArgument.entity())
                                     .executes { context ->
-                                        val target = EntityArgumentType.getEntity(context, "target")
+                                        val target = EntityArgument.getEntity(context, "target")
                                         if (target is BDSMable){
                                             val time = IntegerArgumentType.getInteger(context, "time")
                                             target.handcuffed = time
@@ -263,15 +263,15 @@ class BDSMCommand {
                         .executes { context ->
                             val entity = context.source.entity
                             if (entity is BDSMable){
-                                entity.sendMessage(Text.of("§a脚镣剩余时间：${entity.shackled/20}秒~"))
+                                entity.sendSystemMessage(Component.literal("§a脚镣剩余时间：${entity.shackled/20}秒~"))
                             }
                             return@executes 1
                         }
-                        .then(argument("target", EntityArgumentType.entity())
+                        .then(argument("target", EntityArgument.entity())
                             .executes { context ->
-                                val target = EntityArgumentType.getEntity(context, "target")
+                                val target = EntityArgument.getEntity(context, "target")
                                 if (target is BDSMable){
-                                    target.sendMessage(Text.of("§a脚镣剩余时间：${target.shackled/20}秒~"))
+                                    target.sendSystemMessage(Component.literal("§a脚镣剩余时间：${target.shackled/20}秒~"))
                                 }
                                 return@executes 1
                             }
@@ -286,9 +286,9 @@ class BDSMCommand {
                                     }
                                     return@executes 1
                                 }
-                                .then(argument("target", EntityArgumentType.entity())
+                                .then(argument("target", EntityArgument.entity())
                                     .executes { context ->
-                                        val target = EntityArgumentType.getEntity(context, "target")
+                                        val target = EntityArgument.getEntity(context, "target")
                                         if (target is BDSMable){
                                             val time = IntegerArgumentType.getInteger(context, "time")
                                             target.shackled = time
@@ -303,15 +303,15 @@ class BDSMCommand {
                         .executes { context ->
                             val entity = context.source.entity
                             if (entity is BDSMable){
-                                entity.sendMessage(Text.of("§a禁交剩余时间：${entity.noMatingPlz / 20}秒~"))
+                                entity.sendSystemMessage(Component.literal("§a禁交剩余时间：${entity.noMatingPlz / 20}秒~"))
                             }
                             return@executes 1
                         }
-                        .then(argument("target", EntityArgumentType.entity())
+                        .then(argument("target", EntityArgument.entity())
                             .executes { context ->
-                                val target = EntityArgumentType.getEntity(context, "target")
+                                val target = EntityArgument.getEntity(context, "target")
                                 if (target is BDSMable){
-                                    context.source.sendMessage(Text.of("§a对方禁交剩余时间：${target.noMatingPlz / 20}秒~"))
+                                    context.source.sendSystemMessage(Component.literal("§a对方禁交剩余时间：${target.noMatingPlz / 20}秒~"))
                                 }
                                 return@executes 1
                             }
@@ -323,17 +323,17 @@ class BDSMCommand {
                                     if (source is BDSMable){
                                         val time = IntegerArgumentType.getInteger(context, "time")
                                         source.noMatingPlz = time
-                                        source.sendMessage(Text.of("§a已设置禁交时间：${time / 20}秒~"))
+                                        source.sendSystemMessage(Component.literal("§a已设置禁交时间：${time / 20}秒~"))
                                     }
                                     return@executes 1
                                 }
-                                .then(argument("target", EntityArgumentType.entity())
+                                .then(argument("target", EntityArgument.entity())
                                     .executes { context ->
-                                        val target = EntityArgumentType.getEntity(context, "target")
+                                        val target = EntityArgument.getEntity(context, "target")
                                         if (target is BDSMable){
                                             val time = IntegerArgumentType.getInteger(context, "time")
                                             target.noMatingPlz = time
-                                            context.source.sendMessage(Text.of("§a已为目标设置禁交时间：${time / 20}秒~"))
+                                            context.source.sendSystemMessage(Component.literal("§a已为目标设置禁交时间：${time / 20}秒~"))
                                         }
                                         return@executes 1
                                     }

@@ -1,12 +1,12 @@
 package org.cneko.justarod.client.screen
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.text.Text
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.network.chat.Component
 import org.cneko.justarod.packet.FullHeatPayload
 import kotlin.math.abs
 import kotlin.random.Random
@@ -15,7 +15,7 @@ import kotlin.math.max
 
 // 好奇芦管是什么感觉
 // 解释不了怎么办
-class FrictionScreen : Screen(Text.empty()) {
+class FrictionScreen : Screen(Component.empty()) {
     private var heat = 0.0f
     private var sliderPosition = 0.5f // 初始位置在中间
     private var sliderDragging = false
@@ -32,7 +32,7 @@ class FrictionScreen : Screen(Text.empty()) {
     private var shakeOffsetY = 0f
     private var lastShakeTime = 0L
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun render(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
         // 更新热力值
         updateHeat(delta)
 
@@ -40,8 +40,8 @@ class FrictionScreen : Screen(Text.empty()) {
         updateParticles(delta)
 
         // 应用屏幕抖动
-        val matrices = context.matrices
-        matrices.push()
+        val matrices = context.pose()
+        matrices.pushPose()
         if (heat > shakeThreshold) {
             val shakeIntensity = (heat - shakeThreshold) / (maxHeat - shakeThreshold) // 0-1之间的强度
             val currentTime = System.currentTimeMillis()
@@ -100,7 +100,7 @@ class FrictionScreen : Screen(Text.empty()) {
         val stack = ItemStack(Items.PAPER)
         val itemX = (sliderThumbX - 8).toInt()
         val itemY = (sliderY - 4).toInt()
-        context.drawItem(stack, itemX, itemY)
+        context.renderItem(stack, itemX, itemY)
 
 
         // 绘制粒子
@@ -109,7 +109,7 @@ class FrictionScreen : Screen(Text.empty()) {
                 (particle.x + particle.size).toInt(), (particle.y + particle.size).toInt(), 0xFFFFFFFF.toInt())
         }
 
-        matrices.pop()
+        matrices.popPose()
 
         super.render(context, mouseX, mouseY, delta)
     }
@@ -118,7 +118,7 @@ class FrictionScreen : Screen(Text.empty()) {
         // 如果大于95%，则晕倒
         if (heat > 0.95f * maxHeat) {
             ClientPlayNetworking.send(FullHeatPayload("full"))
-            MinecraftClient.getInstance().setScreen(null)
+            Minecraft.getInstance().setScreen(null)
         }
         // 计算滑块位置的变化量
         val positionChange = abs(sliderPosition - lastSliderPosition)
@@ -224,11 +224,11 @@ class FrictionScreen : Screen(Text.empty()) {
         sliderPosition = ((mouseX - sliderX) / sliderWidth).coerceIn(0f, 1f)
     }
 
-    override fun shouldPause(): Boolean {
+    override fun isPauseScreen(): Boolean {
         return false
     }
 
-    override fun renderBackground(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderBackground(context: GuiGraphics?, mouseX: Int, mouseY: Int, delta: Float) {
     }
 
     private data class Particle(

@@ -1,23 +1,22 @@
 package org.cneko.justarod.block;
 
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.LeavesBlock;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.util.Identifier;
-
 import static org.cneko.justarod.Justarod.MODID;
+
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 
 public class JRBlocks {
     // 没吃过，但感觉不好吃
     // 所以猫猫一直在自娱自乐 炫压抑是吧~ -NT
     public static final Block GOLDEN_LEAVES = register(
-            new LeavesBlock(AbstractBlock.Settings.create().sounds(BlockSoundGroup.CHERRY_LEAVES).noCollision()),
+            new LeavesBlock(BlockBehaviour.Properties.of().sound(SoundType.CHERRY_LEAVES).noCollission()),
             "golden_leaves",
             true
     );
@@ -26,13 +25,13 @@ public class JRBlocks {
 
     public static Block register(Block block, String name, boolean shouldRegisterItem) {
 
-        Identifier id = Identifier.of(MODID, name);
+        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(MODID, name);
 
         if (shouldRegisterItem) {
-            BlockItem blockItem = new BlockItem(block, new Item.Settings());
-            Registry.register(Registries.ITEM, id, blockItem);
+            BlockItem blockItem = new BlockItem(block, new Item.Properties());
+            Registry.register(BuiltInRegistries.ITEM, id, blockItem);
         }
 
-        return Registry.register(Registries.BLOCK, id, block);
+        return Registry.register(BuiltInRegistries.BLOCK, id, block);
     }
 }

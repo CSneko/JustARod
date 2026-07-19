@@ -1,15 +1,15 @@
 package org.cneko.justarod.item
 
-import net.minecraft.entity.ExperienceOrbEntity
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
-import net.minecraft.sound.SoundCategory
-import net.minecraft.sound.SoundEvents
-import net.minecraft.util.Hand
-import net.minecraft.util.TypedActionResult
-import net.minecraft.util.math.Vec3d
-import net.minecraft.world.World
+import net.minecraft.world.entity.ExperienceOrb
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
+import net.minecraft.sounds.SoundSource
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.InteractionResultHolder
+import net.minecraft.world.phys.Vec3
+import net.minecraft.world.level.Level
 
 /*
 动漫量
@@ -19,15 +19,15 @@ import net.minecraft.world.World
 嗯~啊~出来了...
  */
 class XPGun : Item(Settings().maxCount(1)) {
-    override fun use(world: World?, user: PlayerEntity?, hand: Hand?): TypedActionResult<ItemStack> {
+    override fun use(world: Level?, user: Player?, hand: InteractionHand?): InteractionResultHolder<ItemStack> {
         user ?: return super.use(world, user, hand)
-        val handStack = user.getStackInHand(hand)
+        val handStack = user.getItemInHand(hand)
 
         if (user.totalExperience >= 5) {
-            user.addExperience(-5)
+            user.giveExperiencePoints(-5)
 
-            if (world?.isClient == false) {
-                val random = user.world.random
+            if (world?.isClientSide == false) {
+                val random = user.level().random
 
                 // 发射5个经验球形成散射
                 repeat(5) {
@@ -40,33 +40,33 @@ class XPGun : Item(Settings().maxCount(1)) {
                     val newPitch = user.pitch + pitchOffset
 
                     // 将角度转换为方向向量
-                    val direction = Vec3d.fromPolar(newPitch, newYaw)
+                    val direction = Vec3.fromPolar(newPitch, newYaw)
 
                     // 计算生成位置（玩家眼前方0.5米）
                     val eyePos = user.eyePos
                     val spawnPos = eyePos.add(direction.multiply(0.5))
 
                     // 创建经验球实体（1点经验）
-                    val xpOrb = ExperienceOrbEntity(world, spawnPos.x, spawnPos.y, spawnPos.z, 1)
+                    val xpOrb = ExperienceOrb(world, spawnPos.x, spawnPos.y, spawnPos.z, 1)
 
                     // 设置速度（方向向量 * 速度系数）
-                    xpOrb.velocity = direction.multiply(1.2)
+                    xpOrb.getDeltaMovement() = direction.multiply(1.2)
 
                     // 添加击退效果
-                    xpOrb.velocity = xpOrb.velocity.add(user.velocity)
+                    xpOrb.getDeltaMovement() = xpOrb.getDeltaMovement().add(user.getDeltaMovement())
 
-                    world.spawnEntity(xpOrb)
+                    level().addFreshEntity(xpOrb)
                 }
             }
 
             // 播放音效（客户端）
-            if (world?.isClient == true) {
-                world.playSound(user, user.blockPos, SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.PLAYERS, 1.0f, 1.0f)
+            if (world?.isClientSide == true) {
+                level().playSound(user, user.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0f, 1.0f)
             }
 
-            return TypedActionResult.success(handStack)
+            return InteractionResultHolder.success(handStack)
         }
 
-        return TypedActionResult.pass(handStack)
+        return InteractionResultHolder.pass(handStack)
     }
 }

@@ -116,7 +116,7 @@ public class EntityMixin implements Fallible, Insertable {
         }
     }
 
-    @Inject(method = "isGlowing", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "isCurrentlyGlowing", at = @At("RETURN"), cancellable = true)
     private void justARod$isGlowing(CallbackInfoReturnable<Boolean> cir) {
         Entity self = (Entity) (Object) this;
         if (self.level().isClientSide){

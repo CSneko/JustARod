@@ -22,10 +22,10 @@ import org.cneko.justarod.item.JRComponents
 import org.cneko.justarod.item.rod.addEffect
 import java.util.concurrent.TimeUnit
 
-open class SpermRetrievalDeviceItem(val lifeTime: Int, settings: Properties) : MedicalItem(properties) {
+open class SpermRetrievalDeviceItem(val lifeTime: Int, settings: Properties) : MedicalItem(settings) {
 
     override fun inventoryTick(stack: ItemStack, world: Level, entity: Entity, slot: Int, selected: Boolean) {
-        if (!level().isClientSide && stack.contains(JRComponents.ENTITY_TYPE)) {
+        if (!world.isClientSide && stack.has(JRComponents.ENTITY_TYPE)) {
             val remaining = stack.get(JRComponents.COLLECTED_TIME) ?: 0
             if (remaining > 0) {
                 stack.set(JRComponents.COLLECTED_TIME, remaining - 1)
@@ -39,32 +39,32 @@ open class SpermRetrievalDeviceItem(val lifeTime: Int, settings: Properties) : M
     }
 
     override fun canApply(user: Player, target: LivingEntity, stack: ItemStack, hand: InteractionHand): Boolean {
-        val hasSemen = stack.contains(JRComponents.ENTITY_TYPE)
+        val hasSemen = stack.has(JRComponents.ENTITY_TYPE)
 
         return if (hasSemen) {
             // 已经有精液 → 只能注入
             when {
                 target is Pregnant && target.isFemale -> {
                     if (target.isPregnant) {
-                        user.sendSystemMessage(Component.literal("§c目标已经怀孕，无法注入！"), true)
+                        user.sendSystemMessage(Component.literal("§c目标已经怀孕，无法注入！"))
                         false
                     } else if (target.menstruationCycle != Pregnant.MenstruationCycle.OVULATION) {
-                        user.sendSystemMessage(Component.literal("§c目标不在排卵期，无法受孕！"), true)
+                        user.sendSystemMessage(Component.literal("§c目标不在排卵期，无法受孕！"))
                         false
                     } else {
                         true
                     }
                 }
                 target is Animal -> {
-                    if (target.loveTicks > 0) {
-                        user.sendSystemMessage(Component.literal("§c动物正在繁殖冷却中，暂时不能注入！"), true)
+                    if (target.isInLove()) {
+                        user.sendSystemMessage(Component.literal("§c动物正在繁殖冷却中，暂时不能注入！"))
                         false
                     } else {
                         true
                     }
                 }
                 else -> {
-                    user.sendSystemMessage(Component.literal("§c该目标无法注入精液！"), true)
+                    user.sendSystemMessage(Component.literal("§c该目标无法注入精液！"))
                     false
                 }
             }
@@ -73,22 +73,22 @@ open class SpermRetrievalDeviceItem(val lifeTime: Int, settings: Properties) : M
             when {
                 target is Pregnant && target.isMale -> {
                     if (target.hasEffect(MobEffects.WEAKNESS)) {
-                        user.sendSystemMessage(Component.literal("§c目标虚弱，无法采集精液！"), true)
+                        user.sendSystemMessage(Component.literal("§c目标虚弱，无法采集精液！"))
                         false
                     } else {
                         true
                     }
                 }
                 target is Animal -> {
-                    if (target.loveTicks > 0) {
-                        user.sendSystemMessage(Component.literal("§c动物正在繁殖冷却中，无法采集！"), true)
+                    if (target.isInLove()) {
+                        user.sendSystemMessage(Component.literal("§c动物正在繁殖冷却中，无法采集！"))
                         false
                     } else {
                         true
                     }
                 }
                 else -> {
-                    user.sendSystemMessage(Component.literal("§c无法从该目标采集精液！"), true)
+                    user.sendSystemMessage(Component.literal("§c无法从该目标采集精液！"))
                     false
                 }
             }
@@ -102,7 +102,7 @@ open class SpermRetrievalDeviceItem(val lifeTime: Int, settings: Properties) : M
     }
 
     override fun applyEffect(user: Player, target: LivingEntity, stack: ItemStack, hand: InteractionHand) {
-        val hasSemen = stack.contains(JRComponents.ENTITY_TYPE)
+        val hasSemen = stack.has(JRComponents.ENTITY_TYPE)
 
         if (hasSemen) {
             // --- 注入逻辑 ---
@@ -110,9 +110,9 @@ open class SpermRetrievalDeviceItem(val lifeTime: Int, settings: Properties) : M
                 val type = stack.get(JRComponents.ENTITY_TYPE)
                 if (type != null) {
                     if (target.isPregnant) {
-                        user.sendSystemMessage(Component.literal("§c${target.name.string} 已经怀孕，注入失败！"), true)
+                        user.sendSystemMessage(Component.literal("§c${target.name.string} 已经怀孕，注入失败！"))
                     } else if (target.menstruationCycle != Pregnant.MenstruationCycle.OVULATION) {
-                        user.sendSystemMessage(Component.literal("§c${target.name.string} 不在排卵期，无法怀孕！"), true)
+                        user.sendSystemMessage(Component.literal("§c${target.name.string} 不在排卵期，无法怀孕！"))
                     } else {
                         target.setChildrenType(type)
                         target.tryPregnant()
@@ -125,8 +125,8 @@ open class SpermRetrievalDeviceItem(val lifeTime: Int, settings: Properties) : M
             } else if (target is Animal) {
                 val type = stack.get(JRComponents.ENTITY_TYPE)
                 if (type == target.type) {
-                    if (target.loveTicks > 0) {
-                        user.sendSystemMessage(Component.literal("§c动物正在繁殖冷却中，无法注入！"), true)
+                    if (target.isInLove()) {
+                        user.sendSystemMessage(Component.literal("§c动物正在繁殖冷却中，无法注入！"))
                     } else {
                         val stackInHand = user.getItemInHand(hand)
                         stackInHand.remove(JRComponents.ENTITY_TYPE)
@@ -135,7 +135,7 @@ open class SpermRetrievalDeviceItem(val lifeTime: Int, settings: Properties) : M
                         val world = target.level()
                         if (world is ServerLevel) {
                             // 爱心粒子
-                            level().sendParticles(
+                            world.sendParticles(
                                 ParticleTypes.HEART,
                                 target.x,
                                 target.y + 0.5,
@@ -149,27 +149,27 @@ open class SpermRetrievalDeviceItem(val lifeTime: Int, settings: Properties) : M
                             // 生产幼体
                             val child = target.getBreedOffspring(world, target)
                             if (child != null) {
-                                level().addFreshEntity(child)
+                                world.addFreshEntity(child)
                                 child.isBaby = true
                                 child.setPos(target.x, target.y + 1, target.z)
                             }
                         }
                     }
                 } else {
-                    user.sendSystemMessage(Component.literal("§c种类不匹配，无法注入！"), true)
+                    user.sendSystemMessage(Component.literal("§c种类不匹配，无法注入！"))
                 }
             } else {
-                user.sendSystemMessage(Component.literal("§c该目标无法注入精液！"), true)
+                user.sendSystemMessage(Component.literal("§c该目标无法注入精液！"))
             }
         } else {
             if (target.hasEffect(MobEffects.WEAKNESS)) {
-                user.sendSystemMessage(Component.literal("§c目标虚弱，无法采集精液！"), true)
+                user.sendSystemMessage(Component.literal("§c目标虚弱，无法采集精液！"))
                 return
             }
             // --- 采集逻辑 ---
             if (target is Pregnant && target.isMale) {
                 if (target.hasEffect(MobEffects.WEAKNESS)) {
-                    user.sendSystemMessage(Component.literal("§c${target.name.string} 太虚弱，无法采集！"), true)
+                    user.sendSystemMessage(Component.literal("§c${target.name.string} 太虚弱，无法采集！"))
                 } else {
                     if (target is Player) {
                         stack.set(JRComponents.ENTITY_TYPE, JREntities.SEEEEEX_NEKO)
@@ -181,8 +181,8 @@ open class SpermRetrievalDeviceItem(val lifeTime: Int, settings: Properties) : M
                     target.addEffect(MobEffects.WEAKNESS,20*60*5,0)
                 }
             } else if (target is Animal) {
-                if (target.loveTicks > 0) {
-                    user.sendSystemMessage(Component.literal("§c动物正在繁殖冷却中，无法采集！"), true)
+                if (target.isInLove()) {
+                    user.sendSystemMessage(Component.literal("§c动物正在繁殖冷却中，无法采集！"))
                 } else {
                     val stackInHand = user.getItemInHand(hand)
                     stackInHand.set(JRComponents.ENTITY_TYPE, target.type)
@@ -191,7 +191,7 @@ open class SpermRetrievalDeviceItem(val lifeTime: Int, settings: Properties) : M
                     target.addEffect(MobEffects.WEAKNESS,20*60*5,0)
                 }
             } else {
-                user.sendSystemMessage(Component.literal("§c该目标无法采集精液！"), true)
+                user.sendSystemMessage(Component.literal("§c该目标无法采集精液！"))
             }
         }
     }
@@ -207,14 +207,14 @@ open class SpermRetrievalDeviceItem(val lifeTime: Int, settings: Properties) : M
 
 
     // --- Tooltip 显示腐坏剩余时间 ---
-    override fun appendTooltip(stack: ItemStack, context: TooltipContext, tooltip: MutableList<Component>, type: TooltipFlag) {
+    override fun appendHoverText(stack: ItemStack, context: TooltipContext, tooltip: MutableList<Component>, type: TooltipFlag) {
         val entityType = stack.get(JRComponents.ENTITY_TYPE)
         val remaining = stack.get(JRComponents.COLLECTED_TIME)
         if (entityType != null && remaining != null) {
             if (remaining > 0) {
                 val minutes = TimeUnit.SECONDS.toMinutes(remaining / 20L)
                 val seconds = (remaining / 20L) % 60
-                tooltip.add(Component.literal("§7来源: ${entityType.name.string}"))
+                tooltip.add(Component.literal("§7来源: ${entityType.description.string}"))
                 tooltip.add(Component.literal("§7剩余腐坏时间: ${minutes}分${seconds}秒"))
             } else {
                 tooltip.add(Component.literal("§c已腐坏"))
@@ -230,8 +230,9 @@ open class SpermRetrievalDeviceItem(val lifeTime: Int, settings: Properties) : M
             super.use(world, user, hand)
         } else {
             // 非潜行 → 食用逻辑，但只有有精液时才允许饮用
-            return if (stack.contains(JRComponents.ENTITY_TYPE)) {
-                ItemUtils.startUsingItem(world, user, hand)
+            if (stack.has(JRComponents.ENTITY_TYPE)) {
+                user.startUsingItem(hand)
+                InteractionResultHolder.consume(stack)
             } else {
                 // 没有 entityType → 不可饮用
                 InteractionResultHolder.pass(stack)
@@ -240,15 +241,15 @@ open class SpermRetrievalDeviceItem(val lifeTime: Int, settings: Properties) : M
     }
 
 
-    override fun finishUsing(stack: ItemStack, world: Level, user: LivingEntity): ItemStack {
+    override fun finishUsingItem(stack: ItemStack, world: Level, user: LivingEntity): ItemStack {
         if (user is Player) {
-            user.playSound(SoundEvents.ENTITY_GENERIC_DRINK, 1.0f, 1.0f)
+            user.playSound(SoundEvents.GENERIC_DRINK, 1.0f, 1.0f)
             stack.remove(JRComponents.ENTITY_TYPE)
             stack.remove(JRComponents.COLLECTED_TIME)
         }
         return stack
     }
 
-    override fun getMaxUseTime(stack: ItemStack, user: LivingEntity): Int = 32
-    override fun getUseAction(stack: ItemStack): UseAnim = UseAnim.DRINK
+    override fun getUseDuration(stack: ItemStack, user: LivingEntity): Int = 32
+    override fun getUseAnimation(stack: ItemStack): UseAnim = UseAnim.DRINK
 }

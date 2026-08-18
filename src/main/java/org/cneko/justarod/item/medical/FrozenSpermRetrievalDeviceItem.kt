@@ -17,13 +17,13 @@ import org.cneko.justarod.item.JRComponents
 class FrozenSpermRetrievalDeviceItem(properties: Properties) : SpermRetrievalDeviceItem(36000, properties) {
 
     // 食用时间加倍
-    override fun getMaxUseTime(stack: ItemStack, user: LivingEntity): Int = 64
+    override fun getUseDuration(stack: ItemStack, user: LivingEntity): Int = 64
 
     // 食用逻辑（使用方效果）
-    override fun finishUsing(stack: ItemStack, world: Level, user: LivingEntity): ItemStack {
-        val result = super.finishUsing(stack, world, user)
+    override fun finishUsingItem(stack: ItemStack, world: Level, user: LivingEntity): ItemStack {
+        val result = super.finishUsingItem(stack, world, user)
 
-        if (level() is ServerLevel) {
+        if (world is ServerLevel) {
             applyFrozenEffectWithParticles(user, world)
         }
 
@@ -52,7 +52,7 @@ class FrozenSpermRetrievalDeviceItem(properties: Properties) : SpermRetrievalDev
 
         // 持续生成雪粒子（模拟雪地环绕）
         repeat(5) { // 重复5次，每次稍有随机偏移
-            level().sendParticles(
+            world.sendParticles(
                 ParticleTypes.SNOWFLAKE,
                 entity.x, entity.y + 0.5, entity.z,
                 10, // 每次生成10个粒子
@@ -62,12 +62,12 @@ class FrozenSpermRetrievalDeviceItem(properties: Properties) : SpermRetrievalDev
         }
     }
 
-    override fun getUseAction(stack: ItemStack): UseAnim = UseAnim.DRINK
+    override fun getUseAnimation(stack: ItemStack): UseAnim = UseAnim.DRINK
 
     override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
         val stack = user.getItemInHand(hand)
         // 只有有精液时才能饮用
-        return if (stack.contains(JRComponents.ENTITY_TYPE)) {
+        return if (stack.has(JRComponents.ENTITY_TYPE)) {
             super.use(world, user, hand)
         } else {
             InteractionResultHolder.pass(stack)

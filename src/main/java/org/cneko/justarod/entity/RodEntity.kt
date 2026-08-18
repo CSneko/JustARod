@@ -217,7 +217,7 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: Level):Tama
                 if (random.nextInt(3) == 0) {
                     tryTame(player)
                     level().broadcastEntityEvent(this, EntityEvent.TAMING_SUCCEEDED)
-                    if (!player.isCreative) {
+                    if (!player.isCreative()) {
                         stack.shrink(1)
                     }
                     return InteractionResult.SUCCESS
@@ -231,7 +231,7 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: Level):Tama
             if (stack?.`is`(JRBlocks.GOLDEN_LEAVES.asItem()) == true && health < maxHealth) {
                 if (!level().isClientSide) {
                     heal(4.0f)
-                    if (!player.isCreative) {
+                    if (!player.isCreative()) {
                         stack.shrink(1)
                     }
                 }
@@ -241,7 +241,7 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: Level):Tama
         if (player?.isHolding{
                     i -> i.item == ToNekoItems.NEKO_POTION
             } == true){
-            if (!player.isCreative) {
+            if (!player.isCreative()) {
                 player.getItemInHand(hand!!).shrink(1)
                 player.addItem(ItemStack(Items.GLASS_BOTTLE))
             }

@@ -29,12 +29,12 @@ class ImpartCommand {
                 ImpactModel.setEnable(player,false)
                 context.source.sendSuccess({
                     Component.translatable("command.justarod.impart.disable")
-                }, true)
+                }, false)
             }else{
                 ImpactModel.setEnable(player,true)
                 context.source.sendSuccess({
                     Component.translatable("command.justarod.impart.enable")
-                }, true)
+                }, false)
             }
             return 1
         }

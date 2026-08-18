@@ -25,7 +25,7 @@ class ImpactModel {
         }
 
         fun tick(player: Player) {
-            if (using.getOrDefault(player, false)) {
+            if (isEnable(player)) {
                 val currentTick = tickCounter.getOrDefault(player, 0)
                 if (currentTick >= 20) { // 每20个tick触发
                     // 获取附近所有的NekoEntity

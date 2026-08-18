@@ -6,7 +6,7 @@ import org.cneko.justarod.item.JRComponents
 /*
 电动的确实好用的说，比普通的棒子要舒服多了
  */
-class AdvancedElectricRodItem:MultiModeSelfUsedElectricRodItem(Settings().component(JRComponents.USED_TIME_MARK,0).maxDamage(100000).component(JRComponents.SPEED,20).component(JRComponents.MODE,"zako")) {
+class AdvancedElectricRodItem:MultiModeSelfUsedElectricRodItem(Properties().component(JRComponents.USED_TIME_MARK,0).durability(100000).component(JRComponents.SPEED,20).component(JRComponents.MODE,"zako")) {
     override fun getModes(stack: ItemStack): List<String> {
         return listOf("zako","normal","quick")
     }

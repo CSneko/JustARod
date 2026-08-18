@@ -38,7 +38,7 @@ abstract class JRProperty<T>(
                 .executes { ctx -> runCommand(ctx, "target") })
 
         // 2. 修改状态 (需要 OP 权限)
-        val setCmd = literal("set").requires { it.hasPermissions(4) }
+        val setCmd = literal("set").requires { it.hasPermission(4) }
             .then(argument("value", getArgumentType())
                 .executes { ctx -> runSetCommand(ctx, null) }
                 .then(argument("target", EntityArgument.entity())

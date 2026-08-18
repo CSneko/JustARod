@@ -34,7 +34,7 @@ public class LivingEntityMixin implements Insertable {
     }
 
 
-    @Inject(method = "readCustomDataFromNbt", at = @At("HEAD"))
+    @Inject(method = "readAdditionalSaveData", at = @At("HEAD"))
     public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
         LivingEntity self = (LivingEntity) (Object) this;
         if (nbt.contains("rodInside")) {
@@ -43,7 +43,7 @@ public class LivingEntityMixin implements Insertable {
         }
     }
 
-    @Inject(method = "writeCustomDataToNbt", at = @At("HEAD"))
+    @Inject(method = "addAdditionalSaveData", at = @At("HEAD"))
     public void addAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
         LivingEntity self = (LivingEntity) (Object) this;
         if (!getRodInside().isEmpty()) {
@@ -68,7 +68,7 @@ public class LivingEntityMixin implements Insertable {
         builder.add(JRAttributes.Companion.getGENERIC_MAX_POWER());
     }
 
-    @Inject(method = "damage", at = @At("HEAD"))
+    @Inject(method = "hurt", at = @At("HEAD"))
     public void onDamage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         LivingEntity self = (LivingEntity) (Object) this;
         if (self instanceof Pregnant pregnant && amount >=7 && pregnant.isPregnant()){

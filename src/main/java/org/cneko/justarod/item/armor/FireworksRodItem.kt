@@ -1,9 +1,9 @@
 package org.cneko.justarod.item.armor
 
 import it.unimi.dsi.fastutil.ints.IntArrayList
-import net.minecraft.component.DataComponentTypes
-import net.minecraft.component.type.FireworkExplosionComponent
-import net.minecraft.component.type.FireworksComponent
+import net.minecraft.core.component.DataComponents
+import net.minecraft.world.item.component.FireworkExplosion
+import net.minecraft.world.item.component.Fireworks
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.entity.projectile.FireworkRocketEntity
@@ -14,7 +14,7 @@ import net.minecraft.world.level.Level
 /*
 我嘞个豆~~~~~~~~~~~~~
  */
-class FireworksRodItem : RodArmorItem<FireworksRodItem>(JRArmorMaterials.FIREWORKS_ROD_MATERIAL, Settings().maxCount(1).maxDamage(1000)) {
+class FireworksRodItem : RodArmorItem<FireworksRodItem>(JRArmorMaterials.FIREWORKS_ROD_MATERIAL, Properties().stacksTo(1).durability(1000)) {
     companion object{
         const val ID = "fireworks_rod"
     }
@@ -31,8 +31,8 @@ class FireworksRodItem : RodArmorItem<FireworksRodItem>(JRArmorMaterials.FIREWOR
         if (entity is Player){
             // 1/5的概率放一个烟花
             if (entity.random.nextInt(5) == 0){
-                val stack = Items.FIREWORK_ROCKET.getDefaultInstance
-                stack.set(DataComponentTypes.FIREWORKS, FireworksComponent(60, listOf(FireworkExplosionComponent(FireworkExplosionComponent.Type.STAR,
+                val stack = Items.FIREWORK_ROCKET.defaultInstance
+                stack.set(DataComponents.FIREWORKS, Fireworks(60, listOf(FireworkExplosion(FireworkExplosion.Shape.STAR,
                     IntArrayList(listOf(0xDC143C, 0xFFD700, 0xFFE4E1)),
                     IntArrayList(listOf(0xDB7093, 0xFFF8DC, 0xC0C0C0)),
                     true,

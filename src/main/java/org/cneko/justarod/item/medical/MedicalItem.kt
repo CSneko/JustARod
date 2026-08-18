@@ -82,7 +82,7 @@ abstract class MedicalItem(properties: Properties) : Item(properties) {
 
     override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
         val stack = user.getItemInHand(hand)
-        if (level().isClientSide) return InteractionResultHolder.pass(stack)
+        if (world.isClientSide) return InteractionResultHolder.pass(stack)
 
         // 只有按下 Shift 时才对自己使用
         if (!user.isShiftKeyDown()) {
@@ -98,7 +98,7 @@ abstract class MedicalItem(properties: Properties) : Item(properties) {
     }
 
 
-    final override fun useOnEntity(stack: ItemStack, user: Player, entity: LivingEntity, hand: InteractionHand): InteractionResult {
+    final override fun interactLivingEntity(stack: ItemStack, user: Player, entity: LivingEntity, hand: InteractionHand): InteractionResult {
         if (user.level().isClientSide) return InteractionResult.PASS
 
         val result = performAction(user, entity, stack, hand)
@@ -121,20 +121,20 @@ abstract class MedicalItem(properties: Properties) : Item(properties) {
 
             // 发送消息
             getSuccessMessages(user, target, stack)?.let { messages ->
-                messages.userSuccessMessage?.let { user.sendSystemMessage(it, false) }
-                messages.userExtraMessage?.let { user.sendSystemMessage(it, false) }
+                messages.userSuccessMessage?.let { user.sendSystemMessage(it) }
+                messages.userExtraMessage?.let { user.sendSystemMessage(it) }
 
                 // 如果目标是其他玩家，也给他们发送消息
                 if (target != user && target is Player) {
-                    messages.targetSuccessMessage?.let { target.sendSystemMessage(it, false) }
-                    messages.targetExtraMessage?.let { target.sendSystemMessage(it, false) }
+                    messages.targetSuccessMessage?.let { target.sendSystemMessage(it) }
+                    messages.targetExtraMessage?.let { target.sendSystemMessage(it) }
                 }
             }
 
             return InteractionResult.SUCCESS
         } else {
             // 发送失败消息
-            getFailureMessage(user, target, stack)?.let { user.sendSystemMessage(it, true) }
+            getFailureMessage(user, target, stack)?.let { user.sendSystemMessage(it) }
             return InteractionResult.FAIL
         }
     }

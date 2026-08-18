@@ -20,18 +20,18 @@ import org.cneko.justarod.item.JRComponents.PantsuState
 class PantsuItem(
     material: Holder<ArmorMaterial>,
     type: Type,
-    settings: Properties
+    properties: Properties
 ) : ArmorItem(material, type, properties) {
 
     // 每一刻都会运行，用于检测穿戴状态
     override fun inventoryTick(stack: ItemStack, world: Level, entity: Entity, slot: Int, selected: Boolean) {
         // 仅在服务端运行逻辑
-        if (!level().isClientSide && entity is LivingEntity) {
+        if (!world.isClientSide && entity is LivingEntity) {
 
-            if (entity.getEquippedStack(EquipmentSlot.LEGS) === stack) {
+            if (entity.getItemBySlot(EquipmentSlot.LEGS) === stack) {
 
                 // 如果还没有主人标记，则打上标记
-                if (!stack.contains(JRComponents.OWNER)) {
+                if (!stack.has(JRComponents.OWNER)) {
                     val ownerName = entity.name.string
                     stack.set(JRComponents.OWNER, ownerName)
                 }
@@ -39,7 +39,7 @@ class PantsuItem(
         }
     }
 
-    override fun appendTooltip(
+    override fun appendHoverText(
         stack: ItemStack,
         context: TooltipContext,
         tooltip: MutableList<Component>,

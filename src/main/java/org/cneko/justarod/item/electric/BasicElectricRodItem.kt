@@ -1,6 +1,6 @@
 package org.cneko.justarod.item.electric
 
-import net.minecraft.component.DataComponentTypes
+import net.minecraft.core.component.DataComponents
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
@@ -14,9 +14,9 @@ import org.cneko.justarod.item.JRComponents
 其实漏电也不错的说... 低压的话还是挺棒的哦
 酥酥麻麻耶嘿嘿~
  */
-open class BasicElectricRodItem: SelfUsedElectricRodItem(Settings().component(JRComponents.USED_TIME_MARK,0).component(JRComponents.SPEED,10).maxDamage(10000)) {
+open class BasicElectricRodItem: SelfUsedElectricRodItem(Properties().component(JRComponents.USED_TIME_MARK,0).component(JRComponents.SPEED,10).durability(10000)) {
 
-    override fun appendTooltip(
+    override fun appendHoverText(
         stack: ItemStack?,
         context: TooltipContext?,
         tooltip: MutableList<Component>?,
@@ -27,13 +27,13 @@ open class BasicElectricRodItem: SelfUsedElectricRodItem(Settings().component(JR
     }
 
     override fun damage(stack: ItemStack, amount: Int, world: Level?) {
-        super<SelfUsedElectricRodItem>.hurt(stack, amount, world)
+        super<SelfUsedElectricRodItem>.damage(stack, amount, world)
         // 随机额外减少
-        if (stack.damage!=stack.maxDamage){
+        if (stack.damageValue!=stack.maxDamage){
             val random = world?.random?.nextInt(500)
             if (random != null) {
-                if (random+stack.damage>=stack.maxDamage){
-                    stack.damage = stack.maxDamage
+                if (random+stack.damageValue>=stack.maxDamage){
+                    stack.damageValue = stack.maxDamage
                 }
             }
         }

@@ -41,7 +41,7 @@ public class ElectricShockFeatureRenderer extends RenderLayer<AbstractClientPlay
         matrices.scale(0.5F, 0.5F, 0.5F);
 
         Minecraft.getInstance().getItemRenderer().renderStatic(
-                JRItems.Companion.getELECTRIC_SHOCK_DEVICE().getDefaultStack(),
+                JRItems.Companion.getELECTRIC_SHOCK_DEVICE().getDefaultInstance(),
                 ItemDisplayContext.FIXED,
                 light,
                 OverlayTexture.NO_OVERLAY,

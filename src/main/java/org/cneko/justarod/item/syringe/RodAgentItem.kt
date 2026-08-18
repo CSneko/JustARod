@@ -12,7 +12,7 @@ import org.cneko.toneko.common.mod.entities.NekoEntity
 /*
 主人快超我喵~~♡ 嗯啊~~♡ 主人~~
  */
-class RodAgentItem:BaseSyringeItem(Settings()) {
+class RodAgentItem:BaseSyringeItem(Properties()) {
     override fun applyEffect(target: LivingEntity) {
         // 如果生物是Neko
         if (target is NekoEntity) {
@@ -22,7 +22,7 @@ class RodAgentItem:BaseSyringeItem(Settings()) {
                 target.remove(Entity.RemovalReason.DISCARDED)
                 val rod = RodEntity(JREntities.ROD,world)
                 rod.setPos(target.x, target.y+1, target.z)
-                level().addFreshEntity(rod)
+                world.addFreshEntity(rod)
                 // 如果有名字的话
                 if (target.hasCustomName()){
                     rod.customName = target.customName

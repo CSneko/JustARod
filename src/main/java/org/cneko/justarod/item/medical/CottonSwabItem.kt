@@ -14,10 +14,10 @@ import org.cneko.justarod.item.rod.hasEffect
 /**
  * 棉签物品类，用于医疗采样
  */
-class CottonSwabItem(properties: Properties) : MedicalItem(settings.maxCount(1)) {
+class CottonSwabItem(properties: Properties) : MedicalItem(Properties().stacksTo(1)) {
 
     // 工具提示逻辑仅用于显示，保留在此类中
-    override fun appendTooltip(stack: ItemStack, context: TooltipContext, tooltip: MutableList<Component>, type: TooltipFlag) {
+    override fun appendHoverText(stack: ItemStack, context: TooltipContext, tooltip: MutableList<Component>, type: TooltipFlag) {
         super.appendHoverText(stack, context, tooltip, type)
         stack.get(JRComponents.SECRETIONS_APPEARANCE)?.let { appearance ->
             tooltip.add(Component.literal("§7颜色&气味: §f$appearance")) // 添加分泌物外观提示
@@ -29,7 +29,7 @@ class CottonSwabItem(properties: Properties) : MedicalItem(settings.maxCount(1))
      * @return 当目标是玩家且棉签未被使用过时返回true
      */
     override fun canApply(user: Player, target: LivingEntity, stack: ItemStack, hand: InteractionHand): Boolean {
-        return target is Pregnant && target.isFemale && !stack.contains(JRComponents.SECRETIONS_APPEARANCE)
+        return target is Pregnant && target.isFemale && !stack.has(JRComponents.SECRETIONS_APPEARANCE)
     }
 
     /**
@@ -39,7 +39,7 @@ class CottonSwabItem(properties: Properties) : MedicalItem(settings.maxCount(1))
         if (target !is Pregnant) {
             return Component.literal("§c只能对玩家使用。") // 非玩家目标提示
         }
-        if (stack.contains(JRComponents.SECRETIONS_APPEARANCE)) {
+        if (stack.has(JRComponents.SECRETIONS_APPEARANCE)) {
             return Component.literal("§c这根棉签已经被使用过了哦。") // 已使用提示
         }
         return Component.literal("§c无法使用。") // 通用失败提示

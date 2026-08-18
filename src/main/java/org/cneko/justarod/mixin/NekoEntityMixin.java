@@ -40,7 +40,7 @@ public abstract class NekoEntityMixin implements Insertable{
         }
     }
 
-    @Inject(method = "readCustomDataFromNbt", at = @At("HEAD"))
+    @Inject(method = "readAdditionalSaveData", at = @At("HEAD"))
     public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
         if (nbt.contains("rodInside")) {
             var rod = ItemStack.parse(this.getEntity().registryAccess(),nbt.getCompound("rodInside"));
@@ -51,7 +51,7 @@ public abstract class NekoEntityMixin implements Insertable{
         }
     }
 
-    @Inject(method = "writeCustomDataToNbt", at = @At("HEAD"))
+    @Inject(method = "addAdditionalSaveData", at = @At("HEAD"))
     public void addAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
         if (!getRodInside().isEmpty()) {
             nbt.put("rodInside", getRodInside().save(

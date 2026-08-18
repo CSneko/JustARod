@@ -1,4 +1,5 @@
 package org.cneko.justarod.mixin;
+import net.minecraft.core.Holder;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -843,14 +844,14 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
         return baby;
     }
 
-    @Inject(method = "readCustomDataFromNbt", at = @At("HEAD"))
+    @Inject(method = "readAdditionalSaveData", at = @At("HEAD"))
     public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
         power = this.readPowerFromNbt(nbt);
         this.readPregnantFromNbt(nbt);
         this.readBDSMFromNbt(nbt);
     }
 
-    @Inject(method = "writeCustomDataToNbt", at = @At("HEAD"))
+    @Inject(method = "addAdditionalSaveData", at = @At("HEAD"))
     public void addAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
         this.writePowerToNbt(nbt);
         this.writePregnantToNbt(nbt);
@@ -920,26 +921,26 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
         }
     }
 
-    @Inject(method = "eatFood",at = @At("HEAD"))
+    @Inject(method = "eat",at = @At("HEAD"))
     public void eatFood(Level world, ItemStack stack, FoodProperties foodComponent, CallbackInfoReturnable<ItemStack> cir) {
         if (stack.is(Items.MILK_BUCKET)){
             // 如果有HPV且在3天内
             if (this.getHPV() > 0 && this.getHPV() < 20*60*20*3) {
                 this.setHPV(0);
                 // 移除HPV效果
-                ((Player)(Object)this).removeEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getHPV_EFFECT()));
+                ((Player)(Object)this).removeEffect(Holder.direct(JREffects.Companion.getHPV_EFFECT()));
             }
         }
         if (stack.is(Items.ENCHANTED_GOLDEN_APPLE)){
             // 如果有HPV且在6天内
             if (this.getHPV() > 0 && this.getHPV() < 20*60*20*6) {
                 this.setHPV(0);
-                ((Player)(Object)this).removeEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getHPV_EFFECT()));
+                ((Player)(Object)this).removeEffect(Holder.direct(JREffects.Companion.getHPV_EFFECT()));
             }
         }
     }
 
-    @Inject(method = "createPlayerAttributes", at = @At("RETURN"))
+    @Inject(method = "createAttributes", at = @At("RETURN"))
     private static void createPlayerAttributes(CallbackInfoReturnable<AttributeSupplier.Builder> cir) {
         cir.getReturnValue()
                 .add(Companion.getPLAYER_LUBRICATING())

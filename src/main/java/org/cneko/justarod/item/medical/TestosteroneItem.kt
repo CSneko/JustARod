@@ -5,7 +5,7 @@ import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.effect.MobEffects
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.inventory.tooltip.TooltipData
+import net.minecraft.world.inventory.tooltip.TooltipComponent
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionHand
 import net.minecraft.resources.ResourceLocation
@@ -42,14 +42,14 @@ class TestosteroneItem(properties: Properties): MedicalItem(properties) {
 
     }
 
-    override fun getTooltipData(stack: ItemStack): Optional<TooltipData> {
+    override fun getTooltipImage(stack: ItemStack): Optional<TooltipComponent> {
         return Optional.of(
             ChemicalStructureTooltipData(ResourceLocation.fromNamespaceAndPath("justarod", "textures/tooltip/testosterone.png"))
         )
     }
 
     override fun consumeItem(user: Player, target: LivingEntity, stack: ItemStack, hand: InteractionHand) {
-        if (!user.abilities.isCreative()) stack.shrink(1)
+        if (!user.isCreative) stack.shrink(1)
     }
 
     override fun getSuccessMessages(user: Player, target: LivingEntity, stack: ItemStack): ActionMessages {

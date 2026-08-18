@@ -12,7 +12,7 @@ import org.cneko.justarod.item.rod.addEffect
 就是...
 咱也不了解
  */
-class BremelanotideItem : BaseSyringeItem(Settings()){
+class BremelanotideItem : BaseSyringeItem(Properties()){
     companion object{
         const val CHEMICAL_FORMULA = "C50H68N14O10"
     }

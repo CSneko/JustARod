@@ -8,7 +8,7 @@ import net.minecraft.world.level.Level
 /*
 请勿模仿
  */
-class FirecrackerRodItem:SelfUsedItem(Settings().maxCount(1).maxDamage(2000)) {
+class FirecrackerRodItem:SelfUsedItem(Properties().stacksTo(1).durability(2000)) {
     override fun useOnSelf(stack: ItemStack, world: Level?, entity: LivingEntity, slot: Int, selected: Boolean): InteractionResult {
         val result = super.useOnSelf(stack, world, entity, slot, selected)
         if (result == InteractionResult.SUCCESS) {
@@ -16,12 +16,12 @@ class FirecrackerRodItem:SelfUsedItem(Settings().maxCount(1).maxDamage(2000)) {
             if (world?.random?.nextInt(6) == 0) {
                 val explosion = entity.level().explode(
                     entity,
-                    entity.pos.x,
-                    entity.pos.y,
-                    entity.pos.z,
+                    entity.position().x,
+                    entity.position().y,
+                    entity.position().z,
                     3.0f,
                     false,
-                    Level.ExplosionSourceType.NONE
+                    Level.ExplosionInteraction.NONE
                 )
             }
         }

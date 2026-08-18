@@ -13,7 +13,7 @@ import org.cneko.justarod.item.JRComponents
 /*
 插到顶了后也还会露出很大一截（你想试试共用吗）
  */
-class LongerRodItem: BothUsedItem(Settings().maxCount(1).maxDamage(1000).component(JRComponents.Companion.USED_TIME_MARK,0)) {
+class LongerRodItem: BothUsedItem(Properties().stacksTo(1).durability(1000).component(JRComponents.Companion.USED_TIME_MARK,0)) {
     override fun getInstruction(): EndRodInstructions {
         return EndRodInstructions.SELF_AND_OTHER_ATTACK
     }
@@ -31,7 +31,7 @@ class LongerRodItem: BothUsedItem(Settings().maxCount(1).maxDamage(1000).compone
         return result
     }
 
-    override fun appendTooltip(
+    override fun appendHoverText(
         stack: ItemStack?,
         context: TooltipContext?,
         tooltip: MutableList<Component>?,

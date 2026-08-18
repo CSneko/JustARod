@@ -752,7 +752,7 @@ public class WitherEntityMixin implements Pregnant {
     }
 
     // ==================== Tick ====================
-    @Inject(method = "mobTick", at = @At("HEAD"))
+    @Inject(method = "customServerAiStep", at = @At("HEAD"))
     public void mobTick(CallbackInfo ci) {
         WitherBoss self = (WitherBoss) (Object) this;
         Pregnant.pregnantTick((LivingEntity & Pregnant) self);
@@ -764,12 +764,12 @@ public class WitherEntityMixin implements Pregnant {
     }
 
     // ==================== NBT Persistence ====================
-    @Inject(method = "readCustomDataFromNbt", at = @At("HEAD"))
+    @Inject(method = "readAdditionalSaveData", at = @At("HEAD"))
     public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
         this.readPregnantFromNbt(nbt);
     }
 
-    @Inject(method = "writeCustomDataToNbt", at = @At("HEAD"))
+    @Inject(method = "addAdditionalSaveData", at = @At("HEAD"))
     public void addAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
         this.writePregnantToNbt(nbt);
     }

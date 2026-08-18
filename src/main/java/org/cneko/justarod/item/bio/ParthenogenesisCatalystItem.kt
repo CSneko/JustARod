@@ -6,6 +6,7 @@ import net.minecraft.world.entity.TamableAnimal
 import net.minecraft.world.entity.ai.attributes.Attribute
 import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.entity.animal.*
+import net.minecraft.world.entity.animal.horse.AbstractHorse
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
@@ -27,9 +28,9 @@ import kotlin.random.Random
 
 class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
     // 这是一个创造物品，不消耗耐久，堆叠为 1
-    override fun hasGlint(stack: ItemStack): Boolean = true // 自带闪烁效果看起来更高级
+    override fun isFoil(stack: ItemStack): Boolean = true // 自带闪烁效果看起来更高级
 
-    override fun useOnEntity(stack: ItemStack, user: Player, entity: LivingEntity, hand: InteractionHand): InteractionResult {
+    override fun interactLivingEntity(stack: ItemStack, user: Player, entity: LivingEntity, hand: InteractionHand): InteractionResult {
         // --- 服务端逻辑 ---
         if (user.level().isClientSide) return InteractionResult.SUCCESS
 
@@ -38,7 +39,7 @@ class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
         val isVanillaBreedingAnimal = isVanillaBreedingAnimal(entity)
 
         if (!isCustomPregnant && !isVanillaBreedingAnimal) {
-            user.sendSystemMessage(Component.literal("§c目标不能进行孤雌生殖。"), true)
+            user.sendSystemMessage(Component.literal("§c目标不能进行孤雌生殖。"))
             return InteractionResult.FAIL
         }
 
@@ -46,7 +47,7 @@ class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
         if (isCustomPregnant) {
             val pregnantEntity = entity as Pregnant
             if (pregnantEntity.isPregnant) {
-                user.sendSystemMessage(Component.literal("§c目标已经怀孕了。"), true)
+                user.sendSystemMessage(Component.literal("§c目标已经怀孕了。"))
                 return InteractionResult.FAIL
             }
         }
@@ -83,7 +84,7 @@ class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
         // E. 反馈
         val varianceText = (variance * 100).toInt()
         val typeText = if (variance > 0) "减数分裂 (变异率: $varianceText%)" else "无性克隆"
-        user.sendSystemMessage(Component.literal("§d§l生物体内的卵细胞开始了自我分裂... [$typeText]"), true)
+        user.sendSystemMessage(Component.literal("§d§l生物体内的卵细胞开始了自我分裂... [$typeText]"))
     }
 
     /**
@@ -100,13 +101,13 @@ class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
             val baby = createBabyForVanillaAnimal(animal, world, variance)
             if (baby != null) {
                 // 设置位置（在母体旁边）
-                baby.setPosition(animal.x + (Math.random() - 0.5) * 2, animal.y, animal.z + (Math.random() - 0.5) * 2)
-                level().addFreshEntity(baby)
+                baby.setPos(animal.x + (Math.random() - 0.5) * 2, animal.y, animal.z + (Math.random() - 0.5) * 2)
+                world.addFreshEntity(baby)
             }
         }
 
         // 3. 反馈
-        user.sendSystemMessage(Component.literal("§d§l${animal.name.string} 产下了后代！"), true)
+        user.sendSystemMessage(Component.literal("§d§l${animal.name.string} 产下了后代！"))
 
         // 生成粒子效果（心形）
         val random = animal.random
@@ -123,7 +124,7 @@ class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
         }
 
         // 4. 应用繁殖冷却
-        animal.loveTicks = 6000
+        animal.setInLove(user)
     }
 
     /**
@@ -140,7 +141,7 @@ class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
         } ?: return null
 
         // 2. 设置为幼崽
-        baby.setBreedingAge(-24000)
+        baby.setAge(-24000)
 
         // 3. 应用属性变异（如果有）
         if (variance > 0) {
@@ -150,20 +151,18 @@ class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
         // 4. 对于绵羊，随机生成颜色（如果发生变异）
         if (baby is Sheep && variance > 0) {
             val randomColor = DyeColor.byId(baby.random.nextInt(DyeColor.entries.size))
-            baby.color = randomColor
+            baby.setColor(randomColor)
         }
 
         // 5. 对于狐狸，设置为不同的变种（如果发生变异）
         if (baby is Fox && variance > 0) {
             val isSnow = baby.random.nextBoolean()
-            baby.variant = if (isSnow) Fox.Type.SNOW else Fox.Type.RED
+            baby.setVariant(if (isSnow) Fox.Type.SNOW else Fox.Type.RED)
         }
 
         // 6. 对于猫，设置为随机品种（如果发生变异）
         if (baby is Cat && parent is Cat && variance > 0) {
-            val breedCount = BuiltInRegistries.CAT_VARIANT.count()
-            val randomBreed = baby.random.nextInt(breedCount)
-            baby.variant = BuiltInRegistries.CAT_VARIANT.getOrThrow(randomBreed).getOrDefault(parent.variant)
+            BuiltInRegistries.CAT_VARIANT.getRandom(baby.random).ifPresent { baby.setVariant(it) }
         }
 
         return baby
@@ -173,14 +172,14 @@ class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
      * 为原版动物的幼崽应用属性变异
      */
     private fun applyVarianceToVanillaBaby(baby: Animal, variance: Float) {
-        val random = baby.random
+        val rand = baby.random
 
         // 1. 随机化成长时间
         val baseGrowthTime = 24000 // 20分钟
-        val randomFactor = random.nextFloat() * 2 - 1 // -1.0 到 1.0
+        val randomFactor = rand.nextFloat() * 2 - 1 // -1.0 到 1.0
         val growthMultiplier = 1.0 + (randomFactor * variance)
         val newGrowthTime = (baseGrowthTime * growthMultiplier).toInt()
-        baby.setBreedingAge(-newGrowthTime)
+        baby.setAge(-newGrowthTime)
 
         val attributes: MutableList<Holder<Attribute?>?> = ArrayList<Holder<Attribute?>?>()
         // 始终可选的其他属性
@@ -190,9 +189,9 @@ class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
 
 
         // 随机决定额外选择几个属性（0~3个），总变异数为 1~4（因为生命值必选）
-        val extraCount = random.nextInt(4) // 0, 1, 2, or 3
+        val extraCount = rand.nextInt(4) // 0, 1, 2, or 3
         // 打乱并选取 extraCount 个其他属性
-        attributes.shuffle(Random)
+        attributes.shuffle(java.util.Random())
         val selected: MutableList<Holder<Attribute?>?> = ArrayList<Holder<Attribute?>?>()
         selected.add(Attributes.MAX_HEALTH) // 必选
         selected.addAll(attributes.subList(0, extraCount))
@@ -203,7 +202,7 @@ class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
 
 
         // 变异后回满血（因为最大生命值可能已变）
-        baby.health = baby.maxHealth
+        baby.setHealth(baby.maxHealth)
 
         // 3. 为马类动物应用属性变异
         if (baby is AbstractHorse) {
@@ -251,7 +250,7 @@ class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
         }
     }
 
-    override fun appendTooltip(
+    override fun appendHoverText(
         stack: ItemStack?,
         context: TooltipContext?,
         tooltip: MutableList<Component>?,

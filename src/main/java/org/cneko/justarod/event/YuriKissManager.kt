@@ -37,7 +37,7 @@ object YuriKissManager {
 
                 // 检查 e1 的冷却 (5秒内不重复触发)
                 val time1 = lastKissTime[e1.uuid] ?: 0L
-                if (world.time - time1 < 20L) continue
+                if (world.gameTime - time1 < 20L) continue
 
                 for (j in i + 1 until candidates.size) {
                     val e2 = candidates[j]
@@ -88,17 +88,17 @@ object YuriKissManager {
      */
     private fun isFaceToFace(e1: LivingEntity, e2: LivingEntity): Boolean {
         // 获取两者的视线方向向量
-        val look1 = e1.rotationVector.normalize()
-        val look2 = e2.rotationVector.normalize()
+        val look1 = e1.getViewVector(1.0f).normalize()
+        val look2 = e2.getViewVector(1.0f).normalize()
 
         // 计算 e1 指向 e2 的位置方向向量
-        val vec1To2 = e2.getEyePosition().subtract(e1.eyePos).normalize()
-        val vec2To1 = vec1To2.negate() // 反过来就是 e2 指向 e1
+        val vec1To2 = e2.getEyePosition().subtract(e1.getEyePosition()).normalize()
+        val vec2To1 = vec1To2.scale(-1.0) // 反过来就是 e2 指向 e1
 
         // 计算点乘（判断视线和位置方向是否基本一致）
         // 点乘结果 > 0.6 大约表示视角偏差在 50 度以内，容错率比较舒适
-        val dot1 = look1.dotProduct(vec1To2)
-        val dot2 = look2.dotProduct(vec2To1)
+        val dot1 = look1.dot(vec1To2)
+        val dot2 = look2.dot(vec2To1)
 
         return dot1 > 0.6 && dot2 > 0.6
     }

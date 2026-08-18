@@ -29,7 +29,7 @@ abstract class ElectricRodItem(properties: Properties) : EndRodItem(properties),
         return 1000
     }
 
-    override fun appendTooltip(
+    override fun appendHoverText(
         stack: ItemStack?,
         context: TooltipContext?,
         tooltip: MutableList<Component>?,
@@ -56,13 +56,13 @@ abstract class ElectricRodItem(properties: Properties) : EndRodItem(properties),
     }
 
     override fun onCraftedPostProcess(stack: ItemStack?, world: Level?) {
-        super.onCraft(stack, world)
-        stack?.damage = stack?.maxDamage!!
+        super.onCraftedPostProcess(stack, world)
+        stack?.damageValue = stack?.maxDamage!!
     }
 
     override fun damage(stack: ItemStack, amount: Int, world: Level?) {
-        super.hurt(stack, amount, world)
-        this.setStoredEnergy(stack, (stack.maxDamage - stack.damage).toLong())
+        super.damage(stack, amount, world)
+        this.setStoredEnergy(stack, (stack.maxDamage - stack.damageValue).toLong())
     }
 
     override fun canDamage(stack: ItemStack, amount: Int): Boolean {
@@ -77,14 +77,14 @@ abstract class ElectricRodItem(properties: Properties) : EndRodItem(properties),
         selected: Boolean
     ) {
         // 设置耐久与能量同步
-        stack?.damage = stack?.maxDamage!! - this.getStoredEnergy(stack).toInt()
+        stack?.damageValue = stack?.maxDamage!! - this.getStoredEnergy(stack).toInt()
         super.inventoryTick(stack, world, entity, slot, selected)
     }
 }
 
 abstract class SelfUsedElectricRodItem(properties: Properties) : ElectricRodItem(properties), SelfUsedItemInterface {
 
-    override fun appendTooltip(
+    override fun appendHoverText(
         stack: ItemStack?,
         context: TooltipContext?,
         tooltip: MutableList<Component>?,
@@ -104,7 +104,10 @@ abstract class SelfUsedElectricRodItem(properties: Properties) : ElectricRodItem
         super.inventoryTick(stack, world, entity, slot, selected)
 
         // 如果耐久为0或者实体不是LivingEntity，则不处理
-        if(stack!!.damage == stack.maxDamage || entity !is LivingEntity) return
+        if(stack!!.damageValue == stack.maxDamage || entity !is LivingEntity) return
+
+        // 只在服务端执行使用逻辑（效果/伤害/移动由服务端决定并同步给客户端）
+        if (world?.isClientSide == true) return
 
         val e: LivingEntity = entity
 
@@ -114,7 +117,7 @@ abstract class SelfUsedElectricRodItem(properties: Properties) : ElectricRodItem
             || slot == Int.MIN_VALUE // now works with inserted rods
         ){
             // 减少一点耐久 (即使没耐久也不损坏)
-            stack.damage++
+            stack.damageValue++
             // 执行
             useOnSelf(stack, world, e, slot, selected)
         }

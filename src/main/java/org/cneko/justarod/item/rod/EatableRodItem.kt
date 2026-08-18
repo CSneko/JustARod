@@ -1,6 +1,6 @@
 package org.cneko.justarod.item.rod
 
-import net.minecraft.component.type.FoodComponent
+import net.minecraft.world.food.FoodProperties
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.animal.Fox
 import net.minecraft.world.entity.player.Player
@@ -12,52 +12,49 @@ import net.minecraft.sounds.SoundEvents
 import net.minecraft.util.Mth
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.gameevent.GameEvent
-import net.minecraft.world.level.gameevent.GameEvent.Emitter
 import org.cneko.justarod.item.JRComponents
 
 /*
 其实用过之后味道是有点酸的，也会有点咸咸的，你要喜欢可以舔舔，虽然可能有点细菌，不过不是不能接受
 （自己的就算了，毕竟... 不太好吃... 甚至有点难以下口）
  */
-class EatableRodItem: SelfUsedItem(Settings().food(FoodComponent.Builder().nutrition(1).saturationModifier(0.2f).build()).component(
-    JRComponents.Companion.USED_TIME_MARK, 0).maxDamage(200)){
-    override fun finishUsing(stack: ItemStack?, world: Level, user: LivingEntity): ItemStack {
-        val itemStack = super.finishUsing(stack, world, user)
-        if (!level().isClientSide) {
+class EatableRodItem: SelfUsedItem(Properties().food(FoodProperties.Builder().nutrition(1).saturationModifier(0.2f).build()).component(
+    JRComponents.Companion.USED_TIME_MARK, 0).durability(200)){
+    override fun finishUsingItem(stack: ItemStack?, world: Level, user: LivingEntity): ItemStack {
+        val itemStack = super.finishUsingItem(stack, world, user)
+        if (!world.isClientSide) {
             for (i in 0..15) {
                 val d = user.x + (user.random.nextDouble() - 0.5) * 16.0
                 val e = Mth.clamp(
-                    user.y + (user.random.nextInt(16) - 8).toDouble(), level().bottomY.toDouble(),
-                    (level().bottomY + (level() as ServerLevel).logicalHeight - 1).toDouble()
+                    user.y + (user.random.nextInt(16) - 8).toDouble(), world.minBuildHeight.toDouble(),
+                    (world.minBuildHeight + (world as ServerLevel).logicalHeight - 1).toDouble()
                 )
                 val f = user.z + (user.random.nextDouble() - 0.5) * 16.0
-                if (user.hasVehicle()) {
+                if (user.isPassenger()) {
                     user.stopRiding()
                 }
 
-                val vec3d = user.pos
-                if (user.teleport(d, e, f, true)) {
-                    level().emitGameEvent(GameEvent.TELEPORT, vec3d, Emitter.of(user))
+                val vec3d = user.position()
+                if (user.randomTeleport(d, e, f, true)) {
                     val soundCategory: SoundSource
                     val soundEvent: SoundEvent
                     if (user is Fox) {
-                        soundEvent = SoundEvents.ENTITY_FOX_TELEPORT
+                        soundEvent = SoundEvents.FOX_TELEPORT
                         soundCategory = SoundSource.NEUTRAL
                     } else {
-                        soundEvent = SoundEvents.ITEM_CHORUS_FRUIT_TELEPORT
+                        soundEvent = SoundEvents.CHORUS_FRUIT_TELEPORT
                         soundCategory = SoundSource.PLAYERS
                     }
 
-                    level().playSound(null as Player?, user.x, user.y, user.z, soundEvent, soundCategory)
-                    user.checkFallDamage()
+                    world.playSound(null as Player?, user.x, user.y, user.z, soundEvent, soundCategory)
+                    user.resetFallDistance()
                     break
                 }
             }
 
             if (user is Player) {
                 val playerEntity = user
-                playerEntity.clearCurrentExplosion()
-                playerEntity.itemCooldownManager[this] = 20
+                playerEntity.cooldowns.addCooldown(this, 20)
             }
         }
 

@@ -20,7 +20,7 @@ class LactationInteractionEvents {
         fun init() {
             // 1. 对着其他实体右键挤奶 (例如玩家拿着桶对猫娘右键)
             UseEntityCallback.EVENT.register(UseEntityCallback { player: Player?, world: Level?, hand: InteractionHand?, entity: Entity?, hitResult: EntityHitResult? ->
-                if (player!!.getItemInHand(hand).is(Items.BUCKET) && entity is Pregnant) {
+                if (player!!.getItemInHand(hand).`is`(Items.BUCKET) && entity is Pregnant) {
                     // 需要至少有相当于一桶的量（比如 250f）
                     if (entity.milk >= 250.0f) {
                         if (!world!!.isClientSide()) {
@@ -29,11 +29,11 @@ class LactationInteractionEvents {
 
                             // 扣除空桶，给予奶桶
                             player.getItemInHand(hand).shrink(1)
-                            player.getInventory().spawnAtLocation(ItemStack(Items.MILK_BUCKET))
+                            player.spawnAtLocation(ItemStack(Items.MILK_BUCKET))
 
 
                             // 播放挤奶音效 (复用原版挤牛奶声音)
-                            level().playSound(
+                            world.playSound(
                                 null,
                                 entity.blockPosition(),
                                 SoundEvents.COW_MILK,
@@ -50,15 +50,15 @@ class LactationInteractionEvents {
 
             // 2. 玩家对自己潜行右键挤奶 (Shift + 空桶右键空气)
             UseItemCallback.EVENT.register(UseItemCallback { player: Player?, world: Level?, hand: InteractionHand? ->
-                if (player!!.isShiftKeyDown() && player.getItemInHand(hand).is(Items.BUCKET)) {
+                if (player!!.isShiftKeyDown() && player.getItemInHand(hand).`is`(Items.BUCKET)) {
                     if (player.milk >= 250.0f) {
                         if (!world!!.isClientSide()) {
                             player.extractMilk(250.0f)
 
                             player.getItemInHand(hand).shrink(1)
-                            player.getInventory().spawnAtLocation(ItemStack(Items.MILK_BUCKET))
+                            player.spawnAtLocation(ItemStack(Items.MILK_BUCKET))
 
-                            level().playSound(
+                            world.playSound(
                                 null,
                                 player.blockPosition(),
                                 SoundEvents.COW_MILK,

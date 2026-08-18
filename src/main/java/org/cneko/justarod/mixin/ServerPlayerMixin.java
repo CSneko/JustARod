@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerPlayer.class)
 public class ServerPlayerMixin {
-    @Inject(method = "copyFrom",at = @At("HEAD"))
+    @Inject(method = "restoreFrom",at = @At("HEAD"))
     public void copyFrom(ServerPlayer oldPlayer, boolean alive, CallbackInfo ci) {
         ServerPlayer player = (ServerPlayer) (Object) this;
         player.setSterilization(oldPlayer.isSterilization());

@@ -1,7 +1,8 @@
 package org.cneko.justarod.item.medical
 
-import net.minecraft.component.DataComponentTypes
-import net.minecraft.component.type.ProfileComponent
+import net.minecraft.core.component.DataComponents
+import net.minecraft.core.Holder
+import net.minecraft.world.item.component.ResolvableProfile
 import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
@@ -29,9 +30,9 @@ import net.minecraft.world.entity.monster.Creeper
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon
 
 // 继承自 MedicalItem
-class ScalpelItem(properties: Properties) : MedicalItem(settings.maxCount(1).maxDamage(4)) {
+class ScalpelItem(properties: Properties) : MedicalItem(Properties().stacksTo(1).durability(4)) {
 
-    override fun appendTooltip(stack: ItemStack, context: TooltipContext, tooltip: MutableList<Component>, type: TooltipFlag) {
+    override fun appendHoverText(stack: ItemStack, context: TooltipContext, tooltip: MutableList<Component>, type: TooltipFlag) {
         super.appendHoverText(stack, context, tooltip, type)
         if (stack.containsEnchantment(JREnchantments.HYSTERECTOMY)) {
             tooltip.add(Component.literal("§c使用它可进行子宫切除"))
@@ -66,8 +67,8 @@ class ScalpelItem(properties: Properties) : MedicalItem(settings.maxCount(1).max
      */
     override fun canApply(user: Player, target: LivingEntity, stack: ItemStack, hand: InteractionHand): Boolean {
         // 通用检查：物品损坏或目标必须存活
-        if (stack.damage >= stack.maxDamage) return false // 物品损坏
-        if (target.isDead || !target.isAlive) return false
+        if (stack.damageValue >= stack.maxDamage) return false // 物品损坏
+        if (target.isDeadOrDying() || !target.isAlive) return false
 
         // 如果是斩首，允许对任何存活的实体使用（不必实现 Pregnant）
         if (stack.containsEnchantment(JREnchantments.BEHEADING)) {
@@ -82,7 +83,7 @@ class ScalpelItem(properties: Properties) : MedicalItem(settings.maxCount(1).max
             return target.hasUterus() // 目标尚未切除子宫
         } else if (stack.containsEnchantment(JREnchantments.UTERUS_INSTALLATION)) {
             val offhandStack = user.getItemInHand(if (hand == InteractionHand.MAIN_HAND) InteractionHand.OFF_HAND else InteractionHand.MAIN_HAND)
-            return !target.hasUterus() && offhandStack.is(JRItems.UTERUS) // 目标需要安装，且使用者副手持有子宫
+            return !target.hasUterus() && offhandStack.`is`(JRItems.UTERUS) // 目标需要安装，且使用者副手持有子宫
         } else if (stack.containsEnchantment(JREnchantments.ARTIFICIAL_ABORTION)) {
             return target.pregnant > 0 && target.isFemale
         } else if (stack.containsEnchantment(JREnchantments.MASTECTOMY)) {
@@ -106,7 +107,7 @@ class ScalpelItem(properties: Properties) : MedicalItem(settings.maxCount(1).max
      * 根据失败的条件提供具体消息
      */
     override fun getFailureMessage(user: Player, target: LivingEntity, stack: ItemStack): Component {
-        if (stack.damage >= stack.maxDamage) return Component.literal("§c手术刀已损坏！")
+        if (stack.damageValue >= stack.maxDamage) return Component.literal("§c手术刀已损坏！")
         if (target !is Pregnant && !stack.containsEnchantment(JREnchantments.BEHEADING)) return Component.literal("§c只能对可进行此手术的玩家使用！")
         if (target is Pregnant) {
             if (stack.containsEnchantment(JREnchantments.HYSTERECTOMY)) {
@@ -114,7 +115,7 @@ class ScalpelItem(properties: Properties) : MedicalItem(settings.maxCount(1).max
             } else if (stack.containsEnchantment(JREnchantments.UTERUS_INSTALLATION)) {
                 if (target.hasUterus()) return if (user == target) Component.literal("§c你不需要安装子宫！") else Component.literal("§c对方不需要安装子宫！")
                 val offhandStack = user.getItemInHand(InteractionHand.OFF_HAND)
-                if (!offhandStack.is(JRItems.UTERUS)) return Component.literal("§c你的副手必须持有子宫才能执行此操作！")
+                if (!offhandStack.`is`(JRItems.UTERUS)) return Component.literal("§c你的副手必须持有子宫才能执行此操作！")
             } else if (stack.containsEnchantment(JREnchantments.ARTIFICIAL_ABORTION)) {
                 return if (user == target) Component.literal("§c你没有怀孕！") else Component.literal("§c对方没有怀孕")
             } else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)) {
@@ -141,25 +142,25 @@ class ScalpelItem(properties: Properties) : MedicalItem(settings.maxCount(1).max
     override fun applyEffect(user: Player, target: LivingEntity, stack: ItemStack, hand: InteractionHand) {
         // 先处理斩首
         if (stack.containsEnchantment(JREnchantments.BEHEADING)) {
-            if (target.isDead || !target.isAlive) return
+            if (target.isDeadOrDying() || !target.isAlive) return
             if (target is Player) {
-                target.hurt(target.level().damageSources.generic(), 1000f)
+                target.hurt(target.level().damageSources().generic(), 1000f)
                 if (target.random.nextBoolean()) {
-                    val head = Items.PLAYER_HEAD.getDefaultInstance
-                    head.set(DataComponentTypes.PROFILE, ProfileComponent(target.gameProfile))
+                    val head = Items.PLAYER_HEAD.defaultInstance
+                    head.set(DataComponents.PROFILE, ResolvableProfile(target.gameProfile))
                     target.spawnAtLocation(head)
                 } else {
-                    target.spawnAtLocation(Items.BONE.getDefaultInstance)
+                    target.spawnAtLocation(Items.BONE.defaultInstance)
                 }
             } else {
                 when {
-                    target is WitherSkeleton -> target.spawnAtLocation(Items.WITHER_SKELETON_SKULL.getDefaultInstance)
-                    target is Skeleton -> target.spawnAtLocation(Items.SKELETON_SKULL.getDefaultInstance)
-                    target is Zombie -> target.spawnAtLocation(Items.ZOMBIE_HEAD.getDefaultInstance)
-                    target is Creeper -> target.spawnAtLocation(Items.CREEPER_HEAD.getDefaultInstance)
-                    target is EnderDragon -> target.spawnAtLocation(Items.DRAGON_HEAD.getDefaultInstance)
+                    target is WitherSkeleton -> target.spawnAtLocation(Items.WITHER_SKELETON_SKULL.defaultInstance)
+                    target is Skeleton -> target.spawnAtLocation(Items.SKELETON_SKULL.defaultInstance)
+                    target is Zombie -> target.spawnAtLocation(Items.ZOMBIE_HEAD.defaultInstance)
+                    target is Creeper -> target.spawnAtLocation(Items.CREEPER_HEAD.defaultInstance)
+                    target is EnderDragon -> target.spawnAtLocation(Items.DRAGON_HEAD.defaultInstance)
                 }
-                target.hurt(target.level().damageSources.generic(), 1000f)
+                target.hurt(target.level().damageSources().generic(), 1000f)
             }
             consumeItem(user, target, stack, hand)
             return
@@ -169,10 +170,10 @@ class ScalpelItem(properties: Properties) : MedicalItem(settings.maxCount(1).max
         if (target !is Pregnant) return
 
         // 通用效果：扣血和状态效果
-        target.hurt(target.level().damageSources.generic(), 10f)
+        target.hurt(target.level().damageSources().generic(), 10f)
         target.addEffect(MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 600, 1))
         target.addEffect(MobEffectInstance(MobEffects.DIG_SLOWDOWN, 600, 1))
-        target.addEffect(MobEffectInstance(BuiltInRegistries.MOB_EFFECT.getOrThrow(JREffects.FAINT_EFFECT), 300, 1))
+        target.addEffect(MobEffectInstance(Holder.direct(JREffects.FAINT_EFFECT!!), 300, 1))
 
         // 根据附魔执行特定效果
         if (stack.containsEnchantment(JREnchantments.HYSTERECTOMY)) {
@@ -181,18 +182,18 @@ class ScalpelItem(properties: Properties) : MedicalItem(settings.maxCount(1).max
         } else if (stack.containsEnchantment(JREnchantments.UTERUS_INSTALLATION)) {
             target.setHasUterus(true)
             val offhandStack = user.getItemInHand(if (hand == InteractionHand.MAIN_HAND) InteractionHand.OFF_HAND else InteractionHand.MAIN_HAND)
-            if (offhandStack.is(JRItems.UTERUS)) {
+            if (offhandStack.`is`(JRItems.UTERUS)) {
                 offhandStack.shrink(1)
             }
         } else if (stack.containsEnchantment(JREnchantments.ARTIFICIAL_ABORTION)) {
             val pre = target.pregnant
             if (pre > 20*60*20*5) {
                 val task = TickTaskQueue()
-                target.hurt(target.level().damageSources.generic(), 2f)
+                target.hurt(target.level().damageSources().generic(), 2f)
                 for (i in 1..10) {
                     task.addTask(20 * i) {
-                        if (!target.isDead) {
-                            target.hurt(target.level().damageSources.generic(), 2f)
+                        if (!target.isDeadOrDying()) {
+                            target.hurt(target.level().damageSources().generic(), 2f)
                         }
                     }
                 }
@@ -201,39 +202,39 @@ class ScalpelItem(properties: Properties) : MedicalItem(settings.maxCount(1).max
                     target.addEffect(MobEffects.CONFUSION, 0, 20 * 15)
                     val complicationMsg = "§c并发症！手术对你造成了永久性损伤！"
                     if (user != target) {
-                        user.sendSystemMessage(Component.literal("§e并发症发生了..."), false)
+                        user.sendSystemMessage(Component.literal("§e并发症发生了..."))
                     }
                     target.sendSystemMessage(Component.literal(complicationMsg))
                 }
             }
             target.pregnant = 0
-            target.spawnAtLocation(JRItems.MOLE.getDefaultInstance)
+            target.spawnAtLocation(JRItems.MOLE.defaultInstance)
         } else if (stack.containsEnchantment(JREnchantments.MASTECTOMY)) {
             target.breastCancer = 0
-            target.spawnAtLocation(Items.CHICKEN.getDefaultInstance)
+            target.spawnAtLocation(Items.CHICKEN.defaultInstance)
         } else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)) {
             target.isOrchiectomy = true
-            val eggs = Items.EGG.getDefaultInstance
+            val eggs = Items.EGG.defaultInstance
             eggs.count = 2
             target.spawnAtLocation(eggs)
-            target.hurt(target.level().damageSources.generic(), 6f)
+            target.hurt(target.level().damageSources().generic(), 6f)
         } else if (stack.containsEnchantment(JREnchantments.AMPUTATING)) {
             target.isAmputated = true
-            target.hurt(target.level().damageSources.generic(), 8f)
-            target.spawnAtLocation(Items.BONE.getDefaultInstance)
+            target.hurt(target.level().damageSources().generic(), 8f)
+            target.spawnAtLocation(Items.BONE.defaultInstance)
         } else if (stack.containsEnchantment(JREnchantments.HEMORRHOIDECTOMY)) {
             target.hemorrhoids = 0
             target.spawnAtLocation(ItemStack(JRItems.MOLE))
-            target.hurt(target.level().damageSources.generic(), 4f)
+            target.hurt(target.level().damageSources().generic(), 4f)
             target.addEffect(MobEffectInstance(MobEffects.WEAKNESS, 1200, 0))
         } else if (stack.containsEnchantment(JREnchantments.HYMENOTOMY)) {
             target.performHymenotomy()
-            target.hurt(target.level().damageSources.generic(), 2f)
+            target.hurt(target.level().damageSources().generic(), 2f)
         } else if (stack.containsEnchantment(JREnchantments.LAPAROSCOPY)) {
             // 调用治愈方法 (cure方法内部会给予瞬间恢复效果，正好抵消上面的通用10点扣血)
             target.cureCorpusLuteumRupture()
             // 掉落清理出来的腹腔积血 (血块)
-            target.spawnAtLocation(JRItems.MOLE.getDefaultInstance)
+            target.spawnAtLocation(JRItems.MOLE.defaultInstance)
         }
     }
 
@@ -241,7 +242,7 @@ class ScalpelItem(properties: Properties) : MedicalItem(settings.maxCount(1).max
      * 消耗手术刀的耐久度
      */
     override fun consumeItem(user: Player, target: LivingEntity, stack: ItemStack, hand: InteractionHand) {
-        stack.hurt(1, user, EquipmentSlot.MAINHAND)
+        stack.hurtAndBreak(1, user, EquipmentSlot.MAINHAND)
     }
 
     /**

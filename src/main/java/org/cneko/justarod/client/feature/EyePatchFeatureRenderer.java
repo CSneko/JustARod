@@ -37,7 +37,7 @@ public class EyePatchFeatureRenderer extends RenderLayer<AbstractClientPlayer, P
         matrices.scale(0.7F, 0.7F, 0.7F);
 
         Minecraft.getInstance().getItemRenderer().renderStatic(
-                JRItems.Companion.getEYE_PATCH().getDefaultStack(),
+                JRItems.Companion.getEYE_PATCH().getDefaultInstance(),
                 ItemDisplayContext.FIXED,
                 light,
                 OverlayTexture.NO_OVERLAY,

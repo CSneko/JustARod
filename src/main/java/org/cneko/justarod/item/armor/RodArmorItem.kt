@@ -27,7 +27,7 @@ abstract class RodArmorItem<T : RodArmorItem<T>>(material: Holder<ArmorMaterial>
         // 降低耐久
         if (slot == 2){
             if (entity is LivingEntity) {
-                stack?.hurt(1, entity, EquipmentSlot.CHEST)
+                stack?.hurtAndBreak(1, entity, EquipmentSlot.CHEST)
                 onUse(stack, world, entity, slot, selected)
             }
         }

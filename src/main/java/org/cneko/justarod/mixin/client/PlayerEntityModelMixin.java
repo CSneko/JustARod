@@ -1,7 +1,7 @@
 package org.cneko.justarod.mixin.client;
 
 import net.minecraft.client.model.PlayerModel;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,10 +13,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class PlayerEntityModelMixin {
 
     @Inject(
-            method = "setAngles(Lnet/minecraft/entity/Entity;FFFFF)V",
+            method = "setupAnim",
             at = @At("TAIL")
     )
-    private void onSetAngles(Entity entity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch, CallbackInfo ci) {
+    private void onSetAngles(LivingEntity entity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch, CallbackInfo ci) {
         if (!(entity instanceof Player player)) return;
         PlayerModel<?> self = (PlayerModel<?>) (Object) this;
 

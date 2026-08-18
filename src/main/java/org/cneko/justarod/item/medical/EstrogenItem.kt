@@ -5,7 +5,7 @@ import net.minecraft.world.effect.MobEffectInstance
 import net.minecraft.world.effect.MobEffects
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
-import net.minecraft.world.inventory.tooltip.TooltipData
+import net.minecraft.world.inventory.tooltip.TooltipComponent
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionHand
@@ -36,7 +36,7 @@ class EstrogenItem(properties: Properties): MedicalItem(properties) {
         }
         if (target.random.nextBoolean()) {
             // 胸部发育/胀痛感
-            target.hurt(target.damageSources.magic(), 1.0f)
+            target.hurt(target.level().damageSources().magic(), 1.0f)
             target.sendSystemMessage(Component.literal("§d你感觉胸口传来一阵胀痛，身体变得异常敏感..."))
         } else {
             target.sendSystemMessage(Component.literal("§d一股温热的感觉流遍全身..."))
@@ -44,7 +44,7 @@ class EstrogenItem(properties: Properties): MedicalItem(properties) {
 
     }
 
-    override fun getTooltipData(stack: ItemStack): Optional<TooltipData> {
+    override fun getTooltipImage(stack: ItemStack): Optional<TooltipComponent> {
         return Optional.of(
             ChemicalStructureTooltipData(ResourceLocation.fromNamespaceAndPath("justarod", "textures/tooltip/estradiol.png"))
         )
@@ -52,7 +52,7 @@ class EstrogenItem(properties: Properties): MedicalItem(properties) {
 
 
     override fun consumeItem(user: Player, target: LivingEntity, stack: ItemStack, hand: InteractionHand) {
-        if (!user.abilities.isCreative()) stack.shrink(1)
+        if (!user.isCreative) stack.shrink(1)
     }
 
     override fun getSuccessMessages(user: Player, target: LivingEntity, stack: ItemStack): ActionMessages {

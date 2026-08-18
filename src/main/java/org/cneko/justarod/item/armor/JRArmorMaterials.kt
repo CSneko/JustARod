@@ -23,8 +23,8 @@ class JRArmorMaterials {
                 ArmorItem.Type.HELMET to 1
             ),
             0,
-            SoundEvents.ITEM_ARMOR_EQUIP_NETHERITE,
-            {Ingredient.ofItems(Items.PAPER)},
+            SoundEvents.ARMOR_EQUIP_NETHERITE,
+            {Ingredient.of(Items.PAPER)},
             0f,
             0f,
             false
@@ -39,8 +39,8 @@ class JRArmorMaterials {
                 ArmorItem.Type.HELMET to 1
             ),
             15,
-            SoundEvents.ITEM_ARMOR_EQUIP_LEATHER,
-            {Ingredient.ofItems(Items.WHITE_WOOL)},
+            SoundEvents.ARMOR_EQUIP_LEATHER,
+            {Ingredient.of(Items.WHITE_WOOL)},
             0f,
             0f,
             true
@@ -55,8 +55,8 @@ class JRArmorMaterials {
                 ArmorItem.Type.HELMET to 1
             ),
             10,
-            SoundEvents.ITEM_ARMOR_EQUIP_LEATHER,
-            {Ingredient.ofItems(Items.WHITE_WOOL)},
+            SoundEvents.ARMOR_EQUIP_LEATHER,
+            {Ingredient.of(Items.WHITE_WOOL)},
             0f,
             0f,
             true

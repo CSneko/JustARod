@@ -2,8 +2,7 @@ package org.cneko.justarod.item
 
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents
-import net.minecraft.core.component.DataComponentTypes
-import net.minecraft.world.food.FoodProperties
+import net.minecraft.core.component.DataComponents
 import net.minecraft.world.food.FoodProperties
 import net.minecraft.world.effect.MobEffect
 import net.minecraft.world.effect.MobEffectInstance
@@ -11,6 +10,7 @@ import net.minecraft.world.effect.MobEffects
 import net.minecraft.world.item.ArmorItem
 import net.minecraft.world.item.BoneMealItem
 import net.minecraft.world.item.Item
+import net.minecraft.world.item.Item.Properties
 import net.minecraft.world.item.CreativeModeTab
 import net.minecraft.world.item.ItemStack
 import net.minecraft.core.registries.BuiltInRegistries
@@ -60,65 +60,57 @@ class JRItems {
         val FirecrackerRodItem = FirecrackerRodItem()
         val INSERTION_PEDESTAL = InsertionPedestalItem()
         val RETRIEVER = RetrieverItem()
-        val SHENBAO = Item(Item.Properties().food(FoodProperties.Builder()
-            .nutrition(1).statusEffect(MobEffectInstance(JREffects.STRONG_EFFECT.entry(), 6000,1,false,true),1f).alwaysEdible()
+        val SHENBAO = Item(Properties().food(FoodProperties.Builder()
+            .nutrition(1).effect(MobEffectInstance(JREffects.STRONG_EFFECT.entry(), 6000,1,false,true),1f).alwaysEdible()
             .build()))
         val FIREWORKS_ROD = FireworksRodItem()
-        val TRIBOCHARGING_ROD = TribochargingRod(Item.Properties())
+        val TRIBOCHARGING_ROD = TribochargingRod(Properties())
         val XP_GUN = XPGun()
-        val REMOTE_CONTROL = RemoteControlItem(Item.Properties())
-        val ICED_TEA = IcedTeaItem(Item.Properties())
-        val FREE_MATING = FreeMatingItem(Item.Properties())
-        val SANITARY_TOWEL = SanitaryTowel(Item.Properties())
-        val STERILIZATION_PILLS = SterilizationPills(Item.Properties())
-        val BYT = Item(Item.Properties())
-        val MOLE = Item(Item.Properties().food(FoodProperties.Builder().nutrition(1)
-            .statusEffect(MobEffectInstance(MobEffects.CONFUSION,10,0),1f).alwaysEdible().build()))
-        val HPV_VACCINE = HPVVaccine(Item.Properties())
-        val COTTON_SWAB = CottonSwabItem(Item.Properties().stacksTo(1))
-        val SCALPEL = ScalpelItem(Item.Properties())
-        val UTERUS = Item(Item.Properties().food(FoodProperties.Builder().nutrition(6).alwaysEdible().build()))
-        val BRITH_CONTROLLING_PILL = BrithControllingPill(Item.Properties())
-        val ABORtiON_PILL = AbortionPillItem(Item.Properties())
-        val ESTROGEN = EstrogenItem(Item.Properties())
-        val TESTOSTERONE = TestosteroneItem(Item.Properties())
-        val ANTI_ANDROGEN = AntiAndrogenItem(Item.Properties())
-        val AROMATASE = object : Item(Item.Properties().stacksTo(1)) {
-            // 这个物品参与合成后不消耗
-            override fun hasCraftingRemainingItem(): Boolean {
-                return true
-            }
-            override fun getCraftingRemainingItem(stack: ItemStack?): ItemStack {
-                return ItemStack(this)
-            }
-        }
-        val PENICILLIN = PenicillinItem(Item.Properties())
-        val BALL_MOUTH = BallMouthItem(Item.Properties())
-        val ELECTRIC_SHOCK_DEVICE = ElectricShockDeviceItem(Item.Properties())
-        val ELECTRIC_SHOCK_CONTROLLER = ElectricShockController(Item.Properties())
-        val WHIP = WhipItem(Item.Properties())
-        val CONTRACT_WHIP = ContractWhipItem(Item.Properties())
-        val BINDING_ROPE = BindingRopeItem(Item.Properties())
-        val EYE_PATCH = EyePatchItem(Item.Properties())
-        val EARPLUG = EarplugItem(Item.Properties())
-        val HANDCUFFES = HandcuffesItem(Item.Properties())
-        val SHACKLES = ShacklesItem(Item.Properties())
-        val HANDCUFFES_RING = Item(Item.Properties())
-        val HANDCUFFES_CHAIN = Item(Item.Properties())
-        val NO_MATING_PLZ = NoMatingPlz(Item.Properties())
-        val EXCREMENT = BoneMealItem(Item.Properties().food(FoodProperties.Builder().alwaysEdible().nutrition(1).statusEffect(
+        val REMOTE_CONTROL = RemoteControlItem(Properties())
+        val ICED_TEA = IcedTeaItem(Properties())
+        val FREE_MATING = FreeMatingItem(Properties())
+        val SANITARY_TOWEL = SanitaryTowel(Properties())
+        val STERILIZATION_PILLS = SterilizationPills(Properties())
+        val BYT = Item(Properties())
+        val MOLE = Item(Properties().food(FoodProperties.Builder().nutrition(1)
+            .effect(MobEffectInstance(MobEffects.CONFUSION,10,0),1f).alwaysEdible().build()))
+        val HPV_VACCINE = HPVVaccine(Properties())
+        val COTTON_SWAB = CottonSwabItem(Properties().stacksTo(1))
+        val SCALPEL = ScalpelItem(Properties())
+        val UTERUS = Item(Properties().food(FoodProperties.Builder().nutrition(6).alwaysEdible().build()))
+        val BRITH_CONTROLLING_PILL = BrithControllingPill(Properties())
+        val ABORtiON_PILL = AbortionPillItem(Properties())
+        val ESTROGEN = EstrogenItem(Properties())
+        val TESTOSTERONE = TestosteroneItem(Properties())
+        val ANTI_ANDROGEN = AntiAndrogenItem(Properties())
+        val AROMATASE = Item(Properties().stacksTo(1))
+        val PENICILLIN = PenicillinItem(Properties())
+        val BALL_MOUTH = BallMouthItem(Properties())
+        val ELECTRIC_SHOCK_DEVICE = ElectricShockDeviceItem(Properties())
+        val ELECTRIC_SHOCK_CONTROLLER = ElectricShockController(Properties())
+        val WHIP = WhipItem(Properties())
+        val CONTRACT_WHIP = ContractWhipItem(Properties())
+        val BINDING_ROPE = BindingRopeItem(Properties())
+        val EYE_PATCH = EyePatchItem(Properties())
+        val EARPLUG = EarplugItem(Properties())
+        val HANDCUFFES = HandcuffesItem(Properties())
+        val SHACKLES = ShacklesItem(Properties())
+        val HANDCUFFES_RING = Item(Properties())
+        val HANDCUFFES_CHAIN = Item(Properties())
+        val NO_MATING_PLZ = NoMatingPlz(Properties())
+        val EXCREMENT = BoneMealItem(Properties().food(FoodProperties.Builder().alwaysEdible().nutrition(1).effect(
             MobEffectInstance(MobEffects.CONFUSION,200,0),1f).build()))
-        val FEMALE_POTION = GenderChangePotionItem(Item.Properties(),GenderChangePotionItem.Gender.FEMALE)
-        val MALE_POTION = GenderChangePotionItem(Item.Properties(), GenderChangePotionItem.Gender.MALE)
-        val SPERM_RETRIEVAL_DEVICE = SpermRetrievalDeviceItem(5*60*20,Item.Properties())
-        val FROZEN_SPERM_RETRIEVAL_DEVICE = FrozenSpermRetrievalDeviceItem(Item.Properties())
+        val FEMALE_POTION = GenderChangePotionItem(Properties(),GenderChangePotionItem.Gender.FEMALE)
+        val MALE_POTION = GenderChangePotionItem(Properties(), GenderChangePotionItem.Gender.MALE)
+        val SPERM_RETRIEVAL_DEVICE = SpermRetrievalDeviceItem(5*60*20,Properties())
+        val FROZEN_SPERM_RETRIEVAL_DEVICE = FrozenSpermRetrievalDeviceItem(Properties())
         val CLONER_DEVICE = ClonerDevice()
-        val PANTSU = PantsuItem(JRArmorMaterials.PANTSU_MATERIAL, ArmorItem.Type.LEGGINGS, Item.Properties().stacksTo(1))
-        val PANTSU_GETTER = PantsuGetterItem(Item.Properties().stacksTo(1))
-        val DIAPER = DiaperItem(JRArmorMaterials.DIAPER_MATERIAL, ArmorItem.Type.LEGGINGS, Item.Properties().stacksTo(1))
-        val AIDS_VACCINE = AidsVaccine(Item.Properties())
-        val TAMSULOSIN_CAPSULE = TamsulosinCapsuleItem(Item.Properties())
-        val PARTHENOGENESIS_CATALYST = ParthenogenesisCatalystItem(Item.Properties().stacksTo(1))
+        val PANTSU = PantsuItem(JRArmorMaterials.PANTSU_MATERIAL, ArmorItem.Type.LEGGINGS, Properties().stacksTo(1))
+        val PANTSU_GETTER = PantsuGetterItem(Properties().stacksTo(1))
+        val DIAPER = DiaperItem(JRArmorMaterials.DIAPER_MATERIAL, ArmorItem.Type.LEGGINGS, Properties().stacksTo(1))
+        val AIDS_VACCINE = AidsVaccine(Properties())
+        val TAMSULOSIN_CAPSULE = TamsulosinCapsuleItem(Properties())
+        val PARTHENOGENESIS_CATALYST = ParthenogenesisCatalystItem(Properties().stacksTo(1))
         val YURI_MATING_MATING_MATING = YuriMatingMatingMatingItem()
 
         var JR_ITEM_GROUP_KEY: ResourceKey<CreativeModeTab>? = null
@@ -194,12 +186,12 @@ class JRItems {
             Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(MODID, "parthenogenesis_catalyst"), PARTHENOGENESIS_CATALYST)
             Registry.register(BuiltInRegistries.ITEM, ResourceLocation.fromNamespaceAndPath(MODID, "yuri_mating_mating_mating"), YURI_MATING_MATING_MATING)
             // 注册物品组
-            JR_ITEM_GROUP_KEY = ResourceKey.of(BuiltInRegistries.ITEM_GROUP.key, ResourceLocation.fromNamespaceAndPath(MODID, "item_group"))
+            JR_ITEM_GROUP_KEY = ResourceKey.create(net.minecraft.core.registries.Registries.CREATIVE_MODE_TAB, ResourceLocation.fromNamespaceAndPath(MODID, "item_group"))
             JR_ITEM_GROUP = FabricItemGroup.builder()
                 .icon { ItemStack(SLIME_ROD) }
-                .displayName(Component.translatable("itemGroup.justarod"))
+                .title(Component.translatable("itemGroup.justarod"))
                 .build()
-            Registry.register(BuiltInRegistries.ITEM_GROUP, JR_ITEM_GROUP_KEY, JR_ITEM_GROUP)
+            Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, JR_ITEM_GROUP_KEY, JR_ITEM_GROUP)
 
             ItemGroupEvents.modifyEntriesEvent(JR_ITEM_GROUP_KEY!!).register { entries ->
                 entries.accept(SLIME_ROD)
@@ -277,5 +269,5 @@ class JRItems {
 }
 
 fun MobEffect?.entry(): Holder<MobEffect>? {
-    return BuiltInRegistries.MOB_EFFECT.getOrThrow(this)
+    return this?.let { Holder.direct(it) }
 }

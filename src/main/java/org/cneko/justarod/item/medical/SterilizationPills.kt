@@ -10,7 +10,7 @@ import org.cneko.justarod.entity.Pregnant
 
 class SterilizationPills(properties: Properties) : MedicalItem(properties) {
 
-    override fun appendTooltip(stack: ItemStack, context: TooltipContext, tooltip: MutableList<Component>, type: TooltipFlag) {
+    override fun appendHoverText(stack: ItemStack, context: TooltipContext, tooltip: MutableList<Component>, type: TooltipFlag) {
         super.appendHoverText(stack, context, tooltip, type)
         tooltip.add(Component.literal("§c请谨慎使用！！！"))
         tooltip.add(Component.literal("§c你没有悔改的机会！！！"))
@@ -50,7 +50,7 @@ class SterilizationPills(properties: Properties) : MedicalItem(properties) {
      * 消耗一粒药丸
      */
     override fun consumeItem(user: Player, target: LivingEntity, stack: ItemStack, hand: InteractionHand) {
-        if (!user.abilities.isCreative()) {
+        if (!!user.isCreative) {
             stack.shrink(1)
         }
     }

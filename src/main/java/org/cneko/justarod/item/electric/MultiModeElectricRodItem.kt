@@ -12,7 +12,7 @@ import org.cneko.justarod.item.JRComponents
 /*
 很智能的呢，多种模式任你选择~
  */
-abstract class MultiModeSelfUsedElectricRodItem(settings:Settings): SelfUsedElectricRodItem(properties) {
+abstract class MultiModeSelfUsedElectricRodItem(properties:Properties): SelfUsedElectricRodItem(properties) {
     fun getMode(stack: ItemStack): String {
         return stack.getOrDefault(JRComponents.MODE, this.getDefaultMode(stack))
     }
@@ -51,7 +51,7 @@ abstract class MultiModeSelfUsedElectricRodItem(settings:Settings): SelfUsedElec
         return super.use(world, user, hand)
     }
 
-    override fun appendTooltip(
+    override fun appendHoverText(
         stack: ItemStack?,
         context: TooltipContext?,
         tooltip: MutableList<Component>?,

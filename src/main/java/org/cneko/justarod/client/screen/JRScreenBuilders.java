@@ -1,4 +1,5 @@
 package org.cneko.justarod.client.screen;
+import net.minecraft.core.Holder;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
@@ -54,7 +55,7 @@ public class JRScreenBuilders {
     public static final class JRButtonFactories {
         public static final ButtonFactory SEEEEEX_NEKO_BREED_BUTTON = screen -> Button.builder(Component.translatable("screen.toneko.seeeeeex_neko_entity_interactive.button.breed"), (btn) -> {
             if (screen.getNeko() instanceof Sexual) {
-                if (getInstance().player.hasEffect(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getKENJA_TIME_EFFECT()))){
+                if (getInstance().player.hasEffect(Holder.direct(JREffects.Companion.getKENJA_TIME_EFFECT()))){
                     getInstance().player.sendSystemMessage(Component.nullToEmpty("§c你现在还不想交配!"));
                 }
                 Minecraft.getInstance().setScreen(new InteractionScreen(Component.empty(), screen.getNeko(), screen.lastScreen, SEEEEEX_NEKO_BREED_SCREEN));

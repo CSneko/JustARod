@@ -18,7 +18,7 @@ import net.minecraft.world.level.Level
 /*
 嗯~啊~出来了...
  */
-class XPGun : Item(Settings().maxCount(1)) {
+class XPGun : Item(Properties().stacksTo(1)) {
     override fun use(world: Level?, user: Player?, hand: InteractionHand?): InteractionResultHolder<ItemStack> {
         user ?: return super.use(world, user, hand)
         val handStack = user.getItemInHand(hand)
@@ -36,32 +36,32 @@ class XPGun : Item(Settings().maxCount(1)) {
                     val pitchOffset = (random.nextFloat() - 0.5f) * 10f
 
                     // 计算新方向
-                    val newYaw = user.yaw + yawOffset
-                    val newPitch = user.pitch + pitchOffset
+                    val newYaw = user.yRot + yawOffset
+                    val newPitch = user.xRot + pitchOffset
 
                     // 将角度转换为方向向量
-                    val direction = Vec3.fromPolar(newPitch, newYaw)
+                    val direction = Vec3.directionFromRotation(newPitch, newYaw)
 
                     // 计算生成位置（玩家眼前方0.5米）
-                    val eyePos = user.eyePos
-                    val spawnPos = eyePos.add(direction.multiply(0.5))
+                    val eyePos = user.getEyePosition()
+                    val spawnPos = eyePos.add(direction.scale(0.5))
 
                     // 创建经验球实体（1点经验）
                     val xpOrb = ExperienceOrb(world, spawnPos.x, spawnPos.y, spawnPos.z, 1)
 
                     // 设置速度（方向向量 * 速度系数）
-                    xpOrb.getDeltaMovement() = direction.multiply(1.2)
+                    xpOrb.setDeltaMovement(direction.scale(1.2))
 
                     // 添加击退效果
-                    xpOrb.getDeltaMovement() = xpOrb.getDeltaMovement().add(user.getDeltaMovement())
+                    xpOrb.setDeltaMovement(xpOrb.deltaMovement.add(user.deltaMovement))
 
-                    level().addFreshEntity(xpOrb)
+                    world.addFreshEntity(xpOrb)
                 }
             }
 
             // 播放音效（客户端）
             if (world?.isClientSide == true) {
-                level().playSound(user, user.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0f, 1.0f)
+                world!!.playSound(user, user.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0f, 1.0f)
             }
 
             return InteractionResultHolder.success(handStack)

@@ -53,7 +53,7 @@ class SuckMilkGoal(private val baby: NekoEntity) : Goal() {
         if (targetMother == null) return
         val mother = targetMother as Pregnant
 
-        baby.lookGoal.Flag.lookAt(targetMother, 30.0f, 30.0f)
+        //baby.lookGoal.Flag.lookAt(targetMother, 30.0f, 30.0f)
 
         // 距离大于 2 格，走过去
         if (baby.distanceToSqr(targetMother!!) > 4.0) {
@@ -73,9 +73,9 @@ class SuckMilkGoal(private val baby: NekoEntity) : Goal() {
                     baby.age += 600 // 加速半分钟
 
                     // 冒出爱心粒子
-                    val world = baby.world
+                    val world = baby.level()
                     if (world is ServerLevel) {
-                        level().sendParticles(
+                        world.sendParticles(
                             ParticleTypes.HEART,
                             targetMother!!.x, targetMother!!.y + 1.0, targetMother!!.z,
                             1, 0.3, 0.5, 0.3, 0.0

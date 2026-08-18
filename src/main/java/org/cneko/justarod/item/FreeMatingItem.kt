@@ -11,24 +11,22 @@ import org.cneko.justarod.item.JRItems.Companion.BYT
 import java.util.function.Predicate
 
 class FreeMatingItem(properties: Properties): Item(properties) {
-    override fun useOnEntity(
+    override fun interactLivingEntity(
         stack: ItemStack?,
         user: Player?,
         entity: LivingEntity?,
         hand: InteractionHand?
-    ): InteractionResult? {
-        if (user?.world?.isClientSide == false) {
+    ): InteractionResult {
+        if (user?.level()?.isClientSide == false) {
             if (!user.canPregnant()) {
                 user.sendSystemMessage(Component.literal("§c你目前还不能怀孕哦"))
             } else {
-                if (!user.getInventory().offhand.stream()
-                        .anyMatch(Predicate { item: ItemStack? -> item!!.is(BYT) })
-                ) {
+                if (!user.getInventory().offhand.any { it.`is`(BYT) }) {
                     user.tryPregnant()
                     user.babyCount = user.calculateBabyCount(entity)
                     user.childrenType = entity?.type
                     user.sendSystemMessage(Component.literal("§a交配完成！"))
-                    user.sendSystemMessage(Component.literal("§b你怀上了${Component.translatable(entity?.type?.translationKey).string}的宝宝哦~"))
+                    user.sendSystemMessage(Component.literal("§b你怀上了${Component.translatable(entity?.type?.descriptionId).string}的宝宝哦~"))
                     // 获取对方的负面buff
                     val effects = entity?.activeEffects?.filter { !it.effect.value().isBeneficial }
                     if (effects?.isEmpty() == false) {
@@ -45,6 +43,6 @@ class FreeMatingItem(properties: Properties): Item(properties) {
 
             }
         }
-        return super.useOnEntity(stack, user, entity, hand)
+        return super.interactLivingEntity(stack, user, entity, hand)
     }
 }

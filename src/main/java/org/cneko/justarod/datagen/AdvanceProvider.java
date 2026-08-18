@@ -50,13 +50,13 @@ public class AdvanceProvider extends FabricAdvancementProvider {
                         true,
                         false
                 )
-                .criterion("grass_sheep",
+                .addCriterion("grass_sheep",
                         JRCriteria.ITEM_USED_ON_ENTITY_CRITERION.createCriterion(
                         ItemUsedOnEntityCriterion.create(
                             ItemPredicate.Builder.item().of(JRItems.Companion.getINSERTION_PEDESTAL()).build(),
                             EntityPredicate.Builder.entity().of(EntityType.SHEEP).build()
                         )
                 ))
-                .build(consumer, MODID + ":grass_sheep");
+                .save(consumer, MODID + ":grass_sheep");
     }
 }

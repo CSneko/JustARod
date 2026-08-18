@@ -27,7 +27,7 @@ public class JREntities {
             SEEEEEX_NEKO_ID,
             EntityType.Builder.of(SeeeeexNekoEntity::new,MobCategory.CREATURE)//.createMob(SeeeeexNekoEntity::new, SpawnGroup.CREATURE,
                     //builder ->builder.defaultAttributes(SeeeeexNekoEntity::createNekoAttributes))
-                    .dimensions(0.5f,1.7f).eyeHeight(1.6f)
+                    .sized(0.5f,1.7f).eyeHeight(1.6f)
                     .build()
     );
     public static final ResourceLocation LOLI_NEKO_ID = ResourceLocation.fromNamespaceAndPath(MODID, "loli_neko");
@@ -37,7 +37,7 @@ public class JREntities {
            // FabricEntityType.Builder.createMob(LoliNekoEntity::new,SpawnGroup.CREATURE,
            //         builder -> builder.defaultAttributes(NekoEntity::createNekoAttributes))
             EntityType.Builder.of(LoliNekoEntity::new,MobCategory.CREATURE)
-            .dimensions(0.5f,1.7f).eyeHeight(0.4f)
+            .sized(0.5f,1.7f).eyeHeight(0.4f)
                     .build()
     );
     public static final ResourceLocation ROD_ID = ResourceLocation.fromNamespaceAndPath(MODID, "rod");
@@ -47,7 +47,7 @@ public class JREntities {
           //  FabricEntityType.Builder.createMob(RodEntity::new,SpawnGroup.CREATURE,
             //        builder -> builder.defaultAttributes(RodEntity.Companion::createRodAttribute))
             EntityType.Builder.of(RodEntity::new, MobCategory.CREATURE)
-            .dimensions(0.5f,0.5f).eyeHeight(0.4f)
+            .sized(0.5f,0.5f).eyeHeight(0.4f)
                     .build()
     );
     public static final ResourceLocation ICED_TEA_PROJECTILE_ID = ResourceLocation.fromNamespaceAndPath(MODID, "iced_tea");
@@ -55,8 +55,8 @@ public class JREntities {
             BuiltInRegistries.ENTITY_TYPE,
             ICED_TEA_PROJECTILE_ID,
             EntityType.Builder.<IcedTeaProjectileEntity>of(IcedTeaProjectileEntity::new, MobCategory.MISC)
-                    .dimensions(1f, 1f)
-                    .trackingTickInterval(10)
+                    .sized(1f, 1f)
+                    .updateInterval(10)
                     .build()
     );
     public static void init(){

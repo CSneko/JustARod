@@ -1,4 +1,5 @@
 package org.cneko.justarod.entity;
+import net.minecraft.core.Holder;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -40,7 +41,7 @@ public interface Powerable{
         // 如果能量低于0了，晕倒
         if (entity.getPower() <= 0) {
             entity.setPower(0);
-            entity.addEffect(new MobEffectInstance(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getFAINT_EFFECT()), 1000, 1));
+            entity.addEffect(new MobEffectInstance(Holder.direct(JREffects.Companion.getFAINT_EFFECT()), 1000, 1));
         }
     }
 

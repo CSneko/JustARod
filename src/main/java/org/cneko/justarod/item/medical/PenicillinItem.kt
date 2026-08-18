@@ -8,7 +8,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionHand
 import org.cneko.justarod.entity.Pregnant
 
-class PenicillinItem(settings: Item.Properties): MedicalItem(properties) {
+class PenicillinItem(properties: Item.Properties): MedicalItem(properties) {
     override fun canApply(
         user: Player,
         target: LivingEntity,

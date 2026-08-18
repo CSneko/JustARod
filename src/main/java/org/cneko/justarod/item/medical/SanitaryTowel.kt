@@ -46,7 +46,7 @@ class SanitaryTowel(properties: Properties) : MedicalItem(properties) {
      * 消耗一片卫生巾
      */
     override fun consumeItem(user: Player, target: LivingEntity, stack: ItemStack, hand: InteractionHand) {
-        if (!user.abilities.isCreative()) {
+        if (!!user.isCreative) {
             stack.shrink(1)
         }
     }

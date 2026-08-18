@@ -65,11 +65,11 @@ class YuriQuirk : JRDefaultQuirk("yuri") {
                 // 发送提示文本
                 if (player is ServerPlayer) {
                     val msgKey = "你与 ${entity.name.string} 贴贴了!"
-                    player.sendSystemMessage(Component.literal(msgKey).withStyle(ChatFormatting.LIGHT_PURPLE), true)
+                    player.sendSystemMessage(Component.literal(msgKey).withStyle(ChatFormatting.LIGHT_PURPLE))
                 }
                 if (entity is ServerPlayer) {
                     val msgKey = "你与 ${player.name.string} 贴贴了!"
-                    entity.sendSystemMessage(Component.literal(msgKey).withStyle(ChatFormatting.LIGHT_PURPLE), true)
+                    entity.sendSystemMessage(Component.literal(msgKey).withStyle(ChatFormatting.LIGHT_PURPLE))
                 }
             }
 

@@ -9,7 +9,7 @@ import net.minecraft.world.item.Item
 哎呀，戴久了要流口水的喵~
  */
 class BallMouthItem(properties: Properties) : AbstractBDSMItem(
-    settings,
+    properties,
     { it.ballMouth },
     { e, v -> e.ballMouth = v },
     "对方已经有禁言口罩了哦~",
@@ -20,7 +20,7 @@ class BallMouthItem(properties: Properties) : AbstractBDSMItem(
 喂喂，你还在想什么不正经的用途呢
  */
 class EarplugItem(properties: Properties) : AbstractBDSMItem(
-    settings,
+    properties,
     { it.earplug },
     { e, v -> e.earplug = v },
     "对方已经有耳塞了哦~",
@@ -31,7 +31,7 @@ class EarplugItem(properties: Properties) : AbstractBDSMItem(
 我没试过...
  */
 class BindingRopeItem(properties: Properties) : AbstractBDSMItem(
-    settings,
+    properties,
     { it.bundled },
     { e, v -> e.bundled = v },
     "对方已经有封禁绳了哦~",
@@ -39,7 +39,7 @@ class BindingRopeItem(properties: Properties) : AbstractBDSMItem(
 )
 
 class ElectricShockDeviceItem(properties: Properties) : AbstractBDSMItem(
-    settings,
+    properties,
     { it.electricShock },
     { e, v -> e.electricShock = v },
     "对方已经有电击器了哦~",
@@ -48,7 +48,7 @@ class ElectricShockDeviceItem(properties: Properties) : AbstractBDSMItem(
 )
 
 class EyePatchItem(properties: Properties) : AbstractBDSMItem(
-    settings,
+    properties,
     { it.eyePatch },
     { e, v -> e.eyePatch = v },
     "对方已经有眼罩了哦~",
@@ -59,7 +59,7 @@ class EyePatchItem(properties: Properties) : AbstractBDSMItem(
 大哥哥，喝茶~
  */
 class HandcuffesItem(properties: Properties) : AbstractBDSMItem(
-    settings,
+    properties,
     { it.handcuffed },
     { e, v -> e.handcuffed = v },
     "对方已经有手铐了哦~",
@@ -67,7 +67,7 @@ class HandcuffesItem(properties: Properties) : AbstractBDSMItem(
 )
 
 class ShacklesItem(properties: Properties) : AbstractBDSMItem(
-    settings,
+    properties,
     { it.shackled },
     { e, v -> e.shackled = v },
     "对方已经有脚镣了哦~",
@@ -77,8 +77,8 @@ class ShacklesItem(properties: Properties) : AbstractBDSMItem(
 /*
 听说你们小南梁喜欢这个？
  */
-class NoMatingPlz(settings: Item.Properties): AbstractBDSMItem(
-    settings,
+class NoMatingPlz(properties: Item.Properties): AbstractBDSMItem(
+    properties,
     { it.noMatingPlz },
     { e, v -> e.noMatingPlz = v },
     "对方已经有繁殖锁定~",

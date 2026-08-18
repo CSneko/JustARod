@@ -10,7 +10,8 @@ import com.mojang.brigadier.context.CommandContext
 import net.minecraft.world.entity.EntityType
 import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.network.RegistryFriendlyByteBuf
-import net.minecraft.network.codec.PacketCodecs
+import net.minecraft.network.codec.ByteBufCodecs
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.registries.Registries
 import net.minecraft.commands.CommandSourceStack
 import org.cneko.justarod.entity.Pregnant
@@ -105,12 +106,12 @@ class JREntityTypeProperty(
     setter: (Pregnant, Optional<EntityType<*>>) -> Unit
 ) : JRProperty<Optional<EntityType<*>>>(name, displayName, getter, setter) {
     override fun writeToBuf(buf: RegistryFriendlyByteBuf, value: Optional<EntityType<*>>): FriendlyByteBuf? {
-        PacketCodecs.optional(PacketCodecs.registryValue(BuiltInRegistries.ENTITY_TYPE))
+        ByteBufCodecs.optional(ByteBufCodecs.registry(Registries.ENTITY_TYPE))
             .encode(buf, value)
         return buf
     }
     override fun readFromBuf(buf: RegistryFriendlyByteBuf): Optional<EntityType<*>> {
-        return PacketCodecs.optional(PacketCodecs.registryValue(BuiltInRegistries.ENTITY_TYPE))
+        return ByteBufCodecs.optional(ByteBufCodecs.registry(Registries.ENTITY_TYPE))
             .decode(buf)
     }
     override fun getArgumentType(): ArgumentType<Optional<EntityType<*>>> {
@@ -120,7 +121,7 @@ class JREntityTypeProperty(
         throw UnsupportedOperationException()
     }
     override fun formatValue(value: Optional<EntityType<*>>): String {
-        return if (value.isPresent) value.get().name.string else "无"
+        return if (value.isPresent) value.get().description.string else "无"
     }
     override fun registerCommand(): LiteralArgumentBuilder<CommandSourceStack>? {
         return null

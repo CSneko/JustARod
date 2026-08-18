@@ -37,7 +37,7 @@ public class BallMouthFeatureRenderer extends RenderLayer<AbstractClientPlayer, 
         matrices.scale(0.7F, 0.7F, 0.7F);
 
         Minecraft.getInstance().getItemRenderer().renderStatic(
-                JRItems.Companion.getBALL_MOUTH().getDefaultStack(),
+                JRItems.Companion.getBALL_MOUTH().getDefaultInstance(),
                 ItemDisplayContext.FIXED,
                 light,
                 OverlayTexture.NO_OVERLAY,

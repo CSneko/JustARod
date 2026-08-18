@@ -6,10 +6,10 @@ import net.minecraft.world.entity.ai.attributes.Attributes
 /*
 喝~ 长大了
  */
-class GrowthAgentItem: BaseSyringeItem(Settings()) {
+class GrowthAgentItem: BaseSyringeItem(Properties()) {
 
     override fun applyEffect(target: LivingEntity) {
-        target.attributes.getCustomInstance(Attributes.SCALE)?.let { scale ->
+        target.getAttribute(Attributes.SCALE)?.let { scale ->
             if (scale.baseValue < 4) {
                 scale.baseValue += 0.1
             }

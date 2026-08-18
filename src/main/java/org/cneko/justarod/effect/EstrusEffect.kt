@@ -54,10 +54,12 @@ class EstrusEffect:MobEffect(MobEffectCategory.BENEFICIAL, 0xffb6c1) {
             // 让实体趴下
             EntityPoseManager.setPose(entity, Pose.SWIMMING)
 
-            // 随机移动位置
-            val x: Int = random.nextInt(10) - 5
-            val z: Int = random.nextInt(10) - 5
-            entity.move(MoverType.SHULKER_BOX, Vec3(x * 0.03, 0.01, z * 0.03))
+            // 随机移动位置（同样只由服务端挪，不然客户端挪的和服务端同步的打架，看起来像橡皮筋）
+            if (!world.isClientSide) {
+                val x: Int = random.nextInt(10) - 5
+                val z: Int = random.nextInt(10) - 5
+                entity.move(MoverType.SHULKER_BOX, Vec3(x * 0.03, 0.01, z * 0.03))
+            }
         }
 
         return super.applyEffectTick(entity, amplifier)

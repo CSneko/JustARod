@@ -56,11 +56,17 @@ class OrgasmEffect : MobEffect(MobEffectCategory.BENEFICIAL, 0xe9b8b3) {
             0.0
         )
 
-        if (random.nextBoolean()) {
+        // 发抖只由服务端做（效果 tick 客户端也会跑，如果客户端也随机挪位置，
+        // 就会和服务端同步的位置打架，玩家会感觉像被胶粘住一样走不动、被反复拽来拽去）
+        if (!world.isClientSide && random.nextBoolean()) {
+            // 发抖幅度封顶，不然放大器大了（sqrt(speed)）直接起飞，跳得老高
+            val amp = amplifier.coerceAtMost(10)
             // 随机移动玩家的位置，确保正负方向概率相等
-            val x: Double = (random.nextDouble() * 2 - 1) * (amplifier + 1) * 2.5
-            val z: Double = (random.nextDouble() * 2 - 1) * (amplifier + 1) * 2.5
-            entity.move(MoverType.SHULKER_BOX, Vec3(x * 0.001, amplifier * 0.0003, z * 0.001))
+            val x: Double = (random.nextDouble() * 2 - 1) * (amp + 1) * 2.5
+            val z: Double = (random.nextDouble() * 2 - 1) * (amp + 1) * 2.5
+            // 上下也要随机（原来只往上飘，飞起来会被越带越高）
+            val y: Double = (random.nextDouble() * 2 - 1) * amp * 0.0003
+            entity.move(MoverType.SHULKER_BOX, Vec3(x * 0.001, y, z * 0.001))
         }
 
         // 添加水滴效果

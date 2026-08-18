@@ -2,11 +2,11 @@ package org.cneko.justarod.item
 
 import com.mojang.serialization.Codec
 import com.mojang.serialization.codecs.RecordCodecBuilder
-import net.minecraft.component.DataComponentType
-import net.minecraft.component.type.NbtComponent
+import net.minecraft.core.component.DataComponentType
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.component.CustomData
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.Registry
 import net.minecraft.network.chat.Component
@@ -17,68 +17,68 @@ import java.util.*
 
 class JRComponents{
     companion object{
-        val USED_TIME_MARK: ComponentType<Int> = Registry.register(
+        val USED_TIME_MARK: DataComponentType<Int> = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
             ResourceLocation.fromNamespaceAndPath(MODID, "used_time_mark"),
-            ComponentType.builder<Int>().codec(Codec.INT).build()
+            DataComponentType.builder<Int>().persistent(Codec.INT).build()
         )
-        val OWNER: ComponentType<String> = Registry.register(
+        val OWNER: DataComponentType<String> = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
             ResourceLocation.fromNamespaceAndPath(MODID, "owner"),
-            ComponentType.builder<String>().codec(Codec.STRING).build()
+            DataComponentType.builder<String>().persistent(Codec.STRING).build()
         )
-        val SPEED: ComponentType<Int> = Registry.register(
+        val SPEED: DataComponentType<Int> = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
             ResourceLocation.fromNamespaceAndPath(MODID, "speed"),
-            ComponentType.builder<Int>().codec(Codec.INT).build()
+            DataComponentType.builder<Int>().persistent(Codec.INT).build()
         )
-        val MODE: ComponentType<String> = Registry.register(
+        val MODE: DataComponentType<String> = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
             ResourceLocation.fromNamespaceAndPath(MODID, "mode"),
-            ComponentType.builder<String>().codec(Codec.STRING).build()
+            DataComponentType.builder<String>().persistent(Codec.STRING).build()
         )
-        val ROD_INSIDE: ComponentType<ItemStack> = Registry.register(
+        val ROD_INSIDE: DataComponentType<ItemStack> = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
             ResourceLocation.fromNamespaceAndPath(MODID, "rod_inside"),
-            ComponentType.builder<ItemStack>().codec(ItemStack.CODEC).build()
+            DataComponentType.builder<ItemStack>().persistent(ItemStack.CODEC).build()
         )
-        val SECRETIONS_APPEARANCE: ComponentType<String> = Registry.register(
+        val SECRETIONS_APPEARANCE: DataComponentType<String> = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
             ResourceLocation.fromNamespaceAndPath(MODID, "secretions_appearance"),
-            ComponentType.builder<String>().codec(Codec.STRING).build()
+            DataComponentType.builder<String>().persistent(Codec.STRING).build()
         )
 
-        val ENTITY_TYPE: ComponentType<EntityType<*>> = Registry.register(
+        val ENTITY_TYPE: DataComponentType<EntityType<*>> = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
             ResourceLocation.fromNamespaceAndPath(MODID, "entity_type"),
-            ComponentType.builder<EntityType<*>>()
-                .codec(BuiltInRegistries.ENTITY_TYPE.codec)
+            DataComponentType.builder<EntityType<*>>()
+                .persistent(BuiltInRegistries.ENTITY_TYPE.byNameCodec())
                 .build()
         )
-        val COLLECTED_TIME: ComponentType<Int> = Registry.register(
+        val COLLECTED_TIME: DataComponentType<Int> = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
             ResourceLocation.fromNamespaceAndPath(MODID, "collected_time"),
-            ComponentType.builder<Int>().codec(Codec.INT).build()
+            DataComponentType.builder<Int>().persistent(Codec.INT).build()
         )
-        val PANTSU_STATE: ComponentType<PantsuState> = Registry.register(
+        val PANTSU_STATE: DataComponentType<PantsuState> = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
             ResourceLocation.fromNamespaceAndPath(MODID, "pantsu_state"),
-            ComponentType.builder<PantsuState>().codec(PantsuState.CODEC).build()
+            DataComponentType.builder<PantsuState>().persistent(PantsuState.CODEC).build()
         )
 
 
         // 实体NBT (用于复制生成幼崽的属性)
-        val CLONER_ENTITY_NBT: ComponentType<NbtComponent> =
-            register("cloner_entity_nbt", ComponentType.builder<NbtComponent>().codec(NbtComponent.CODEC).build())
+        val CLONER_ENTITY_NBT: DataComponentType<CustomData> =
+            register("cloner_entity_nbt", DataComponentType.builder<CustomData>().persistent(CustomData.CODEC).build())
 
         // 是否完成细胞核转移
-        val CLONER_TRANSFERRED: ComponentType<Boolean> =
-            register("cloner_transferred", ComponentType.builder<Boolean>().codec(Codec.BOOL).build())
+        val CLONER_TRANSFERRED: DataComponentType<Boolean> =
+            register("cloner_transferred", DataComponentType.builder<Boolean>().persistent(Codec.BOOL).build())
 
-        val CLONER_STATE: ComponentType<String> =
-            register("cloner_state", ComponentType.builder<String>().codec(Codec.STRING).build())
+        val CLONER_STATE: DataComponentType<String> =
+            register("cloner_state", DataComponentType.builder<String>().persistent(Codec.STRING).build())
 
-        private fun <T> register(id: String, type: ComponentType<T>): ComponentType<T> {
+        private fun <T> register(id: String, type: DataComponentType<T>): DataComponentType<T> {
             return Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, ResourceLocation.fromNamespaceAndPath(MODID, id), type)
         }
 
@@ -92,10 +92,10 @@ class JRComponents{
         SOILED("soiled", "tooltip.justarod.pantsu.soiled"), // 弄脏(大号)
         BLOODY("bloody", "tooltip.justarod.pantsu.bloody"); // 血染(经期/其他)
 
-        override fun asString(): String = id
+        override fun getSerializedName(): String = id
 
         companion object {
-            val CODEC: Codec<PantsuState> = StringRepresentable.createCodec { PantsuState.entries.toTypedArray() }
+            val CODEC: Codec<PantsuState> = StringRepresentable.fromEnum { PantsuState.values() }
         }
     }
 }

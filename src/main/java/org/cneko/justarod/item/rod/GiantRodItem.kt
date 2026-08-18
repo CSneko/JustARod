@@ -9,6 +9,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.core.Holder
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.level.Level
@@ -18,7 +19,7 @@ import org.cneko.justarod.item.JRComponents
 /*
 事实上没人可以把这个塞进去，哪怕扩张有多厉害
  */
-class GiantRodItem: OtherUsedItem(Settings().maxCount(1).maxDamage(1000).component(JRComponents.Companion.USED_TIME_MARK, 0)) {
+class GiantRodItem: OtherUsedItem(Properties().stacksTo(1).durability(1000).component(JRComponents.Companion.USED_TIME_MARK, 0)) {
     override fun canAcceptEntity(stack: ItemStack, entity: Entity): Boolean {
         return entity.type.equals(EntityType.ENDER_DRAGON)
     }
@@ -30,11 +31,11 @@ class GiantRodItem: OtherUsedItem(Settings().maxCount(1).maxDamage(1000).compone
         }
         // 给目标实体高潮效果
         JREffects.ORGASM_EFFECT?.let {
-            val orgasm = MobEffectInstance(BuiltInRegistries.MOB_EFFECT.getOrThrow(it), 100, 0)
+            val orgasm = MobEffectInstance(Holder.direct(it), 100, 0)
             target.addEffect(orgasm)
         }
         // 掉一颗龙蛋
-        target.dropItem(Items.DRAGON_EGG)
+        target.spawnAtLocation(Items.DRAGON_EGG)
         return InteractionResult.SUCCESS
     }
 
@@ -42,7 +43,7 @@ class GiantRodItem: OtherUsedItem(Settings().maxCount(1).maxDamage(1000).compone
         return EndRodInstructions.USE_ON_OTHER_INSERT
     }
 
-    override fun appendTooltip(
+    override fun appendHoverText(
         stack: ItemStack?,
         context: TooltipContext?,
         tooltip: MutableList<Component>?,

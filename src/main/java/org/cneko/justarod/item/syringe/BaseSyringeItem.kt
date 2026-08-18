@@ -18,7 +18,7 @@ abstract class BaseSyringeItem(properties: Properties?) : Item(properties),Ammun
         return super.use(world, user, hand)
     }
 
-    override fun useOnEntity(stack: ItemStack?, user: Player?, entity: LivingEntity?, hand: InteractionHand?): InteractionResult {
+    override fun interactLivingEntity(stack: ItemStack?, user: Player?, entity: LivingEntity?, hand: InteractionHand?): InteractionResult {
         entity?.let { applyEffect(it) }
         consumeItem(user, hand)
         return InteractionResult.SUCCESS

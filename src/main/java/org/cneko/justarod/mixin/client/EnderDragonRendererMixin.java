@@ -14,10 +14,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(EnderDragonRenderer.class)
 public class EnderDragonRendererMixin {
     @Inject(
-            method = "render(Lnet/minecraft/entity/boss/dragon/EnderDragonEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V",
+            method = "render",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/util/math/MatrixStack;push()V",
+                    target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V",
                     shift = At.Shift.AFTER
             )
     )

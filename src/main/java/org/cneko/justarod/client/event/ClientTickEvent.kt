@@ -244,7 +244,7 @@ class ClientTickEvent {
 
 
 
-        private val POWER_ICON = ResourceLocation.fromNamespaceAndPath(MODID,"textures/item/diamond_sword.png")
+        private val POWER_ICON = ResourceLocation.fromNamespaceAndPath("minecraft","textures/item/diamond_sword.png")
         private fun renderPowerBar(context: GuiGraphics) {
             val client = Minecraft.getInstance()
             if (client.options.hideGui) return
@@ -353,12 +353,18 @@ class ClientTickEvent {
         private fun applyViewShake(player: Player, intensity: Float) {
             val random = Random()
 
-            // 随机生成偏移角度，控制范围为 [-intensity, intensity]
-            val shakeYaw = (random.nextFloat() - 0.5f) * 2 * intensity
-            val shakePitch = (random.nextFloat() - 0.5f) * 2 * intensity
+            // 抖的是视角（yRot），不是移动输入（yya）！
+            // 之前给 yya 加偏移会把玩家本人往天上/地下乱推，创造模式飞行直接被拽来拽去
+            // 强度是屏幕像素量级（最高约窗口宽度*0.005），直接当角度用会甩得跟帕金森一样，
+            // 所以要换算成角度并限制上限
+            val strength = (intensity * 0.1f).coerceAtMost(2.0f)
+
+            // 随机生成偏移角度，控制范围为 [-strength, strength]
+            val shakeYaw = (random.nextFloat() - 0.5f) * 2 * strength
+            val shakePitch = (random.nextFloat() - 0.5f) * 2 * strength
 
             // 修改玩家视角
-            player.yya += shakeYaw
+            player.yRot += shakeYaw
             player.xRot = (player.xRot + shakePitch).coerceIn(-90f, 90f) // 限制 pitch 在 [-90, 90] 范围内
         }
 

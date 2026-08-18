@@ -28,24 +28,24 @@ import kotlin.math.sin
 /*
 啊~♡ 主人别打了喵~
  */
-open class WhipItem(properties: Properties) : Item(settings.maxCount(1).maxDamage(1000)) {
+open class WhipItem(properties: Properties) : Item(Properties().stacksTo(1).durability(1000)) {
 
-    override fun postHit(stack: ItemStack, target: LivingEntity, attacker: LivingEntity): Boolean {
+    override fun hurtEnemy(stack: ItemStack, target: LivingEntity, attacker: LivingEntity): Boolean {
         // 左键普通攻击：主目标满伤（4点），其他目标半伤（2点）
         applyWhipEffect(attacker, 4.0, 0.4, 40, 1, 2.0f, charged = false)
-        return super.postHit(stack, target, attacker)
+        return super.hurtEnemy(stack, target, attacker)
     }
 
     override fun inventoryTick(stack: ItemStack, world: Level, entity: net.minecraft.world.entity.Entity, slot: Int, selected: Boolean) {
         super.inventoryTick(stack, world, entity, slot, selected)
 
-        if (level().isClientSide && selected && entity is Player && entity.isUsingItem && entity.useItem == stack) {
-            val useTicks = entity.itemUseTime
+        if (world.isClientSide && selected && entity is Player && entity.isUsingItem && entity.useItem == stack) {
+            val useTicks = entity.getUseItemRemainingTicks()
             val chargeRatio =
-                min((getMaxUseTime(stack, entity) - useTicks).toDouble() / getMaxUseTime(stack, entity), 1.0)
+                min((getUseDuration(stack, entity) - useTicks).toDouble() / getUseDuration(stack, entity), 1.0)
 
             val particleCount = (2 + 4 * chargeRatio).toInt()
-            val yawRad = Math.toRadians(entity.yaw.toDouble())
+            val yawRad = Math.toRadians(entity.yRot.toDouble())
 
             for (i in 0 until particleCount) {
                 val offsetX = (-0.5 + Math.random()) * 0.3
@@ -61,7 +61,7 @@ open class WhipItem(properties: Properties) : Item(settings.maxCount(1).maxDamag
                 val b = (0.5 + 0.5 * chargeRatio).toFloat()
                 val size = 0.1f + 0.2f * chargeRatio.toFloat()
 
-                level().addParticle(
+                world.addParticle(
                     DustParticleOptions(Vector3f(r, g, b), size),
                     x, y, z,
                     0.0, 0.02, 0.0
@@ -71,27 +71,27 @@ open class WhipItem(properties: Properties) : Item(settings.maxCount(1).maxDamag
     }
 
     override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
-        user.setCurrentHand(hand)
+        user.startUsingItem(hand)
         return InteractionResultHolder.consume(user.getItemInHand(hand))
     }
 
-    override fun finishUsing(stack: ItemStack, world: Level, user: LivingEntity): ItemStack {
+    override fun finishUsingItem(stack: ItemStack, world: Level, user: LivingEntity): ItemStack {
         return stack
     }
 
-    override fun getUseAction(stack: ItemStack): UseAnim {
+    override fun getUseAnimation(stack: ItemStack): UseAnim {
         return UseAnim.BOW
     }
 
-    override fun getMaxUseTime(stack: ItemStack?, user: LivingEntity?): Int {
+    override fun getUseDuration(stack: ItemStack?, user: LivingEntity?): Int {
         return 30
     }
 
-    override fun onStoppedUsing(stack: ItemStack, world: Level, user: LivingEntity, remainingUseTicks: Int) {
+    override fun releaseUsing(stack: ItemStack, world: Level, user: LivingEntity, remainingUseTicks: Int) {
         if (user !is Player) return
 
-        val chargedTicks = getMaxUseTime(stack, user) - remainingUseTicks
-        val chargeRatio = min(chargedTicks / getMaxUseTime(stack, user).toDouble(), 1.0)
+        val chargedTicks = getUseDuration(stack, user) - remainingUseTicks
+        val chargeRatio = min(chargedTicks / getUseDuration(stack, user).toDouble(), 1.0)
 
         val range = 4.0 + 4.0 * chargeRatio
         val knockback = 0.4 + 0.6 * chargeRatio
@@ -102,10 +102,10 @@ open class WhipItem(properties: Properties) : Item(settings.maxCount(1).maxDamag
 
         applyWhipEffect(user, range, knockback, duration, 2, damage, charged = true)
 
-        level().playSound(null, user.blockPosition(), SoundEvents.ENTITY_FISHING_BOBBER_RETRIEVE, SoundSource.PLAYERS, 1.0f, 0.8f + 0.4f * chargeRatio.toFloat())
-        level().playSound(null, user.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 0.8f, 1.0f)
+        world.playSound(null, user.blockPosition(), SoundEvents.FISHING_BOBBER_RETRIEVE, SoundSource.PLAYERS, 1.0f, 0.8f + 0.4f * chargeRatio.toFloat())
+        world.playSound(null, user.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 0.8f, 1.0f)
 
-        stack.hurt(2 + (chargeRatio * 2).toInt(), user, EquipmentSlot.MAINHAND)
+        stack.hurtAndBreak(2 + (chargeRatio * 2).toInt(), user, EquipmentSlot.MAINHAND)
     }
 
     private fun applyWhipEffect(
@@ -117,30 +117,30 @@ open class WhipItem(properties: Properties) : Item(settings.maxCount(1).maxDamag
         damage: Float,
         charged: Boolean
     ) {
-        val world = attacker.world
+        val world = attacker.level()
         val angleRange = Math.toRadians(60.0)
-        val attackerYaw = Math.toRadians(attacker.yaw.toDouble())
+        val attackerYaw = Math.toRadians(attacker.yRot.toDouble())
 
         val arcParticle = if (charged) ParticleTypes.ELECTRIC_SPARK else ParticleTypes.SWEEP_ATTACK
         spawnWhipArcParticles(world, attacker, range, angleRange, arcParticle)
 
-        val entities = level().getEntitiesOfClass(
+        val entities = world.getEntitiesOfClass(
             LivingEntity::class.java,
             attacker.boundingBox.inflate(range),
-        ) { it != attacker && attacker.isInRange(it, range) }
+        ) { it != attacker && attacker.closerThan(it, range) }
 
         for (entity in entities) {
-            val directionToEntity = entity.pos.subtract(attacker.pos).normalize()
+            val directionToEntity = entity.position().subtract(attacker.position()).normalize()
             val attackerLookVec = Vec3(-sin(attackerYaw), 0.0, cos(attackerYaw))
-            val dot = attackerLookVec.dotProduct(directionToEntity)
+            val dot = attackerLookVec.dot(directionToEntity)
             val angle = acos(dot.coerceIn(-1.0, 1.0))
 
             if (angle <= angleRange / 2) {
                 world.addParticle(ParticleTypes.CRIT, entity.x, entity.eyeY, entity.z, 0.0, 0.0, 0.0)
 
                 entity.addEffect(MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, slownessDuration, slownessLevel))
-                entity.addDeltaMovement(-sin(attackerYaw) * knockbackStrength, 0.1, cos(attackerYaw) * knockbackStrength)
-                entity.velocityModified = true
+                entity.addDeltaMovement(Vec3(-sin(attackerYaw) * knockbackStrength, 0.1, cos(attackerYaw) * knockbackStrength))
+                entity.hasImpulse = true
 
                 hitTarget(attacker, entity, damage)
             }
@@ -148,12 +148,12 @@ open class WhipItem(properties: Properties) : Item(settings.maxCount(1).maxDamag
     }
 
     protected open fun hitTarget(attacker: LivingEntity, target: LivingEntity, amount: Float) {
-        val damageSource = attacker.damageSources.mobAttack(attacker)
+        val damageSource = attacker.damageSources().mobAttack(attacker)
         target.hurt(damageSource, amount)
     }
 
     private fun spawnWhipArcParticles(world: Level, attacker: LivingEntity, range: Double, angleRange: Double, particle: ParticleOptions) {
-        val yawRad = Math.toRadians(attacker.yaw.toDouble())
+        val yawRad = Math.toRadians(attacker.yRot.toDouble())
         val steps = 10
         val arcSteps = 6
 
@@ -165,7 +165,7 @@ open class WhipItem(properties: Properties) : Item(settings.maxCount(1).maxDamag
                 val z = attacker.z + cos(yawRad + angleOffset) * radius
                 val y = attacker.eyeY - 0.3
 
-                level().addParticle(particle, x, y, z, 0.0, 0.0, 0.0)
+                world.addParticle(particle, x, y, z, 0.0, 0.0, 0.0)
             }
         }
     }

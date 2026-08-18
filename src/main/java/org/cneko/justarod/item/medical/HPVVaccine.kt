@@ -44,7 +44,7 @@ class HPVVaccine(properties: Properties) : MedicalItem(properties) {
      * 消耗疫苗剂量
      */
     override fun consumeItem(user: Player, target: LivingEntity, stack: ItemStack, hand: InteractionHand) {
-        if (!user.abilities.isCreative()) {
+        if (!!user.isCreative) {
             stack.shrink(1)
         }
     }

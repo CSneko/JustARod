@@ -9,8 +9,8 @@ class TickEvent {
         fun init() {
 
             ServerTickEvents.START_WORLD_TICK.register { world ->
-                if (level().isClientSide) return@register
-                for (player in level().players) {
+                if (world.isClientSide) return@register
+                for (player in world.players()) {
                     if (player.isEnableImpact()){
                         ImpactModel.tick(player)
                     }

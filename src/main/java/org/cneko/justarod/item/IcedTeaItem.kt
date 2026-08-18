@@ -19,7 +19,7 @@ import org.cneko.justarod.entity.IcedTeaProjectileEntity
  */
 class IcedTeaItem(properties: Properties) : Item(properties) {
     companion object{
-        val MAN_SOUND: SoundEvent = SoundEvent.of(rodId("man"))
+        val MAN_SOUND: SoundEvent = SoundEvent.createVariableRangeEvent(rodId("man"))
     }
 
     /**
@@ -29,7 +29,7 @@ class IcedTeaItem(properties: Properties) : Item(properties) {
         val itemStack = user.getItemInHand(hand)
 
         // 播放投掷声音
-        level().playSound(
+        world.playSound(
             null,
             user.x,
             user.y,
@@ -41,25 +41,26 @@ class IcedTeaItem(properties: Properties) : Item(properties) {
         )
 
         // 为物品设置冷却时间，防止玩家连续投掷
-        user.itemCooldownManager.set(this, 20) // 20 ticks = 1 秒冷却
+        user.cooldowns.addCooldown(this, 20) // 20 ticks = 1 秒冷却
 
         // 只在服务器端生成实体
-        if (!level().isClientSide) {
+        if (!world.isClientSide) {
             val icedTeaProjectile = IcedTeaProjectileEntity(world, user)
             icedTeaProjectile.setItem(itemStack)
             // 设置投掷物的速度和方向
-            icedTeaProjectile.setVelocity(user, user.pitch, user.yaw, 0.0f, 1.5f, 1.0f)
-            level().addFreshEntity(icedTeaProjectile)
+            val look = user.getViewVector(1.0f)
+            icedTeaProjectile.shoot(look.x, look.y, look.z, 1.5f, 1.0f)
+            world.addFreshEntity(icedTeaProjectile)
         }
 
         // 增加玩家的“使用物品”统计
-        user.incrementStat(Stats.USED.getOrCreateStat(this))
+        user.awardStat(Stats.ITEM_USED.get(this))
 
         // 如果不是创造模式，消耗一个物品
-        if (!user.abilities.isCreative()) {
+        if (!user.isCreative) {
             itemStack.shrink(1)
         }
 
-        return InteractionResultHolder.success(itemStack, level().isClientSide())
+        return InteractionResultHolder.success(itemStack)
     }
 }

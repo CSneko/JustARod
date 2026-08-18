@@ -1,4 +1,5 @@
 package org.cneko.justarod.event;
+import net.minecraft.core.Holder;
 
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
@@ -34,14 +35,14 @@ public class EntityAttackEvent {
                 JRCriteria.ITEM_USED_ON_ENTITY_CRITERION.trigger(sp, playerEntity.getItemInHand(hand), entity);
                 ItemStack stack = playerEntity.getItemInHand(hand);
                 if (entity instanceof EnderDragonPart ede&& stack.is(JRItems.Companion.getFREE_MATING())){
-                    JRItems.Companion.getFREE_MATING().useOnEntity(stack,playerEntity,ede.parentMob,hand);
+                    JRItems.Companion.getFREE_MATING().interactLivingEntity(stack,playerEntity,ede.parentMob,hand);
                 }
                 if (entity instanceof LivingEntity living){
                     if (stack.getItem() instanceof ClonerDevice cloner) {
                         boolean hasData = stack.has(JRComponents.Companion.getENTITY_TYPE());
                         boolean transferred = stack.getOrDefault(JRComponents.Companion.getCLONER_TRANSFERRED(),false);
                         if (hasData && transferred) {
-                            return cloner.useOnEntity(stack, playerEntity,living, hand);
+                            return cloner.interactLivingEntity(stack, playerEntity,living, hand);
                         }
                     }
                 }
@@ -83,7 +84,7 @@ public class EntityAttackEvent {
         }
 
         if (BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath().equalsIgnoreCase("end_rod") && entity instanceof LivingEntity e){
-            MobEffectInstance orgasm = new MobEffectInstance(BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getORGASM_EFFECT()), 20, 1);
+            MobEffectInstance orgasm = new MobEffectInstance(Holder.direct(JREffects.Companion.getORGASM_EFFECT()), 20, 1);
             e.addEffect(orgasm);
         }
         return InteractionResult.PASS;

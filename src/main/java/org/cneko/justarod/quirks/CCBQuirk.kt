@@ -29,7 +29,7 @@ class CCBQuirk() : JRDefaultQuirk("ccb") {
         hitResult: EntityHitResult?
     ): InteractionResult {
         val entity = other?.entity ?: return InteractionResult.FAIL
-        if (entity.getEquippedStack(EquipmentSlot.LEGS)?.isEmpty == false){
+        if (entity.getItemBySlot(EquipmentSlot.LEGS)?.isEmpty == false){
             return InteractionResult.FAIL
         }else{
             // 创建水滴粒子

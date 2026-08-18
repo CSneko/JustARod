@@ -15,7 +15,7 @@ import org.cneko.justarod.item.JRComponents
 /*
 毕竟是铜做的，多少带点毒吧
  */
-class LightningEndRodItem: SelfUsedItem(Settings().maxCount(1).maxDamage(2000).component(JRComponents.Companion.USED_TIME_MARK,0)) {
+class LightningEndRodItem: SelfUsedItem(Properties().stacksTo(1).durability(2000).component(JRComponents.Companion.USED_TIME_MARK,0)) {
     override fun useOnSelf(
         stack: ItemStack,
         world: Level?,
@@ -39,7 +39,7 @@ class LightningEndRodItem: SelfUsedItem(Settings().maxCount(1).maxDamage(2000).c
         return result
     }
 
-    override fun appendTooltip(
+    override fun appendHoverText(
         stack: ItemStack?,
         context: TooltipContext?,
         tooltip: MutableList<Component>?,

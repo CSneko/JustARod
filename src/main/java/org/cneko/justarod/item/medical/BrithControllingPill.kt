@@ -49,7 +49,7 @@ class BrithControllingPill(properties: Properties) : MedicalItem(properties) {
     }
 
     override fun consumeItem(user: Player, target: LivingEntity, stack: ItemStack, hand: InteractionHand) {
-        if (!user.abilities.isCreative()) {
+        if (!!user.isCreative) {
             stack.shrink(1)
         }
     }

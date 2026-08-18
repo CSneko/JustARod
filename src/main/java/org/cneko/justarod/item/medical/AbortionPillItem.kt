@@ -34,14 +34,14 @@ class AbortionPillItem(properties: Properties) : MedicalItem(properties) {
         target as Pregnant
 
         if (target.pregnant >= LATE_TERM_PREGNANCY_TICKS) {
-            target.hurt(target.level().damageSources.generic(), 1f)
+            target.hurt(target.level().damageSources().generic(), 1f)
             target.sendSystemMessage(Component.literal("§c手术过程似乎比较顺利，但你仍然感到一阵剧痛。"))
         } else {
             val task = TickTaskQueue()
             for (i in 1..10) {
                 task.addTask(20 * i) {
-                    if (!target.isDead) {
-                        target.hurt(target.level().damageSources.generic(), 2f)
+                    if (!target.isDeadOrDying()) {
+                        target.hurt(target.level().damageSources().generic(), 2f)
                     }
                 }
             }
@@ -49,18 +49,18 @@ class AbortionPillItem(properties: Properties) : MedicalItem(properties) {
                 target.isSterilization = true
                 target.addEffect(MobEffects.CONFUSION, 0, 20 * 15)
                 if (user != target) {
-                    user.sendSystemMessage(Component.literal("§e并发症发生了..."), false)
+                    user.sendSystemMessage(Component.literal("§e并发症发生了..."))
                 }
                 target.sendSystemMessage(Component.literal("§c并发症！对你造成了永久性损伤！"))
             }
         }
 
         target.pregnant = 0
-        target.spawnAtLocation(JRItems.MOLE.getDefaultInstance)
+        target.spawnAtLocation(JRItems.MOLE.defaultInstance)
     }
 
     override fun consumeItem(user: Player, target: LivingEntity, stack: ItemStack, hand: InteractionHand) {
-        if (!user.abilities.isCreative()) {
+        if (!!user.isCreative) {
             stack.shrink(1)
         }
     }

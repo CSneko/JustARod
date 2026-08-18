@@ -1,4 +1,5 @@
 package org.cneko.justarod.entity;
+import net.minecraft.core.Holder;
 
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -227,7 +228,7 @@ public interface BDSMable {
             );
             bundled.addEffect(
                     new MobEffectInstance(
-                            BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getJUMP_NERF_EFFECT()),
+                            Holder.direct(JREffects.Companion.getJUMP_NERF_EFFECT()),
                             20,
                             10, // 1秒刷新一次
                             true,
@@ -281,7 +282,7 @@ public interface BDSMable {
         if (shackled.getShackled()>0){
             shackled.addEffect(
                     new MobEffectInstance(
-                            BuiltInRegistries.MOB_EFFECT.getHolder(JREffects.Companion.getJUMP_NERF_EFFECT()),
+                            Holder.direct(JREffects.Companion.getJUMP_NERF_EFFECT()),
                             20,
                             10, // 1秒刷新一次
                             true,

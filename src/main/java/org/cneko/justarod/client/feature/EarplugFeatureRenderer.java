@@ -37,7 +37,7 @@ public class EarplugFeatureRenderer extends RenderLayer<AbstractClientPlayer, Pl
         matrices.scale(0.7F, 0.7F, 0.7F);
 
         Minecraft.getInstance().getItemRenderer().renderStatic(
-                JRItems.Companion.getEARPLUG().getDefaultStack(),
+                JRItems.Companion.getEARPLUG().getDefaultInstance(),
                 ItemDisplayContext.FIXED,
                 light,
                 OverlayTexture.NO_OVERLAY,

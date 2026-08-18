@@ -1,6 +1,6 @@
 package org.cneko.justarod.item.rod
 
-import net.minecraft.component.DataComponentTypes
+import net.minecraft.core.component.DataComponents
 import net.minecraft.world.item.enchantment.Enchantments
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
@@ -41,7 +41,7 @@ abstract class EndRodItem(properties: Properties) : Item(properties), EndRodItem
         return InteractionResult.SUCCESS
     }
 
-    override fun appendTooltip(stack: ItemStack?, context: TooltipContext?, tooltip: MutableList<Component>?, type: TooltipFlag?) {
+    override fun appendHoverText(stack: ItemStack?, context: TooltipContext?, tooltip: MutableList<Component>?, type: TooltipFlag?) {
         super.appendHoverText(stack, context, tooltip, type)
         // 将使用次数添加到tooltip中
         val markedCount: Int = stack?.getOrDefault(JRComponents.Companion.USED_TIME_MARK, 0)!!
@@ -49,8 +49,8 @@ abstract class EndRodItem(properties: Properties) : Item(properties), EndRodItem
         tooltip?.add(Component.translatable("item.justarod.end_rod.owner", stack.getOrDefault(JRComponents.Companion.OWNER,"无")).withStyle(ChatFormatting.YELLOW))
     }
 
-    override fun onCraftByPlayer(stack: ItemStack?, world: Level?, player: Player?) {
-        super.onCraftByPlayer(stack, world, player)
+    override fun onCraftedBy(stack: ItemStack?, world: Level?, player: Player?) {
+        super.onCraftedBy(stack, world, player)
         stack?.set(JRComponents.Companion.OWNER, player?.name?.string)
     }
     abstract fun getInstruction(): EndRodInstructions
@@ -62,7 +62,7 @@ abstract class OtherUsedItem(properties: Properties):EndRodItem(properties), Oth
         // 插入其它实体
         if (getInstruction() == EndRodInstructions.USE_ON_OTHER_INSERT){
             // 从手上减少这根末地烛
-            if (!user.isCreative) {
+            if (!user.isCreative()) {
                 stack.shrink(1)
             }
             target.hurt(JRDamageTypes.grass(user), 3f)
@@ -77,22 +77,21 @@ abstract class OtherUsedItem(properties: Properties):EndRodItem(properties), Oth
         return InteractionResult.PASS
     }
 
-    override fun useOnEntity(
-        stack: ItemStack?,
-        user: Player?,
-        entity: LivingEntity?,
-        hand: InteractionHand?
-    ): InteractionResult? {
-        if (super.useOnEntity(stack, user, entity, hand) == InteractionResult.FAIL) return InteractionResult.FAIL
-        if (!canAcceptEntity(stack!!, entity!!)) return InteractionResult.FAIL
-        return useOnOther(stack, user?.world, user!!, entity)
+    override fun interactLivingEntity(
+        stack: ItemStack,
+        user: Player,
+        entity: LivingEntity,
+        hand: InteractionHand
+    ): InteractionResult {
+        if (!canAcceptEntity(stack, entity)) return InteractionResult.FAIL
+        return useOnOther(stack, user.level(), user, entity)
     }
 
 
 }
 
 open class SelfUsedItem(properties: Properties) : EndRodItem(properties), SelfUsedItemInterface {
-    override fun appendTooltip(
+    override fun appendHoverText(
         stack: ItemStack?,
         context: TooltipContext?,
         tooltip: MutableList<Component>?,
@@ -105,9 +104,12 @@ open class SelfUsedItem(properties: Properties) : EndRodItem(properties), SelfUs
     override fun inventoryTick(stack: ItemStack, world: Level?, entity: Entity?, slot: Int, selected: Boolean) {
         super.inventoryTick(stack, world, entity, slot, selected)
         // 如果耐久为0或者实体不是LivingEntity，则不处理
-        if(stack.damage == stack.maxDamage || entity !is LivingEntity) return
+        if(stack.damageValue == stack.maxDamage || entity !is LivingEntity) return
 
         val e:LivingEntity = entity
+
+        // 只在服务端执行使用逻辑（效果/伤害/移动由服务端决定并同步给客户端）
+        if (world?.isClientSide == true) return
 
         // 如果放在副手
         // 修bug:在工具栏第一格也生效
@@ -116,7 +118,7 @@ open class SelfUsedItem(properties: Properties) : EndRodItem(properties), SelfUs
             || slot == Int.MIN_VALUE // now works with inserted rods
             ){
             // 减少一点耐久 (即使没耐久也不损坏)
-            stack.damage++
+            stack.damageValue++
             // 执行
             useOnSelf(stack, world, e, slot, selected)
         }
@@ -131,7 +133,7 @@ open class SelfUsedItem(properties: Properties) : EndRodItem(properties), SelfUs
 
 abstract class BothUsedItem(properties: Properties) : EndRodItem(properties),SelfUsedItemInterface, OtherUsedItemInterface {
 
-    override fun appendTooltip(
+    override fun appendHoverText(
         stack: ItemStack?,
         context: TooltipContext?,
         tooltip: MutableList<Component>?,
@@ -145,39 +147,41 @@ abstract class BothUsedItem(properties: Properties) : EndRodItem(properties),Sel
         // 插入其它实体
         if (getInstruction() == EndRodInstructions.SELF_AND_OTHER_INSERT){
             // 从手上减少这根末地烛
-            if (!user.isCreative){
+            if (!user.isCreative()){
                 stack.shrink(1)
             }
-            target.hurt(user.damageSources?.generic(), 3f)
+            target.hurt(user.damageSources().generic(), 3f)
             // TODO : 实现目标实体插入判断逻辑和取出的逻辑
             user.sendSystemMessage(Component.translatable("item.justarod.end_rod.insert_success"))
             return InteractionResult.SUCCESS
         }else if (getInstruction() == EndRodInstructions.USE_ON_OTHER_ATTACK){
             // 攻击其它实体
-            target.hurt(user.damageSources?.generic(), 1f)
+            target.hurt(user.damageSources().generic(), 1f)
             return InteractionResult.SUCCESS
         }
         return InteractionResult.PASS
     }
 
-    override fun useOnEntity(
-        stack: ItemStack?,
-        user: Player?,
-        entity: LivingEntity?,
-        hand: InteractionHand?
-    ): InteractionResult? {
-        // if (super.useOnEntity(stack, user, entity, hand) == InteractionResult.FAIL) return InteractionResult.FAIL
-        if (!canAcceptEntity(stack!!, entity!!)) return InteractionResult.FAIL
-        return useOnOther(stack, user?.world, user!!, entity)
+    override fun interactLivingEntity(
+        stack: ItemStack,
+        user: Player,
+        entity: LivingEntity,
+        hand: InteractionHand
+    ): InteractionResult {
+        if (!canAcceptEntity(stack, entity)) return InteractionResult.FAIL
+        return useOnOther(stack, user.level(), user, entity)
     }
 
     override fun inventoryTick(stack: ItemStack, world: Level?, entity: Entity?, slot: Int, selected: Boolean) {
         super.inventoryTick(stack, world, entity, slot, selected)
 
         // 如果耐久为0或者实体不是LivingEntity，则不处理
-        if(stack.damage == stack.maxDamage || entity !is LivingEntity) return
+        if(stack.damageValue == stack.maxDamage || entity !is LivingEntity) return
 
         val e:LivingEntity = entity
+
+        // 只在服务端执行使用逻辑（效果/伤害/移动由服务端决定并同步给客户端）
+        if (world?.isClientSide == true) return
 
         // 如果放在副手
         if (
@@ -185,7 +189,7 @@ abstract class BothUsedItem(properties: Properties) : EndRodItem(properties),Sel
             || slot == Int.MIN_VALUE // now works with inserted rods
         ){
             // 减少一点耐久 (即使没耐久也不损坏)
-            stack.damage++
+            stack.damageValue++
             // 执行
             useOnSelf(stack, world, e, slot, selected)
         }
@@ -209,7 +213,7 @@ interface SelfUsedItemInterface : EndRodItemInterface{
     fun useOnSelf(stack: ItemStack, world: Level?, entity: LivingEntity, slot: Int, selected: Boolean):InteractionResult{
         val speed = this.getRodSpeed(stack)
         if (this.canDamage(stack, speed)){
-           this.hurt(stack, speed, world)
+           this.damage(stack, speed, world)
         }else{
             return InteractionResult.FAIL
         }
@@ -222,7 +226,10 @@ interface SelfUsedItemInterface : EndRodItemInterface{
         onUse(stack, world, entity, slot, selected,speed)
 
         // 要... 要高潮了
-        entity.addEffect(JREffects.ORGASM_EFFECT,100,sqrt(speed.toFloat()).toInt())
+        // 已有高潮效果时不再刷新，让它可以自然结束（避免无限高潮）
+        if (!entity.hasEffect(JREffects.ORGASM_EFFECT)) {
+            entity.addEffect(JREffects.ORGASM_EFFECT,100,sqrt(speed.toFloat()).toInt())
+        }
 
         // 润滑还是得要的哦
         var lubricate = entity.getAttributeValue(JRAttributes.PLAYER_LUBRICATING)
@@ -278,7 +285,7 @@ interface OtherUsedItemInterface: EndRodItemInterface,Ammunition{
         if (shooter is Player){
             if (stack != null && target != null) {
                 if (canAcceptEntity(stack, target)) {
-                    useOnOther(stack, shooter.world, shooter, target)
+                    useOnOther(stack, shooter.level(), shooter, target)
                 }
             }
         }
@@ -301,17 +308,17 @@ interface EndRodItemInterface{
      */
     fun onUse(stack: ItemStack, world: Level?, entity: LivingEntity, slot: Int, selected: Boolean, times: Int) : InteractionResult
     fun damage(stack: ItemStack, amount: Int, world: Level?) {
-        stack.damage += getDamageAmount(stack, amount, world)
+        stack.damageValue += getDamageAmount(stack, amount, world)
     }
 
     fun getDamageAmount(stack: ItemStack, amount: Int, world: Level?): Int {
         // 无法破坏
-        if (stack.components.contains(DataComponentTypes.UNBREAKABLE)){
+        if (stack.has(DataComponents.UNBREAKABLE)){
             return 0
         }
         // 获取物品上的耐久附魔等级
         val rm = world?.registryAccess()
-        val unbreakingLevel = stack.enchantments.getLevel(rm?.get(BuiltInRegistries.ENCHANTMENT)?.entryOf(Enchantments.UNBREAKING))
+        val unbreakingLevel = stack.enchantments.getLevel(rm?.registry(Registries.ENCHANTMENT)?.get()?.getHolderOrThrow(Enchantments.UNBREAKING))
         var total = 0
         // 遍历每一点潜在耐久损失，进行概率判定
         for (i in 1..amount) {
@@ -327,7 +334,7 @@ interface EndRodItemInterface{
     }
 
     fun canDamage(stack: ItemStack, amount: Int):Boolean{
-        return stack.damage+amount < stack.maxDamage
+        return stack.damageValue+amount < stack.maxDamage
     }
 }
 enum class EndRodInstructions{
@@ -341,12 +348,14 @@ enum class EndRodInstructions{
 
 fun LivingEntity.addEffect(effect: MobEffect?, duration: Int, amplifier: Int) {
     effect?.let {
-        this.addEffect(MobEffectInstance(BuiltInRegistries.MOB_EFFECT.getOrThrow(it), duration, amplifier))
+        // 使用注册表 Holder 而不是 Holder.direct：
+        // 这样添加的效果与服务端同步给客户端的效果 key 一致，能正确合并/匹配
+        this.addEffect(MobEffectInstance(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(it), duration, amplifier))
     }
 }
 fun LivingEntity?.addEffect(effect: Holder<MobEffect>?, duration: Int, amplifier: Int) {
     this?.addEffect(MobEffectInstance(effect, duration, amplifier))
 }
 fun LivingEntity.hasEffect(effect: MobEffect?): Boolean {
-    return this.hasEffect(BuiltInRegistries.MOB_EFFECT.getOrThrow(effect))
+    return effect?.let { this.hasEffect(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(it)) } ?: false
 }

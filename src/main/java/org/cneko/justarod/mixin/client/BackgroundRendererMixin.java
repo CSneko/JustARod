@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class BackgroundRendererMixin {
 
     // 1. 修改雾的颜色：强制变成乳白色
-    @Inject(method = "applyFogColor", at = @At("RETURN"))
+    @Inject(method = "levelFogColor", at = @At("RETURN"))
     private static void modifyFogColorForCataract(CallbackInfo ci) {
         Player player = Minecraft.getInstance().player;
         if (player instanceof Pregnant pregnant && pregnant.getCataract() > 0) {
@@ -46,7 +46,7 @@ public class BackgroundRendererMixin {
     }
 
     // 2. 修改雾的距离：强制拉近视距（模拟模糊）
-    @Inject(method = "applyFog", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "setupFog", at = @At("HEAD"), cancellable = true)
     private static void modifyFogDistanceForCataract(Camera camera, FogRenderer.FogMode fogType, float viewDistance, boolean thickFog, float tickDelta, CallbackInfo ci) {
         if (camera.getEntity() instanceof LivingEntity entity && entity instanceof Pregnant pregnant) {
             int cataract = pregnant.getCataract();

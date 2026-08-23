@@ -1,0 +1,14 @@
+modLoader = "lowcodefml"
+loaderVersion = "[4,)"
+license = "LGPL-3.0"
+
+[[mods]]
+modId = "team_reborn_energy"
+version = "4.1.0"
+displayName = "TeamReborn Energy (dev library wrapper)"
+description = '''
+TeamReborn Energy 类库的开发环境包装：原 jar 是纯 Fabric 模组（只有
+fabric.mod.json），NeoForge 的 FML 拒绝加载它；这里补一个 lowcodefml 的
+neoforge.mods.toml 使其可作为无代码模组加载，类对其他模组可见。
+本文件由构建流程自动填充到重映射后的 jar 中，见 neoforge/build.gradle。
+'''

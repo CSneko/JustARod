@@ -1,0 +1,36 @@
+architectury {
+    common rootProject.enabled_platforms.split(',')
+}
+
+dependencies {
+    // Fabric Loader 仅用于编译期注解（@Environment 等），不要在公共代码中使用它的其他类
+    modImplementation "net.fabricmc:fabric-loader:${rootProject.loader_version}"
+
+    // 公共代码针对原版 Fabric API 编译；
+    // 在 NeoForge 上运行时由 Forgified Fabric API 提供相同的 API。
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_version}"
+
+    // GeckoLib：公共代码针对 Fabric 变体编译，NeoForge 运行时使用其 NeoForge 变体
+    modImplementation "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
+
+    // 前置：toNeko（各加载器子项目里声明各自的运行时变体）
+    modCompileOnly "maven.modrinth:tonekomod:${rootProject.toneko_version}"
+
+    // TeamReborn Energy（电力根棍）
+    modImplementation('teamreborn:energy:4.1.0') {
+        exclude(group: "net.fabricmc.fabric-api")
+    }
+
+    // kotlin
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1"
+    // lombok
+    compileOnly "org.projectlombok:lombok:1.18.30"
+    annotationProcessor "org.projectlombok:lombok:1.18.30"
+}
+
+loom {
+    accessWidenerPath = file("src/main/resources/justarod.accessWideners.accessWidener")
+}
+
+sourceSets.main.resources.srcDir 'src/main/generated'

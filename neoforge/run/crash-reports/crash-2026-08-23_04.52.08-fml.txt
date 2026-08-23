@@ -1,0 +1,186 @@
+---- Minecraft Crash Report ----
+// Uh... Did I do that?
+
+Time: 2026-08-23 04:52:08
+Description: Mod loading failures have occurred; consult the issue messages for more details
+
+net.neoforged.neoforge.logging.CrashReportExtender$ModLoadingCrashException: Mod loading has failed
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- Mod loading issue --
+Details:
+	Mod file: <No mod information provided>
+	Failure message: File /media/crystalneko/enkoo/java/JustARod/.gradle/loom-cache/remapped_mods/loom_mappings_1_21_1_layered_hash_40359_v2_neoforge_21_1_248_forge/teamreborn/energy/4.1.0/energy-4.1.0.jar is a Fabric mod and cannot be loaded
+	Mod version: <No mod information provided>
+	Mod issues URL: <No issues URL found>
+	Exception message: <No associated exception found>
+
+-- Mod loading issue --
+Details:
+	Caused by 0: java.lang.ExceptionInInitializerError
+		at TRANSFORMER/minecraft@1.21.1/net.minecraft.world.entity.LivingEntity.handler$zja000$justarod$createLivingAttributes(LivingEntity.java:6296) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:accesstransformer:B,pl:unprotect:A,re:classloading,pl:accesstransformer:B,pl:mixin:APP:geckolib.mixins.json:common.LivingEntityMixin from mod geckolib,pl:mixin:APP:fabric-item-api-v1.mixins.json:LivingEntityMixin from mod fabric_item_api_v1,pl:mixin:APP:fabric-block-api-v1.mixins.json:LivingEntityMixin from mod fabric_block_api_v1,pl:mixin:APP:fabric-entity-events-v1.mixins.json:LivingEntityMixin from mod fabric_entity_events_v1,pl:mixin:APP:fabric-entity-events-v1.mixins.json:elytra.LivingEntityMixin from mod fabric_entity_events_v1,pl:mixin:APP:justarod.mixins.json:LivingEntityMixin from mod justarod,pl:mixin:A,pl:unprotect:A}
+		at TRANSFORMER/minecraft@1.21.1/net.minecraft.world.entity.LivingEntity.createLivingAttributes(LivingEntity.java:313) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:accesstransformer:B,pl:unprotect:A,re:classloading,pl:accesstransformer:B,pl:mixin:APP:geckolib.mixins.json:common.LivingEntityMixin from mod geckolib,pl:mixin:APP:fabric-item-api-v1.mixins.json:LivingEntityMixin from mod fabric_item_api_v1,pl:mixin:APP:fabric-block-api-v1.mixins.json:LivingEntityMixin from mod fabric_block_api_v1,pl:mixin:APP:fabric-entity-events-v1.mixins.json:LivingEntityMixin from mod fabric_entity_events_v1,pl:mixin:APP:fabric-entity-events-v1.mixins.json:elytra.LivingEntityMixin from mod fabric_entity_events_v1,pl:mixin:APP:justarod.mixins.json:LivingEntityMixin from mod justarod,pl:mixin:A,pl:unprotect:A}
+		at TRANSFORMER/minecraft@1.21.1/net.minecraft.world.entity.Mob.createMobAttributes(Mob.java:160) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:computing_frames,pl:accesstransformer:B,pl:unprotect:A,re:mixin,pl:accesstransformer:B,pl:unprotect:A,re:classloading,pl:accesstransformer:B,pl:mixin:APP:fabric-entity-events-v1.mixins.json:MobEntityMixin from mod fabric_entity_events_v1,pl:mixin:A,pl:unprotect:A}
+		at TRANSFORMER/minecraft@1.21.1/net.minecraft.world.entity.animal.allay.Allay.createAttributes(Allay.java:148) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:classloading,pl:unprotect:A}
+		at TRANSFORMER/minecraft@1.21.1/net.minecraft.world.entity.ai.attributes.DefaultAttributes.<clinit>(DefaultAttributes.java:90) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:unprotect:A,re:classloading,pl:mixin:APP:fabric-object-builder-v1.mixins.json:DefaultAttributeRegistryAccessor from mod fabric_object_builder_api_v1,pl:mixin:APP:fabric-object-builder-v1.mixins.json:DefaultAttributeRegistryMixin from mod fabric_object_builder_api_v1,pl:mixin:APP:justarod.mixins.json:DefaultAttributeRegistryMixin from mod justarod,pl:mixin:A,pl:unprotect:A}
+		at TRANSFORMER/neoforge@21.1.248/net.neoforged.neoforge.registries.NeoForgeRegistryCallbacks$AttributeCallbacks.onBake(NeoForgeRegistryCallbacks.java:100) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23183!/:?] {re:classloading}
+		at TRANSFORMER/minecraft@1.21.1/net.minecraft.core.MappedRegistry.lambda$freeze$7(MappedRegistry.java:372) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:accesstransformer:B,pl:unprotect:A,re:classloading,pl:accesstransformer:B,pl:mixin:APP:neoforge.mixins.json:MappedRegistryAccessor from mod neoforge,pl:mixin:APP:fabric-registry-sync-v0.mixins.json:MappedRegistryAccessor from mod fabric_registry_sync_v0,pl:mixin:A,pl:unprotect:A}
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[?:?] {re:mixin}
+		at TRANSFORMER/minecraft@1.21.1/net.minecraft.core.MappedRegistry.freeze(MappedRegistry.java:372) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:accesstransformer:B,pl:unprotect:A,re:classloading,pl:accesstransformer:B,pl:mixin:APP:neoforge.mixins.json:MappedRegistryAccessor from mod neoforge,pl:mixin:APP:fabric-registry-sync-v0.mixins.json:MappedRegistryAccessor from mod fabric_registry_sync_v0,pl:mixin:A,pl:unprotect:A}
+		at TRANSFORMER/neoforge@21.1.248/net.neoforged.neoforge.registries.RegistryManager.applySnapshot(RegistryManager.java:201) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23183!/:?] {re:mixin,re:classloading,pl:mixin:APP:fabric-registry-sync-v0.mixins.json:RegistryManagerAccessor from mod fabric_registry_sync_v0,pl:mixin:A}
+		at TRANSFORMER/neoforge@21.1.248/net.neoforged.neoforge.registries.RegistryManager.lambda$applySnapshot$1(RegistryManager.java:144) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23183!/:?] {re:mixin,re:classloading,pl:mixin:APP:fabric-registry-sync-v0.mixins.json:RegistryManagerAccessor from mod fabric_registry_sync_v0,pl:mixin:A}
+		at java.base/java.util.HashMap.forEach(HashMap.java:1429) ~[?:?] {re:mixin}
+		at TRANSFORMER/neoforge@21.1.248/net.neoforged.neoforge.registries.RegistryManager.applySnapshot(RegistryManager.java:133) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23183!/:?] {re:mixin,re:classloading,pl:mixin:APP:fabric-registry-sync-v0.mixins.json:RegistryManagerAccessor from mod fabric_registry_sync_v0,pl:mixin:A}
+		at TRANSFORMER/neoforge@21.1.248/net.neoforged.neoforge.registries.RegistryManager.revertToVanilla(RegistryManager.java:116) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23183!/:?] {re:mixin,re:classloading,pl:mixin:APP:fabric-registry-sync-v0.mixins.json:RegistryManagerAccessor from mod fabric_registry_sync_v0,pl:mixin:A}
+		at TRANSFORMER/neoforge@21.1.248/net.neoforged.neoforge.registries.GameData.postRegisterEvents(GameData.java:100) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23183!/:?] {re:classloading}
+		at TRANSFORMER/neoforge@21.1.248/net.neoforged.neoforge.internal.CommonModLoader.lambda$begin$0(CommonModLoader.java:54) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23183!/:?] {re:classloading}
+		at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1804) ~[?:?] {}
+		at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144) ~[?:?] {}
+		at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642) ~[?:?] {}
+		at java.base/java.lang.Thread.run(Thread.java:1583) ~[?:?] {re:mixin}
+
+	Mod file: <No mod information provided>
+	Failure message: An uncaught parallel processing error has occurred.
+		java.lang.ExceptionInInitializerError: null
+	Mod version: <No mod information provided>
+	Mod issues URL: <No issues URL found>
+	Exception message: java.lang.IllegalStateException: Registry is already frozen (trying to add key ResourceKey[minecraft:attribute / justarod:player.lubricating])
+Stacktrace:
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.core.MappedRegistry.validateWrite(MappedRegistry.java:117) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:accesstransformer:B,pl:unprotect:A,re:classloading,pl:accesstransformer:B,pl:mixin:APP:neoforge.mixins.json:MappedRegistryAccessor from mod neoforge,pl:mixin:APP:fabric-registry-sync-v0.mixins.json:MappedRegistryAccessor from mod fabric_registry_sync_v0,pl:mixin:A,pl:unprotect:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.core.MappedRegistry.register(MappedRegistry.java:127) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:accesstransformer:B,pl:unprotect:A,re:classloading,pl:accesstransformer:B,pl:mixin:APP:neoforge.mixins.json:MappedRegistryAccessor from mod neoforge,pl:mixin:APP:fabric-registry-sync-v0.mixins.json:MappedRegistryAccessor from mod fabric_registry_sync_v0,pl:mixin:A,pl:unprotect:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.core.MappedRegistry.register(MappedRegistry.java:123) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:accesstransformer:B,pl:unprotect:A,re:classloading,pl:accesstransformer:B,pl:mixin:APP:neoforge.mixins.json:MappedRegistryAccessor from mod neoforge,pl:mixin:APP:fabric-registry-sync-v0.mixins.json:MappedRegistryAccessor from mod fabric_registry_sync_v0,pl:mixin:A,pl:unprotect:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.core.Registry.registerForHolder(Registry.java:128) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:computing_frames,pl:unprotect:A,re:classloading,pl:unprotect:A,re:mixin,pl:unprotect:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.core.Registry.registerForHolder(Registry.java:132) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:computing_frames,pl:unprotect:A,re:classloading,pl:unprotect:A,re:mixin,pl:unprotect:A}
+	at TRANSFORMER/generated_47f2f03@1/org.cneko.justarod.JRAttributes$Companion.register(JRAttributes.java:34) ~[6781828128341756882.jar%23235!/:?] {re:mixin,re:classloading}
+	at TRANSFORMER/generated_47f2f03@1/org.cneko.justarod.JRAttributes.<clinit>(JRAttributes.java:18) ~[6781828128341756882.jar%23235!/:?] {re:mixin,re:classloading}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.world.entity.LivingEntity.handler$zja000$justarod$createLivingAttributes(LivingEntity.java:6296) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:accesstransformer:B,pl:unprotect:A,re:classloading,pl:accesstransformer:B,pl:mixin:APP:geckolib.mixins.json:common.LivingEntityMixin from mod geckolib,pl:mixin:APP:fabric-item-api-v1.mixins.json:LivingEntityMixin from mod fabric_item_api_v1,pl:mixin:APP:fabric-block-api-v1.mixins.json:LivingEntityMixin from mod fabric_block_api_v1,pl:mixin:APP:fabric-entity-events-v1.mixins.json:LivingEntityMixin from mod fabric_entity_events_v1,pl:mixin:APP:fabric-entity-events-v1.mixins.json:elytra.LivingEntityMixin from mod fabric_entity_events_v1,pl:mixin:APP:justarod.mixins.json:LivingEntityMixin from mod justarod,pl:mixin:A,pl:unprotect:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.world.entity.LivingEntity.createLivingAttributes(LivingEntity.java:313) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:accesstransformer:B,pl:unprotect:A,re:classloading,pl:accesstransformer:B,pl:mixin:APP:geckolib.mixins.json:common.LivingEntityMixin from mod geckolib,pl:mixin:APP:fabric-item-api-v1.mixins.json:LivingEntityMixin from mod fabric_item_api_v1,pl:mixin:APP:fabric-block-api-v1.mixins.json:LivingEntityMixin from mod fabric_block_api_v1,pl:mixin:APP:fabric-entity-events-v1.mixins.json:LivingEntityMixin from mod fabric_entity_events_v1,pl:mixin:APP:fabric-entity-events-v1.mixins.json:elytra.LivingEntityMixin from mod fabric_entity_events_v1,pl:mixin:APP:justarod.mixins.json:LivingEntityMixin from mod justarod,pl:mixin:A,pl:unprotect:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.world.entity.Mob.createMobAttributes(Mob.java:160) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:computing_frames,pl:accesstransformer:B,pl:unprotect:A,re:mixin,pl:accesstransformer:B,pl:unprotect:A,re:classloading,pl:accesstransformer:B,pl:mixin:APP:fabric-entity-events-v1.mixins.json:MobEntityMixin from mod fabric_entity_events_v1,pl:mixin:A,pl:unprotect:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.world.entity.animal.allay.Allay.createAttributes(Allay.java:148) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:classloading,pl:unprotect:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.world.entity.ai.attributes.DefaultAttributes.<clinit>(DefaultAttributes.java:90) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:unprotect:A,re:classloading,pl:mixin:APP:fabric-object-builder-v1.mixins.json:DefaultAttributeRegistryAccessor from mod fabric_object_builder_api_v1,pl:mixin:APP:fabric-object-builder-v1.mixins.json:DefaultAttributeRegistryMixin from mod fabric_object_builder_api_v1,pl:mixin:APP:justarod.mixins.json:DefaultAttributeRegistryMixin from mod justarod,pl:mixin:A,pl:unprotect:A}
+	at TRANSFORMER/neoforge@21.1.248/net.neoforged.neoforge.registries.NeoForgeRegistryCallbacks$AttributeCallbacks.onBake(NeoForgeRegistryCallbacks.java:100) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23183!/:?] {re:classloading}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.core.MappedRegistry.lambda$freeze$7(MappedRegistry.java:372) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:accesstransformer:B,pl:unprotect:A,re:classloading,pl:accesstransformer:B,pl:mixin:APP:neoforge.mixins.json:MappedRegistryAccessor from mod neoforge,pl:mixin:APP:fabric-registry-sync-v0.mixins.json:MappedRegistryAccessor from mod fabric_registry_sync_v0,pl:mixin:A,pl:unprotect:A}
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596) ~[?:?] {re:mixin}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.core.MappedRegistry.freeze(MappedRegistry.java:372) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:accesstransformer:B,pl:unprotect:A,re:classloading,pl:accesstransformer:B,pl:mixin:APP:neoforge.mixins.json:MappedRegistryAccessor from mod neoforge,pl:mixin:APP:fabric-registry-sync-v0.mixins.json:MappedRegistryAccessor from mod fabric_registry_sync_v0,pl:mixin:A,pl:unprotect:A}
+	at TRANSFORMER/neoforge@21.1.248/net.neoforged.neoforge.registries.RegistryManager.applySnapshot(RegistryManager.java:201) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23183!/:?] {re:mixin,re:classloading,pl:mixin:APP:fabric-registry-sync-v0.mixins.json:RegistryManagerAccessor from mod fabric_registry_sync_v0,pl:mixin:A}
+	at TRANSFORMER/neoforge@21.1.248/net.neoforged.neoforge.registries.RegistryManager.lambda$applySnapshot$1(RegistryManager.java:144) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23183!/:?] {re:mixin,re:classloading,pl:mixin:APP:fabric-registry-sync-v0.mixins.json:RegistryManagerAccessor from mod fabric_registry_sync_v0,pl:mixin:A}
+	at java.base/java.util.HashMap.forEach(HashMap.java:1429) ~[?:?] {re:mixin}
+	at TRANSFORMER/neoforge@21.1.248/net.neoforged.neoforge.registries.RegistryManager.applySnapshot(RegistryManager.java:133) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23183!/:?] {re:mixin,re:classloading,pl:mixin:APP:fabric-registry-sync-v0.mixins.json:RegistryManagerAccessor from mod fabric_registry_sync_v0,pl:mixin:A}
+	at TRANSFORMER/neoforge@21.1.248/net.neoforged.neoforge.registries.RegistryManager.revertToVanilla(RegistryManager.java:116) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23183!/:?] {re:mixin,re:classloading,pl:mixin:APP:fabric-registry-sync-v0.mixins.json:RegistryManagerAccessor from mod fabric_registry_sync_v0,pl:mixin:A}
+	at TRANSFORMER/neoforge@21.1.248/net.neoforged.neoforge.registries.GameData.postRegisterEvents(GameData.java:100) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23183!/:?] {re:classloading}
+	at TRANSFORMER/neoforge@21.1.248/net.neoforged.neoforge.internal.CommonModLoader.lambda$begin$0(CommonModLoader.java:54) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23183!/:?] {re:classloading}
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1804) ~[?:?] {}
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144) ~[?:?] {}
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642) ~[?:?] {}
+	at java.base/java.lang.Thread.run(Thread.java:1583) ~[?:?] {re:mixin}
+
+
+-- System Details --
+Details:
+	Minecraft Version: 1.21.1
+	Minecraft Version ID: 1.21.1
+	Operating System: Linux (amd64) version 7.0.0-29-generic
+	Java Version: 21.0.11, Ubuntu
+	Java VM Version: OpenJDK 64-Bit Server VM (mixed mode, sharing), Ubuntu
+	Memory: 1278754824 bytes (1219 MiB) / 2424307712 bytes (2312 MiB) up to 8174698496 bytes (7796 MiB)
+	CPUs: 32
+	Processor Vendor: AuthenticAMD
+	Processor Name: AMD Ryzen 9 9950X 16-Core Processor
+	Identifier: AuthenticAMD Family 26 Model 68 Stepping 0
+	Microarchitecture: unknown
+	Frequency (GHz): 5.76
+	Number of physical packages: 1
+	Number of physical CPUs: 16
+	Number of logical CPUs: 32
+	Graphics card #0 name: Navi 32 [Radeon RX 7700 XT / 7800 XT]
+	Graphics card #0 vendor: Advanced Micro Devices, Inc. [AMD/ATI] (0x1002)
+	Graphics card #0 VRAM (MiB): 16640.00
+	Graphics card #0 deviceId: 0x747e
+	Graphics card #0 versionInfo: unknown
+	Virtual memory max (MiB): 56548.58
+	Virtual memory used (MiB): 37071.22
+	Swap memory total (MiB): 40959.99
+	Swap memory used (MiB): 12728.47
+	Space in storage for jna.tmpdir (MiB): <path not set>
+	Space in storage for org.lwjgl.system.SharedLibraryExtractPath (MiB): <path not set>
+	Space in storage for io.netty.native.workdir (MiB): <path not set>
+	Space in storage for java.io.tmpdir (MiB): available: 15568.96, total: 15588.59
+	Space in storage for workdir (MiB): available: 325803.66, total: 2733062.75
+	JVM Flags: 0 total; 
+	ModLauncher: 11.0.5+main.901c6ea8
+	ModLauncher launch target: forgeclientdev
+	ModLauncher services: 
+		sponge-mixin-0.15.2+mixin.0.8.7.jar mixin PLUGINSERVICE 
+		loader-4.0.43.jar slf4jfixer PLUGINSERVICE 
+		loader-4.0.43.jar runtime_enum_extender PLUGINSERVICE 
+		unprotect-1.2.0.jar unprotect PLUGINSERVICE 
+		at-modlauncher-10.0.1.jar accesstransformer PLUGINSERVICE 
+		loader-4.0.43.jar runtimedistcleaner PLUGINSERVICE 
+		modlauncher-11.0.5.jar mixin TRANSFORMATIONSERVICE 
+		modlauncher-11.0.5.jar fml TRANSFORMATIONSERVICE 
+	FML Language Providers: 
+		__fabric_loader_bootstrap@2.5.68+0.18.4+1.21.1
+		kotlinforforge@5.12.0
+		javafml@4.0
+		lowcodefml@4.0
+		minecraft@4.0
+	Mod List: 
+		forgified-fabric-api-0.116.15+2.3.4+1.21.1.jar    |Forgified Fabric API          |fabric_api                    |0.116.15+2.3.4+1.21.|Manifest: NOSIGNATURE
+		fabric-api-base-0.4.42+d1308ded19.jar             |Forgified Fabric API Base     |fabric_api_base               |0.4.42+d1308ded19   |Manifest: NOSIGNATURE
+		fabric-api-lookup-api-v1-1.6.72+6244b11119.jar    |Forgified Fabric API Lookup AP|fabric_api_lookup_api_v1      |1.6.72+6244b11119   |Manifest: NOSIGNATURE
+		fabric-biome-api-v1-13.0.31+1e62d33c19.jar        |Forgified Fabric Biome API (v1|fabric_biome_api_v1           |13.0.31+1e62d33c19  |Manifest: NOSIGNATURE
+		fabric-block-api-v1-1.1.0+b0c22bb819.jar          |Forgified Fabric Block API (v1|fabric_block_api_v1           |1.1.0+b0c22bb819    |Manifest: NOSIGNATURE
+		fabric-blockrenderlayer-v1-1.1.52+c290471319.jar  |Forgified Fabric BlockRenderLa|fabric_blockrenderlayer_v1    |1.1.52+c290471319   |Manifest: NOSIGNATURE
+		fabric-block-view-api-v2-1.0.11+e9036fd419.jar    |Forgified Fabric BlockView API|fabric_block_view_api_v2      |1.0.11+e9036fd419   |Manifest: NOSIGNATURE
+		fabric-client-tags-api-v1-1.2.0+5adff2d719.jar    |Forgified Fabric Client Tags  |fabric_client_tags_api_v1     |1.2.0+5adff2d719    |Manifest: NOSIGNATURE
+		fabric-command-api-v2-2.2.28+36d727be19.jar       |Forgified Fabric Command API (|fabric_command_api_v2         |2.2.28+36d727be19   |Manifest: NOSIGNATURE
+		fabric-content-registries-v0-8.0.19+5e0d320019.jar|Forgified Fabric Content Regis|fabric_content_registries_v0  |8.0.19+5e0d320019   |Manifest: NOSIGNATURE
+		fabric-convention-tags-v1-2.1.7+7f945d5b19.jar    |Forgified Fabric Convention Ta|fabric_convention_tags_v1     |2.1.7+7f945d5b19    |Manifest: NOSIGNATURE
+		fabric-convention-tags-v2-2.12.0+75d3639619.jar   |Forgified Fabric Convention Ta|fabric_convention_tags_v2     |2.12.0+75d3639619   |Manifest: NOSIGNATURE
+		fabric-data-attachment-api-v1-1.4.7+26d408aa19.jar|Forgified Fabric Data Attachme|fabric_data_attachment_api_v1 |1.4.7+26d408aa19    |Manifest: NOSIGNATURE
+		fabric-data-generation-api-v1-20.3.0+3e2bcb4b19.ja|Forgified Fabric Data Generati|fabric_data_generation_api_v1 |20.3.0+3e2bcb4b19   |Manifest: NOSIGNATURE
+		fabric-entity-events-v1-1.8.0+e46a02ca19.jar      |Forgified Fabric Entity Events|fabric_entity_events_v1       |1.8.0+e46a02ca19    |Manifest: NOSIGNATURE
+		fabric-events-interaction-v0-0.7.14+057f5afd19.jar|Forgified Fabric Events Intera|fabric_events_interaction_v0  |0.7.14+057f5afd19   |Manifest: NOSIGNATURE
+		fabric-game-rule-api-v1-1.0.53+36d727be19.jar     |Forgified Fabric Game Rule API|fabric_game_rule_api_v1       |1.0.53+36d727be19   |Manifest: NOSIGNATURE
+		fabric-gametest-api-v1-2.0.5+29f188ce19.jar       |Forgified Fabric Game Test API|fabric_gametest_api_v1        |2.0.5+29f188ce19    |Manifest: NOSIGNATURE
+		fabric-item-api-v1-11.3.0+766f218719.jar          |Forgified Fabric Item API (v1)|fabric_item_api_v1            |11.3.0+766f218719   |Manifest: NOSIGNATURE
+		fabric-item-group-api-v1-4.1.7+e324903319.jar     |Forgified Fabric Item Group AP|fabric_item_group_api_v1      |4.1.7+e324903319    |Manifest: NOSIGNATURE
+		fabric-key-binding-api-v1-1.0.47+62cc7ce119.jar   |Forgified Fabric Key Binding A|fabric_key_binding_api_v1     |1.0.47+62cc7ce119   |Manifest: NOSIGNATURE
+		fabric-lifecycle-events-v1-2.6.0+e40d8add19.jar   |Forgified Fabric Lifecycle Eve|fabric_lifecycle_events_v1    |2.6.0+e40d8add19    |Manifest: NOSIGNATURE
+		fabric-loot-api-v2-3.0.15+a3ee712d19.jar          |Forgified Fabric Loot API (v2)|fabric_loot_api_v2            |3.0.15+a3ee712d19   |Manifest: NOSIGNATURE
+		fabric-loot-api-v3-1.0.3+333dfad919.jar           |Forgified Fabric Loot API (v3)|fabric_loot_api_v3            |1.0.3+333dfad919    |Manifest: NOSIGNATURE
+		fabric-message-api-v1-6.0.14+6a754fce19.jar       |Forgified Fabric Message API (|fabric_message_api_v1         |6.0.14+6a754fce19   |Manifest: NOSIGNATURE
+		fabric-model-loading-api-v1-2.1.0+6e8f52c719.jar  |Forgified Fabric Model Loading|fabric_model_loading_api_v1   |2.1.0+6e8f52c719    |Manifest: NOSIGNATURE
+		fabric-networking-api-v1-4.3.1+7e3d421f19.jar     |Forgified Fabric Networking AP|fabric_networking_api_v1      |4.3.1+7e3d421f19    |Manifest: NOSIGNATURE
+		fabric-object-builder-api-v1-15.2.1+cc242efd19.jar|Forgified Fabric Object Builde|fabric_object_builder_api_v1  |15.2.1+cc242efd19   |Manifest: NOSIGNATURE
+		fabric-particles-v1-4.0.2+824f924c19.jar          |Forgified Fabric Particles (v1|fabric_particles_v1           |4.0.2+824f924c19    |Manifest: NOSIGNATURE
+		fabric-recipe-api-v1-5.0.16+59440bcc19.jar        |Forgified Fabric Recipe API (v|fabric_recipe_api_v1          |5.0.16+59440bcc19   |Manifest: NOSIGNATURE
+		fabric-registry-sync-v0-5.3.2+f9aace1619.jar      |Forgified Fabric Registry Sync|fabric_registry_sync_v0       |5.3.2+f9aace1619    |Manifest: NOSIGNATURE
+		fabric-renderer-indigo-1.7.1+9125b6dc19.jar       |Forgified Fabric Renderer - In|fabric_renderer_indigo        |1.7.1+9125b6dc19    |Manifest: NOSIGNATURE
+		fabric-renderer-api-v1-3.4.1+9125b6dc19.jar       |Forgified Fabric Renderer API |fabric_renderer_api_v1        |3.4.1+9125b6dc19    |Manifest: NOSIGNATURE
+		fabric-renderer-registries-v1-3.2.69+df3654b319.ja|Forgified Fabric Renderer Regi|fabric_renderer_registries_v1 |3.2.69+df3654b319   |Manifest: NOSIGNATURE
+		fabric-rendering-v1-5.1.0+1a09bd5a19.jar          |Forgified Fabric Rendering (v1|fabric_rendering_v1           |5.1.0+1a09bd5a19    |Manifest: NOSIGNATURE
+		fabric-rendering-data-attachment-v1-0.3.49+73761d2|Forgified Fabric Rendering Dat|fabric_rendering_data_attachme|0.3.49+73761d2e19   |Manifest: NOSIGNATURE
+		fabric-rendering-fluids-v1-3.1.6+ddc51b4719.jar   |Forgified Fabric Rendering Flu|fabric_rendering_fluids_v1    |3.1.6+ddc51b4719    |Manifest: NOSIGNATURE
+		fabric-resource-conditions-api-v1-4.3.0+5bdd099819|Forgified Fabric Resource Cond|fabric_resource_conditions_api|4.3.0+5bdd099819    |Manifest: NOSIGNATURE
+		fabric-resource-loader-v0-1.3.1+4ea8954419.jar    |Forgified Fabric Resource Load|fabric_resource_loader_v0     |1.3.1+4ea8954419    |Manifest: NOSIGNATURE
+		fabric-screen-api-v1-2.0.26+9991ca2f19.jar        |Forgified Fabric Screen API (v|fabric_screen_api_v1          |2.0.26+9991ca2f19   |Manifest: NOSIGNATURE
+		fabric-screen-handler-api-v1-1.3.91+8dbc56dd19.jar|Forgified Fabric Screen Handle|fabric_screen_handler_api_v1  |1.3.91+8dbc56dd19   |Manifest: NOSIGNATURE
+		fabric-sound-api-v1-1.0.23+10b84f8419.jar         |Forgified Fabric Sound API (v1|fabric_sound_api_v1           |1.0.23+10b84f8419   |Manifest: NOSIGNATURE
+		fabric-tag-api-v1-1.3.0+3e2bcb4b19.jar            |Forgified Fabric Tag API (v1) |fabric_tag_api_v1             |1.3.0+3e2bcb4b19    |Manifest: NOSIGNATURE
+		fabric-transfer-api-v1-5.4.4+6244b11119.jar       |Forgified Fabric Transfer API |fabric_transfer_api_v1        |5.4.4+6244b11119    |Manifest: NOSIGNATURE
+		fabric-transitive-access-wideners-v1-6.2.0+6c854b6|Forgified Fabric Transitive Ac|fabric_transitive_access_widen|6.2.0+6c854b6f19    |Manifest: NOSIGNATURE
+		geckolib-neoforge-1.21.1-4.8.3.jar                |GeckoLib 4                    |geckolib                      |4.8.3               |Manifest: NOSIGNATURE
+		6781828128341756882.jar                           |generated_47f2f03             |generated_47f2f03             |1                   |Manifest: NOSIGNATURE
+		main                                              |JustARod                      |justarod                      |0.2.2               |Manifest: NOSIGNATURE
+		kffmod-neoforge-5.12.0.jar                        |Kotlin For Forge              |kotlinforforge                |5.12.0              |Manifest: NOSIGNATURE
+		neoforge-21.1.248-minecraft-merged-55e390635d-1.21|Minecraft                     |minecraft                     |1.21.1              |Manifest: NOSIGNATURE
+		neoforge-21.1.248-minecraft-merged-55e390635d-1.21|NeoForge                      |neoforge                      |21.1.248            |Manifest: NOSIGNATURE
+		player-animation-lib-forge-2.0.4+1.21.1.jar       |Player Animator               |playeranimator                |2.0.4+1.21.1        |Manifest: NOSIGNATURE
+		toneko-neoforge-1.9.2-awfix-1744355e4844.jar      |toNeko                        |toneko                        |1.9.2               |Manifest: NOSIGNATURE
+	Crash Report UUID: 7f53f707-4354-48e2-9607-db32197a3472
+	FML: 4.0.43
+	NeoForge: 21.1.248

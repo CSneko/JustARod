@@ -1,0 +1,27 @@
+{
+  "minecraft:recipes/decorations/crafting_table": {
+    "criteria": {
+      "unlock_right_away": "2026-08-23 13:05:25 +0800"
+    },
+    "done": true
+  },
+  "minecraft:adventure/adventuring_time": {
+    "criteria": {
+      "minecraft:plains": "2026-08-23 13:05:26 +0800"
+    },
+    "done": false
+  },
+  "justarod:rods/get_lubricating_book": {
+    "criteria": {
+      "get_lubricating_book": "2026-08-23 13:46:39 +0800"
+    },
+    "done": true
+  },
+  "minecraft:recipes/misc/blue_dye_from_cornflower": {
+    "criteria": {
+      "has_cornflower": "2026-08-23 13:47:55 +0800"
+    },
+    "done": true
+  },
+  "DataVersion": 3955
+}

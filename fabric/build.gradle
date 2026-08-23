@@ -1,0 +1,77 @@
+plugins {
+    id 'com.github.johnrengelman.shadow'
+}
+
+architectury {
+    platformSetupLoomIde()
+    fabric()
+}
+
+configurations {
+    common {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+    compileClasspath.extendsFrom common
+    runtimeClasspath.extendsFrom common
+    developmentFabric.extendsFrom common
+
+    // Files in this configuration will be bundled into your mod using the Shadow plugin.
+    shadowBundle {
+        canBeResolved = true
+        canBeConsumed = false
+    }
+}
+
+// 访问宽化器（access widener）由 common 项目声明，architectury 多项目机制会传递；
+// fabric.mod.json 中的 "accessWidener" 条目保证生产环境（玩家客户端）同样生效。
+
+dependencies {
+    modImplementation "net.fabricmc:fabric-loader:${rootProject.loader_version}"
+
+    // Fabric API
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_version}"
+
+    common(project(path: ':common', configuration: 'namedElements')) { transitive false }
+    shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
+
+    modImplementation "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
+    modImplementation "maven.modrinth:tonekomod:${rootProject.toneko_version}"
+    // 开发运行时的 Kotlin（FLK）/ 玩家动画库
+    modLocalRuntime "net.fabricmc:fabric-language-kotlin:1.11.0+kotlin.2.0.0"
+    modLocalRuntime "dev.kosmx.player-anim:player-animation-lib-fabric:${rootProject.player_animator_version}"
+
+    // TeamReborn Energy 打包进模组
+    include('teamreborn:energy:4.1.0') {
+        exclude(group: "net.fabricmc.fabric-api")
+    }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'minecraft_version', rootProject.minecraft_version
+    filteringCharset 'UTF-8'
+
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version,
+                'minecraft_version': rootProject.minecraft_version
+    }
+}
+
+shadowJar {
+    configurations = [project.configurations.shadowBundle]
+    archiveClassifier = 'dev-shadow'
+}
+
+remapJar {
+    input.set shadowJar.archiveFile
+}
+
+fabricApi {
+    configureDataGeneration() {
+        client = true
+        // 数据生成输出到 common，供两个平台共享
+        outputDirectory = project(':common').file('src/main/generated')
+        addToResources = false
+    }
+}

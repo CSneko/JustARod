@@ -1,0 +1,328 @@
+[13:45:58] [main/INFO] (Launcher) ModLauncher running: args [--launchTarget, forgeclientdev, --version, 21.1.248, --assetIndex, 1.21.1-17, --assetsDir, /media/crystalneko/enkoo/java/JustARod/.gradle-home/caches/fabric-loom/assets, --gameDir, ., --fml.fmlVersion, 4.0.43, --fml.mcVersion, 1.21.1, --fml.neoForgeVersion, 21.1.248, --fml.neoFormVersion, 20240808.144430]
+[13:45:58] [main/INFO] (Launcher) JVM identified as Ubuntu OpenJDK 64-Bit Server VM 21.0.11+10-1-26.04.2-Ubuntu
+[13:45:58] [main/INFO] (Launcher) ModLauncher 11.0.5+main.901c6ea8 starting: java version 21.0.11 by Ubuntu; OS Linux arch amd64 version 7.0.0-29-generic
+[13:45:58] [main/INFO] (ImmediateWindowHandler) Loading ImmediateWindowProvider fmlearlywindow
+[13:45:58] [main/INFO] (EARLYDISPLAY) Trying GL version 4.6
+[13:45:58] [main/INFO] (EARLYDISPLAY) Trying GL version 4.5
+[13:45:58] [main/INFO] (EARLYDISPLAY) Requested GL version 4.5 got version 4.5
+[13:45:58] [main/INFO] (mixin) SpongePowered MIXIN Subsystem Version=0.8.7 Source=union:/media/crystalneko/enkoo/java/JustARod/.gradle-home/caches/modules-2/files-2.1/net.fabricmc/sponge-mixin/0.15.2+mixin.0.8.7/2af2f021d8e02a0220dc27a7a72b4666d66d44ca/sponge-mixin-0.15.2+mixin.0.8.7.jar%23109!/ Service=ModLauncher Env=CLIENT
+[13:45:58] [pool-5-thread-1/INFO] (EARLYDISPLAY) GL info: llvmpipe (LLVM 21.1.8, 256 bits) GL version 4.5 (Core Profile) Mesa 26.0.3-1ubuntu1, Mesa
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar" [locator: neoforge devenv provider ([/media/crystalneko/enkoo/java/JustARod/.gradle/loom-cache/minecraftMaven/net/minecraft/neoforge-21.1.248-minecraft-merged-55e390635d/1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248/neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar])]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar" [locator: neoforge devenv provider ([/media/crystalneko/enkoo/java/JustARod/.gradle/loom-cache/minecraftMaven/net/minecraft/neoforge-21.1.248-minecraft-merged-55e390635d/1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248/neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar])]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "main" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "teamreborn-energy-4.1.0-neoforge.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "forgified-fabric-api-0.116.15+2.3.4+1.21.1.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "geckolib-neoforge-1.21.1-4.8.3.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-api-base-0.4.42+d1308ded19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-api-lookup-api-v1-1.6.72+6244b11119.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-biome-api-v1-13.0.31+1e62d33c19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-block-api-v1-1.1.0+b0c22bb819.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-block-view-api-v2-1.0.11+e9036fd419.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-blockrenderlayer-v1-1.1.52+c290471319.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-client-tags-api-v1-1.2.0+5adff2d719.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-command-api-v2-2.2.28+36d727be19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-content-registries-v0-8.0.19+5e0d320019.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-convention-tags-v2-2.12.0+75d3639619.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-data-attachment-api-v1-1.4.7+26d408aa19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-data-generation-api-v1-20.3.0+3e2bcb4b19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-entity-events-v1-1.8.0+e46a02ca19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-events-interaction-v0-0.7.14+057f5afd19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-game-rule-api-v1-1.0.53+36d727be19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-gametest-api-v1-2.0.5+29f188ce19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-item-api-v1-11.3.0+766f218719.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-item-group-api-v1-4.1.7+e324903319.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-key-binding-api-v1-1.0.47+62cc7ce119.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-lifecycle-events-v1-2.6.0+e40d8add19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-loot-api-v3-1.0.3+333dfad919.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-message-api-v1-6.0.14+6a754fce19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-model-loading-api-v1-2.1.0+6e8f52c719.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-networking-api-v1-4.3.1+7e3d421f19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-object-builder-api-v1-15.2.1+cc242efd19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-particles-v1-4.0.2+824f924c19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-recipe-api-v1-5.0.16+59440bcc19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-registry-sync-v0-5.3.2+f9aace1619.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-renderer-api-v1-3.4.1+9125b6dc19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-renderer-indigo-1.7.1+9125b6dc19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-rendering-fluids-v1-3.1.6+ddc51b4719.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-rendering-v1-5.1.0+1a09bd5a19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-resource-conditions-api-v1-4.3.0+5bdd099819.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-resource-loader-v0-1.3.1+4ea8954419.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-screen-api-v1-2.0.26+9991ca2f19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-screen-handler-api-v1-1.3.91+8dbc56dd19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-sound-api-v1-1.0.23+10b84f8419.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-tag-api-v1-1.3.0+3e2bcb4b19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-transfer-api-v1-5.4.4+6244b11119.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-transitive-access-wideners-v1-6.2.0+6c854b6f19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-convention-tags-v1-2.1.7+7f945d5b19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-loot-api-v2-3.0.15+a3ee712d19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-renderer-registries-v1-3.2.69+df3654b319.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "fabric-rendering-data-attachment-v1-0.3.49+73761d2e19.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "player-animation-lib-forge-2.0.4+1.21.1.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "toneko-neoforge-1.9.2-awfix-1744355e4844.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "kffmod-neoforge-5.12.0.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found mod file "13389206714268578995.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found library file "kotlinforforge-neoforge-5.12.0.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found gamelibrary file "mixinextras-neoforge-0.5.3.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found library file "forgified-fabric-loader-2.5.68+0.18.4+1.21.1-full.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found library file "kfflang-neoforge-5.12.0.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found gamelibrary file "kfflib-neoforge-5.12.0.jar" [locator: userdev mods and services, reader: mod manifest]
+[13:45:58] [main/WARN] (JarSelector) Attempted to select a dependency jar for JarJar which was passed in as source: library:mixinextras.neoforge. Using Mod File: /media/crystalneko/enkoo/java/JustARod/.gradle-home/caches/modules-2/files-2.1/io.github.llamalad7/mixinextras-neoforge/0.5.3/a0919957808de97707c5fb4ce073e66aeef3e187/mixinextras-neoforge-0.5.3.jar
+[13:45:58] [main/INFO] (JarInJarDependencyLocator) Found 9 dependencies adding them to mods collection
+[13:45:58] [main/INFO] (ModDiscoverer) Found library file "kotlinx-serialization-core-jvm-1.11.0.jar" [parent: kotlinforforge-neoforge-5.12.0.jar, locator: jarinjar]
+[13:45:58] [main/INFO] (ModDiscoverer) Found library file "kotlin-stdlib-2.4.0.jar" [parent: kotlinforforge-neoforge-5.12.0.jar, locator: jarinjar]
+[13:45:58] [main/INFO] (ModDiscoverer) Found library file "kotlin-reflect-2.4.0.jar" [parent: kotlinforforge-neoforge-5.12.0.jar, locator: jarinjar]
+[13:45:58] [main/INFO] (ModDiscoverer) Found library file "kotlinx-coroutines-jdk8-1.11.0.jar" [parent: kotlinforforge-neoforge-5.12.0.jar, locator: jarinjar]
+[13:45:58] [main/INFO] (ModDiscoverer) Found library file "kotlinx-serialization-json-jvm-1.11.0.jar" [parent: kotlinforforge-neoforge-5.12.0.jar, locator: jarinjar]
+[13:45:58] [main/INFO] (ModDiscoverer) Found library file "kotlinx-coroutines-core-jvm-1.11.0.jar" [parent: kotlinforforge-neoforge-5.12.0.jar, locator: jarinjar]
+[13:45:58] [main/INFO] (ModDiscoverer) Found library file "net.neoforged.neoforge-coremods-21.1.248.jar" [parent: neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar, locator: jarinjar, reader: mod manifest]
+[13:45:58] [main/INFO] (ModDiscoverer) Found library file "kotlin-stdlib-jdk7-2.4.0.jar" [parent: kotlinforforge-neoforge-5.12.0.jar, locator: jarinjar]
+[13:45:58] [main/INFO] (ModDiscoverer) Found library file "kotlin-stdlib-jdk8-2.4.0.jar" [parent: kotlinforforge-neoforge-5.12.0.jar, locator: jarinjar]
+[13:45:58] [main/INFO] (ModDiscoverer) 
+     Mod List:
+		Name Version (Mod Id)
+
+		Forgified Fabric API 0.116.15+2.3.4+1.21.1 (fabric_api)
+		Forgified Fabric API Base 0.4.42+d1308ded19 (fabric_api_base)
+		Forgified Fabric API Lookup API (v1) 1.6.72+6244b11119 (fabric_api_lookup_api_v1)
+		Forgified Fabric Biome API (v1) 13.0.31+1e62d33c19 (fabric_biome_api_v1)
+		Forgified Fabric Block API (v1) 1.1.0+b0c22bb819 (fabric_block_api_v1)
+		Forgified Fabric BlockRenderLayer Registration (v1) 1.1.52+c290471319 (fabric_blockrenderlayer_v1)
+		Forgified Fabric BlockView API (v2) 1.0.11+e9036fd419 (fabric_block_view_api_v2)
+		Forgified Fabric Client Tags 1.2.0+5adff2d719 (fabric_client_tags_api_v1)
+		Forgified Fabric Command API (v2) 2.2.28+36d727be19 (fabric_command_api_v2)
+		Forgified Fabric Content Registries (v0) 8.0.19+5e0d320019 (fabric_content_registries_v0)
+		Forgified Fabric Convention Tags 2.1.7+7f945d5b19 (fabric_convention_tags_v1)
+		Forgified Fabric Convention Tags (v2) 2.12.0+75d3639619 (fabric_convention_tags_v2)
+		Forgified Fabric Data Attachment API (v1) 1.4.7+26d408aa19 (fabric_data_attachment_api_v1)
+		Forgified Fabric Data Generation API (v1) 20.3.0+3e2bcb4b19 (fabric_data_generation_api_v1)
+		Forgified Fabric Entity Events (v1) 1.8.0+e46a02ca19 (fabric_entity_events_v1)
+		Forgified Fabric Events Interaction (v0) 0.7.14+057f5afd19 (fabric_events_interaction_v0)
+		Forgified Fabric Game Rule API (v1) 1.0.53+36d727be19 (fabric_game_rule_api_v1)
+		Forgified Fabric Game Test API (v1) 2.0.5+29f188ce19 (fabric_gametest_api_v1)
+		Forgified Fabric Item API (v1) 11.3.0+766f218719 (fabric_item_api_v1)
+		Forgified Fabric Item Group API (v1) 4.1.7+e324903319 (fabric_item_group_api_v1)
+		Forgified Fabric Key Binding API (v1) 1.0.47+62cc7ce119 (fabric_key_binding_api_v1)
+		Forgified Fabric Lifecycle Events (v1) 2.6.0+e40d8add19 (fabric_lifecycle_events_v1)
+		Forgified Fabric Loot API (v2) 3.0.15+a3ee712d19 (fabric_loot_api_v2)
+		Forgified Fabric Loot API (v3) 1.0.3+333dfad919 (fabric_loot_api_v3)
+		Forgified Fabric Message API (v1) 6.0.14+6a754fce19 (fabric_message_api_v1)
+		Forgified Fabric Model Loading API (v1) 2.1.0+6e8f52c719 (fabric_model_loading_api_v1)
+		Forgified Fabric Networking API (v1) 4.3.1+7e3d421f19 (fabric_networking_api_v1)
+		Forgified Fabric Object Builder API (v1) 15.2.1+cc242efd19 (fabric_object_builder_api_v1)
+		Forgified Fabric Particles (v1) 4.0.2+824f924c19 (fabric_particles_v1)
+		Forgified Fabric Recipe API (v1) 5.0.16+59440bcc19 (fabric_recipe_api_v1)
+		Forgified Fabric Registry Sync (v0) 5.3.2+f9aace1619 (fabric_registry_sync_v0)
+		Forgified Fabric Renderer - Indigo 1.7.1+9125b6dc19 (fabric_renderer_indigo)
+		Forgified Fabric Renderer API (v1) 3.4.1+9125b6dc19 (fabric_renderer_api_v1)
+		Forgified Fabric Renderer Registries (v1) 3.2.69+df3654b319 (fabric_renderer_registries_v1)
+		Forgified Fabric Rendering (v1) 5.1.0+1a09bd5a19 (fabric_rendering_v1)
+		Forgified Fabric Rendering Data Attachment (v1) 0.3.49+73761d2e19 (fabric_rendering_data_attachment_v1)
+		Forgified Fabric Rendering Fluids (v1) 3.1.6+ddc51b4719 (fabric_rendering_fluids_v1)
+		Forgified Fabric Resource Conditions API (v1) 4.3.0+5bdd099819 (fabric_resource_conditions_api_v1)
+		Forgified Fabric Resource Loader (v0) 1.3.1+4ea8954419 (fabric_resource_loader_v0)
+		Forgified Fabric Screen API (v1) 2.0.26+9991ca2f19 (fabric_screen_api_v1)
+		Forgified Fabric Screen Handler API (v1) 1.3.91+8dbc56dd19 (fabric_screen_handler_api_v1)
+		Forgified Fabric Sound API (v1) 1.0.23+10b84f8419 (fabric_sound_api_v1)
+		Forgified Fabric Tag API (v1) 1.3.0+3e2bcb4b19 (fabric_tag_api_v1)
+		Forgified Fabric Transfer API (v1) 5.4.4+6244b11119 (fabric_transfer_api_v1)
+		Forgified Fabric Transitive Access Wideners (v1) 6.2.0+6c854b6f19 (fabric_transitive_access_wideners_v1)
+		GeckoLib 4 4.8.3 (geckolib)
+		generated_6eebf62 1 (generated_6eebf62)
+		JustARod 0.2.2 (justarod)
+		Kotlin For Forge 5.12.0 (kotlinforforge)
+		Minecraft 1.21.1 (minecraft)
+		NeoForge 21.1.248 (neoforge)
+		Player Animator 2.0.4+1.21.1 (playeranimator)
+		TeamReborn Energy (dev library wrapper) 4.1.0 (team_reborn_energy)
+		toNeko 1.9.2 (toneko)
+[13:45:59] [main/INFO] (mixin) Compatibility level set to JAVA_17
+[13:45:59] [main/INFO] (mixin) Compatibility level set to JAVA_21
+[13:45:59] [main/INFO] (FabricLoaderBootstrap) Propagating FML mod list to Fabric Loader
+[13:45:59] [main/INFO] (LaunchServiceHandler) Launching target 'forgeclientdev' with arguments [--version, 21.1.248, --gameDir, ., --assetsDir, /media/crystalneko/enkoo/java/JustARod/.gradle-home/caches/fabric-loom/assets, --assetIndex, 1.21.1-17]
+[13:45:59] [main/INFO] (unprotect) Found 8254 Minecraft classes
+[13:45:59] [main/WARN] (mixin) Reference map 'geckolib.refmap.json' for geckolib.mixins.json could not be read. If this is a development environment you can ignore this message
+[13:45:59] [main/INFO] (MixinExtras|Service) Initializing MixinExtras via com.llamalad7.mixinextras.service.MixinExtrasServiceImpl(version=0.5.3).
+[238月2026 13:46:00.107] [Datafixer Bootstrap/INFO] [com.mojang.datafixers.DataFixerBuilder/]: 229 Datafixer optimizations took 83 milliseconds
+[238月2026 13:46:02.582] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, location] and [teleport, destination] with inputs: [0.1 -0.5 .9, 0 0 0]
+[238月2026 13:46:02.583] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, location] and [teleport, targets] with inputs: [0.1 -0.5 .9, 0 0 0]
+[238月2026 13:46:02.584] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, destination] and [teleport, targets] with inputs: [Player, 0123, @e, dd12be42-52a9-4a91-a8a1-11c01849e498]
+[238月2026 13:46:02.585] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, targets] and [teleport, destination] with inputs: [Player, 0123, dd12be42-52a9-4a91-a8a1-11c01849e498]
+[238月2026 13:46:02.585] [main/WARN] [net.minecraft.commands.Commands/]: Ambiguity between arguments [teleport, targets, location] and [teleport, targets, destination] with inputs: [0.1 -0.5 .9, 0 0 0]
+[238月2026 13:46:02.647] [Render thread/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/media/crystalneko/enkoo/java/JustARod/.gradle/loom-cache/minecraftMaven/net/minecraft/neoforge-21.1.248-minecraft-merged-55e390635d/1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248/neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/assets/.mcassetsroot' uses unexpected schema
+[238月2026 13:46:02.647] [Render thread/WARN] [net.minecraft.server.packs.VanillaPackResourcesBuilder/]: Assets URL 'union:/media/crystalneko/enkoo/java/JustARod/.gradle/loom-cache/minecraftMaven/net/minecraft/neoforge-21.1.248-minecraft-merged-55e390635d/1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248/neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/data/.mcassetsroot' uses unexpected schema
+[238月2026 13:46:02.661] [Render thread/INFO] [com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService/]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, name=PROD]
+[238月2026 13:46:02.664] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Setting user: Dev
+[238月2026 13:46:02.719] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Backend library: LWJGL version 3.3.3+5
+[238月2026 13:46:03.115] [modloading-worker-0/INFO] [net.fabricmc.fabric.impl.client.indigo.Indigo/]: [Indigo] Registering Indigo renderer!
+[238月2026 13:46:03.119] [modloading-worker-0/INFO] [net.neoforged.neoforge.common.NeoForgeMod/NEOFORGE-MOD]: NeoForge mod loading, version 21.1.248, for MC 1.21.1
+[238月2026 13:46:03.250] [modloading-worker-0/INFO] [thedarkcolour.kotlinforforge.neoforge.test.KotlinForForge/]: Kotlin For Forge Enabled!
+[238月2026 13:46:03.887] [modloading-sync-worker/ERROR] [net.minecraft.Util/]: Entity justarod:seeeeeex_neko has no attributes
+[238月2026 13:46:03.887] [modloading-sync-worker/ERROR] [net.minecraft.Util/]: Entity justarod:loli_neko has no attributes
+[238月2026 13:46:03.887] [modloading-sync-worker/ERROR] [net.minecraft.Util/]: Entity justarod:rod has no attributes
+[238月2026 13:46:03.887] [modloading-sync-worker/ERROR] [net.minecraft.Util/]: Entity toneko:ravenn has no attributes
+[238月2026 13:46:04.060] [Render thread/INFO] [net.neoforged.neoforge.gametest.GameTestHooks/]: Enabled Gametest Namespaces: []
+[238月2026 13:46:04.180] [Render thread/INFO] [net.minecraft.server.packs.resources.ReloadableResourceManager/]: Reloading ResourceManager: vanilla, fabric, mod_resources, mod/fabric_transfer_api_v1, mod/fabric_renderer_api_v1, mod/geckolib, mod/playeranimator, mod/fabric_model_loading_api_v1, mod/fabric_item_api_v1, mod/fabric_rendering_fluids_v1, mod/fabric_screen_handler_api_v1, mod/fabric_resource_loader_v0, mod/toneko, mod/fabric_rendering_v1, mod/fabric_renderer_indigo, mod/fabric_convention_tags_v1, mod/neoforge, mod/fabric_convention_tags_v2, mod/fabric_command_api_v2, mod/fabric_block_view_api_v2, mod/fabric_data_attachment_api_v1, mod/fabric_screen_api_v1, mod/fabric_particles_v1, mod/fabric_api,forgified_fabric_api, mod/fabric_content_registries_v0, mod/fabric_transitive_access_wideners_v1, mod/fabric_game_rule_api_v1, mod/generated_6eebf62, mod/fabric_api_base, mod/fabric_renderer_registries_v1, mod/fabric_api_lookup_api_v1, mod/fabric_blockrenderlayer_v1, mod/fabric_block_api_v1, mod/fabric_resource_conditions_api_v1, mod/kotlinforforge, mod/fabric_item_group_api_v1, mod/fabric_gametest_api_v1, mod/fabric_biome_api_v1, mod/fabric_entity_events_v1, mod/fabric_registry_sync_v0, mod/fabric_recipe_api_v1, mod/fabric_loot_api_v2, mod/fabric_object_builder_api_v1, mod/fabric_loot_api_v3, mod/fabric_rendering_data_attachment_v1, mod/justarod, mod/fabric_networking_api_v1, mod/fabric_sound_api_v1, mod/fabric_message_api_v1, mod/fabric_lifecycle_events_v1, mod/team_reborn_energy, mod/fabric_tag_api_v1, mod/fabric_data_generation_api_v1, mod/fabric_events_interaction_v0, mod/fabric_key_binding_api_v1, mod/fabric_client_tags_api_v1
+[238月2026 13:46:04.223] [Worker-Main-27/INFO] [net.minecraft.client.gui.font.providers.UnihexProvider/]: Found unifont_all_no_pua-15.1.05.hex, loading
+[238月2026 13:46:04.223] [Worker-Main-28/INFO] [net.minecraft.client.gui.font.providers.UnihexProvider/]: Found unifont_jp_patch-15.1.05.hex, loading
+[238月2026 13:46:04.253] [Worker-Main-23/WARN] [net.minecraft.client.sounds.SoundManager/]: File toneko:sounds/item/bazooka/meow/meow0.ogg does not exist, cannot add it to event toneko:item.bazooka.meow
+[238月2026 13:46:04.339] [Worker-Main-17/WARN] [net.minecraft.client.renderer.texture.SpriteLoader/]: Texture justarod:item/byt with size 548x548 limits mip level from 4 to 2
+[238月2026 13:46:04.533] [Worker-Main-1/WARN] [net.minecraft.client.resources.model.ModelBakery/]: Unable to load model: 'toneko:item/neko_paws' referenced from: toneko:item/neko_paws: java.io.FileNotFoundException: toneko:models/item/neko_paws.json
+[238月2026 13:46:04.535] [Worker-Main-1/WARN] [net.minecraft.client.resources.model.ModelBakery/]: Unable to load model: 'toneko:item/music_disc_never_gonna_give_you_up' referenced from: toneko:item/music_disc_never_gonna_give_you_up: java.io.FileNotFoundException: toneko:models/item/music_disc_never_gonna_give_you_up.json
+[238月2026 13:46:04.536] [Worker-Main-1/WARN] [net.minecraft.client.resources.model.ModelBakery/]: Unable to load model: 'toneko:item/plot_scroll' referenced from: toneko:item/plot_scroll: java.io.FileNotFoundException: toneko:models/item/plot_scroll.json
+[238月2026 13:46:04.747] [Worker-Main-1/WARN] [net.minecraft.client.resources.model.ModelManager/]: Missing textures in model toneko:noelle_maid_neko_spawn_egg#inventory:
+    minecraft:textures/atlas/blocks.png:toneko:item/noelle_maid_neko_spawn_egg
+[238月2026 13:46:04.747] [Worker-Main-1/WARN] [net.minecraft.client.resources.model.ModelManager/]: Missing textures in model justarod:giant_rod#inventory:
+    minecraft:textures/atlas/blocks.png:giant_rod:item/giant_rod
+[238月2026 13:46:04.747] [Worker-Main-1/WARN] [net.minecraft.client.resources.model.ModelManager/]: Missing textures in model justarod:lightning_end_rod#inventory:
+    minecraft:textures/atlas/blocks.png:justaord:item/lightning_end_rod
+[238月2026 13:46:04.887] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: minecraft:item.goat_horn.play
+[238月2026 13:46:04.887] [Render thread/WARN] [net.minecraft.client.sounds.SoundEngine/]: Missing sound for event: minecraft:entity.goat.screaming.horn_break
+[238月2026 13:46:04.921] [Render thread/INFO] [com.mojang.blaze3d.audio.Library/]: OpenAL initialized on device Ryzen HD Audio Controller 模拟立体声
+[238月2026 13:46:04.922] [Render thread/INFO] [net.minecraft.client.sounds.SoundEngine/SOUNDS]: Sound engine started
+[238月2026 13:46:04.968] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x1024x4 minecraft:textures/atlas/blocks.png-atlas
+[238月2026 13:46:04.975] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x4 minecraft:textures/atlas/signs.png-atlas
+[238月2026 13:46:04.976] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x4 minecraft:textures/atlas/shield_patterns.png-atlas
+[238月2026 13:46:04.976] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x512x4 minecraft:textures/atlas/banner_patterns.png-atlas
+[238月2026 13:46:04.977] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x1024x4 minecraft:textures/atlas/armor_trims.png-atlas
+[238月2026 13:46:04.979] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 256x256x4 minecraft:textures/atlas/chest.png-atlas
+[238月2026 13:46:04.979] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 128x64x4 minecraft:textures/atlas/decorated_pot.png-atlas
+[238月2026 13:46:04.979] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x4 minecraft:textures/atlas/shulker_boxes.png-atlas
+[238月2026 13:46:04.980] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x4 minecraft:textures/atlas/beds.png-atlas
+[238月2026 13:46:05.048] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x0 minecraft:textures/atlas/particles.png-atlas
+[238月2026 13:46:05.049] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x0 minecraft:textures/atlas/paintings.png-atlas
+[238月2026 13:46:05.049] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 512x256x0 minecraft:textures/atlas/mob_effects.png-atlas
+[238月2026 13:46:05.050] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 64x64x0 minecraft:textures/atlas/map_decorations.png-atlas
+[238月2026 13:46:05.050] [Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: 1024x512x0 minecraft:textures/atlas/gui.png-atlas
+[238月2026 13:46:05.082] [Render thread/WARN] [net.minecraft.client.renderer.ShaderInstance/]: Shader rendertype_entity_translucent_emissive could not find sampler named Sampler2 in the specified shader program.
+[238月2026 13:46:05.147] [Render thread/INFO] [net.neoforged.neoforge.client.entity.animation.json.AnimationLoader/]: Loaded 0 entity animations
+[238月2026 13:46:23.326] [Render thread/WARN] [net.neoforged.neoforge.common.CommonHooks/WP]: The following mods have version differences that were not resolved:
+generated_f558593 (version 1 -> MISSING)
+Things may not work well.
+[238月2026 13:46:23.659] [Worker-Main-5/ERROR] [net.minecraft.tags.TagLoader/]: Couldn't load tag justarod:lithium_ion_battery as it is missing following references: 
+	techreborn:lithium_ion_battery (from mod/generated_6eebf62)
+[238月2026 13:46:23.660] [Worker-Main-5/ERROR] [net.minecraft.tags.TagLoader/]: Couldn't load tag justarod:industrial_circuit as it is missing following references: 
+	techreborn:industrial_circuit (from mod/generated_6eebf62)
+[238月2026 13:46:23.660] [Worker-Main-5/ERROR] [net.minecraft.tags.TagLoader/]: Couldn't load tag justarod:electronic_circuit as it is missing following references: 
+	techreborn:electronic_circuit (from mod/generated_6eebf62)
+[238月2026 13:46:23.661] [Worker-Main-5/ERROR] [net.minecraft.tags.TagLoader/]: Couldn't load tag justarod:lapotron_crystal as it is missing following references: 
+	techreborn:lapotron_crystal (from mod/generated_6eebf62)
+[238月2026 13:46:23.661] [Worker-Main-5/ERROR] [net.minecraft.tags.TagLoader/]: Couldn't load tag justarod:advanced_circuit as it is missing following references: 
+	techreborn:advanced_circuit (from mod/generated_6eebf62)
+[238月2026 13:46:23.661] [Worker-Main-5/ERROR] [net.minecraft.tags.TagLoader/]: Couldn't load tag justarod:red_cell_battery as it is missing following references: 
+	techreborn:red_cell_battery (from mod/generated_6eebf62)
+[238月2026 13:46:23.681] [Render thread/ERROR] [net.minecraft.world.item.crafting.RecipeManager/]: Parsing error loading recipe justarod:industrial_electric_rod
+com.google.gson.JsonParseException: Map entry 'R' : Failed to parse either. First: Not a json array: {"item":"techreborn:lapotron_crystal"}; Second: No key tag in MapLike[{"item":"techreborn:lapotron_crystal"}]; Unknown registry key in ResourceKey[minecraft:root / minecraft:item]: techreborn:lapotron_crystal
+	at MC-BOOTSTRAP/datafixerupper@8.0.16/com.mojang.serialization.DataResult$Error.getOrThrow(DataResult.java:287) ~[datafixerupper-8.0.16.jar%23150!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.world.item.crafting.RecipeManager.apply(RecipeManager.java:60) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.world.item.crafting.RecipeManager.apply(RecipeManager.java:36) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.server.packs.resources.SimplePreparableReloadListener.method_18790(SimplePreparableReloadListener.java:19) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at java.base/java.util.concurrent.CompletableFuture$UniAccept.tryFire(CompletableFuture.java:718) ~[?:?]
+	at java.base/java.util.concurrent.CompletableFuture$Completion.run(CompletableFuture.java:482) ~[?:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.server.packs.resources.SimpleReloadInstance.method_18365(SimpleReloadInstance.java:69) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.util.thread.BlockableEventLoop.doRunTask(BlockableEventLoop.java:148) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.util.thread.ReentrantBlockableEventLoop.doRunTask(ReentrantBlockableEventLoop.java:23) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.util.thread.BlockableEventLoop.pollTask(BlockableEventLoop.java:122) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.util.thread.BlockableEventLoop.managedBlock(BlockableEventLoop.java:132) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.gui.screens.worldselection.WorldOpenFlows.loadWorldDataBlocking(WorldOpenFlows.java:201) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.gui.screens.worldselection.WorldOpenFlows.loadWorldStem(WorldOpenFlows.java:142) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.gui.screens.worldselection.WorldOpenFlows.openWorldLoadLevelStem(WorldOpenFlows.java:346) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.gui.screens.worldselection.WorldOpenFlows.openWorldCheckVersionCompatibility(WorldOpenFlows.java:335) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.gui.screens.worldselection.WorldOpenFlows.openWorldLoadLevelData(WorldOpenFlows.java:297) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.gui.screens.worldselection.WorldOpenFlows.openWorld(WorldOpenFlows.java:261) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.gui.screens.worldselection.WorldSelectionList$WorldListEntry.joinWorld(WorldSelectionList.java:498) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.gui.screens.worldselection.WorldSelectionList$WorldListEntry.mouseClicked(WorldSelectionList.java:481) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.gui.components.AbstractSelectionList.mouseClicked(AbstractSelectionList.java:315) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.gui.components.events.ContainerEventHandler.mouseClicked(ContainerEventHandler.java:38) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.MouseHandler.method_1611(MouseHandler.java:98) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.gui.screens.Screen.wrapScreenError(Screen.java:451) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.MouseHandler.onPress(MouseHandler.java:95) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.MouseHandler.method_22686(MouseHandler.java:202) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.util.thread.BlockableEventLoop.execute(BlockableEventLoop.java:98) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.MouseHandler.method_22684(MouseHandler.java:202) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at MC-BOOTSTRAP/org.lwjgl.glfw@3.3.3+5/org.lwjgl.glfw.GLFWMouseButtonCallbackI.callback(GLFWMouseButtonCallbackI.java:43) ~[lwjgl-glfw-3.3.3.jar%23135!/:build 5]
+	at MC-BOOTSTRAP/org.lwjgl@3.3.3+5/org.lwjgl.system.JNI.invokeV(Native Method) ~[lwjgl-3.3.3.jar%23143!/:build 5]
+	at MC-BOOTSTRAP/org.lwjgl.glfw@3.3.3+5/org.lwjgl.glfw.GLFW.glfwWaitEventsTimeout(GLFW.java:3509) ~[lwjgl-glfw-3.3.3.jar%23135!/:build 5]
+	at TRANSFORMER/minecraft@1.21.1/com.mojang.blaze3d.systems.RenderSystem.limitDisplayFPS(RenderSystem.java:162) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.Minecraft.runTick(Minecraft.java:1220) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.Minecraft.run(Minecraft.java:807) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.main.Main.main(Main.java:230) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[?:?]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[?:?]
+	at MC-BOOTSTRAP/fml_loader@4.0.43/net.neoforged.fml.loading.targets.CommonLaunchHandler.runTarget(CommonLaunchHandler.java:136) ~[loader-4.0.43.jar%2395!/:4.0]
+	at MC-BOOTSTRAP/fml_loader@4.0.43/net.neoforged.fml.loading.targets.CommonLaunchHandler.clientService(CommonLaunchHandler.java:124) ~[loader-4.0.43.jar%2395!/:4.0]
+	at MC-BOOTSTRAP/fml_loader@4.0.43/net.neoforged.fml.loading.targets.NeoForgeClientDevLaunchHandler.runService(NeoForgeClientDevLaunchHandler.java:23) ~[loader-4.0.43.jar%2395!/:4.0]
+	at MC-BOOTSTRAP/fml_loader@4.0.43/net.neoforged.fml.loading.targets.CommonLaunchHandler.lambda$launchService$4(CommonLaunchHandler.java:118) ~[loader-4.0.43.jar%2395!/:4.0]
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:30) [modlauncher-11.0.5.jar%23100!/:?]
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) [modlauncher-11.0.5.jar%23100!/:?]
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) [modlauncher-11.0.5.jar%23100!/:?]
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.Launcher.run(Launcher.java:103) [modlauncher-11.0.5.jar%23100!/:?]
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.Launcher.main(Launcher.java:74) [modlauncher-11.0.5.jar%23100!/:?]
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) [modlauncher-11.0.5.jar%23100!/:?]
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) [modlauncher-11.0.5.jar%23100!/:?]
+	at cpw.mods.bootstraplauncher.BootstrapLauncher.run(BootstrapLauncher.java:210) [bootstraplauncher-2.0.2.jar:?]
+	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:69) [bootstraplauncher-2.0.2.jar:?]
+	at net.fabricmc.devlaunchinjector.Main.main(Main.java:86) [dev-launch-injector-0.2.1+build.8.jar:?]
+	at dev.architectury.transformer.TransformerRuntime.main(TransformerRuntime.java:220) [architectury-transformer-5.2.91-runtime.jar:5.2.91]
+[238月2026 13:46:23.690] [Render thread/INFO] [net.minecraft.world.item.crafting.RecipeManager/]: Loaded 1381 recipes
+[238月2026 13:46:23.756] [Render thread/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 1411 advancements
+[238月2026 13:46:23.760] [Render thread/INFO] [org.cneko.toneko.common.mod.genetics.api.GeneticsDataLoader/]: 遗传学数据包加载完成：2 个等位基因, 2 个基因座
+[238月2026 13:46:23.765] [Render thread/WARN] [net.minecraft.core.MappedRegistry/]: Not all defined tags for registry ResourceKey[minecraft:root / minecraft:item] are present in data pack: toneko:neko_armors
+[238月2026 13:46:23.989] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Starting integrated minecraft server version 1.21.1
+[238月2026 13:46:23.990] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Generating keypair
+[238月2026 13:46:24.035] [Server thread/ERROR] [net.neoforged.neoforge.server.ServerLifecycleHooks/]: The following entities have not registered to the RegisterSpawnPlacementsEvent, but a spawn entry was found. This will mean that the entity doesn't have restrictions on its spawn location, please register a spawn placement for the entity, you can register with NO_RESTRICTIONS if you don't want any restrictions.
+	 - justarod:seeeeeex_neko
+	 - justarod:loli_neko
+[238月2026 13:46:24.395] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Preparing start region for dimension minecraft:overworld
+[238月2026 13:46:24.510] [progressListener/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Preparing spawn area: 0%
+[238月2026 13:46:24.558] [progressListener/INFO] [net.minecraft.server.level.progress.LoggerChunkProgressListener/]: Time elapsed: 139 ms
+[238月2026 13:46:24.558] [Server thread/INFO] [net.neoforged.neoforge.server.permission.PermissionAPI/]: Successfully initialized permission handler neoforge:default_handler
+[238月2026 13:46:24.559] [Server thread/WARN] [net.neoforged.neoforge.common.TagConventionLogWarning/]: 
+   Dev warning - Legacy Tags detected. Please migrate your 'forge' namespace tags to the 'c' namespace! See net.neoforged.neoforge.common.Tags.java for all tags.
+   NOTE: Many tags have been moved around or renamed. Some new ones were added so please review the new tags.
+    And make sure you follow tag conventions for new tags! The convention is `c` with nouns generally being plural and adjectives being singular.
+   You can disable this message in NeoForge's common config by setting `logLegacyTagWarnings` to "SILENCED" or see individual tags with "DEV_VERBOSE".
+
+[238月2026 13:46:24.559] [Server thread/WARN] [net.fabricmc.fabric.impl.tag.convention.v2.TranslationConventionLogWarnings/]: 
+	Dev warning - Untranslated Item Tags detected. Please translate your item tags so other mods such as recipe viewers can properly display your tag's name.
+	The format desired is tag.item.<namespace>.<path> for the translation key with slashes in path turned into periods.
+	To disable this message, set this system property in your runs: `-Dfabric-tag-conventions-v2.missingTagTranslationWarning=SILENCED`.
+	To see individual untranslated item tags found, set the system property to `-Dfabric-tag-conventions-v2.missingTagTranslationWarning=VERBOSE`.
+	Default is `SHORT`.
+
+[238月2026 13:46:24.602] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing view distance to 12, from 10
+[238月2026 13:46:24.602] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing simulation distance to 12, from 0
+[238月2026 13:46:24.920] [Server thread/INFO] [net.minecraft.server.players.PlayerList/]: Dev[local:E:7a41047d] logged in with entity id 70 at (46.10579999889757, 69.0, 26.114233821230535)
+[238月2026 13:46:24.947] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev joined the game
+[238月2026 13:46:25.068] [Render thread/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 2 advancements
+[238月2026 13:46:39.520] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev has made the advancement [Need more lubrication!]
+[238月2026 13:46:39.547] [Render thread/INFO] [net.minecraft.client.gui.components.ChatComponent/]: [System] [CHAT] Dev has made the advancement [Need more lubrication!]
+[238月2026 13:46:39.578] [Render thread/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 4 advancements
+[238月2026 13:46:52.261] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
+[238月2026 13:46:52.270] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
+[238月2026 13:46:52.283] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
+[238月2026 13:46:52.283] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
+[238月2026 13:46:57.426] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Changing view distance to 9, from 12
+[238月2026 13:47:55.678] [Render thread/INFO] [net.minecraft.advancements.AdvancementTree/]: Loaded 5 advancements
+[238月2026 13:48:25.611] [Server thread/INFO] [net.minecraft.client.server.IntegratedServer/]: Saving and pausing game...
+[238月2026 13:48:25.615] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
+[238月2026 13:48:25.619] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
+[238月2026 13:48:25.619] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
+[238月2026 13:48:26.272] [Server thread/INFO] [net.minecraft.server.network.ServerGamePacketListenerImpl/]: Dev lost connection: Disconnected
+[238月2026 13:48:26.275] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Dev left the game
+[238月2026 13:48:26.279] [Server thread/INFO] [net.minecraft.server.network.ServerCommonPacketListenerImpl/]: Stopping singleplayer server as player logged out
+[238月2026 13:48:26.314] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Stopping server
+[238月2026 13:48:26.319] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving players
+[238月2026 13:48:26.319] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving worlds
+[238月2026 13:48:26.550] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:overworld
+[238月2026 13:48:26.725] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_end
+[238月2026 13:48:26.730] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: Saving chunks for level 'ServerLevel[New World]'/minecraft:the_nether
+[238月2026 13:48:26.736] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (New World): All chunks are saved
+[238月2026 13:48:26.736] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[238月2026 13:48:26.736] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[238月2026 13:48:26.736] [Server thread/INFO] [net.minecraft.server.MinecraftServer/]: ThreadedAnvilChunkStorage: All dimensions are saved
+[238月2026 13:48:26.812] [Render thread/ERROR] [net.minecraft.Util/]: Entity justarod:seeeeeex_neko has no attributes
+[238月2026 13:48:26.812] [Render thread/ERROR] [net.minecraft.Util/]: Entity justarod:loli_neko has no attributes
+[238月2026 13:48:26.812] [Render thread/ERROR] [net.minecraft.Util/]: Entity justarod:rod has no attributes
+[238月2026 13:48:26.812] [Render thread/ERROR] [net.minecraft.Util/]: Entity toneko:ravenn has no attributes
+[238月2026 13:48:27.456] [Render thread/INFO] [net.minecraft.client.Minecraft/]: Stopping!

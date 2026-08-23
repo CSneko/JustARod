@@ -1,0 +1,18 @@
+{
+  "replace": false,
+  "values": [
+    "justarod:hysterectomy",
+    "justarod:uterus_installation",
+    "justarod:artificial_abortion",
+    "justarod:mastectomy",
+    "justarod:orchiectomy",
+    "justarod:amputating",
+    "justarod:precision",
+    "justarod:beheading",
+    "justarod:hemorrhoidectomy",
+    "justarod:meiosis",
+    "justarod:hymenotomy",
+    "justarod:laparoscopy",
+    "justarod:cataract_surgery"
+  ]
+}

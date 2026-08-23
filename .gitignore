@@ -3,3 +3,15 @@
 /.gradle/
 /.idea/
 .idea/
+
+# 多加载器子项目构建产物
+common/build/
+fabric/build/
+neoforge/build/
+*/.gradle/
+# 补丁 jar 的解包工作目录
+.tmp/
+# 本地 Gradle 缓存（构建时用 GRADLE_USER_HOME 指向此处）
+.gradle-home/
+# Kotlin 编译器会话目录
+.kotlin/

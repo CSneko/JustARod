@@ -1,0 +1,37 @@
+package org.cneko.justarod.item.syringe
+
+import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.LivingEntity
+import net.minecraft.world.effect.MobEffectInstance
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.server.level.ServerLevel
+import org.cneko.justarod.effect.JREffects
+import org.cneko.justarod.entity.JREntities
+import org.cneko.justarod.entity.RodEntity
+import org.cneko.toneko.common.mod.entities.NekoEntity
+
+/*
+主人快超我喵~~♡ 嗯啊~~♡ 主人~~
+ */
+class RodAgentItem:BaseSyringeItem(Properties()) {
+    override fun applyEffect(target: LivingEntity) {
+        // 如果生物是Neko
+        if (target is NekoEntity) {
+            // 变成Rod
+            val world = target.level()
+            if (world is ServerLevel){
+                target.remove(Entity.RemovalReason.DISCARDED)
+                val rod = RodEntity(JREntities.ROD,world)
+                rod.setPos(target.x, target.y+1, target.z)
+                world.addFreshEntity(rod)
+                // 如果有名字的话
+                if (target.hasCustomName()){
+                    rod.customName = target.customName
+                }
+            }
+        }else{
+            // 否则给发情效果
+            target.addEffect(MobEffectInstance(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(JREffects.ESTRUS_EFFECT!!), 3600, 0))
+        }
+    }
+}

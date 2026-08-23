@@ -1,0 +1,62 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+issueTrackerURL = "https://github.com/CSneko/JustARod/issues"
+license = "GPL-3.0"
+
+[[mods]]
+modId = "justarod"
+version = "${version}"
+displayName = "JustARod"
+authors = "CrystalNeko"
+description = '''
+meow
+'''
+logoFile = "assets/justarod/icon.png"
+
+[[dependencies.justarod]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.justarod]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21,1.21.2)"
+ordering = "NONE"
+side = "BOTH"
+
+# Forgified Fabric API 在 NeoForge 上提供 Fabric API
+[[dependencies.justarod]]
+modId = "fabric_api"
+type = "required"
+versionRange = "*"
+ordering = "NONE"
+side = "BOTH"
+
+# Kotlin 运行时（Kotlin for Forge）
+[[dependencies.justarod]]
+modId = "kotlinforforge"
+type = "required"
+versionRange = "[5,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.justarod]]
+modId = "geckolib"
+type = "required"
+versionRange = "*"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.justarod]]
+modId = "toneko"
+type = "required"
+versionRange = "[1.7.2,)"
+ordering = "AFTER"
+side = "BOTH"
+
+
+[[mixins]]
+config = "justarod.mixins.json"

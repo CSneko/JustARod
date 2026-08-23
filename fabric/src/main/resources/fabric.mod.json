@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "id": "justarod",
+  "version": "${version}",
+  "name": "JustARod",
+  "description": "meow",
+  "authors": [
+    "CrystalNeko"
+  ],
+  "contributors": [
+    "IgnoreLicensesCN",
+    "cleep5564",
+    "LingyiBit0"
+  ],
+  "contact": {},
+  "license": "GPL-3.0",
+  "icon": "assets/justarod/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "org.cneko.justarod.fabric.JRFabricClient"
+    ],
+    "main": [
+      "org.cneko.justarod.fabric.JRFabric"
+    ],
+    "fabric-datagen": [
+      "org.cneko.justarod.datagen.JRDataGen"
+    ]
+  },
+  "depends": {
+    "fabricloader": "*",
+    "fabric": "*",
+    "minecraft": ">=${minecraft_version}",
+    "fabric-language-kotlin": "*",
+    "geckolib": "*",
+    "toneko": ">=1.7.2"
+  },
+  "mixins": [
+    "justarod.mixins.json"
+  ],
+  "accessWidener" : "justarod.accessWideners.accessWidener",
+  "custom": {
+    "loom:injected_interfaces": {
+      "net/minecraft/class_1657": [
+        "org/cneko/justarod/entity/Powerable",
+        "org/cneko/justarod/entity/Pregnant",
+        "org/cneko/justarod/entity/BDSMable"
+      ],
+      "org/cneko/toneko/common/mod/entities/RavennEntity": ["org/cneko/justarod/entity/Pregnant","org/cneko/justarod/entity/Sexual","org/cneko/justarod/entity/Intex"],
+      "org/cneko/toneko/common/mod/entities/NekoEntity": ["org/cneko/justarod/entity/Insertable"],
+      "net/minecraft/class_1297": ["org/cneko/justarod/entity/Fallible"],
+      "net/minecraft/class_1309": ["org/cneko/justarod/entity/Insertable"]
+    }
+  }
+}

@@ -1,0 +1,296 @@
+---- Minecraft Crash Report ----
+// Uh... Did I do that?
+
+Time: 2026-08-23 13:09:01
+Description: Rendering screen
+
+java.lang.NoClassDefFoundError: Could not initialize class team.reborn.energy.api.EnergyStorage
+	at TRANSFORMER/team_reborn_energy@4.1.0/team.reborn.energy.api.base.SimpleEnergyItem.getStoredEnergyUnchecked(SimpleEnergyItem.java:93) ~[teamreborn-energy-4.1.0-neoforge.jar%23185!/:?] {re:classloading}
+	at TRANSFORMER/team_reborn_energy@4.1.0/team.reborn.energy.api.base.SimpleEnergyItem.getStoredEnergy(SimpleEnergyItem.java:58) ~[teamreborn-energy-4.1.0-neoforge.jar%23185!/:?] {re:classloading}
+	at TRANSFORMER/generated_09fe67f@1/org.cneko.justarod.item.electric.ElectricRodItem.appendHoverText(ElectricRodItem.java:39) ~[4309081802489347766.jar%23236!/:?] {re:classloading}
+	at TRANSFORMER/generated_09fe67f@1/org.cneko.justarod.item.electric.SelfUsedElectricRodItem.appendHoverText(SelfUsedElectricRodItem.java:93) ~[4309081802489347766.jar%23236!/:?] {re:classloading}
+	at TRANSFORMER/generated_09fe67f@1/org.cneko.justarod.item.electric.BasicElectricRodItem.appendHoverText(BasicElectricRodItem.java:26) ~[4309081802489347766.jar%23236!/:?] {re:classloading}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.world.item.ItemStack.getTooltipLines(ItemStack.java:770) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:computing_frames,pl:accesstransformer:B,pl:unprotect:A,re:mixin,pl:accesstransformer:B,pl:unprotect:A,re:classloading,pl:accesstransformer:B,pl:mixin:APP:geckolib.mixins.json:common.ItemStackMixin from mod geckolib,pl:mixin:APP:fabric-item-api-v1.mixins.json:ItemStackMixin from mod fabric_item_api_v1,pl:mixin:A,pl:unprotect:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.getTooltipFromContainerItem(CreativeModeInventoryScreen.java:736) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:unprotect:A,pl:runtimedistcleaner:A,re:classloading,pl:mixin:APP:fabric-item-group-api-v1.client.mixins.json:CreativeInventoryScreenMixin from mod fabric_item_group_api_v1,pl:mixin:A,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.gui.screens.inventory.AbstractContainerScreen.renderTooltip(AbstractContainerScreen.java:179) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:classloading,pl:unprotect:A,pl:runtimedistcleaner:A,re:mixin,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.render(CreativeModeInventoryScreen.java:726) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:unprotect:A,pl:runtimedistcleaner:A,re:classloading,pl:mixin:APP:fabric-item-group-api-v1.client.mixins.json:CreativeInventoryScreenMixin from mod fabric_item_group_api_v1,pl:mixin:A,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.gui.screens.Screen.renderWithTooltip(Screen.java:112) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:computing_frames,pl:accesstransformer:B,pl:unprotect:A,pl:runtimedistcleaner:A,re:mixin,pl:accesstransformer:B,pl:unprotect:A,pl:runtimedistcleaner:A,re:classloading,pl:accesstransformer:B,pl:mixin:APP:fabric-screen-api-v1.mixins.json:ScreenMixin from mod fabric_screen_api_v1,pl:mixin:APP:fabric-screen-api-v1.mixins.json:ScreenAccessor from mod fabric_screen_api_v1,pl:mixin:A,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at TRANSFORMER/neoforge@21.1.248/net.neoforged.neoforge.client.ClientHooks.drawScreenInternal(ClientHooks.java:429) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23183!/:?] {re:classloading}
+	at TRANSFORMER/neoforge@21.1.248/net.neoforged.neoforge.client.ClientHooks.drawScreen(ClientHooks.java:423) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23183!/:?] {re:classloading}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.renderer.GameRenderer.render(GameRenderer.java:1092) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:classloading,pl:accesstransformer:B,pl:unprotect:A,pl:runtimedistcleaner:A,re:mixin,pl:accesstransformer:B,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.Minecraft.runTick(Minecraft.java:1195) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:accesstransformer:B,pl:unprotect:A,pl:runtimedistcleaner:A,re:classloading,pl:accesstransformer:B,pl:mixin:A,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.Minecraft.run(Minecraft.java:807) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:accesstransformer:B,pl:unprotect:A,pl:runtimedistcleaner:A,re:classloading,pl:accesstransformer:B,pl:mixin:A,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.main.Main.main(Main.java:230) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:classloading,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[?:?] {}
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[?:?] {re:mixin}
+	at MC-BOOTSTRAP/fml_loader@4.0.43/net.neoforged.fml.loading.targets.CommonLaunchHandler.runTarget(CommonLaunchHandler.java:136) ~[loader-4.0.43.jar%2395!/:4.0] {}
+	at MC-BOOTSTRAP/fml_loader@4.0.43/net.neoforged.fml.loading.targets.CommonLaunchHandler.clientService(CommonLaunchHandler.java:124) ~[loader-4.0.43.jar%2395!/:4.0] {}
+	at MC-BOOTSTRAP/fml_loader@4.0.43/net.neoforged.fml.loading.targets.NeoForgeClientDevLaunchHandler.runService(NeoForgeClientDevLaunchHandler.java:23) ~[loader-4.0.43.jar%2395!/:4.0] {}
+	at MC-BOOTSTRAP/fml_loader@4.0.43/net.neoforged.fml.loading.targets.CommonLaunchHandler.lambda$launchService$4(CommonLaunchHandler.java:118) ~[loader-4.0.43.jar%2395!/:4.0] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:30) [modlauncher-11.0.5.jar%23100!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) [modlauncher-11.0.5.jar%23100!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) [modlauncher-11.0.5.jar%23100!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.Launcher.run(Launcher.java:103) [modlauncher-11.0.5.jar%23100!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.Launcher.main(Launcher.java:74) [modlauncher-11.0.5.jar%23100!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) [modlauncher-11.0.5.jar%23100!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) [modlauncher-11.0.5.jar%23100!/:?] {}
+	at cpw.mods.bootstraplauncher.BootstrapLauncher.run(BootstrapLauncher.java:210) [bootstraplauncher-2.0.2.jar:?] {}
+	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:69) [bootstraplauncher-2.0.2.jar:?] {}
+	at net.fabricmc.devlaunchinjector.Main.main(Main.java:86) [dev-launch-injector-0.2.1+build.8.jar:?] {}
+	at dev.architectury.transformer.TransformerRuntime.main(TransformerRuntime.java:220) [architectury-transformer-5.2.91-runtime.jar:5.2.91] {}
+Caused by: java.lang.ExceptionInInitializerError: Exception java.lang.NoSuchMethodError: 'net.minecraft.resources.ResourceLocation net.minecraft.resources.ResourceLocation.method_60655(java.lang.String, java.lang.String)' [in thread "Worker-Main-7"]
+	at TRANSFORMER/team_reborn_energy@4.1.0/team.reborn.energy.api.EnergyStorage.<clinit>(EnergyStorage.java:59) ~[teamreborn-energy-4.1.0-neoforge.jar%23185!/:?] {re:classloading}
+	at TRANSFORMER/team_reborn_energy@4.1.0/team.reborn.energy.api.base.SimpleEnergyItem.getStoredEnergyUnchecked(SimpleEnergyItem.java:93) ~[teamreborn-energy-4.1.0-neoforge.jar%23185!/:?] {re:classloading}
+	at TRANSFORMER/team_reborn_energy@4.1.0/team.reborn.energy.api.base.SimpleEnergyItem.getStoredEnergy(SimpleEnergyItem.java:58) ~[teamreborn-energy-4.1.0-neoforge.jar%23185!/:?] {re:classloading}
+	at TRANSFORMER/generated_09fe67f@1/org.cneko.justarod.item.electric.ElectricRodItem.appendHoverText(ElectricRodItem.java:39) ~[4309081802489347766.jar%23236!/:?] {re:classloading}
+	at TRANSFORMER/generated_09fe67f@1/org.cneko.justarod.item.electric.SelfUsedElectricRodItem.appendHoverText(SelfUsedElectricRodItem.java:93) ~[4309081802489347766.jar%23236!/:?] {re:classloading}
+	at TRANSFORMER/generated_09fe67f@1/org.cneko.justarod.item.electric.BasicElectricRodItem.appendHoverText(BasicElectricRodItem.java:26) ~[4309081802489347766.jar%23236!/:?] {re:classloading}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.world.item.ItemStack.getTooltipLines(ItemStack.java:770) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:computing_frames,pl:accesstransformer:B,pl:unprotect:A,re:mixin,pl:accesstransformer:B,pl:unprotect:A,re:classloading,pl:accesstransformer:B,pl:mixin:APP:geckolib.mixins.json:common.ItemStackMixin from mod geckolib,pl:mixin:APP:fabric-item-api-v1.mixins.json:ItemStackMixin from mod fabric_item_api_v1,pl:mixin:A,pl:unprotect:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.multiplayer.SessionSearchTrees.method_60365(SessionSearchTrees.java:51) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:classloading,pl:accesstransformer:B,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:273) ~[?:?] {}
+	at java.base/java.util.stream.Streams$StreamBuilderImpl.forEachRemaining(Streams.java:411) ~[?:?] {}
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509) ~[?:?] {}
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499) ~[?:?] {}
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151) ~[?:?] {}
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174) ~[?:?] {}
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234) ~[?:?] {}
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596) ~[?:?] {}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.searchtree.SearchTree.plainText(SearchTree.java:21) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:classloading,pl:runtimedistcleaner:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.searchtree.FullTextSearchTree.<init>(FullTextSearchTree.java:16) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:classloading,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.multiplayer.SessionSearchTrees.method_60350(SessionSearchTrees.java:125) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:classloading,pl:accesstransformer:B,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768) ~[?:?] {}
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1760) ~[?:?] {}
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387) ~[?:?] {}
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312) ~[?:?] {}
+	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843) ~[?:?] {re:computing_frames}
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808) ~[?:?] {re:computing_frames}
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188) ~[?:?] {}
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- Head --
+Thread: Render thread
+Stacktrace:
+	at TRANSFORMER/team_reborn_energy@4.1.0/team.reborn.energy.api.base.SimpleEnergyItem.getStoredEnergyUnchecked(SimpleEnergyItem.java:93) ~[teamreborn-energy-4.1.0-neoforge.jar%23185!/:?] {re:classloading}
+	at TRANSFORMER/team_reborn_energy@4.1.0/team.reborn.energy.api.base.SimpleEnergyItem.getStoredEnergy(SimpleEnergyItem.java:58) ~[teamreborn-energy-4.1.0-neoforge.jar%23185!/:?] {re:classloading}
+	at TRANSFORMER/generated_09fe67f@1/org.cneko.justarod.item.electric.ElectricRodItem.appendHoverText(ElectricRodItem.java:39) ~[4309081802489347766.jar%23236!/:?] {re:classloading}
+	at TRANSFORMER/generated_09fe67f@1/org.cneko.justarod.item.electric.SelfUsedElectricRodItem.appendHoverText(SelfUsedElectricRodItem.java:93) ~[4309081802489347766.jar%23236!/:?] {re:classloading}
+	at TRANSFORMER/generated_09fe67f@1/org.cneko.justarod.item.electric.BasicElectricRodItem.appendHoverText(BasicElectricRodItem.java:26) ~[4309081802489347766.jar%23236!/:?] {re:classloading}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.world.item.ItemStack.getTooltipLines(ItemStack.java:770) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:computing_frames,pl:accesstransformer:B,pl:unprotect:A,re:mixin,pl:accesstransformer:B,pl:unprotect:A,re:classloading,pl:accesstransformer:B,pl:mixin:APP:geckolib.mixins.json:common.ItemStackMixin from mod geckolib,pl:mixin:APP:fabric-item-api-v1.mixins.json:ItemStackMixin from mod fabric_item_api_v1,pl:mixin:A,pl:unprotect:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.getTooltipFromContainerItem(CreativeModeInventoryScreen.java:736) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:unprotect:A,pl:runtimedistcleaner:A,re:classloading,pl:mixin:APP:fabric-item-group-api-v1.client.mixins.json:CreativeInventoryScreenMixin from mod fabric_item_group_api_v1,pl:mixin:A,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.gui.screens.inventory.AbstractContainerScreen.renderTooltip(AbstractContainerScreen.java:179) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:classloading,pl:unprotect:A,pl:runtimedistcleaner:A,re:mixin,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.render(CreativeModeInventoryScreen.java:726) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:unprotect:A,pl:runtimedistcleaner:A,re:classloading,pl:mixin:APP:fabric-item-group-api-v1.client.mixins.json:CreativeInventoryScreenMixin from mod fabric_item_group_api_v1,pl:mixin:A,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.gui.screens.Screen.renderWithTooltip(Screen.java:112) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:computing_frames,pl:accesstransformer:B,pl:unprotect:A,pl:runtimedistcleaner:A,re:mixin,pl:accesstransformer:B,pl:unprotect:A,pl:runtimedistcleaner:A,re:classloading,pl:accesstransformer:B,pl:mixin:APP:fabric-screen-api-v1.mixins.json:ScreenMixin from mod fabric_screen_api_v1,pl:mixin:APP:fabric-screen-api-v1.mixins.json:ScreenAccessor from mod fabric_screen_api_v1,pl:mixin:A,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at TRANSFORMER/neoforge@21.1.248/net.neoforged.neoforge.client.ClientHooks.drawScreenInternal(ClientHooks.java:429) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23183!/:?] {re:classloading}
+	at TRANSFORMER/neoforge@21.1.248/net.neoforged.neoforge.client.ClientHooks.drawScreen(ClientHooks.java:423) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23183!/:?] {re:classloading}
+-- Screen render details --
+Details:
+	Screen name: net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen
+	Mouse location: Scaled: (171, 89). Absolute: (342.000000, 179.000000)
+	Screen size: Scaled: (427, 240). Absolute: (854, 480). Scale factor of 2.000000
+Stacktrace:
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.renderer.GameRenderer.render(GameRenderer.java:1092) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:classloading,pl:accesstransformer:B,pl:unprotect:A,pl:runtimedistcleaner:A,re:mixin,pl:accesstransformer:B,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.Minecraft.runTick(Minecraft.java:1195) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:accesstransformer:B,pl:unprotect:A,pl:runtimedistcleaner:A,re:classloading,pl:accesstransformer:B,pl:mixin:A,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.Minecraft.run(Minecraft.java:807) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:accesstransformer:B,pl:unprotect:A,pl:runtimedistcleaner:A,re:classloading,pl:accesstransformer:B,pl:mixin:A,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.main.Main.main(Main.java:230) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:classloading,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[?:?] {}
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[?:?] {re:mixin}
+	at MC-BOOTSTRAP/fml_loader@4.0.43/net.neoforged.fml.loading.targets.CommonLaunchHandler.runTarget(CommonLaunchHandler.java:136) ~[loader-4.0.43.jar%2395!/:4.0] {}
+	at MC-BOOTSTRAP/fml_loader@4.0.43/net.neoforged.fml.loading.targets.CommonLaunchHandler.clientService(CommonLaunchHandler.java:124) ~[loader-4.0.43.jar%2395!/:4.0] {}
+	at MC-BOOTSTRAP/fml_loader@4.0.43/net.neoforged.fml.loading.targets.NeoForgeClientDevLaunchHandler.runService(NeoForgeClientDevLaunchHandler.java:23) ~[loader-4.0.43.jar%2395!/:4.0] {}
+	at MC-BOOTSTRAP/fml_loader@4.0.43/net.neoforged.fml.loading.targets.CommonLaunchHandler.lambda$launchService$4(CommonLaunchHandler.java:118) ~[loader-4.0.43.jar%2395!/:4.0] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:30) [modlauncher-11.0.5.jar%23100!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) [modlauncher-11.0.5.jar%23100!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) [modlauncher-11.0.5.jar%23100!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.Launcher.run(Launcher.java:103) [modlauncher-11.0.5.jar%23100!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.Launcher.main(Launcher.java:74) [modlauncher-11.0.5.jar%23100!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) [modlauncher-11.0.5.jar%23100!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) [modlauncher-11.0.5.jar%23100!/:?] {}
+	at cpw.mods.bootstraplauncher.BootstrapLauncher.run(BootstrapLauncher.java:210) [bootstraplauncher-2.0.2.jar:?] {}
+	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:69) [bootstraplauncher-2.0.2.jar:?] {}
+	at net.fabricmc.devlaunchinjector.Main.main(Main.java:86) [dev-launch-injector-0.2.1+build.8.jar:?] {}
+	at dev.architectury.transformer.TransformerRuntime.main(TransformerRuntime.java:220) [architectury-transformer-5.2.91-runtime.jar:5.2.91] {}
+
+
+-- Uptime --
+Details:
+	JVM uptime: 239.722s
+	Wall uptime: 232.062s
+	High-res time: 236.894s
+	Client ticks: 4555 ticks / 227.750s
+Stacktrace:
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.Minecraft.fillReport(Minecraft.java:2395) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:accesstransformer:B,pl:unprotect:A,pl:runtimedistcleaner:A,re:classloading,pl:accesstransformer:B,pl:mixin:A,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.Minecraft.emergencySaveAndCrash(Minecraft.java:868) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:accesstransformer:B,pl:unprotect:A,pl:runtimedistcleaner:A,re:classloading,pl:accesstransformer:B,pl:mixin:A,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.Minecraft.run(Minecraft.java:825) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:mixin,pl:accesstransformer:B,pl:unprotect:A,pl:runtimedistcleaner:A,re:classloading,pl:accesstransformer:B,pl:mixin:A,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at TRANSFORMER/minecraft@1.21.1/net.minecraft.client.main.Main.main(Main.java:230) ~[neoforge-21.1.248-minecraft-merged-55e390635d-1.21.1-loom.mappings.1_21_1.layered+hash.40359-v2-neoforge-21.1.248.jar%23182!/:?] {re:classloading,pl:unprotect:A,pl:runtimedistcleaner:A}
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[?:?] {}
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[?:?] {re:mixin}
+	at MC-BOOTSTRAP/fml_loader@4.0.43/net.neoforged.fml.loading.targets.CommonLaunchHandler.runTarget(CommonLaunchHandler.java:136) ~[loader-4.0.43.jar%2395!/:4.0] {}
+	at MC-BOOTSTRAP/fml_loader@4.0.43/net.neoforged.fml.loading.targets.CommonLaunchHandler.clientService(CommonLaunchHandler.java:124) ~[loader-4.0.43.jar%2395!/:4.0] {}
+	at MC-BOOTSTRAP/fml_loader@4.0.43/net.neoforged.fml.loading.targets.NeoForgeClientDevLaunchHandler.runService(NeoForgeClientDevLaunchHandler.java:23) ~[loader-4.0.43.jar%2395!/:4.0] {}
+	at MC-BOOTSTRAP/fml_loader@4.0.43/net.neoforged.fml.loading.targets.CommonLaunchHandler.lambda$launchService$4(CommonLaunchHandler.java:118) ~[loader-4.0.43.jar%2395!/:4.0] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.LaunchServiceHandlerDecorator.launch(LaunchServiceHandlerDecorator.java:30) [modlauncher-11.0.5.jar%23100!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:53) [modlauncher-11.0.5.jar%23100!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.LaunchServiceHandler.launch(LaunchServiceHandler.java:71) [modlauncher-11.0.5.jar%23100!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.Launcher.run(Launcher.java:103) [modlauncher-11.0.5.jar%23100!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.Launcher.main(Launcher.java:74) [modlauncher-11.0.5.jar%23100!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:26) [modlauncher-11.0.5.jar%23100!/:?] {}
+	at MC-BOOTSTRAP/cpw.mods.modlauncher@11.0.5/cpw.mods.modlauncher.BootstrapLaunchConsumer.accept(BootstrapLaunchConsumer.java:23) [modlauncher-11.0.5.jar%23100!/:?] {}
+	at cpw.mods.bootstraplauncher.BootstrapLauncher.run(BootstrapLauncher.java:210) [bootstraplauncher-2.0.2.jar:?] {}
+	at cpw.mods.bootstraplauncher.BootstrapLauncher.main(BootstrapLauncher.java:69) [bootstraplauncher-2.0.2.jar:?] {}
+	at net.fabricmc.devlaunchinjector.Main.main(Main.java:86) [dev-launch-injector-0.2.1+build.8.jar:?] {}
+	at dev.architectury.transformer.TransformerRuntime.main(TransformerRuntime.java:220) [architectury-transformer-5.2.91-runtime.jar:5.2.91] {}
+
+
+-- Affected level --
+Details:
+	All players: 1 total; [LocalPlayer['Dev'/5, l='ClientLevel', x=44.50, y=69.00, z=25.50]]
+	Chunk stats: 961, 609
+	Level dimension: minecraft:overworld
+	Level spawn location: World: (48,68,32), Section: (at 0,4,0 in 3,4,2; chunk contains blocks 48,-64,32 to 63,319,47), Region: (0,0; contains chunks 0,0 to 31,31, blocks 0,-64,0 to 511,319,511)
+	Level time: 88 game time, 88 day time
+	Server brand: neoforge
+	Server type: Integrated singleplayer server
+	Tracked entity count: 152
+
+-- Last reload --
+Details:
+	Reload number: 1
+	Reload reason: initial
+	Finished: Yes
+	Packs: vanilla, fabric, mod_resources, mod/fabric_transfer_api_v1, mod/fabric_renderer_api_v1, mod/geckolib, mod/playeranimator, mod/fabric_model_loading_api_v1, mod/fabric_item_api_v1, mod/fabric_rendering_fluids_v1, mod/fabric_screen_handler_api_v1, mod/fabric_resource_loader_v0, mod/toneko, mod/fabric_rendering_v1, mod/fabric_renderer_indigo, mod/fabric_convention_tags_v1, mod/neoforge, mod/fabric_convention_tags_v2, mod/fabric_command_api_v2, mod/fabric_block_view_api_v2, mod/fabric_data_attachment_api_v1, mod/fabric_screen_api_v1, mod/fabric_particles_v1, mod/fabric_api,forgified_fabric_api, mod/fabric_content_registries_v0, mod/fabric_transitive_access_wideners_v1, mod/fabric_game_rule_api_v1, mod/fabric_api_base, mod/fabric_renderer_registries_v1, mod/fabric_api_lookup_api_v1, mod/fabric_blockrenderlayer_v1, mod/fabric_block_api_v1, mod/fabric_resource_conditions_api_v1, mod/kotlinforforge, mod/fabric_item_group_api_v1, mod/fabric_gametest_api_v1, mod/fabric_biome_api_v1, mod/fabric_entity_events_v1, mod/fabric_registry_sync_v0, mod/fabric_recipe_api_v1, mod/fabric_loot_api_v2, mod/fabric_object_builder_api_v1, mod/fabric_loot_api_v3, mod/fabric_rendering_data_attachment_v1, mod/justarod, mod/fabric_networking_api_v1, mod/fabric_sound_api_v1, mod/fabric_message_api_v1, mod/fabric_lifecycle_events_v1, mod/team_reborn_energy, mod/generated_09fe67f, mod/fabric_tag_api_v1, mod/fabric_data_generation_api_v1, mod/fabric_events_interaction_v0, mod/fabric_key_binding_api_v1, mod/fabric_client_tags_api_v1
+
+-- System Details --
+Details:
+	Minecraft Version: 1.21.1
+	Minecraft Version ID: 1.21.1
+	Operating System: Linux (amd64) version 7.0.0-29-generic
+	Java Version: 21.0.11, Ubuntu
+	Java VM Version: OpenJDK 64-Bit Server VM (mixed mode, sharing), Ubuntu
+	Memory: 520026864 bytes (495 MiB) / 2617245696 bytes (2496 MiB) up to 8174698496 bytes (7796 MiB)
+	CPUs: 32
+	Processor Vendor: AuthenticAMD
+	Processor Name: AMD Ryzen 9 9950X 16-Core Processor
+	Identifier: AuthenticAMD Family 26 Model 68 Stepping 0
+	Microarchitecture: unknown
+	Frequency (GHz): 5.76
+	Number of physical packages: 1
+	Number of physical CPUs: 16
+	Number of logical CPUs: 32
+	Graphics card #0 name: Navi 32 [Radeon RX 7700 XT / 7800 XT]
+	Graphics card #0 vendor: Advanced Micro Devices, Inc. [AMD/ATI] (0x1002)
+	Graphics card #0 VRAM (MiB): 16640.00
+	Graphics card #0 deviceId: 0x747e
+	Graphics card #0 versionInfo: unknown
+	Virtual memory max (MiB): 56548.58
+	Virtual memory used (MiB): 32791.35
+	Swap memory total (MiB): 40959.99
+	Swap memory used (MiB): 8319.43
+	Space in storage for jna.tmpdir (MiB): <path not set>
+	Space in storage for org.lwjgl.system.SharedLibraryExtractPath (MiB): <path not set>
+	Space in storage for io.netty.native.workdir (MiB): <path not set>
+	Space in storage for java.io.tmpdir (MiB): available: 15583.50, total: 15588.59
+	Space in storage for workdir (MiB): available: 324831.56, total: 2733062.75
+	JVM Flags: 0 total; 
+	Launched Version: 21.1.248
+	Backend library: LWJGL version 3.3.3+5
+	Backend API: llvmpipe (LLVM 21.1.8, 256 bits) GL version 4.5 (Core Profile) Mesa 26.0.3-1ubuntu1, Mesa
+	Window size: 854x480
+	GFLW Platform: x11
+	GL Caps: Using framebuffer using OpenGL 3.2
+	GL debug messages: 
+	Is Modded: Definitely; Client brand changed to 'neoforge'; Server brand changed to 'neoforge'
+	Universe: 400921fb54442d18
+	Type: Integrated Server (map_client.txt)
+	Graphics mode: fancy
+	Render Distance: 12/12 chunks
+	Resource Packs: vanilla, fabric, mod_resources, mod/fabric_transfer_api_v1, mod/fabric_renderer_api_v1, mod/geckolib, mod/playeranimator, mod/fabric_model_loading_api_v1, mod/fabric_item_api_v1, mod/fabric_rendering_fluids_v1, mod/fabric_screen_handler_api_v1, mod/fabric_resource_loader_v0, mod/toneko, mod/fabric_rendering_v1, mod/fabric_renderer_indigo, mod/fabric_convention_tags_v1, mod/neoforge, mod/fabric_convention_tags_v2, mod/fabric_command_api_v2, mod/fabric_block_view_api_v2, mod/fabric_data_attachment_api_v1, mod/fabric_screen_api_v1, mod/fabric_particles_v1, mod/fabric_api,forgified_fabric_api, mod/fabric_content_registries_v0, mod/fabric_transitive_access_wideners_v1, mod/fabric_game_rule_api_v1, mod/fabric_api_base, mod/fabric_renderer_registries_v1, mod/fabric_api_lookup_api_v1, mod/fabric_blockrenderlayer_v1, mod/fabric_block_api_v1, mod/fabric_resource_conditions_api_v1, mod/kotlinforforge (incompatible), mod/fabric_item_group_api_v1, mod/fabric_gametest_api_v1, mod/fabric_biome_api_v1, mod/fabric_entity_events_v1, mod/fabric_registry_sync_v0, mod/fabric_recipe_api_v1, mod/fabric_loot_api_v2, mod/fabric_object_builder_api_v1, mod/fabric_loot_api_v3, mod/fabric_rendering_data_attachment_v1, mod/justarod, mod/fabric_networking_api_v1, mod/fabric_sound_api_v1, mod/fabric_message_api_v1, mod/fabric_lifecycle_events_v1, mod/team_reborn_energy, mod/generated_09fe67f (incompatible), mod/fabric_tag_api_v1, mod/fabric_data_generation_api_v1, mod/fabric_events_interaction_v0, mod/fabric_key_binding_api_v1, mod/fabric_client_tags_api_v1
+	Current Language: en_us
+	Locale: zh_CN
+	System encoding: UTF-8
+	File encoding: UTF-8
+	CPU: 32x AMD Ryzen 9 9950X 16-Core Processor
+	Server Running: true
+	Player Count: 1 / 8; [ServerPlayer['Dev'/5, l='ServerLevel[New World]', x=44.50, y=69.00, z=25.50]]
+	Active Data Packs: vanilla, mod_data, mod/fabric_transfer_api_v1, mod/fabric_renderer_api_v1, mod/geckolib, mod/playeranimator, mod/fabric_model_loading_api_v1, mod/fabric_item_api_v1, mod/fabric_rendering_fluids_v1, mod/fabric_screen_handler_api_v1, mod/fabric_resource_loader_v0, mod/toneko, mod/fabric_rendering_v1, mod/fabric_renderer_indigo, mod/fabric_convention_tags_v1, mod/neoforge, mod/fabric_convention_tags_v2, mod/fabric_command_api_v2, mod/fabric_block_view_api_v2, mod/fabric_data_attachment_api_v1, mod/fabric_screen_api_v1, mod/fabric_particles_v1, mod/fabric_api,forgified_fabric_api, mod/fabric_content_registries_v0, mod/fabric_transitive_access_wideners_v1, mod/fabric_game_rule_api_v1, mod/fabric_api_base, mod/fabric_renderer_registries_v1, mod/fabric_api_lookup_api_v1, mod/fabric_blockrenderlayer_v1, mod/fabric_block_api_v1, mod/fabric_resource_conditions_api_v1, mod/kotlinforforge (incompatible), mod/fabric_item_group_api_v1, mod/fabric_gametest_api_v1, mod/fabric_biome_api_v1, mod/fabric_entity_events_v1, mod/fabric_registry_sync_v0, mod/fabric_recipe_api_v1, mod/fabric_loot_api_v2, mod/fabric_object_builder_api_v1, mod/fabric_loot_api_v3, mod/fabric_rendering_data_attachment_v1, mod/justarod, mod/fabric_networking_api_v1, mod/fabric_sound_api_v1, mod/fabric_message_api_v1, mod/fabric_lifecycle_events_v1, mod/team_reborn_energy, mod/generated_09fe67f (incompatible), mod/fabric_tag_api_v1, mod/fabric_data_generation_api_v1, mod/fabric_events_interaction_v0, mod/fabric_key_binding_api_v1, mod/fabric_client_tags_api_v1, fabric
+	Available Data Packs: bundle, trade_rebalance, vanilla, fabric, mod/fabric_api,forgified_fabric_api, mod/fabric_api_base, mod/fabric_api_lookup_api_v1, mod/fabric_biome_api_v1, mod/fabric_block_api_v1, mod/fabric_block_view_api_v2, mod/fabric_blockrenderlayer_v1, mod/fabric_client_tags_api_v1, mod/fabric_command_api_v2, mod/fabric_content_registries_v0, mod/fabric_convention_tags_v1, mod/fabric_convention_tags_v2, mod/fabric_data_attachment_api_v1, mod/fabric_data_generation_api_v1, mod/fabric_entity_events_v1, mod/fabric_events_interaction_v0, mod/fabric_game_rule_api_v1, mod/fabric_gametest_api_v1, mod/fabric_item_api_v1, mod/fabric_item_group_api_v1, mod/fabric_key_binding_api_v1, mod/fabric_lifecycle_events_v1, mod/fabric_loot_api_v2, mod/fabric_loot_api_v3, mod/fabric_message_api_v1, mod/fabric_model_loading_api_v1, mod/fabric_networking_api_v1, mod/fabric_object_builder_api_v1, mod/fabric_particles_v1, mod/fabric_recipe_api_v1, mod/fabric_registry_sync_v0, mod/fabric_renderer_api_v1, mod/fabric_renderer_indigo, mod/fabric_renderer_registries_v1, mod/fabric_rendering_data_attachment_v1, mod/fabric_rendering_fluids_v1, mod/fabric_rendering_v1, mod/fabric_resource_conditions_api_v1, mod/fabric_resource_loader_v0, mod/fabric_screen_api_v1, mod/fabric_screen_handler_api_v1, mod/fabric_sound_api_v1, mod/fabric_tag_api_v1, mod/fabric_transfer_api_v1, mod/fabric_transitive_access_wideners_v1, mod/geckolib, mod/generated_09fe67f (incompatible), mod/justarod, mod/kotlinforforge (incompatible), mod/neoforge, mod/playeranimator, mod/team_reborn_energy, mod/toneko, mod_data
+	Enabled Feature Flags: minecraft:vanilla
+	World Generation: Stable
+	World Seed: 1792805810628947414
+	ModLauncher: 11.0.5+main.901c6ea8
+	ModLauncher launch target: forgeclientdev
+	ModLauncher services: 
+		sponge-mixin-0.15.2+mixin.0.8.7.jar mixin PLUGINSERVICE 
+		loader-4.0.43.jar slf4jfixer PLUGINSERVICE 
+		loader-4.0.43.jar runtime_enum_extender PLUGINSERVICE 
+		unprotect-1.2.0.jar unprotect PLUGINSERVICE 
+		at-modlauncher-10.0.1.jar accesstransformer PLUGINSERVICE 
+		loader-4.0.43.jar runtimedistcleaner PLUGINSERVICE 
+		modlauncher-11.0.5.jar mixin TRANSFORMATIONSERVICE 
+		modlauncher-11.0.5.jar fml TRANSFORMATIONSERVICE 
+	FML Language Providers: 
+		__fabric_loader_bootstrap@2.5.68+0.18.4+1.21.1
+		kotlinforforge@5.12.0
+		javafml@4.0
+		lowcodefml@4.0
+		minecraft@4.0
+	Mod List: 
+		forgified-fabric-api-0.116.15+2.3.4+1.21.1.jar    |Forgified Fabric API          |fabric_api                    |0.116.15+2.3.4+1.21.|Manifest: NOSIGNATURE
+		fabric-api-base-0.4.42+d1308ded19.jar             |Forgified Fabric API Base     |fabric_api_base               |0.4.42+d1308ded19   |Manifest: NOSIGNATURE
+		fabric-api-lookup-api-v1-1.6.72+6244b11119.jar    |Forgified Fabric API Lookup AP|fabric_api_lookup_api_v1      |1.6.72+6244b11119   |Manifest: NOSIGNATURE
+		fabric-biome-api-v1-13.0.31+1e62d33c19.jar        |Forgified Fabric Biome API (v1|fabric_biome_api_v1           |13.0.31+1e62d33c19  |Manifest: NOSIGNATURE
+		fabric-block-api-v1-1.1.0+b0c22bb819.jar          |Forgified Fabric Block API (v1|fabric_block_api_v1           |1.1.0+b0c22bb819    |Manifest: NOSIGNATURE
+		fabric-blockrenderlayer-v1-1.1.52+c290471319.jar  |Forgified Fabric BlockRenderLa|fabric_blockrenderlayer_v1    |1.1.52+c290471319   |Manifest: NOSIGNATURE
+		fabric-block-view-api-v2-1.0.11+e9036fd419.jar    |Forgified Fabric BlockView API|fabric_block_view_api_v2      |1.0.11+e9036fd419   |Manifest: NOSIGNATURE
+		fabric-client-tags-api-v1-1.2.0+5adff2d719.jar    |Forgified Fabric Client Tags  |fabric_client_tags_api_v1     |1.2.0+5adff2d719    |Manifest: NOSIGNATURE
+		fabric-command-api-v2-2.2.28+36d727be19.jar       |Forgified Fabric Command API (|fabric_command_api_v2         |2.2.28+36d727be19   |Manifest: NOSIGNATURE
+		fabric-content-registries-v0-8.0.19+5e0d320019.jar|Forgified Fabric Content Regis|fabric_content_registries_v0  |8.0.19+5e0d320019   |Manifest: NOSIGNATURE
+		fabric-convention-tags-v1-2.1.7+7f945d5b19.jar    |Forgified Fabric Convention Ta|fabric_convention_tags_v1     |2.1.7+7f945d5b19    |Manifest: NOSIGNATURE
+		fabric-convention-tags-v2-2.12.0+75d3639619.jar   |Forgified Fabric Convention Ta|fabric_convention_tags_v2     |2.12.0+75d3639619   |Manifest: NOSIGNATURE
+		fabric-data-attachment-api-v1-1.4.7+26d408aa19.jar|Forgified Fabric Data Attachme|fabric_data_attachment_api_v1 |1.4.7+26d408aa19    |Manifest: NOSIGNATURE
+		fabric-data-generation-api-v1-20.3.0+3e2bcb4b19.ja|Forgified Fabric Data Generati|fabric_data_generation_api_v1 |20.3.0+3e2bcb4b19   |Manifest: NOSIGNATURE
+		fabric-entity-events-v1-1.8.0+e46a02ca19.jar      |Forgified Fabric Entity Events|fabric_entity_events_v1       |1.8.0+e46a02ca19    |Manifest: NOSIGNATURE
+		fabric-events-interaction-v0-0.7.14+057f5afd19.jar|Forgified Fabric Events Intera|fabric_events_interaction_v0  |0.7.14+057f5afd19   |Manifest: NOSIGNATURE
+		fabric-game-rule-api-v1-1.0.53+36d727be19.jar     |Forgified Fabric Game Rule API|fabric_game_rule_api_v1       |1.0.53+36d727be19   |Manifest: NOSIGNATURE
+		fabric-gametest-api-v1-2.0.5+29f188ce19.jar       |Forgified Fabric Game Test API|fabric_gametest_api_v1        |2.0.5+29f188ce19    |Manifest: NOSIGNATURE
+		fabric-item-api-v1-11.3.0+766f218719.jar          |Forgified Fabric Item API (v1)|fabric_item_api_v1            |11.3.0+766f218719   |Manifest: NOSIGNATURE
+		fabric-item-group-api-v1-4.1.7+e324903319.jar     |Forgified Fabric Item Group AP|fabric_item_group_api_v1      |4.1.7+e324903319    |Manifest: NOSIGNATURE
+		fabric-key-binding-api-v1-1.0.47+62cc7ce119.jar   |Forgified Fabric Key Binding A|fabric_key_binding_api_v1     |1.0.47+62cc7ce119   |Manifest: NOSIGNATURE
+		fabric-lifecycle-events-v1-2.6.0+e40d8add19.jar   |Forgified Fabric Lifecycle Eve|fabric_lifecycle_events_v1    |2.6.0+e40d8add19    |Manifest: NOSIGNATURE
+		fabric-loot-api-v2-3.0.15+a3ee712d19.jar          |Forgified Fabric Loot API (v2)|fabric_loot_api_v2            |3.0.15+a3ee712d19   |Manifest: NOSIGNATURE
+		fabric-loot-api-v3-1.0.3+333dfad919.jar           |Forgified Fabric Loot API (v3)|fabric_loot_api_v3            |1.0.3+333dfad919    |Manifest: NOSIGNATURE
+		fabric-message-api-v1-6.0.14+6a754fce19.jar       |Forgified Fabric Message API (|fabric_message_api_v1         |6.0.14+6a754fce19   |Manifest: NOSIGNATURE
+		fabric-model-loading-api-v1-2.1.0+6e8f52c719.jar  |Forgified Fabric Model Loading|fabric_model_loading_api_v1   |2.1.0+6e8f52c719    |Manifest: NOSIGNATURE
+		fabric-networking-api-v1-4.3.1+7e3d421f19.jar     |Forgified Fabric Networking AP|fabric_networking_api_v1      |4.3.1+7e3d421f19    |Manifest: NOSIGNATURE
+		fabric-object-builder-api-v1-15.2.1+cc242efd19.jar|Forgified Fabric Object Builde|fabric_object_builder_api_v1  |15.2.1+cc242efd19   |Manifest: NOSIGNATURE
+		fabric-particles-v1-4.0.2+824f924c19.jar          |Forgified Fabric Particles (v1|fabric_particles_v1           |4.0.2+824f924c19    |Manifest: NOSIGNATURE
+		fabric-recipe-api-v1-5.0.16+59440bcc19.jar        |Forgified Fabric Recipe API (v|fabric_recipe_api_v1          |5.0.16+59440bcc19   |Manifest: NOSIGNATURE
+		fabric-registry-sync-v0-5.3.2+f9aace1619.jar      |Forgified Fabric Registry Sync|fabric_registry_sync_v0       |5.3.2+f9aace1619    |Manifest: NOSIGNATURE
+		fabric-renderer-indigo-1.7.1+9125b6dc19.jar       |Forgified Fabric Renderer - In|fabric_renderer_indigo        |1.7.1+9125b6dc19    |Manifest: NOSIGNATURE
+		fabric-renderer-api-v1-3.4.1+9125b6dc19.jar       |Forgified Fabric Renderer API |fabric_renderer_api_v1        |3.4.1+9125b6dc19    |Manifest: NOSIGNATURE
+		fabric-renderer-registries-v1-3.2.69+df3654b319.ja|Forgified Fabric Renderer Regi|fabric_renderer_registries_v1 |3.2.69+df3654b319   |Manifest: NOSIGNATURE
+		fabric-rendering-v1-5.1.0+1a09bd5a19.jar          |Forgified Fabric Rendering (v1|fabric_rendering_v1           |5.1.0+1a09bd5a19    |Manifest: NOSIGNATURE
+		fabric-rendering-data-attachment-v1-0.3.49+73761d2|Forgified Fabric Rendering Dat|fabric_rendering_data_attachme|0.3.49+73761d2e19   |Manifest: NOSIGNATURE
+		fabric-rendering-fluids-v1-3.1.6+ddc51b4719.jar   |Forgified Fabric Rendering Flu|fabric_rendering_fluids_v1    |3.1.6+ddc51b4719    |Manifest: NOSIGNATURE
+		fabric-resource-conditions-api-v1-4.3.0+5bdd099819|Forgified Fabric Resource Cond|fabric_resource_conditions_api|4.3.0+5bdd099819    |Manifest: NOSIGNATURE
+		fabric-resource-loader-v0-1.3.1+4ea8954419.jar    |Forgified Fabric Resource Load|fabric_resource_loader_v0     |1.3.1+4ea8954419    |Manifest: NOSIGNATURE
+		fabric-screen-api-v1-2.0.26+9991ca2f19.jar        |Forgified Fabric Screen API (v|fabric_screen_api_v1          |2.0.26+9991ca2f19   |Manifest: NOSIGNATURE
+		fabric-screen-handler-api-v1-1.3.91+8dbc56dd19.jar|Forgified Fabric Screen Handle|fabric_screen_handler_api_v1  |1.3.91+8dbc56dd19   |Manifest: NOSIGNATURE
+		fabric-sound-api-v1-1.0.23+10b84f8419.jar         |Forgified Fabric Sound API (v1|fabric_sound_api_v1           |1.0.23+10b84f8419   |Manifest: NOSIGNATURE
+		fabric-tag-api-v1-1.3.0+3e2bcb4b19.jar            |Forgified Fabric Tag API (v1) |fabric_tag_api_v1             |1.3.0+3e2bcb4b19    |Manifest: NOSIGNATURE
+		fabric-transfer-api-v1-5.4.4+6244b11119.jar       |Forgified Fabric Transfer API |fabric_transfer_api_v1        |5.4.4+6244b11119    |Manifest: NOSIGNATURE
+		fabric-transitive-access-wideners-v1-6.2.0+6c854b6|Forgified Fabric Transitive Ac|fabric_transitive_access_widen|6.2.0+6c854b6f19    |Manifest: NOSIGNATURE
+		geckolib-neoforge-1.21.1-4.8.3.jar                |GeckoLib 4                    |geckolib                      |4.8.3               |Manifest: NOSIGNATURE
+		4309081802489347766.jar                           |generated_09fe67f             |generated_09fe67f             |1                   |Manifest: NOSIGNATURE
+		main                                              |JustARod                      |justarod                      |0.2.2               |Manifest: NOSIGNATURE
+		kffmod-neoforge-5.12.0.jar                        |Kotlin For Forge              |kotlinforforge                |5.12.0              |Manifest: NOSIGNATURE
+		neoforge-21.1.248-minecraft-merged-55e390635d-1.21|Minecraft                     |minecraft                     |1.21.1              |Manifest: NOSIGNATURE
+		neoforge-21.1.248-minecraft-merged-55e390635d-1.21|NeoForge                      |neoforge                      |21.1.248            |Manifest: NOSIGNATURE
+		player-animation-lib-forge-2.0.4+1.21.1.jar       |Player Animator               |playeranimator                |2.0.4+1.21.1        |Manifest: NOSIGNATURE
+		teamreborn-energy-4.1.0-neoforge.jar              |TeamReborn Energy (dev library|team_reborn_energy            |4.1.0               |Manifest: NOSIGNATURE
+		toneko-neoforge-1.9.2-awfix-1744355e4844.jar      |toNeko                        |toneko                        |1.9.2               |Manifest: NOSIGNATURE
+	Crash Report UUID: e162e390-9d13-41cf-8513-22b16938bc8a
+	FML: 4.0.43
+	NeoForge: 21.1.248

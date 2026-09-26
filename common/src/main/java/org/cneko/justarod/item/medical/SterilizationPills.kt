@@ -10,10 +10,16 @@ import org.cneko.justarod.entity.Pregnant
 
 class SterilizationPills(properties: Properties) : MedicalItem(properties) {
 
-    override fun appendHoverText(stack: ItemStack, context: TooltipContext, tooltip: MutableList<Component>, type: TooltipFlag) {
-        super.appendHoverText(stack, context, tooltip, type)
-        tooltip.add(Component.literal("§c请谨慎使用！！！"))
-        tooltip.add(Component.literal("§c你没有悔改的机会！！！"))
+        override fun appendHoverText(
+        stack: ItemStack,
+        context: net.minecraft.world.item.Item.TooltipContext,
+        display: net.minecraft.world.item.component.TooltipDisplay,
+        adder: java.util.function.Consumer<Component>,
+        type: TooltipFlag
+    ) {
+        super.appendHoverText(stack, context, display, adder, type)
+        adder.accept(Component.literal("§c请谨慎使用！！！"))
+        adder.accept(Component.literal("§c你没有悔改的机会！！！"))
     }
 
     /**

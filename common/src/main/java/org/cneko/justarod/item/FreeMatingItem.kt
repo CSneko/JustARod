@@ -7,28 +7,33 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.InteractionHand
+import org.cneko.justarod.entity.Pregnant
 import org.cneko.justarod.item.JRItems.Companion.BYT
 import java.util.function.Predicate
 
 class FreeMatingItem(properties: Properties): Item(properties) {
+    // 26.x：覆写签名参数不可空
     override fun interactLivingEntity(
-        stack: ItemStack?,
-        user: Player?,
-        entity: LivingEntity?,
-        hand: InteractionHand?
+        stack: ItemStack,
+        user: Player,
+        entity: LivingEntity,
+        hand: InteractionHand
     ): InteractionResult {
-        if (user?.level()?.isClientSide == false) {
-            if (!user.canPregnant()) {
+        // PlayerMixin 让 Player 实现 Pregnant（编译期需显式转换）
+        val pregnantUser = user as Pregnant
+        if (!user.level().isClientSide) {
+            if (!pregnantUser.canPregnant()) {
                 user.sendSystemMessage(Component.literal("§c你目前还不能怀孕哦"))
             } else {
-                if (!user.getInventory().offhand.any { it.`is`(BYT) }) {
-                    user.tryPregnant()
-                    user.babyCount = user.calculateBabyCount(entity)
-                    user.childrenType = entity?.type
+                // 26.x：Inventory#offhand 字段移除，改用 getOffhandItem()（原逻辑：副手没有 BYT 才会怀孕）
+                if (!user.offhandItem.`is`(BYT)) {
+                    pregnantUser.tryPregnant()
+                    pregnantUser.setBabyCount(pregnantUser.calculateBabyCount(entity))
+                    pregnantUser.setChildrenType(entity.type)
                     user.sendSystemMessage(Component.literal("§a交配完成！"))
-                    user.sendSystemMessage(Component.literal("§b你怀上了${Component.translatable(entity?.type?.descriptionId).string}的宝宝哦~"))
+                    user.sendSystemMessage(Component.literal("§b你怀上了${Component.translatable(entity.type.descriptionId).string}的宝宝哦~"))
                     // 获取对方的负面buff
-                    val effects = entity?.activeEffects?.filter { !it.effect.value().isBeneficial }
+                    val effects = entity.activeEffects?.filter { !it.effect.value().isBeneficial }
                     if (effects?.isEmpty() == false) {
                         for (effect in effects) {
                             user.addEffect(effect)

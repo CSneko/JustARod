@@ -1,29 +1,19 @@
 {
   "type": "minecraft:crafting_shaped",
-  "key":{
-    "A":{
-      "item":"justarod:hpv_vaccine"
-    },
-    "B":{
-      "item":"justarod:golden_leaves"
-    },
-    "C":{
-      "item":"minecraft:golden_carrot"
-    },
-    "D":{
-      "item":"minecraft:poisonous_potato"
-    },
-    "E":{
-      "item":"minecraft:glass"
-    }
+  "key": {
+    "A": "justarod:hpv_vaccine",
+    "B": "justarod:golden_leaves",
+    "C": "minecraft:golden_carrot",
+    "D": "minecraft:poisonous_potato",
+    "E": "minecraft:glass"
   },
-  "pattern":[
+  "pattern": [
     "BAB",
     "CDC",
     "BEB"
-    ],
-    "result":{
-      "count":2,
-      "id":"justarod:hpv_vaccine"
-    }
+  ],
+  "result": {
+    "count": 2,
+    "id": "justarod:hpv_vaccine"
+  }
 }

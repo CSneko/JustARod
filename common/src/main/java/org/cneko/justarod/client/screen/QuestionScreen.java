@@ -6,7 +6,7 @@ import org.cneko.toneko.common.mod.util.TickTaskQueue;
 
 import java.util.List;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -62,8 +62,8 @@ public class QuestionScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        super.render(context, mouseX, mouseY, delta);
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        super.extractRenderState(context, mouseX, mouseY, delta);
 
         // 获取屏幕宽度减去一些边距
         int maxWidth = this.width - 40;
@@ -76,12 +76,12 @@ public class QuestionScreen extends Screen {
 
         // 绘制每一行文本
         for (int i = 0; i < wrappedLines.size(); i++) {
-            context.drawCenteredString(
+            context.centeredText(
                     this.font,
                     wrappedLines.get(i),
                     this.width / 2,
                     startY + (i * this.font.lineHeight),
-                    0xFFFFFF
+                    0xFFFFFFFF
             );
         }
     }

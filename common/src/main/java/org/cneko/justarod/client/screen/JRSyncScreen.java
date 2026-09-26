@@ -5,7 +5,7 @@ import org.cneko.justarod.property.JRRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -97,7 +97,7 @@ public class JRSyncScreen extends Screen {
         // 自动遍历注册表！无论你添加多少属性，UI自动生成
         for (JRProperty<?> prop : JRRegistry.INSTANCE.getPROPERTIES()) {
             // 获取值
-            Object rawValue = ((JRProperty<Object>) prop).getGetter().invoke(this.player);
+            Object rawValue = ((JRProperty<Object>) prop).getGetter().invoke((org.cneko.justarod.entity.Pregnant) this.player);
             // 获取格式化后的文字
             String displayStr = ((JRProperty<Object>) prop).formatValue(rawValue);
             // 获取颜色
@@ -113,17 +113,17 @@ public class JRSyncScreen extends Screen {
     private record DataLine(String key, String value, int color) {}
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         // 画背景 (如果你是在较新版本，建议加上这句防止文字重叠看不清)
-        this.renderBackground(context, mouseX, mouseY, delta);
+        // 26.x：背景由 extractBackground 提交
 
         // 标题
-        context.drawCenteredString(this.font, this.title, this.width / 2, 15, 0xFFFFFF);
+        context.centeredText(this.font, this.title, this.width / 2, 15, 0xFFFFFFFF);
 
         // 页码
-        context.drawCenteredString(this.font,
+        context.centeredText(this.font,
                 Component.nullToEmpty(String.format("第 %d / %d 页", currentPage + 1, Math.max(1, totalPages))),
-                this.width / 2, this.height - 65, 0xAAAAAA);
+                this.width / 2, this.height - 65, 0xFFAAAAAA);
 
         // 列表渲染
         int startY = 40;
@@ -136,13 +136,13 @@ public class JRSyncScreen extends Screen {
             int relativeIndex = i - startIdx;
             int y = startY + (relativeIndex * lineHeight);
 
-            context.drawString(this.font, Component.nullToEmpty(line.key() + ": "),
-                    this.width / 2 - 100, y, 0xAAAAAA);
-            context.drawString(this.font, Component.nullToEmpty(line.value),
+            context.text(this.font, Component.nullToEmpty(line.key() + ": "),
+                    this.width / 2 - 100, y, 0xFFAAAAAA);
+            context.text(this.font, Component.nullToEmpty(line.value),
                     this.width / 2 + 10, y, line.color);
         }
 
-        super.render(context, mouseX, mouseY, delta);
+        super.extractRenderState(context, mouseX, mouseY, delta);
     }
 
     private void updateButtons() {

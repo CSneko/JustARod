@@ -6,12 +6,8 @@
     "  W"
   ],
   "key": {
-    "W": {
-      "item": "minecraft:iron_ingot"
-    },
-    "I": {
-      "item": "minecraft:glass"
-    }
+    "W": "minecraft:iron_ingot",
+    "I": "minecraft:glass"
   },
   "result": {
     "id": "justarod:xp_gun",

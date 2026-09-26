@@ -1,10 +1,17 @@
 plugins {
-    id 'com.github.johnrengelman.shadow'
+    id 'com.gradleup.shadow'
 }
 
 architectury {
     platformSetupLoomIde()
     fabric()
+}
+
+repositories {
+    maven {
+        name = "Terraformers"
+        url = "https://maven.terraformersmc.com/"
+    }
 }
 
 configurations {
@@ -17,34 +24,31 @@ configurations {
     developmentFabric.extendsFrom common
 
     // Files in this configuration will be bundled into your mod using the Shadow plugin.
+    // Don't use the `shadow` configuration from the plugin itself as it's meant for excluding files.
     shadowBundle {
         canBeResolved = true
         canBeConsumed = false
     }
 }
 
-// 访问宽化器（access widener）由 common 项目声明，architectury 多项目机制会传递；
-// fabric.mod.json 中的 "accessWidener" 条目保证生产环境（玩家客户端）同样生效。
-
 dependencies {
-    modImplementation "net.fabricmc:fabric-loader:${rootProject.loader_version}"
-
-    // Fabric API
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_version}"
+    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+    // Fabric API is already added in the root build for non-neoforge subprojects.
+    modImplementation "com.geckolib:geckolib-fabric-26.1.2:$rootProject.geckolib_version"
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
 
-    modImplementation "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
-    modImplementation "maven.modrinth:tonekomod:${rootProject.toneko_version}"
-    // 开发运行时的 Kotlin（FLK）/ 玩家动画库
-    modLocalRuntime "net.fabricmc:fabric-language-kotlin:1.11.0+kotlin.2.0.0"
-    modLocalRuntime "dev.kosmx.player-anim:player-animation-lib-fabric:${rootProject.player_animator_version}"
+    // toNeko 26.1.2 本地构建产物：仅用于开发运行时；正式发布时作为前置由玩家自行安装
+    modLocalRuntime files("$rootProject.rootDir/libs/toneko-fabric-2.0.0.jar")
+    // Kotlin 运行时由 Fabric Language Kotlin 提供，不打包进 mod
+    modLocalRuntime files("$rootProject.rootDir/libs/fabric-language-kotlin-1.11.0+kotlin.2.0.0.jar")
 
-    // TeamReborn Energy 打包进模组
-    include('teamreborn:energy:4.1.0') {
-        exclude(group: "net.fabricmc.fabric-api")
-    }
+    // ModMenu（可选，提供配置屏幕入口）
+    modCompileOnly "com.terraformersmc:modmenu:$rootProject.modmenu_version"
+
+    // Kotlin stdlib 仅用于编译期；运行时由 Fabric Language Kotlin 提供，不打包进 mod
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$rootProject.kotlin_version"
 }
 
 processResources {
@@ -75,3 +79,4 @@ fabricApi {
         addToResources = false
     }
 }
+

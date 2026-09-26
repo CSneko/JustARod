@@ -6,15 +6,9 @@
     " S "
   ],
   "key": {
-    "Q": {
-      "item": "minecraft:quartz"
-    },
-    "C": {
-      "item": "minecraft:clay_ball"
-    },
-    "S": {
-      "item": "minecraft:stick"
-    }
+    "Q": "minecraft:quartz",
+    "C": "minecraft:clay_ball",
+    "S": "minecraft:stick"
   },
   "result": {
     "id": "justarod:retriever",

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "minecraft:book",
+    "minecraft:end_rod"
+  ],
+  "result": {
+    "id": "patchouli:guide_book",
+    "count": 1,
+    "components": {
+      "patchouli:book": "justarod:justarod_guide"
+    }
+  }
+}

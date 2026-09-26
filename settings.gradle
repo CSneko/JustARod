@@ -1,21 +1,9 @@
 pluginManagement {
     repositories {
-        maven {
-            name = 'Fabric'
-            url = 'https://maven.fabricmc.net/'
-        }
-        maven {
-            name = 'Architectury'
-            url = 'https://maven.architectury.dev/'
-        }
-        maven {
-            name = 'NeoForged'
-            url = 'https://maven.neoforged.net/releases/'
-        }
+        maven { url "https://maven.fabricmc.net/" }
+        maven { url "https://maven.architectury.dev/" }
+        maven { url "https://files.minecraftforge.net/maven/" }
         gradlePluginPortal()
-    }
-    plugins {
-        id 'org.jetbrains.kotlin.jvm' version '2.0.0'
     }
 }
 

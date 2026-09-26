@@ -1,54 +1,19 @@
 package org.cneko.justarod.client.renderer
 
-import net.minecraft.client.renderer.RenderType
-import com.mojang.blaze3d.vertex.VertexConsumer
-import net.minecraft.client.renderer.MultiBufferSource
 import net.minecraft.client.renderer.entity.EntityRendererProvider
-import com.mojang.blaze3d.vertex.PoseStack
 import org.cneko.justarod.entity.LoliNekoEntity
 import org.cneko.toneko.common.mod.client.renderers.NekoRenderer
-import software.bernie.geckolib.cache.`object`.BakedGeoModel
-import software.bernie.geckolib.cache.`object`.GeoBone
-import java.util.Optional
+import com.geckolib.renderer.base.BoneSnapshots
+import com.geckolib.renderer.base.RenderPassInfo
 
 // 萝莉控？变态变态变态！
+// 26.x GeckoLib 5.5：旧 actuallyRender(...) 直接绘制挂钩已被提交式渲染管线取代。
+// 头部放大 1.5 倍的效果改为在 applyAnimationControllers 中缩放 Head 骨骼快照。
 class LoliNekoRenderer(renderManager: EntityRendererProvider.Context) : NekoRenderer<LoliNekoEntity>(renderManager) {
-
-
-    override fun actuallyRender(
-        poseStack: PoseStack?,
-        entity: LoliNekoEntity?,
-        model: BakedGeoModel?,
-        renderType: RenderType?,
-        bufferSource: MultiBufferSource?,
-        buffer: VertexConsumer?,
-        isReRender: Boolean,
-        partialTick: Float,
-        packedLight: Int,
-        packedOverlay: Int,
-        colour: Int
-    ) {
-        super.actuallyRender(
-            poseStack,
-            entity,
-            model,
-            renderType,
-            bufferSource,
-            buffer,
-            isReRender,
-            partialTick,
-            packedLight,
-            packedOverlay,
-            colour
-        )
-
-
-        val head: Optional<GeoBone?>? = model?.getBone("Head")
-
-        if (head?.isPresent == true) {
-            head.get().setScaleX(1.5f)
-            head.get().setScaleY(1.5f)
-            head.get().setScaleZ(1.5f)
+    override fun applyAnimationControllers(info: RenderPassInfo<org.cneko.toneko.common.mod.client.renderers.TonekoLivingEntityGeoState>, snapshots: BoneSnapshots) {
+        super.applyAnimationControllers(info, snapshots)
+        snapshots.ifPresent("Head") { head ->
+            head.setScale(1.5f, 1.5f, 1.5f)
         }
     }
 }

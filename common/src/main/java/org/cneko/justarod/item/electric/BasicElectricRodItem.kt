@@ -1,4 +1,5 @@
 package org.cneko.justarod.item.electric
+import org.cneko.justarod.JRIds
 
 import net.minecraft.core.component.DataComponents
 import net.minecraft.world.entity.LivingEntity
@@ -14,16 +15,17 @@ import org.cneko.justarod.item.JRComponents
 其实漏电也不错的说... 低压的话还是挺棒的哦
 酥酥麻麻耶嘿嘿~
  */
-open class BasicElectricRodItem: SelfUsedElectricRodItem(Properties().component(JRComponents.USED_TIME_MARK,0).component(JRComponents.SPEED,10).durability(10000)) {
+open class BasicElectricRodItem: SelfUsedElectricRodItem(JRIds.itemProps("basic_electric_rod").component(JRComponents.USED_TIME_MARK,0).component(JRComponents.SPEED,10).durability(10000)) {
 
-    override fun appendHoverText(
-        stack: ItemStack?,
-        context: TooltipContext?,
-        tooltip: MutableList<Component>?,
-        type: TooltipFlag?
+        override fun appendHoverText(
+        stack: ItemStack,
+        context: net.minecraft.world.item.Item.TooltipContext,
+        display: net.minecraft.world.item.component.TooltipDisplay,
+        adder: java.util.function.Consumer<Component>,
+        type: TooltipFlag
     ) {
-        tooltip?.add(Component.translatable("item.justarod.basic_electric_rod.tooltip"))
-        super.appendHoverText(stack, context, tooltip, type)
+        adder.accept(Component.translatable("item.justarod.basic_electric_rod.tooltip"))
+        super.appendHoverText(stack, context, display, adder, type)
     }
 
     override fun damage(stack: ItemStack, amount: Int, world: Level?) {

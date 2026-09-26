@@ -5,16 +5,14 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.food.FoodProperties;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.Level;
-import org.cneko.justarod.effect.JREffects;
 import org.cneko.justarod.entity.*;
 import org.cneko.justarod.packet.JRSyncPayload;
 import org.cneko.justarod.property.JRProperty;
@@ -823,6 +821,20 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
         this.urinaryIncontinence = urinaryIncontinence;
     }
 
+    // ----------------- 熬夜与疲劳 -----------------
+    @Unique
+    private int fatigue = 0;
+
+    @Override
+    public int getFatigue() {
+        return this.fatigue;
+    }
+
+    @Override
+    public void setFatigue(int fatigue) {
+        this.fatigue = Math.max(0, fatigue);
+    }
+
     @Override
     public boolean isYuri() {
         return ((INeko)this).hasQuirk(JRQuirks.Companion.getYURI_QUIRK());
@@ -831,7 +843,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     @Override
     public Entity createBaby() {
         Player player = (Player) (Object) this;
-        var baby = (Entity) getChildrenType().create(player.level());
+        var baby = (Entity) getChildrenType().create(player.level(), net.minecraft.world.entity.EntitySpawnReason.BREEDING);
         if (baby instanceof Mob mob) {
             mob.setBaby(true);
             mob.tickCount = -48000;
@@ -843,18 +855,22 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
         return baby;
     }
 
+    // 26.x：实体存档改为 ValueInput/ValueOutput，通过 NbtBridge 与现有 CompoundTag 逻辑桥接
     @Inject(method = "readAdditionalSaveData", at = @At("HEAD"))
-    public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
+    public void readAdditionalSaveData(ValueInput input, CallbackInfo ci) {
+        CompoundTag nbt = org.cneko.justarod.JRNbtBridge.read(input);
         power = this.readPowerFromNbt(nbt);
         this.readPregnantFromNbt(nbt);
         this.readBDSMFromNbt(nbt);
     }
 
     @Inject(method = "addAdditionalSaveData", at = @At("HEAD"))
-    public void addAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
+    public void addAdditionalSaveData(ValueOutput output, CallbackInfo ci) {
+        CompoundTag nbt = new CompoundTag();
         this.writePowerToNbt(nbt);
         this.writePregnantToNbt(nbt);
         this.writeBDSMToNbt(nbt);
+        org.cneko.justarod.JRNbtBridge.store(nbt, output);
     }
 
     @Unique
@@ -864,7 +880,7 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
         // 自动采集所有数据
         for (JRProperty<?> prop : JRRegistry.INSTANCE.getPROPERTIES()) {
             // 在 Kotlin 里声明的 (Pregnant) -> T ，在 Java 里会被编译为 invoke()
-            Object value = ((JRProperty<Object>) prop).getGetter().invoke(player);
+            Object value = ((JRProperty<Object>) prop).getGetter().invoke((Pregnant) player);
             currentValues.add(value);
         }
 
@@ -881,61 +897,43 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
                 // 同步power
                 syncToClient(sp);
                 // slowTick区域
-                Pregnant.hormoneAndCycleSlowTick(sp);
-                Pregnant.yuriSlowTick(player);
+                Pregnant.hormoneAndCycleSlowTick((LivingEntity & Pregnant) sp);
+                Pregnant.yuriSlowTick((LivingEntity & Pregnant) player);
             }
         }
         if (player.level() instanceof ServerLevel) {
-            Powerable.tickPower(player);
-            Pregnant.pregnantTick(player);
-            Pregnant.aidsTick(player);
-            Pregnant.HPVTick(player);
-            Pregnant.ovarianCancerTick(player);
-            Pregnant.breastCancerTick(player);
-            Pregnant.syphilisTick(player);
-            Pregnant.excretionTick(player);
-            Pregnant.urinationTick(player);
-            Pregnant.uterineColdTick(player);
-            Pregnant.amputatedTick(player);
-            Pregnant.urethritisTick(player);
-            Pregnant.prostatitisTick(player);
-            Pregnant.hemorrhoidsTick(player);
-            Pregnant.paronychiaTick(player);
-            Pregnant.hymenTick(player);
-            Pregnant.imperforateHymenTick(player);
-            Pregnant.protogynyTick(player);
-            Pregnant.cataractTick(player);
-            Pregnant.corpusLuteumTriggerTick(player);
-            Pregnant.corpusLuteumRuptureTick(player);
-            Pregnant.lactationTick(player);
-            Pregnant.urinaryIncontinenceTick(player);
-            BDSMable.ballMouthTick(player);
-            BDSMable.electricShockTick(player);
-            BDSMable.bundledTick(player);
-            BDSMable.eyePatchTick(player);
-            BDSMable.earplugTick(player);
-            BDSMable.handcuffedTick(player);
-            BDSMable.shackledTick(player);
-            BDSMable.noMatingPlzTick(player);
-        }
-    }
-
-    @Inject(method = "eat",at = @At("HEAD"))
-    public void eatFood(Level world, ItemStack stack, FoodProperties foodComponent, CallbackInfoReturnable<ItemStack> cir) {
-        if (stack.is(Items.MILK_BUCKET)){
-            // 如果有HPV且在3天内
-            if (this.getHPV() > 0 && this.getHPV() < 20*60*20*3) {
-                this.setHPV(0);
-                // 移除HPV效果
-                ((Player)(Object)this).removeEffect(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(JREffects.Companion.getHPV_EFFECT()));
-            }
-        }
-        if (stack.is(Items.ENCHANTED_GOLDEN_APPLE)){
-            // 如果有HPV且在6天内
-            if (this.getHPV() > 0 && this.getHPV() < 20*60*20*6) {
-                this.setHPV(0);
-                ((Player)(Object)this).removeEffect(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(JREffects.Companion.getHPV_EFFECT()));
-            }
+            Powerable.tickPower((LivingEntity & Powerable) player);
+            Pregnant.pregnantTick((LivingEntity & Pregnant) player);
+            Pregnant.aidsTick((LivingEntity & Pregnant) player);
+            Pregnant.HPVTick((LivingEntity & Pregnant) player);
+            Pregnant.ovarianCancerTick((LivingEntity & Pregnant) player);
+            Pregnant.breastCancerTick((LivingEntity & Pregnant) player);
+            Pregnant.syphilisTick((LivingEntity & Pregnant) player);
+            Pregnant.excretionTick((LivingEntity & Pregnant) player);
+            Pregnant.urinationTick((LivingEntity & Pregnant) player);
+            Pregnant.uterineColdTick((LivingEntity & Pregnant) player);
+            Pregnant.amputatedTick((LivingEntity & Pregnant) player);
+            Pregnant.urethritisTick((LivingEntity & Pregnant) player);
+            Pregnant.prostatitisTick((LivingEntity & Pregnant) player);
+            Pregnant.hemorrhoidsTick((LivingEntity & Pregnant) player);
+            Pregnant.paronychiaTick((LivingEntity & Pregnant) player);
+            Pregnant.hymenTick((LivingEntity & Pregnant) player);
+            Pregnant.imperforateHymenTick((LivingEntity & Pregnant) player);
+            Pregnant.protogynyTick((LivingEntity & Pregnant) player);
+            Pregnant.cataractTick((LivingEntity & Pregnant) player);
+            Pregnant.corpusLuteumTriggerTick((LivingEntity & Pregnant) player);
+            Pregnant.corpusLuteumRuptureTick((LivingEntity & Pregnant) player);
+            Pregnant.lactationTick((LivingEntity & Pregnant) player);
+            Pregnant.urinaryIncontinenceTick((LivingEntity & Pregnant) player);
+            Pregnant.stayUpLateTick((LivingEntity & Pregnant) player);
+            BDSMable.ballMouthTick((Player & BDSMable) player);
+            BDSMable.electricShockTick((Player & BDSMable) player);
+            BDSMable.bundledTick((Player & BDSMable) player);
+            BDSMable.eyePatchTick((Player & BDSMable) player);
+            BDSMable.earplugTick((Player & BDSMable) player);
+            BDSMable.handcuffedTick((Player & BDSMable) player);
+            BDSMable.shackledTick((Player & BDSMable) player);
+            BDSMable.noMatingPlzTick((Player & BDSMable) player);
         }
     }
 

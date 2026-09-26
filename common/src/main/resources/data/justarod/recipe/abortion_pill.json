@@ -1,26 +1,18 @@
 {
   "type": "minecraft:crafting_shaped",
-  "key":{
-    "A":{
-      "item":"minecraft:gunpowder"
-    },
-    "B":{
-      "item":"justarod:golden_leaves"
-    },
-    "C":{
-      "item":"minecraft:blaze_powder"
-    },
-    "D":{
-      "item":"minecraft:redstone"
-    }
+  "key": {
+    "A": "minecraft:gunpowder",
+    "B": "justarod:golden_leaves",
+    "C": "minecraft:blaze_powder",
+    "D": "minecraft:redstone"
   },
-  "pattern":[
+  "pattern": [
     "BDB",
     "DCA",
     "BAB"
-    ],
-    "result":{
-      "count":2,
-      "id":"justarod:abortion_pill"
-    }
+  ],
+  "result": {
+    "count": 2,
+    "id": "justarod:abortion_pill"
+  }
 }

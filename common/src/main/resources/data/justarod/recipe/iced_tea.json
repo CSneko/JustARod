@@ -6,18 +6,10 @@
     "GAG"
   ],
   "key": {
-    "G": {
-      "item": "justarod:golden_leaves"
-    },
-    "B": {
-      "item": "minecraft:breeze_rod"
-    },
-    "P": {
-      "item": "minecraft:popped_chorus_fruit"
-    },
-    "A": {
-      "item": "minecraft:anvil"
-    }
+    "G": "justarod:golden_leaves",
+    "B": "minecraft:breeze_rod",
+    "P": "minecraft:popped_chorus_fruit",
+    "A": "minecraft:anvil"
   },
   "result": {
     "id": "justarod:iced_tea",

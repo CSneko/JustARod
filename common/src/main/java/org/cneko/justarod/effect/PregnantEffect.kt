@@ -29,18 +29,19 @@ class PregnantEffect: MobEffect(MobEffectCategory.NEUTRAL, 0xe9b8b3) {
     }
 
     override fun applyInstantenousEffect(
+        world: net.minecraft.server.level.ServerLevel,
         source: Entity?,
         attacker: Entity?,
-        target: LivingEntity?,
+        target: LivingEntity,
         amplifier: Int,
         proximity: Double
     ) {
-        super.applyInstantenousEffect(source, attacker, target, amplifier, proximity)
+        super.applyInstantenousEffect(world, source, attacker, target, amplifier, proximity)
         // 0.0005%的几率触发反胃
-        if (target != null && target.random.nextInt(200000) == 0) {
+        if (target.random.nextInt(200000) == 0) {
             target.addEffect(
                 MobEffectInstance(
-                    MobEffects.CONFUSION,
+                    MobEffects.NAUSEA,
                     100, // 持续时间为5秒
                     0
                 )

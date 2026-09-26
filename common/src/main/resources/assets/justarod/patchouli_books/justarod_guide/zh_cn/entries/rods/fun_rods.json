@@ -1,0 +1,23 @@
+{
+  "name": "花式末地烛",
+  "category": "justarod:rods",
+  "icon": "justarod:fireworks_rod",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:firecracker_rod",
+      "text": "$(item)鞭炮末地烛$() —— 请勿模仿！$(br2)使用时有 $(#FF69B4)1/6$() 的概率在身边炸开一朵无伤害的爆炸特效，噼里啪啦~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:fireworks_rod",
+      "text": "$(item)烟花末地烛$() 是可以穿戴的铠甲款式！$(br2)穿戴使用时有 1/5 的概率放出一颗$(#FF69B4)绚烂的星形烟花$()，把气氛烘托到位喵~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:tribocharging_rod",
+      "text": "$(item)摩擦末地烛$() —— 右键打开摩擦操作界面，通过摩擦来给末地烛充能的环保发电方式。$(br2)$(#FFB6C1)物理发电，绿色涩涩！$()"
+    }
+  ]
+}

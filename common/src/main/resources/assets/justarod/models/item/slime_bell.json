@@ -1,0 +1,7 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "justarod:item/slime_bell",
+    "layer1": "justarod:item/slime_bell_overlay"
+  }
+}

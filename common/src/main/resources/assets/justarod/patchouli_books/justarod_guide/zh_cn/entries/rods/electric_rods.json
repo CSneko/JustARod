@@ -1,0 +1,27 @@
+{
+  "name": "电动末地烛",
+  "category": "justarod:rods",
+  "icon": "justarod:advanced_electric_rod",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(#FF69B4)电动的就不需要自己动手啦$()……不那么费力的说。$(br2)电动末地烛使用 $(item)TeamReborn Energy$() 能量驱动，充电后即可使用，越振动越快就越爽呢~$(br2)手持时可以看到剩余电量（1k / 1M 自动换算）。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:basic_electric_rod",
+      "text": "$(item)基础电动末地烛$() —— 一个很基础的电动末地烛，但似乎会漏电。$(br2)合成它只需要一点点红石技术力~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:advanced_electric_rod",
+      "text": "$(item)高级电动末地烛$() 支持多种模式：$(li)$(thing)普通$() —— 循规蹈矩$(li)$(thing)杂鱼$() —— 杂鱼杂鱼~♡$(li)$(thing)快速$() —— 振动频率拉满$(li)$(thing)起飞$() —— 直冲云霄$(br2)$(item)工业级电动末地烛$() 则是火力全开的完全体！"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "模式切换与遥控",
+      "text": "$(item)潜行 + 右键$() 即可循环切换电动末地烛的模式，当前模式会显示在物品提示中。$(br2)配合 $(item)遥控器$()，可以在远处遥控多模式末地烛……被遥控的人可要小心了喵~"
+    }
+  ]
+}

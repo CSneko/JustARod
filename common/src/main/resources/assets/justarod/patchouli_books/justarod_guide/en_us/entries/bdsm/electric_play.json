@@ -1,0 +1,23 @@
+{
+  "name": "Electro Play",
+  "category": "justarod:bdsm",
+  "icon": "justarod:electric_shock_device",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:electric_shock_device",
+      "text": "$(item)Electric Shock Device$() — attach the shock unit to your target; it stays active for a whole day (20 minutes). Once it's on... you get to press the button."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:electric_shock_controller",
+      "text": "$(item)Electric Shock Controller$() — right-click to press the button, and everyone within 16 blocks wearing a shock device jumps sky-high amid thunder and sparks!«N-no! Don't turn it up any higher♡ I can't take it♡»"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "A Gentle Reminder",
+      "text": "$4Shock play has risks — play in moderation!$()$(br2)It's only 0.2 points of magic damage in-game, but watching them leap straight up looks really silly... and adorable, meow~"
+    }
+  ]
+}

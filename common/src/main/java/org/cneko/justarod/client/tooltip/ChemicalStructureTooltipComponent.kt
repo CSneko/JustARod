@@ -1,12 +1,17 @@
 package org.cneko.justarod.client.tooltip
 
 import net.minecraft.client.gui.Font
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
+import net.minecraft.client.renderer.RenderPipelines
 import org.cneko.justarod.item.tooltip.ChemicalStructureTooltipData
 import kotlin.math.max
 import kotlin.math.min
 
+/**
+ * 26.x：ClientTooltipComponent 的 renderImage(GuiGraphics) 改为
+ * extractImage(Font, x, y, width, height, GuiGraphicsExtractor)；getHeight 也需要 Font 参数。
+ */
 class ChemicalStructureTooltipComponent(data: ChemicalStructureTooltipData) : ClientTooltipComponent {
     private val texture = data.texture
 
@@ -47,33 +52,33 @@ class ChemicalStructureTooltipComponent(data: ChemicalStructureTooltipData) : Cl
         return imageRenderWidth
     }
 
-    override fun getHeight(): Int {
+    override fun getHeight(textRenderer: Font): Int {
+        // 26.x：getHeight 现在带 Font 参数
         // 框框的高度：使用图片缩放后的高度 + 4 像素边距
         return imageRenderHeight + 4
     }
 
     // === 核心：在框框内渲染图片 ===
 
-    override fun renderImage(textRenderer: Font, x: Int, y: Int, context: GuiGraphics) {
+    override fun extractImage(textRenderer: Font, x: Int, y: Int, width: Int, height: Int, context: GuiGraphicsExtractor) {
         if (imageRenderWidth <= 0 || imageRenderHeight <= 0) return
 
         // 计算居中的偏移量 (如果图片比框框小，让它在框框的正中间)
-        // 注意：因为上面 getWidth 和 getHeight 已经是紧贴图片了，所以这里的 offsetX/Y 一般为 0
-        // 但如果你想强制规定框框永远是 120x80，可以修改 getWidth 返回固定的 MAX_BOX_WIDTH，然后这里就会自动居中！
         val offsetX = (getWidth(textRenderer) - imageRenderWidth) / 2
-        val offsetY = ((getHeight() - 4) - imageRenderHeight) / 2
+        val offsetY = ((getHeight(textRenderer) - 4) - imageRenderHeight) / 2
 
         val drawX = x + offsetX
         val drawY = y + offsetY + 2 // +2 是为了上下留一点空隙
 
-        // 使用最底层的渲染方法，把图片精准地塞进计算好的区域里
+        // 26.x：blit 需要 RenderPipeline 参数，使用拉伸重载把整张贴图缩放进目标区域
         context.blit(
+            RenderPipelines.GUI_TEXTURED,
             texture,
-            drawX, drawY,               // 在屏幕上的坐标
+            drawX, drawY,                        // 在屏幕上的坐标
+            0f, 0f,                              // UV 坐标
             imageRenderWidth, imageRenderHeight, // 在屏幕上画多大
-            0f, 0f,                     // UV 坐标
-            origWidth, origHeight,      // 读取原图的全尺寸
-            origWidth, origHeight       // 原图文件的真实宽高
+            origWidth, origHeight,               // 读取原图的区域大小
+            origWidth, origHeight                // 原图文件的真实宽高
         )
     }
 }

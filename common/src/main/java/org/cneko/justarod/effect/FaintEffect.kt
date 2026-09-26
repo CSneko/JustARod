@@ -45,8 +45,8 @@ class FaintEffect: MobEffect(MobEffectCategory.BENEFICIAL, 0x3c3c3c)  {
         return true
     }
 
-    override fun applyEffectTick(entity: LivingEntity?, amplifier: Int): Boolean {
+    override fun applyEffectTick(world: net.minecraft.server.level.ServerLevel, entity: LivingEntity, amplifier: Int): Boolean {
         EntityPoseManager.setPose(entity, Pose.SLEEPING)
-        return super.applyEffectTick(entity, amplifier)
+        return super.applyEffectTick(world, entity, amplifier)
     }
 }

@@ -4,7 +4,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier
 import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.effect.MobEffect
 import net.minecraft.world.effect.MobEffectCategory
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import org.cneko.justarod.JRUtil.Companion.rodId
 import org.cneko.toneko.common.mod.effects.ExcitingEffect
 

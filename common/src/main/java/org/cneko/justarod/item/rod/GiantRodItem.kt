@@ -1,4 +1,7 @@
 package org.cneko.justarod.item.rod
+import org.cneko.justarod.JRIds
+
+import org.cneko.justarod.spawnItemAtLocation
 
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
@@ -18,23 +21,24 @@ import org.cneko.justarod.item.JRComponents
 /*
 事实上没人可以把这个塞进去，哪怕扩张有多厉害
  */
-class GiantRodItem: OtherUsedItem(Properties().stacksTo(1).durability(1000).component(JRComponents.Companion.USED_TIME_MARK, 0)) {
+class GiantRodItem: OtherUsedItem(JRIds.itemProps("giant_rod").stacksTo(1).durability(1000).component(JRComponents.Companion.USED_TIME_MARK, 0)) {
     override fun canAcceptEntity(stack: ItemStack, entity: Entity): Boolean {
         return entity.type.equals(EntityType.ENDER_DRAGON)
     }
 
     override fun useOnOther(stack: ItemStack, world: Level?, user: Player, target: LivingEntity): InteractionResult {
         if (super.useOnOther(stack, world, user, target) == InteractionResult.FAIL) {
-            user.sendSystemMessage(Component.translatable("item.justarod.giant_rod.too_big"))
+            (user as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.translatable("item.justarod.giant_rod.too_big"))
             return InteractionResult.FAIL
         }
         // 给目标实体高潮效果
         JREffects.ORGASM_EFFECT?.let {
-            val orgasm = MobEffectInstance(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(it), 100, 0)
+            // 26.x：JREffects 已是 Holder，直接使用
+            val orgasm = MobEffectInstance(it, 100, 0)
             target.addEffect(orgasm)
         }
         // 掉一颗龙蛋
-        target.spawnAtLocation(Items.DRAGON_EGG)
+        target.spawnItemAtLocation(Items.DRAGON_EGG)
         return InteractionResult.SUCCESS
     }
 
@@ -42,14 +46,15 @@ class GiantRodItem: OtherUsedItem(Properties().stacksTo(1).durability(1000).comp
         return EndRodInstructions.USE_ON_OTHER_INSERT
     }
 
-    override fun appendHoverText(
-        stack: ItemStack?,
-        context: TooltipContext?,
-        tooltip: MutableList<Component>?,
-        type: TooltipFlag?
+        override fun appendHoverText(
+        stack: ItemStack,
+        context: net.minecraft.world.item.Item.TooltipContext,
+        display: net.minecraft.world.item.component.TooltipDisplay,
+        adder: java.util.function.Consumer<Component>,
+        type: TooltipFlag
     ) {
-        super.appendHoverText(stack, context, tooltip, type)
-        tooltip?.add(Component.translatable("item.justarod.giant_rod.tooltip"))
+        super.appendHoverText(stack, context, display, adder, type)
+        adder.accept(Component.translatable("item.justarod.giant_rod.tooltip"))
     }
 
 

@@ -38,10 +38,10 @@ class PantsuGetterItem(properties: Properties) : Item(properties) {
             entity.setItemSlot(EquipmentSlot.LEGS, ItemStack.EMPTY)
 
             // 5. 反馈
-            user.sendSystemMessage(Component.literal("§d你成功偷走了 ${entity.name.string} 的胖次！"))
+            (user as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§d你成功偷走了 ${entity.name.string} 的胖次！"))
             // 给受害者发消息
             if (entity is Player) {
-                entity.sendSystemMessage(Component.literal("§c感觉下半身凉飕飕的..."))
+                (entity as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c感觉下半身凉飕飕的..."))
             }
 
 

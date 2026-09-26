@@ -7,18 +7,16 @@ import org.cneko.justarod.api.isEnableImpact
 class TickEvent {
     companion object{
         fun init() {
-
-            ServerTickEvents.START_WORLD_TICK.register { world ->
-                if (world.isClientSide) return@register
+            // 26.x Fabric：START_WORLD_TICK/END_WORLD_TICK 更名为 START_LEVEL_TICK/END_LEVEL_TICK
+            ServerTickEvents.START_LEVEL_TICK.register(ServerTickEvents.StartLevelTick { world ->
                 for (player in world.players()) {
                     if (player.isEnableImpact()){
                         ImpactModel.tick(player)
                     }
                 }
+            })
 
-            }
-
-            ServerTickEvents.END_WORLD_TICK.register(ServerTickEvents.EndWorldTick { world ->
+            ServerTickEvents.END_LEVEL_TICK.register(ServerTickEvents.EndLevelTick { world ->
                 YuriKissManager.onWorldTick(world)
             })
 

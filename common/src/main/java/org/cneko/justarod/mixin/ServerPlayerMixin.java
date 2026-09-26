@@ -15,8 +15,9 @@ public class ServerPlayerMixin {
     @Inject(method = "restoreFrom",at = @At("HEAD"))
     public void copyFrom(ServerPlayer oldPlayer, boolean alive, CallbackInfo ci) {
         ServerPlayer player = (ServerPlayer) (Object) this;
-        player.setSterilization(oldPlayer.isSterilization());
-        player.setImmune2HPV(oldPlayer.isImmune2HPV());
+        // 26.x：编译期接口由 mixin 注入，需显式转换
+        ((org.cneko.justarod.entity.Pregnant) (Object) player).setSterilization(((org.cneko.justarod.entity.Pregnant) (Object) oldPlayer).isSterilization());
+        ((org.cneko.justarod.entity.Pregnant) (Object) player).setImmune2HPV(((org.cneko.justarod.entity.Pregnant) (Object) oldPlayer).isImmune2HPV());
     }
 
     @Unique
@@ -27,9 +28,9 @@ public class ServerPlayerMixin {
         slowTick++;
         if (slowTick >=10){
             player.level().getEntitiesOfClass(ServerPlayer.class, player.getBoundingBox().inflate(10), (e) -> true).forEach(e -> {
-                ServerPlayNetworking.send(e, new BDSMPayload(player.getStringUUID(), player.getBallMouth() > 0, player.getElectricShock() > 0, player.getBundled() > 0, player.getEyePatch() > 0, player.getEarplug() > 0, player.getHandcuffed() > 0, player.getShackled() > 0, player.getNoMatingPlz() > 0));
+                ServerPlayNetworking.send(e, new BDSMPayload(player.getStringUUID(), ((org.cneko.justarod.entity.BDSMable) (Object) player).getBallMouth() > 0, ((org.cneko.justarod.entity.BDSMable) (Object) player).getElectricShock() > 0, ((org.cneko.justarod.entity.BDSMable) (Object) player).getBundled() > 0, ((org.cneko.justarod.entity.BDSMable) (Object) player).getEyePatch() > 0, ((org.cneko.justarod.entity.BDSMable) (Object) player).getEarplug() > 0, ((org.cneko.justarod.entity.BDSMable) (Object) player).getHandcuffed() > 0, ((org.cneko.justarod.entity.BDSMable) (Object) player).getShackled() > 0, ((org.cneko.justarod.entity.BDSMable) (Object) player).getNoMatingPlz() > 0));
             });
-            ServerPlayNetworking.send(player, new BDSMPayload(player.getStringUUID(), player.getBallMouth() > 0, player.getElectricShock() > 0, player.getBundled() > 0, player.getEyePatch() > 0, player.getEarplug() > 0, player.getHandcuffed() > 0, player.getShackled() > 0, player.getNoMatingPlz() > 0));
+            ServerPlayNetworking.send(player, new BDSMPayload(player.getStringUUID(), ((org.cneko.justarod.entity.BDSMable) (Object) player).getBallMouth() > 0, ((org.cneko.justarod.entity.BDSMable) (Object) player).getElectricShock() > 0, ((org.cneko.justarod.entity.BDSMable) (Object) player).getBundled() > 0, ((org.cneko.justarod.entity.BDSMable) (Object) player).getEyePatch() > 0, ((org.cneko.justarod.entity.BDSMable) (Object) player).getEarplug() > 0, ((org.cneko.justarod.entity.BDSMable) (Object) player).getHandcuffed() > 0, ((org.cneko.justarod.entity.BDSMable) (Object) player).getShackled() > 0, ((org.cneko.justarod.entity.BDSMable) (Object) player).getNoMatingPlz() > 0));
             slowTick = 0;
         }
     }

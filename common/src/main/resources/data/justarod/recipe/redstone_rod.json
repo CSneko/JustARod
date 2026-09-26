@@ -6,15 +6,9 @@
     " S "
   ],
   "key": {
-    "Q": {
-      "item": "minecraft:milk_bucket"
-    },
-    "C": {
-      "item": "minecraft:end_rod"
-    },
-    "S": {
-      "item": "minecraft:redstone"
-    }
+    "Q": "minecraft:milk_bucket",
+    "C": "minecraft:end_rod",
+    "S": "minecraft:redstone"
   },
   "result": {
     "id": "justarod:redstone_rod",

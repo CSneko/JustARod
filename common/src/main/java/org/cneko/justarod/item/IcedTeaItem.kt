@@ -8,8 +8,8 @@ import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.stats.Stats
 import net.minecraft.world.InteractionHand
-import net.minecraft.resources.ResourceLocation
-import net.minecraft.world.InteractionResultHolder
+import net.minecraft.resources.Identifier
+import net.minecraft.world.InteractionResult
 import net.minecraft.world.level.Level
 import org.cneko.justarod.JRUtil.Companion.rodId
 import org.cneko.justarod.entity.IcedTeaProjectileEntity
@@ -25,7 +25,7 @@ class IcedTeaItem(properties: Properties) : Item(properties) {
     /**
      * 当玩家使用（右键点击）这个物品时调用。
      */
-    override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
+    override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResult {
         val itemStack = user.getItemInHand(hand)
 
         // 播放投掷声音
@@ -41,7 +41,7 @@ class IcedTeaItem(properties: Properties) : Item(properties) {
         )
 
         // 为物品设置冷却时间，防止玩家连续投掷
-        user.cooldowns.addCooldown(this, 20) // 20 ticks = 1 秒冷却
+        user.cooldowns.addCooldown(itemStack, 20) // 20 ticks = 1 秒冷却
 
         // 只在服务器端生成实体
         if (!world.isClientSide) {
@@ -61,6 +61,6 @@ class IcedTeaItem(properties: Properties) : Item(properties) {
             itemStack.shrink(1)
         }
 
-        return InteractionResultHolder.success(itemStack)
+        return InteractionResult.SUCCESS
     }
 }

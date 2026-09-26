@@ -1,21 +1,11 @@
 {
   "type": "minecraft:crafting_shaped",
   "key": {
-    "S": {
-      "item": "minecraft:prismarine_shard"
-    },
-    "E": {
-      "item": "minecraft:egg"
-    },
-    "P": {
-      "item": "minecraft:dragon_breath"
-    },
-    "C": {
-      "item": "minecraft:cod"
-    },
-    "G": {
-      "item": "justarod:golden_leaves"
-    }
+    "S": "minecraft:prismarine_shard",
+    "E": "minecraft:egg",
+    "P": "minecraft:dragon_breath",
+    "C": "minecraft:cod",
+    "G": "justarod:golden_leaves"
   },
   "pattern": [
     "GSG",

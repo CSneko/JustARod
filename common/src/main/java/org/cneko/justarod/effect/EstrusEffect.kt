@@ -31,8 +31,7 @@ class EstrusEffect:MobEffect(MobEffectCategory.BENEFICIAL, 0xffb6c1) {
         return true
     }
 
-    override fun applyEffectTick(entity: LivingEntity, amplifier: Int): Boolean {
-        val world = entity.level()
+    override fun applyEffectTick(world: net.minecraft.server.level.ServerLevel, entity: LivingEntity, amplifier: Int): Boolean {
         val random: RandomSource = world.random
         //添加爱心效
         world.addParticle(
@@ -62,7 +61,7 @@ class EstrusEffect:MobEffect(MobEffectCategory.BENEFICIAL, 0xffb6c1) {
             }
         }
 
-        return super.applyEffectTick(entity, amplifier)
+        return super.applyEffectTick(world, entity, amplifier)
     }
 
 }

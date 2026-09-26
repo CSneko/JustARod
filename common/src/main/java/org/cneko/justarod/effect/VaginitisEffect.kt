@@ -11,11 +11,11 @@ class VaginitisEffect: MobEffect(MobEffectCategory.HARMFUL, 0xD3D3D3) {
         return true
     }
 
-    override fun applyEffectTick(entity: LivingEntity?, amplifier: Int): Boolean {
+    override fun applyEffectTick(world: net.minecraft.server.level.ServerLevel, entity: LivingEntity, amplifier: Int): Boolean {
         // 1/200的概率缓慢
         if (entity != null && entity.random.nextInt(200) == 0) {
-            entity.addEffect(MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 200, 0))
+            entity.addEffect(MobEffectInstance(MobEffects.SLOWNESS, 200, 0))
         }
-        return super.applyEffectTick(entity, amplifier)
+        return super.applyEffectTick(world, entity, amplifier)
     }
 }

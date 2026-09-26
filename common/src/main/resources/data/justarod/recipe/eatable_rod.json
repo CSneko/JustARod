@@ -5,12 +5,8 @@
     " R "
   ],
   "key": {
-    "C": {
-      "item": "minecraft:carrot"
-    },
-    "R": {
-      "item": "minecraft:chorus_fruit"
-    }
+    "C": "minecraft:carrot",
+    "R": "minecraft:chorus_fruit"
   },
   "result": {
     "id": "justarod:eatable_rod",

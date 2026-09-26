@@ -1,0 +1,17 @@
+{
+  "name": "Welcome to JustARod",
+  "category": "justarod:intro",
+  "icon": "justarod:slime_rod",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(thing)JustARod$() is a toNeko add-on themed around $(#FF69B4)end rods$().$(br2)Here, you can:$(li)Collect $(#FF69B4)all kinds of end rods$(li)Experience the $(#FF69B4)medical system$() — vaccines, drugs and surgery$(li)Use toys to $(#FF69B4)bond with your neko$(li)Breed babies and explore the mysteries of $(#FF69B4)genetics$(br2)$(#FFB6C1)Just a rod. Really, just a rod, meow~$()"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "justarod:justarod_guide",
+      "text": "The recipe for this guide is simple: $(item)Book$() + $(item)End Rod$() and you're all set~$(br2)Lost it? Don't worry — a fresh copy is handed out every time you join!"
+    }
+  ]
+}

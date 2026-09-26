@@ -6,9 +6,7 @@
     " R "
   ],
   "key": {
-    "R": {
-      "item": "minecraft:end_rod"
-    }
+    "R": "minecraft:end_rod"
   },
   "result": {
     "id": "justarod:long_rod",

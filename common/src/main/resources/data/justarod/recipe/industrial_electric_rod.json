@@ -6,18 +6,10 @@
     "TET"
   ],
   "key": {
-    "T": {
-      "tag": "c:ingots/iridium"
-    },
-    "R": {
-      "item": "techreborn:lapotron_crystal"
-    },
-    "E": {
-      "item": "justarod:advanced_electric_rod"
-    },
-    "C": {
-      "tag": "justarod:industrial_circuit"
-    }
+    "T": "#c:ingots/iridium",
+    "R": "techreborn:lapotron_crystal",
+    "E": "justarod:advanced_electric_rod",
+    "C": "#justarod:industrial_circuit"
   },
   "result": {
     "id": "justarod:industrial_electric_rod",

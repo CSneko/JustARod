@@ -1,0 +1,33 @@
+{
+  "name": "食物与药剂",
+  "category": "justarod:misc",
+  "icon": "justarod:bremelanotide",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:iced_tea",
+      "text": "$(item)冰红茶$() —— 右键投掷！砸中人的话会播放一段非常羞耻的音效……«劳大，我想你了[哭泣][哭泣]»"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:shenbao",
+      "text": "$(item)肾宝片$() —— 食用后获得长达 5 分钟的力量效果。肾好，身体就好！"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:growth_agent",
+      "text": "$(item)生长剂$() / $(item)反向生长剂$() —— 注射后让目标的体型增大或缩小（每次 ±0.1 尺寸）。萝莉控与巨人控的双向奔赴~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:bremelanotide",
+      "text": "$(item)C50H68N14O10$()（布美诺肽）—— 注射后使目标陷入长时间的$(#FF69B4)发情$()状态并伴随反胃。化学结构式都给你标在物品上了，专业喵~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:mole",
+      "text": "$(item)奇怪的一坨东西$() 与 $(item)大便$() —— 均可作为食物食用，但会反胃……到底是谁会吃这个啊！"
+    }
+  ]
+}

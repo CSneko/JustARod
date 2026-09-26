@@ -32,7 +32,7 @@ public class JRNetWorkingEvents {
         ServerPlayNetworking.registerGlobalReceiver(FullHeatPayload.ID, (payload,context) -> {
             // 消耗体力
             Player player = context.player();
-            player.setPower(player.getPower()-80);
+            ((org.cneko.justarod.entity.Powerable) player).setPower(((org.cneko.justarod.entity.Powerable) player).getPower()-80);
         });
         ServerPlayNetworking.registerGlobalReceiver(MatePayload.ID,((payload, context) -> {
             ServerPlayer player = context.player();
@@ -42,7 +42,7 @@ public class JRNetWorkingEvents {
                 // 添加状态效果
                 player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, payload.time()*20));
                 // 减少体力
-                player.setPower(player.getPower()-payload.amount()*30);
+                ((org.cneko.justarod.entity.Powerable) player).setPower(((org.cneko.justarod.entity.Powerable) player).getPower()-payload.amount()*30);
                 String uuid = payload.nekoUuid();
                 // 如果uuid合法
                 try {
@@ -53,7 +53,7 @@ public class JRNetWorkingEvents {
                     }
                 }catch (Exception ignored){}
             }else {
-                player.setPower(player.getPower()-payload.amount()*5);
+                ((org.cneko.justarod.entity.Powerable) player).setPower(((org.cneko.justarod.entity.Powerable) player).getPower()-payload.amount()*5);
                 player.sendSystemMessage(Component.nullToEmpty("§c配种失败！"));
             }
         }));
@@ -73,14 +73,14 @@ public class JRNetWorkingEvents {
                     }else {
                         queue.addTask(20, () -> {
                             player.sendSystemMessage(Component.nullToEmpty("§a对方已接受请求，正在生成参数"));
-                            player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 1000,4));
+                            player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 1000,4));
                         });
                         // TODO 射我里面
                         queue.addTask(40, () -> {
                             // 1.0~5.0
                             double probability = player.getRandom().nextDouble() * 5;
                             // 减少玩家的能量
-                            player.setPower(player.getPower()-probability*25);
+                            ((org.cneko.justarod.entity.Powerable) player).setPower(((org.cneko.justarod.entity.Powerable) player).getPower()-probability*25);
                             // 大于3.0直接成功，小于3.0则概率成功
                             if (probability >= 3 || player.getRandom().nextBoolean()) {
                                 player.sendSystemMessage(Component.nullToEmpty("§a配种成功！消耗参数量："+probability+"亿"));
@@ -102,22 +102,22 @@ public class JRNetWorkingEvents {
                 NekoEntity neko = ToNekoNetworkEvents.findNearbyNekoByUuid(player, nekoUuid,16);
                 if (neko instanceof RavennEntity ravenn){
                     Pregnant preRavenn = (Pregnant) ravenn;
-                    if (preRavenn.canPregnant() && player.canPregnant()){
+                    if (((org.cneko.justarod.entity.Pregnant) preRavenn).canPregnant() && ((org.cneko.justarod.entity.Pregnant) player).canPregnant()){
                         var queue = new TickTaskQueue();
                         queue.addTask(20,()->{
                             player.sendSystemMessage(Component.nullToEmpty("§a已发送请求"));
                         });
                         queue.addTask(40,()->{
                             player.sendSystemMessage(Component.nullToEmpty("§a对方已接受请求"));
-                            player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 1000,4));
+                            player.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 1000,4));
                             preRavenn.tryPregnant();
                             if (player.getName().getString().equalsIgnoreCase("Crystal_Neko")){
                                 preRavenn.setChildrenType(ToNekoEntities.CRYSTAL_NEKO);
                             }else {
                                 preRavenn.setChildrenType(JREntities.SEEEEEX_NEKO);
                             }
-                            player.setChildrenType(ravenn.getType());
-                            player.tryPregnant();
+                            ((org.cneko.justarod.entity.Pregnant) player).setChildrenType(ravenn.getType());
+                            ((org.cneko.justarod.entity.Pregnant) player).tryPregnant();
 
                         });
                         queue.addTask(60,()->{

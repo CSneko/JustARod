@@ -1,0 +1,17 @@
+{
+  "name": "欢迎来到 JustARod",
+  "category": "justarod:intro",
+  "icon": "justarod:slime_rod",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(thing)JustARod（只是根棍子）$() 是一个以 $(#FF69B4)末地烛$() 为主题的 toNeko 附属模组。$(br2)在这里，你可以：$(li)收集 $(#FF69B4)形态各异的末地烛$()$(li)体验$(#FF69B4)医疗系统$()——疫苗、药物与手术$(li)用调教道具和你的猫娘 $(#FF69B4)增进感情$()$(li)繁育后代，探索$(#FF69B4)基因遗传$()的奥秘$(br2)$(#FFB6C1)只是根棍子，真的只是根棍子喵~$()"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "justarod:justarod_guide",
+      "text": "这本手册的合成方法很简单：$(item)书$() + $(item)末地烛$() 就能做出来啦~$(br2)如果弄丢了也没关系，每次进服时都会自动补发一本喵！"
+    }
+  ]
+}

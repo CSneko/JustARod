@@ -48,14 +48,14 @@ class CCBQuirk() : JRDefaultQuirk("ccb") {
             }
             // 1/10给予对方1s的高超效果
             if (random?.nextInt(10) == 0) {
-                entity.addEffect(MobEffectInstance(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(JREffects.ORGASM_EFFECT!!), 20, 0))
+                entity.addEffect(MobEffectInstance(JREffects.ORGASM_EFFECT, 20, 0))
             }
             // 显示提示
             if (player is ServerPlayer){
-                player.sendSystemMessage(Component.translatable("quirk.toneko.ccb.user.success", entity.name).withStyle(ChatFormatting.LIGHT_PURPLE),true)
+                (player as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.translatable("quirk.toneko.ccb.user.success", entity.name).withStyle(ChatFormatting.LIGHT_PURPLE))
             }
             if (entity is ServerPlayer){
-                entity.sendSystemMessage(Component.translatable("quirk.toneko.ccb.neko.success", player?.name).withStyle(ChatFormatting.LIGHT_PURPLE),true)
+                (entity as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.translatable("quirk.toneko.ccb.neko.success", player?.name ?: Component.empty()).withStyle(ChatFormatting.LIGHT_PURPLE))
             }
         }
         return super.onInteractionOther(player, level, hand, other, hitResult)

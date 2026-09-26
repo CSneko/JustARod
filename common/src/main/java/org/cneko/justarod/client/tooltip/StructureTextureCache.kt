@@ -2,13 +2,13 @@ package org.cneko.justarod.client.tooltip
 
 import net.minecraft.client.Minecraft
 import com.mojang.blaze3d.platform.NativeImage
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 
 object StructureTextureCache {
     // 用于缓存图片原始尺寸的 Map
-    private val dimensions = mutableMapOf<ResourceLocation, Pair<Int, Int>>()
+    private val dimensions = mutableMapOf<Identifier, Pair<Int, Int>>()
 
-    fun getOriginalSize(id: ResourceLocation): Pair<Int, Int> {
+    fun getOriginalSize(id: Identifier): Pair<Int, Int> {
         return dimensions.getOrPut(id) {
             try {
                 // 获取客户端的资源管理器

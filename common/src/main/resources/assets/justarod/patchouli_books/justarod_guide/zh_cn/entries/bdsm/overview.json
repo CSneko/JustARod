@@ -1,0 +1,18 @@
+{
+  "name": "调教入门：鞭子",
+  "category": "justarod:bdsm",
+  "icon": "justarod:whip",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:whip",
+      "text": "$(item)鞭子$() —— «啊~♡ 主人别打了喵~»$(br2)左键抽击造成伤害并附加击退与粒子特效；$(thing)长按右键蓄力$()可以甩出鞭击波，攻击范围内的目标都会挨打！"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:contract_whip",
+      "text": "$(item)契约之鞭$() —— 鞭子的进阶款。抽击猫娘时有 $(#FF69B4)1/3$() 的概率与其缔结主仆契约，让对方承认你是主人！(对同一目标只生效一次)$(br2)$(#FF69B4)一鞭定情，就是这么霸道喵~$()"
+    }
+  ]
+}

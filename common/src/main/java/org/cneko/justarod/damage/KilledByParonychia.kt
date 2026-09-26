@@ -7,9 +7,9 @@ import net.minecraft.world.damagesource.DamageType
 import net.minecraft.core.Holder
 import net.minecraft.network.chat.Component
 
-class KilledByParonychia(type: Holder<DamageType>?, entity: Entity?) :
+class KilledByParonychia(type: Holder<DamageType>, entity: Entity?) :
     DamageSource(type, entity) {
-    override fun getLocalizedDeathMessage(killed: LivingEntity?): Component {
-        return Component.translatable("death.attack.paronychia", killed!!.displayName)
+    override fun getLocalizedDeathMessage(killed: LivingEntity): Component {
+        return Component.translatable("death.attack.paronychia", killed.displayName)
     }
 }

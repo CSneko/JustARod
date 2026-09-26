@@ -1,0 +1,32 @@
+{
+  "name": "Gender Transition Ward",
+  "category": "justarod:medical",
+  "icon": "justarod:estrogen",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Want to experience life as another gender? The Gender Ward welcomes you~$(br2)All medicines here are used by $(thing)right-clicking the target$(). A word of caution: there's a $(#FF69B4)20%$() chance of a rare gender anomaly!"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:female_potion",
+      "text": "$(item)Female Potion$() — one sip and you become a girl! (anomalies notwithstanding)"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:male_potion",
+      "text": "$(item)Male Potion$() — one sip and you become a boy! (success not fully guaranteed)"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:estrogen",
+      "text": "$(item)Estrogen$() / $(item)Testosterone$() — the two pillars of hormone replacement therapy, gently steering your endocrine direction."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:anti_androgen",
+      "text": "$(item)Spironolactone$() (anti-androgen) and $(item)Aromatase$() — suppress or convert male hormones; key supports of hormone therapy.$(br2)Always follow your doctor's advice (there is no doctor, meow)."
+    }
+  ]
+}

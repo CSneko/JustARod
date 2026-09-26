@@ -37,7 +37,7 @@ public class CommonChatEventMixin {
     );
     @Inject(method = "onChatMessage", at = @At("HEAD"),cancellable = true)
     private static void onChatMessage(PlayerChatMessage message, ServerPlayer sender, ChatType.Bound params, CallbackInfo ci) {
-        if (sender.getBallMouth()>0){
+        if (((org.cneko.justarod.entity.BDSMable) sender).getBallMouth()>0){
             ci.cancel();
             String msg = MESSAGES.get(sender.getRandom().nextInt(MESSAGES.size()));
             msg = Messaging.prepareMessage(msg, (INeko) sender);

@@ -1,0 +1,28 @@
+{
+  "name": "疾病治疗",
+  "category": "justarod:medical",
+  "icon": "justarod:penicillin",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:penicillin",
+      "text": "$(item)青霉素$() —— 万能抗菌素，梅毒等细菌感染的克星。消炎杀菌，居家旅行必备。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:chemotherapy_drug",
+      "text": "$(item)化疗药物$() —— 治疗卵巢癌的疗程制药物，每粒可削减 3 天卵巢癌病程，也能辅助抑制乳腺癌。$(br2)但化疗是「杀敌一千自损八百」的疗法，会有恶心、虚弱、掉血甚至$(#FF69B4)脱发$()等副作用……"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:tamsulosin_capsule",
+      "text": "$(item)坦索罗辛胶囊$() —— 针对前列腺炎、尿道炎以及积尿问题的特效药，尿频尿急不用慌。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:sanitary_towel",
+      "text": "$(item)卫生巾$() —— 只有正处于月经期的玩家才能使用，用后可以获得长达 $(#FF69B4)10 分钟$() 的舒适效果。$(br2)特殊时期要好好照顾自己喵~"
+    }
+  ]
+}

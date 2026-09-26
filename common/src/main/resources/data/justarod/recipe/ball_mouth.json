@@ -6,15 +6,9 @@
     " S "
   ],
   "key": {
-    "S": {
-      "item": "minecraft:string"
-    },
-    "W": {
-      "tag": "minecraft:wool"
-    },
-    "I": {
-      "item": "minecraft:iron_nugget"
-    }
+    "S": "minecraft:string",
+    "W": "#minecraft:wool",
+    "I": "minecraft:iron_nugget"
   },
   "result": {
     "id": "justarod:ball_mouth",

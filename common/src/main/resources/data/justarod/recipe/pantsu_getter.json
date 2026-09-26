@@ -6,15 +6,9 @@
     " S "
   ],
   "key": {
-    "Q": {
-      "item": "minecraft:quartz"
-    },
-    "C": {
-      "item": "minecraft:slime_ball"
-    },
-    "S": {
-      "item": "minecraft:stick"
-    }
+    "Q": "minecraft:quartz",
+    "C": "minecraft:slime_ball",
+    "S": "minecraft:stick"
   },
   "result": {
     "id": "justarod:pantsu_getter",

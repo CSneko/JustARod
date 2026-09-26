@@ -12,7 +12,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.boss.EnderDragonPart;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -57,7 +57,7 @@ public class EntityAttackEvent {
         if (stack.getItem() instanceof GiantRodItem) {
             if (BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).getPath().equalsIgnoreCase("ender_dragon")){
                 // 嗯啊♡~~
-                RandomSource random = world.random;
+                RandomSource random = player.getRandom();
                 world.addParticle(
                         ParticleTypes.HEART,
                         entity.getX() + random.nextInt(2) - 1,
@@ -74,7 +74,7 @@ public class EntityAttackEvent {
                 }
                 // 快拔出来吧... 求求了...
                 entity.hurt(player.damageSources().playerAttack(player), 5);
-                entity.spawnAtLocation(Items.DRAGON_EGG);
+                org.cneko.justarod.JRUtilKt.spawnItemAtLocation((net.minecraft.world.entity.LivingEntity) entity, Items.DRAGON_EGG);
                 // 啊好像... 呜啊...♡
                 return InteractionResult.SUCCESS;
             }else {
@@ -83,7 +83,7 @@ public class EntityAttackEvent {
         }
 
         if (BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath().equalsIgnoreCase("end_rod") && entity instanceof LivingEntity e){
-            MobEffectInstance orgasm = new MobEffectInstance(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(JREffects.Companion.getORGASM_EFFECT()), 20, 1);
+            MobEffectInstance orgasm = new MobEffectInstance(JREffects.Companion.getORGASM_EFFECT(), 20, 1);
             e.addEffect(orgasm);
         }
         return InteractionResult.PASS;

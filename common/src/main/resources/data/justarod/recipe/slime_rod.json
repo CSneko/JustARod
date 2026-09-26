@@ -6,12 +6,8 @@
     "BBB"
   ],
   "key": {
-    "B": {
-      "item": "minecraft:slime_ball"
-    },
-    "E": {
-      "item": "minecraft:end_rod"
-    }
+    "B": "minecraft:slime_ball",
+    "E": "minecraft:end_rod"
   },
   "result": {
     "id": "justarod:slime_rod",

@@ -1,19 +1,28 @@
 package org.cneko.justarod.item.bio
 
 import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.EntitySpawnReason
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.TamableAnimal
 import net.minecraft.world.entity.ai.attributes.Attribute
 import net.minecraft.world.entity.ai.attributes.Attributes
-import net.minecraft.world.entity.animal.*
-import net.minecraft.world.entity.animal.horse.AbstractHorse
+import net.minecraft.world.entity.animal.Animal
+import net.minecraft.world.entity.animal.chicken.Chicken
+import net.minecraft.world.entity.animal.cow.Cow
+import net.minecraft.world.entity.animal.feline.Cat
+import net.minecraft.world.entity.animal.fox.Fox
+import net.minecraft.world.entity.animal.pig.Pig
+import net.minecraft.world.entity.animal.sheep.Sheep
+import net.minecraft.world.entity.animal.equine.AbstractHorse
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.core.registries.Registries
 import net.minecraft.core.Holder
+import net.minecraft.core.component.DataComponents
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionResult
@@ -39,7 +48,7 @@ class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
         val isVanillaBreedingAnimal = isVanillaBreedingAnimal(entity)
 
         if (!isCustomPregnant && !isVanillaBreedingAnimal) {
-            user.sendSystemMessage(Component.literal("§c目标不能进行孤雌生殖。"))
+            (user as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c目标不能进行孤雌生殖。"))
             return InteractionResult.FAIL
         }
 
@@ -47,7 +56,7 @@ class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
         if (isCustomPregnant) {
             val pregnantEntity = entity as Pregnant
             if (pregnantEntity.isPregnant) {
-                user.sendSystemMessage(Component.literal("§c目标已经怀孕了。"))
+                (user as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c目标已经怀孕了。"))
                 return InteractionResult.FAIL
             }
         }
@@ -84,7 +93,7 @@ class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
         // E. 反馈
         val varianceText = (variance * 100).toInt()
         val typeText = if (variance > 0) "减数分裂 (变异率: $varianceText%)" else "无性克隆"
-        user.sendSystemMessage(Component.literal("§d§l生物体内的卵细胞开始了自我分裂... [$typeText]"))
+        (user as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§d§l生物体内的卵细胞开始了自我分裂... [$typeText]"))
     }
 
     /**
@@ -107,7 +116,7 @@ class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
         }
 
         // 3. 反馈
-        user.sendSystemMessage(Component.literal("§d§l${animal.name.string} 产下了后代！"))
+        (user as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§d§l${animal.name.string} 产下了后代！"))
 
         // 生成粒子效果（心形）
         val random = animal.random
@@ -135,7 +144,8 @@ class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
         val baby = run {
             // 优先使用父实体的 type（即 EntityType）
             val entityType = parent.type
-            val created = entityType.create(world)
+            // 26.x：create(Level, EntitySpawnReason)
+            val created = entityType.create(world, EntitySpawnReason.BREEDING)
 
             created as? Animal
         } ?: return null
@@ -154,16 +164,8 @@ class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
             baby.setColor(randomColor)
         }
 
-        // 5. 对于狐狸，设置为不同的变种（如果发生变异）
-        if (baby is Fox && variance > 0) {
-            val isSnow = baby.random.nextBoolean()
-            baby.setVariant(if (isSnow) Fox.Type.SNOW else Fox.Type.RED)
-        }
-
-        // 6. 对于猫，设置为随机品种（如果发生变异）
-        if (baby is Cat && parent is Cat && variance > 0) {
-            BuiltInRegistries.CAT_VARIANT.getRandom(baby.random).ifPresent { baby.setVariant(it) }
-        }
+        // 26.x：Fox/Cat 的 setVariant 已移除且 DataComponents 变体仅作用于物品堆，
+        // 实体变种随机化这一纯外观行为暂时放弃，保持默认变种。
 
         return baby
     }
@@ -181,7 +183,7 @@ class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
         val newGrowthTime = (baseGrowthTime * growthMultiplier).toInt()
         baby.setAge(-newGrowthTime)
 
-        val attributes: MutableList<Holder<Attribute?>?> = ArrayList<Holder<Attribute?>?>()
+        val attributes: MutableList<Holder<Attribute>> = ArrayList()
         // 始终可选的其他属性
         attributes.add(Attributes.ATTACK_DAMAGE)
         attributes.add(Attributes.MOVEMENT_SPEED)
@@ -192,7 +194,7 @@ class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
         val extraCount = rand.nextInt(4) // 0, 1, 2, or 3
         // 打乱并选取 extraCount 个其他属性
         attributes.shuffle(java.util.Random())
-        val selected: MutableList<Holder<Attribute?>?> = ArrayList<Holder<Attribute?>?>()
+        val selected: MutableList<Holder<Attribute>> = ArrayList()
         selected.add(Attributes.MAX_HEALTH) // 必选
         selected.addAll(attributes.subList(0, extraCount))
         // 应用变异
@@ -216,7 +218,7 @@ class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
 
     private fun applyAttributeVariance(
         entity: LivingEntity,
-        attribute: Holder<Attribute?>?,
+        attribute: Holder<Attribute>,
         variance: Float
     ) {
         val instance = entity.getAttribute(attribute)
@@ -244,20 +246,22 @@ class ParthenogenesisCatalystItem(properties: Properties) : Item(properties) {
                         entity is AbstractHorse ||
                         entity is Fox ||
                         entity is Cat ||
-                        (entity is TamableAnimal && (entity as TamableAnimal).owner!=null) // 驯服的狼、猫等
+                        // 26.x：TamableAnimal#owner 字段移除，用 getOwnerReference()
+                        (entity is TamableAnimal && entity.ownerReference != null) // 驯服的狼、猫等
             }
             else -> false
         }
     }
 
-    override fun appendHoverText(
-        stack: ItemStack?,
-        context: TooltipContext?,
-        tooltip: MutableList<Component>?,
-        type: TooltipFlag?
+        override fun appendHoverText(
+        stack: ItemStack,
+        context: net.minecraft.world.item.Item.TooltipContext,
+        display: net.minecraft.world.item.component.TooltipDisplay,
+        adder: java.util.function.Consumer<Component>,
+        type: TooltipFlag
     ) {
-        tooltip?.add(Component.literal("§7对着拥有生物使用，以进行孤雌生殖。"))
-        tooltip?.add(Component.literal("§7默认进行无性克隆，添加减数分裂附魔可使后代属性产生变异"))
-        super.appendHoverText(stack, context, tooltip, type)
+        adder.accept(Component.literal("§7对着拥有生物使用，以进行孤雌生殖。"))
+        adder.accept(Component.literal("§7默认进行无性克隆，添加减数分裂附魔可使后代属性产生变异"))
+        super.appendHoverText(stack, context, display, adder, type)
     }
 }

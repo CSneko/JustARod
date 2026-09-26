@@ -1,4 +1,5 @@
 package org.cneko.justarod.item.rod
+import org.cneko.justarod.JRIds
 
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.item.ItemStack
@@ -8,7 +9,7 @@ import net.minecraft.world.level.Level
 /*
 请勿模仿
  */
-class FirecrackerRodItem:SelfUsedItem(Properties().stacksTo(1).durability(2000)) {
+class FirecrackerRodItem:SelfUsedItem(JRIds.itemProps("firecracker_rod").stacksTo(1).durability(2000)) {
     override fun useOnSelf(stack: ItemStack, world: Level?, entity: LivingEntity, slot: Int, selected: Boolean): InteractionResult {
         val result = super.useOnSelf(stack, world, entity, slot, selected)
         if (result == InteractionResult.SUCCESS) {

@@ -15,9 +15,9 @@ import net.minecraft.network.chat.Component
  emmm 有心血管疾病的话更容易死的
  虽然你没有...对吧...?
  */
-class SexualExcitement(type: Holder<DamageType>?, attacker: Entity?) :
+class SexualExcitement(type: Holder<DamageType>, attacker: Entity?) :
     DamageSource(type, attacker) {
-    override fun getLocalizedDeathMessage(killed: LivingEntity?): Component {
-        return Component.translatable("death.attack.sexual_excitement", killed!!.displayName)
+    override fun getLocalizedDeathMessage(killed: LivingEntity): Component {
+        return Component.translatable("death.attack.sexual_excitement", killed.displayName)
     }
 }

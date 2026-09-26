@@ -1,0 +1,28 @@
+{
+  "name": "实用工具",
+  "category": "justarod:misc",
+  "icon": "justarod:xp_gun",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:xp_gun",
+      "text": "$(item)经验枪$() —— «嗯~啊~出来了...»$(br2)每射击一次消耗 5 点经验，散射出 5 颗经验球。谁说经验只能自己攒？"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:retriever",
+      "text": "$(item)取物器$() —— «取出来，再插回去»。对体内有末地烛的生物使用，可以把那根烛取出来。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:insertion_pedestal",
+      "text": "$(item)插入底座$() —— 趁着别人不注意，偷偷把末地烛装进底座再塞给TA……对可插入目标右键即可安装，再次互动可以取回。«进不去，怎么想也进不去吧»（已经有了的话）"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:pantsu_getter",
+      "text": "$(item)蓝白碗获取器$() 与 $(item)蓝白碗$()（胖次）—— 可以从目标身上获取胖次并穿戴的神奇装备链。$(item)纸尿裤$() 也是可穿戴的下装哦~"
+    }
+  ]
+}

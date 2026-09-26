@@ -1,0 +1,22 @@
+{
+  "name": "Medical Center Overview",
+  "category": "justarod:medical",
+  "icon": "justarod:scalpel",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Welcome to the $(#FF69B4)Medical Center$()! This mod ships a rather hardcore physiological simulation: diseases, menstruation, pregnancy and STDs included.$(br2)Medical items share one usage: hold the item and $(thing)right-click your target$() (yourself works too). Wrong targets get a polite refusal~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:scalpel",
+      "text": "$(item)Scalpel$() — the core tool of surgery. Combined with the various $(#FF69B4)surgery enchantments$() (hysterectomy, mastectomy, beheading, etc.) you can perform all kinds of \"procedures\" on a target.$(br2)Think twice before cutting — some operations are irreversible, meow!"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:cotton_swab",
+      "text": "$(item)Cotton Swab$() — used for medical sampling. Collect secretions from a target to inspect color and odor as a health indicator.$(br2)$(#FF69B4)Regular check-ups catch problems early!$()"
+    }
+  ]
+}

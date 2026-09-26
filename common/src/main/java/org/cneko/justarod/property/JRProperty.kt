@@ -12,7 +12,7 @@ import net.minecraft.commands.CommandSourceStack
 import net.minecraft.network.chat.Component
 import org.cneko.justarod.entity.Pregnant
 
-abstract class JRProperty<T>(
+abstract class JRProperty<T : Any>(
     val name: String,               // 内部名称，用于命令 (如 hpv)
     val displayName: String,        // UI显示名称 (如 HPV感染)
     val getter: (Pregnant) -> T,    // 如何从实体获取
@@ -24,7 +24,7 @@ abstract class JRProperty<T>(
 
     // === UI 渲染部分 ===
     abstract fun formatValue(value: T): String
-    open fun getValueColor(value: T): Int = 0xFFFFFF
+    open fun getValueColor(value: T): Int = 0xFFFFFFFF.toInt()
 
     // === 命令部分 ===
     abstract fun getArgumentType(): ArgumentType<T>
@@ -38,7 +38,7 @@ abstract class JRProperty<T>(
                 .executes { ctx -> runCommand(ctx, "target") })
 
         // 2. 修改状态 (需要 OP 权限)
-        val setCmd = literal("set").requires { it.hasPermission(4) }
+        val setCmd = literal("set").requires { org.cneko.toneko.common.mod.util.PermissionUtil.has(it, "command.justarod") }
             .then(argument("value", getArgumentType())
                 .executes { ctx -> runSetCommand(ctx, null) }
                 .then(argument("target", EntityArgument.entity())

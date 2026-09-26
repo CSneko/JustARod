@@ -1,0 +1,23 @@
+{
+  "name": "Fancy Rods",
+  "category": "justarod:rods",
+  "icon": "justarod:fireworks_rod",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:firecracker_rod",
+      "text": "$(item)Firecracker Rod$() — do not imitate!$(br2)Each use has a $(#FF69B4)1/6$() chance of popping a harmless explosion effect around you. Crackling~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:fireworks_rod",
+      "text": "$(item)Fireworks Rod$() is a wearable armor piece!$(br2)While worn and used, there's a 1/5 chance to launch a $(#FF69B4)dazzling star-shaped firework$() — setting just the right mood, meow~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:tribocharging_rod",
+      "text": "$(item)Tribocharging Rod$() — right-click to open the friction console and charge your rod through good old friction. Eco-friendly power generation.$(br2)$(#FFB6C1)Physical power for green play!$()"
+    }
+  ]
+}

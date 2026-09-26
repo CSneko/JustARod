@@ -6,15 +6,9 @@
     "SGS"
   ],
   "key": {
-    "G": {
-      "item": "minecraft:gunpowder"
-    },
-    "R": {
-      "item": "minecraft:end_rod"
-    },
-    "S": {
-      "item": "minecraft:sand"
-    }
+    "G": "minecraft:gunpowder",
+    "R": "minecraft:end_rod",
+    "S": "minecraft:sand"
   },
   "result": {
     "id": "justarod:fireworks_rod",

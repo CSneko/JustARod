@@ -4,29 +4,16 @@ architectury {
 
 dependencies {
     // Fabric Loader 仅用于编译期注解（@Environment 等），不要在公共代码中使用它的其他类
-    modImplementation "net.fabricmc:fabric-loader:${rootProject.loader_version}"
+    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
 
-    // 公共代码针对原版 Fabric API 编译；
-    // 在 NeoForge 上运行时由 Forgified Fabric API 提供相同的 API。
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_version}"
+    // GeckoLib 5.x for 26.1.2 moved to com.geckolib
+    modImplementation "com.geckolib:geckolib-common-26.1.2:$rootProject.geckolib_version"
 
-    // GeckoLib：公共代码针对 Fabric 变体编译，NeoForge 运行时使用其 NeoForge 变体
-    modImplementation "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
+    // 前置：toNeko（使用本地 26.1.2 构建产物）
+    compileOnly files("$rootProject.rootDir/libs/toneko-common-2.0.0.jar")
 
-    // 前置：toNeko（各加载器子项目里声明各自的运行时变体）
-    modCompileOnly "maven.modrinth:tonekomod:${rootProject.toneko_version}"
-
-    // TeamReborn Energy（电力根棍）
-    modImplementation('teamreborn:energy:4.1.0') {
-        exclude(group: "net.fabricmc.fabric-api")
-    }
-
-    // kotlin
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1"
-    // lombok
-    compileOnly "org.projectlombok:lombok:1.18.30"
-    annotationProcessor "org.projectlombok:lombok:1.18.30"
+    // Kotlin runtime pieces used by the module
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$rootProject.kotlin_version"
 }
 
 loom {
@@ -34,3 +21,19 @@ loom {
 }
 
 sourceSets.main.resources.srcDir 'src/main/generated'
+
+// ===== Mixin 注入目标离线校验 =====
+// 背景：对 Slime 注入 Mob 声明的 mobInteract，编译能过但运行期类加载直接崩
+// （InvalidInjectionException: could not find any targets，因为 Mixin 默认不搜父类）。
+// 这个任务在编译产物上反射式校验每个 @Inject 的目标方法是否存在，提前拦住这类崩溃。
+tasks.register('verifyMixins', JavaExec) {
+    group = 'verification'
+    description = '校验所有 @Inject 的目标方法在目标类上真实存在'
+    dependsOn 'classes'
+    // 用 main 的运行时类路径：里面有 Minecraft，反射兜底才查得到原版类
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.cneko.justarod.debug.MixinTargetVerifier'
+    // 把 main 的所有输出目录都传进去（Java + Kotlin 是两个目录）
+    args = sourceSets.main.output.classesDirs.files.collect { it.absolutePath } +
+            [file('src/main/resources/justarod.mixins.json').absolutePath]
+}

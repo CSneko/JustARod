@@ -6,15 +6,9 @@
     "GLG"
   ],
   "key": {
-    "G": {
-      "item": "justarod:golden_leaves"
-    },
-    "L": {
-      "item": "minecraft:glass"
-    },
-    "C": {
-      "item": "minecraft:spider_eye"
-    }
+    "G": "justarod:golden_leaves",
+    "L": "minecraft:glass",
+    "C": "minecraft:spider_eye"
   },
   "result": {
     "id": "justarod:reverse_growth_agent",

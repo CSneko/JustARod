@@ -1,0 +1,28 @@
+{
+  "name": "基础款末地烛",
+  "category": "justarod:rods",
+  "icon": "justarod:slime_rod",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:slime_rod",
+      "text": "$(item)粘液末地烛$() 黏黏糊糊的呢~ 使用成功后可以$(#FF69B4)清除发情效果$()，还有 $(#FF69B4)1/500$() 的几率在目标身边生成一只属于TA的小史莱姆！(๑>ᴗ<๑)"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:giant_rod",
+      "text": "$(item)巨型末地烛$() —— «这么大，插进去会坏掉的吧»$(br2)事实上没人可以把这个塞进去……除了$(#FF69B4)末影龙$()。对龙使用会使其绝顶，并掉落一颗$(item)龙蛋$()！"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:cactus_rod",
+      "text": "$(item)仙人掌末地烛$() —— 现实中不建议这么玩！！！$(br2)使用后会对自身造成 $(#FF69B4)10 点$()仙人掌伤害。痛并快乐着（并不）。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:eatable_rod",
+      "text": "$(item)可食用末地烛$() —— 用过之后味道有点酸，也有点咸咸的……$(br2)吃下去后会随机传送到附近某处（味道的代价）。$(#FF69B4)自己的就算了，不太好吃喵。$()"
+    }
+  ]
+}

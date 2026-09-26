@@ -4,6 +4,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.cneko.justarod.JRAttributes;
 import org.cneko.justarod.entity.Insertable;
 import org.cneko.justarod.entity.Pregnant;
@@ -40,11 +42,16 @@ public abstract class NekoEntityMixin implements Insertable{
         }
     }
 
+    // 26.x：实体存档改为 ValueInput/ValueOutput，通过 NbtBridge 与现有 CompoundTag 逻辑桥接
     @Inject(method = "readAdditionalSaveData", at = @At("HEAD"))
-    public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
+    public void readAdditionalSaveData(ValueInput input, CallbackInfo ci) {
+        CompoundTag nbt = org.cneko.justarod.JRNbtBridge.read(input);
         if (nbt.contains("rodInside")) {
-            var rod = ItemStack.parse(this.getEntity().registryAccess(),nbt.getCompound("rodInside"));
-            rod.ifPresent(this::setRodInside);
+            // 26.x：ItemStack.parse 移除，改用 codec + RegistryOps
+            ItemStack.CODEC.parse(
+                    this.getEntity().registryAccess().createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE),
+                    nbt.getCompoundOrEmpty("rodInside")
+            ).result().ifPresent(this::setRodInside);
         }
         if (this.getEntity() instanceof Pregnant pregnant){
             pregnant.readPregnantFromNbt(nbt);
@@ -52,15 +59,19 @@ public abstract class NekoEntityMixin implements Insertable{
     }
 
     @Inject(method = "addAdditionalSaveData", at = @At("HEAD"))
-    public void addAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
+    public void addAdditionalSaveData(ValueOutput output, CallbackInfo ci) {
+        CompoundTag nbt = new CompoundTag();
         if (!getRodInside().isEmpty()) {
-            nbt.put("rodInside", getRodInside().save(
-                    this.getEntity().registryAccess()
-            ));
+            // 26.x：ItemStack.save 移除，改用 codec + RegistryOps
+            ItemStack.OPTIONAL_CODEC.encodeStart(
+                    this.getEntity().registryAccess().createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE),
+                    getRodInside()
+            ).result().ifPresent(tag -> nbt.put("rodInside", tag));
         }
         if (this.getEntity() instanceof Pregnant pregnant){
             pregnant.writePregnantToNbt(nbt);
         }
+        org.cneko.justarod.JRNbtBridge.store(nbt, output);
     }
     @Inject(method = "createNekoAttributes",at = @At("RETURN"))
     private static void createNekoAttributes(CallbackInfoReturnable<AttributeSupplier.Builder> cir) {

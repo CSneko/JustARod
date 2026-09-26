@@ -8,9 +8,10 @@ import net.minecraft.core.Holder
 import net.minecraft.network.chat.Component
 
 // 奇怪の名字
-class KilledByGrass(type: Holder<DamageType>?,val attacker: Entity?) :
+class KilledByGrass(type: Holder<DamageType>,val attacker: Entity?) :
     DamageSource(type, attacker) {
-        override fun getLocalizedDeathMessage(killed: LivingEntity?): Component {
-            return Component.translatable("death.attack.grass", killed!!.displayName,attacker?.displayName)
+        // 26.x：getLocalizedDeathMessage 参数非空
+        override fun getLocalizedDeathMessage(killed: LivingEntity): Component {
+            return Component.translatable("death.attack.grass", killed.displayName, attacker?.displayName ?: Component.empty())
         }
 }

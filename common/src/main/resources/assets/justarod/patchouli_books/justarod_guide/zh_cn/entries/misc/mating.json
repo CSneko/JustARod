@@ -1,0 +1,18 @@
+{
+  "name": "繁殖相关",
+  "category": "justarod:misc",
+  "icon": "justarod:yuri_mating_mating_mating",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:free_mating",
+      "text": "$(item)自由交配$() —— 对任意生物使用直接完成交配并怀孕，宝宝的类型继承自对方！$(br2)注意：不戴 $(item)BYT$() 的后果是会继承对方的负面效果哦~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:yuri_mating_mating_mating",
+      "text": "$(item)百合繁殖繁殖繁殖$() —— 稀有物品。对着百合属性的TA使用，两人就能共同孕育「爱の结晶」！$(br2)$d毕竟人家不是百合的话，还是不要强迫人家啦...$()"
+    }
+  ]
+}

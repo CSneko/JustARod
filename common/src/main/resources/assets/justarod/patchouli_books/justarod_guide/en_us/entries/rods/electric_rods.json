@@ -1,0 +1,27 @@
+{
+  "name": "Electric Rods",
+  "category": "justarod:rods",
+  "icon": "justarod:advanced_electric_rod",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(#FF69B4)Electric ones don't need manual work$()... much less tiring.$(br2)Electric rods are powered by $(item)TeamReborn Energy$(): charge them up and go. The faster the vibration, the better it feels~$(br2)Held in hand, the remaining energy is shown on the tooltip (auto-scaled as 1k / 1M)."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:basic_electric_rod",
+      "text": "$(item)Basic Electric Rod$() — a very basic electric rod, but it seems to leak electricity.$(br2)Crafting one only takes a bit of redstone skill~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:advanced_electric_rod",
+      "text": "$(item)Advanced Electric Rod$() supports multiple modes:$(li)$(thing)Normal$() — by the book$(li)$(thing)Zako$() — zako~ zako~♡$(li)$(thing)Quick$() — vibrations maxed$(li)$(thing)Fly$() — straight into the clouds$(br2)The $(item)Industrial Electric Rod$() is the all-out final form!"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Modes & Remote Control",
+      "text": "$(#FF69B4)Shift + Right Click$() cycles through the rod's modes; the current mode shows in the tooltip.$(br2)Pair it with the $(item)Remote Control$() to trigger multi-mode rods from afar... whoever's wearing one had better behave, meow~"
+    }
+  ]
+}

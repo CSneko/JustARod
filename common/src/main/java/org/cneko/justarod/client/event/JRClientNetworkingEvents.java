@@ -66,7 +66,7 @@ public class JRClientNetworkingEvents {
             };
 
             if (player.getUUID().equals(uuid)) {
-                processBDSM.accept(player);
+                processBDSM.accept((BDSMable) player);
             }
 
             LivingEntity entity = findNearbyEntityByUuid(uuid, 10);
@@ -85,7 +85,7 @@ public class JRClientNetworkingEvents {
             };
 
             if (player.getUUID().equals(uuid)) {
-                processMedical.accept(player);
+                processMedical.accept((Pregnant) player);
             }
 
             LivingEntity entity = findNearbyEntityByUuid(uuid, 10);

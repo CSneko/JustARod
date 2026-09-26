@@ -1,5 +1,8 @@
 package org.cneko.justarod.command
 
+import org.cneko.justarod.hasPermissionLevel
+import org.cneko.justarod.spawnItemAtLocation
+
 import com.mojang.brigadier.arguments.BoolArgumentType
 import com.mojang.brigadier.arguments.FloatArgumentType
 import com.mojang.brigadier.arguments.IntegerArgumentType
@@ -95,8 +98,8 @@ class PregnantCommand {
                     // 创建可点击的文本
                     val text = Component.literal("§a/jr $name §f- ${info.displayName}")
                         .withStyle { style ->
-                            style.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/jr help $name"))
-                                .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("点击查看该命令具体用法")))
+                            style.withClickEvent(ClickEvent.RunCommand("/jr help $name"))
+                                .withHoverEvent(HoverEvent.ShowText(Component.literal("点击查看该命令具体用法")))
                         }
                     source.sendSystemMessage(text)
                 }
@@ -146,7 +149,7 @@ class PregnantCommand {
                 )
         }
 
-        private fun <T> buildSetter(
+        private fun <T : Any> buildSetter(
             argName: String,
             argType: com.mojang.brigadier.arguments.ArgumentType<T>,
             getter: (CommandContext<CommandSourceStack>, String) -> T,
@@ -154,7 +157,7 @@ class PregnantCommand {
         ): LiteralArgumentBuilder<CommandSourceStack> {
             return literal("set")
                 // 修复：原为 4(控制台)，现改为 2(普通OP)，否则管理员无法使用
-                .requires { s -> s.hasPermission(2) }
+                .requires { s -> s.hasPermissionLevel(2) }
                 .then(argument(argName, argType)
                     .executes { ctx ->
                         val value = getter(ctx, argName)
@@ -186,7 +189,7 @@ class PregnantCommand {
                     p.isFemale -> "§d女"
                     else -> "无"
                 }
-                s.sendSystemMessage(Component.literal("§a性别为：$gender"))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§a性别为：$gender"))
             }
             buildSelfAndTarget(cmd, showSex)
 
@@ -212,19 +215,19 @@ class PregnantCommand {
             )
 
             buildSelfAndTarget(cmd) { p, s ->
-                s.sendSystemMessage(Component.literal("剩余孕期：${p.pregnant / 20 / 60 / 20}天"))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("剩余孕期：${p.pregnant / 20 / 60 / 20}天"))
             }
             cmd.then(buildSetter("time", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.pregnant = v })
 
             val statusCmd = literal("status")
-            statusCmd.requires { it.hasPermission(2) }
+            statusCmd.requires { it.hasPermissionLevel(2) }
             buildSelfAndTarget(statusCmd) { p, s ->
                 val msg = when {
                     p.isEctopicPregnancy -> "§c当前怀孕状态为宫外孕！"
                     p.isHydatidiformMole -> "§c当前怀孕状态为葡萄胎！"
                     else -> "§a当前怀孕状态正常"
                 }
-                s.sendSystemMessage(Component.literal(msg))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal(msg))
             }
 
             val setStatusCmd = literal("set")
@@ -241,7 +244,7 @@ class PregnantCommand {
 
             val countCmd = literal("count")
             buildSelfAndTarget(countCmd) { p, s ->
-                if (p.isPregnant) s.sendSystemMessage(Component.literal("§a怀了${p.babyCount}胞胎！"))
+                if (p.isPregnant) (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§a怀了${p.babyCount}胞胎！"))
             }
             countCmd.then(buildSetter("count", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.babyCount = v })
             cmd.then(countCmd)
@@ -270,15 +273,15 @@ class PregnantCommand {
                     if (p.excretion > 20 * 60 * 10) {
                         p.excretion -= 20 * 60 * 10
                         p.doDefecationPain()
-                        s.sendSystemMessage(Component.literal("你排泄了"))
-                        (p as LivingEntity).spawnAtLocation(JRItems.EXCREMENT.defaultInstance)
+                        (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("你排泄了"))
+                        (p as LivingEntity).spawnItemAtLocation(JRItems.EXCREMENT.defaultInstance)
                     } else {
-                        s.sendSystemMessage(Component.literal("你目前无需排泄"))
+                        (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("你目前无需排泄"))
                     }
                 }
             })
 
-            buildSelfAndTarget(cmd) { p, s -> s.sendSystemMessage(Component.literal("当前憋粑粑时间：${p.excretion / 20 / 60}分钟")) }
+            buildSelfAndTarget(cmd) { p, s -> (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("当前憋粑粑时间：${p.excretion / 20 / 60}分钟")) }
             cmd.then(buildSetter("time", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.excretion = v })
 
             baseCmd.then(cmd)
@@ -298,9 +301,9 @@ class PregnantCommand {
                 run(ctx, null) { p, s ->
                     if (p.urination > 20 * 60 * 10) {
                         p.urination = 0
-                        s.sendSystemMessage(Component.literal("你排尿了，感觉一身轻！"))
+                        (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("你排尿了，感觉一身轻！"))
                     } else {
-                        s.sendSystemMessage(Component.literal("你目前无需排尿"))
+                        (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("你目前无需排尿"))
                     }
                 }
             })
@@ -319,9 +322,9 @@ class PregnantCommand {
                     else -> "§4重度 (完全失禁 - 随时都在滴答)"
                 }
 
-                s.sendSystemMessage(Component.literal("§e[排尿系统] §7===================="))
-                s.sendSystemMessage(Component.literal("§f 当前憋尿时间：§b$urineMinutes 分钟"))
-                s.sendSystemMessage(Component.literal("§f 括约肌状态：$stage §7(积累值: $incTime tick)"))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§e[排尿系统] §7===================="))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§f 当前憋尿时间：§b$urineMinutes 分钟"))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§f 括约肌状态：$stage §7(积累值: $incTime tick)"))
             }
 
             // 3. 设置憋尿时间
@@ -348,16 +351,16 @@ class PregnantCommand {
             buildSelfAndTarget(cmd) { p, s ->
                 val has = if (p.hasHymen()) "§a完整" else "§c已破裂"
                 val imp = if (p.isImperforateHymen) "§c是 (严重畸形)" else "§b否 (正常)"
-                s.sendSystemMessage(Component.literal("§e[生理检查] §f处女膜: $has §f| 闭锁畸形: $imp"))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§e[生理检查] §f处女膜: $has §f| 闭锁畸形: $imp"))
             }
 
-            val setCmd = literal("set").requires { it.hasPermission(2) }
+            val setCmd = literal("set").requires { it.hasPermissionLevel(2) }
 
             setCmd.then(literal("has").then(argument("value", BoolArgumentType.bool())
                 .executes { ctx -> run(ctx, null) { p, _ -> p.setHasHymen(BoolArgumentType.getBool(ctx, "value")) } }
                 .then(argument("target", EntityArgument.entity())
                     .executes { ctx -> run(ctx, "target") { p, s ->
-                        p.setHasHymen(BoolArgumentType.getBool(ctx, "value")); s.sendSystemMessage(Component.literal("§a已设置"))
+                        p.setHasHymen(BoolArgumentType.getBool(ctx, "value")); (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§a已设置"))
                     } }
                 )
             ))
@@ -366,7 +369,7 @@ class PregnantCommand {
                 .executes { ctx -> run(ctx, null) { p, _ -> p.setImperforateHymen(BoolArgumentType.getBool(ctx, "value")) } }
                 .then(argument("target", EntityArgument.entity())
                     .executes { ctx -> run(ctx, "target") { p, s ->
-                        p.setImperforateHymen(BoolArgumentType.getBool(ctx, "value")); s.sendSystemMessage(Component.literal("§a已设置"))
+                        p.setImperforateHymen(BoolArgumentType.getBool(ctx, "value")); (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§a已设置"))
                     } }
                 )
             ))
@@ -385,19 +388,19 @@ class PregnantCommand {
             )
 
             val enableCmd = literal("enable")
-            buildSelfAndTarget(enableCmd) { p, s -> s.sendSystemMessage(Component.literal("§e[性别特征] §f雌转雄启用: ${if (p.isProtogynyEnabled) "§a是" else "§c否"}")) }
+            buildSelfAndTarget(enableCmd) { p, s -> (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§e[性别特征] §f雌转雄启用: ${if (p.isProtogynyEnabled) "§a是" else "§c否"}")) }
             enableCmd.then(buildSetter("is", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v -> p.isProtogynyEnabled = v })
             cmd.then(enableCmd)
 
             val undergoingCmd = literal("undergoing")
-            buildSelfAndTarget(undergoingCmd) { p, s -> s.sendSystemMessage(Component.literal("§e[性别特征] §f正在雌转雄: ${if (p.isUndergoingProtogyny) "§a是" else "§c否"}")) }
+            buildSelfAndTarget(undergoingCmd) { p, s -> (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§e[性别特征] §f正在雌转雄: ${if (p.isUndergoingProtogyny) "§a是" else "§c否"}")) }
             undergoingCmd.then(buildSetter("is", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v -> p.isUndergoingProtogyny = v })
             cmd.then(undergoingCmd)
 
             val progressCmd = literal("progress")
             buildSelfAndTarget(progressCmd) { p, s ->
                 val percent = (p.protogynyProgress.toDouble() / Pregnant.PROTOGYNY_TOTAL_DURATION * 100).toInt()
-                s.sendSystemMessage(Component.literal("§e[性别特征] §f雌转雄进度: $percent% (${p.protogynyProgress}/${Pregnant.PROTOGYNY_TOTAL_DURATION})"))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§e[性别特征] §f雌转雄进度: $percent% (${p.protogynyProgress}/${Pregnant.PROTOGYNY_TOTAL_DURATION})"))
             }
             progressCmd.then(buildSetter("val", IntegerArgumentType.integer(0, Pregnant.PROTOGYNY_TOTAL_DURATION), IntegerArgumentType::getInteger) { p, v -> p.protogynyProgress = v })
             cmd.then(progressCmd)
@@ -420,7 +423,7 @@ class PregnantCommand {
             // 查看生理周期综合面板
             buildSelfAndTarget(cmd) { p, s ->
                 if (!p.isFemale || !p.hasUterus()) {
-                    s.sendSystemMessage(Component.literal("§c目标不具备女性生理特征或子宫，没有生理周期。"))
+                    (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c目标不具备女性生理特征或子宫，没有生理周期。"))
                     return@buildSelfAndTarget
                 }
 
@@ -428,10 +431,10 @@ class PregnantCommand {
                 val thick = String.format("%.2f", p.uterineThickness)
                 val cycleName = p.menstruationCycle.text // 如果你的Java改成了 getCurrentCycle()，这里对应 currentCycle.text
 
-                s.sendSystemMessage(Component.literal("§d[生理周期面板] §7===================="))
-                s.sendSystemMessage(Component.literal("§f 当前状态: §b$cycleName"))
-                s.sendSystemMessage(Component.literal("§f 卵巢时钟: 第 §e$clockDays §f天 §7(满14天一循环)"))
-                s.sendSystemMessage(Component.literal("§f 内膜厚度: §c$thick mm §7(跌破厚度且激素撤退时出血)"))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§d[生理周期面板] §7===================="))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§f 当前状态: §b$cycleName"))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§f 卵巢时钟: 第 §e$clockDays §f天 §7(满14天一循环)"))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§f 内膜厚度: §c$thick mm §7(跌破厚度且激素撤退时出血)"))
             }
 
             // 修改卵巢时钟 (0 ~ 14天)
@@ -446,7 +449,7 @@ class PregnantCommand {
 
             // 卫生巾相关 (保留原逻辑)
             val comfortCmd = literal("comfort")
-            buildSelfAndTarget(comfortCmd) { p, s -> s.sendSystemMessage(Component.literal("卫生巾剩余有效时间：${p.menstruationComfort / 20}秒")) }
+            buildSelfAndTarget(comfortCmd) { p, s -> (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("卫生巾剩余有效时间：${p.menstruationComfort / 20}秒")) }
             cmd.then(comfortCmd)
 
             baseCmd.then(cmd)
@@ -491,17 +494,17 @@ class PregnantCommand {
                 val ftm = p.hrtFtmProgress
                 val atrophy = p.vaginalAtrophy
 
-                s.sendSystemMessage(Component.literal("§e[激素浓度面板 (单位:pg/mL或ng/mL)] §7========="))
-                s.sendSystemMessage(Component.literal("§d 雌二醇(E2): 总 §l$tE2§r §7(内:$inE2 + 外:$exE2)"))
-                s.sendSystemMessage(Component.literal("§b 孕酮(P):   总 §l$tP§r §7(内:$inP + 外:$exP)"))
-                s.sendSystemMessage(Component.literal("§c 睾酮(T):   总 §l$tT§r §7(内:$inT + 外:$exT)"))
-                s.sendSystemMessage(Component.literal("§8 阻断剂(Blocker): §l$blocker§r"))
-                s.sendSystemMessage(Component.literal("§6 当前散发吸引力: $attr"))
-                s.sendSystemMessage(Component.literal("§a[HRT 变性与病理状态] §7========="))
-                s.sendSystemMessage(Component.literal("§d 男转女(MTF) 进度: $mtf Ticks"))
-                s.sendSystemMessage(Component.literal("§b 女转男(FTM) 进度: $ftm Ticks"))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§e[激素浓度面板 (单位:pg/mL或ng/mL)] §7========="))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§d 雌二醇(E2): 总 §l$tE2§r §7(内:$inE2 + 外:$exE2)"))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§b 孕酮(P):   总 §l$tP§r §7(内:$inP + 外:$exP)"))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c 睾酮(T):   总 §l$tT§r §7(内:$inT + 外:$exT)"))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§8 阻断剂(Blocker): §l$blocker§r"))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§6 当前散发吸引力: $attr"))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§a[HRT 变性与病理状态] §7========="))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§d 男转女(MTF) 进度: $mtf Ticks"))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§b 女转男(FTM) 进度: $ftm Ticks"))
                 if (atrophy > 0) {
-                    s.sendSystemMessage(Component.literal("§4 缺乏雌激素导致的萎缩症: $atrophy Ticks"))
+                    (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§4 缺乏雌激素导致的萎缩症: $atrophy Ticks"))
                 }
             }
 
@@ -558,27 +561,27 @@ class PregnantCommand {
                 val severe = p.isSevereCorpusLuteumRupture
                 if (time > 0) {
                     val sevStr = if (severe) "§c重症 (大血管破裂)" else "§e轻症"
-                    s.sendSystemMessage(Component.literal("§c[生理检查] §f黄体破裂: $sevStr §f| 积血时间: $time tick"))
+                    (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c[生理检查] §f黄体破裂: $sevStr §f| 积血时间: $time tick"))
                 } else {
-                    s.sendSystemMessage(Component.literal("§a[生理检查] §f黄体完好 (无破裂内出血)"))
+                    (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§a[生理检查] §f黄体完好 (无破裂内出血)"))
                 }
             }
 
             cmd.then(literal("time").then(buildSetter("val", IntegerArgumentType.integer(0), IntegerArgumentType::getInteger) { p, v -> p.corpusLuteumRupture = v }))
             cmd.then(literal("severe").then(buildSetter("val", BoolArgumentType.bool(), BoolArgumentType::getBool) { p, v -> p.isSevereCorpusLuteumRupture = v }))
 
-            val triggerCmd = literal("trigger").requires { it.hasPermission(2) }
+            val triggerCmd = literal("trigger").requires { it.hasPermissionLevel(2) }
             buildSelfAndTarget(triggerCmd) { p, s ->
                 if (!p.ruptureCorpusLuteum("")) {
-                    s.sendSystemMessage(Component.literal("§e触发失败：目标可能并非处于黄体期，或者没有子宫，或已经处于破裂状态。"))
+                    (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§e触发失败：目标可能并非处于黄体期，或者没有子宫，或已经处于破裂状态。"))
                 }
             }
             cmd.then(triggerCmd)
 
-            val cureCmd = literal("cure").requires { it.hasPermission(2) }
+            val cureCmd = literal("cure").requires { it.hasPermissionLevel(2) }
             buildSelfAndTarget(cureCmd) { p, s ->
                 if (p.corpusLuteumRupture > 0) p.cureCorpusLuteumRupture()
-                else s.sendSystemMessage(Component.literal("§a目标没有黄体破裂，无需治疗。"))
+                else (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§a目标没有黄体破裂，无需治疗。"))
             }
             cmd.then(cureCmd)
 
@@ -620,10 +623,10 @@ class PregnantCommand {
                 val mastitis = p.mastitis
                 val stim = p.lactationStimulation
 
-                s.sendSystemMessage(Component.literal("§e[泌乳面板] §7===================="))
-                s.sendSystemMessage(Component.literal("§f 当前储奶量: §b$milk §f/ §3$max"))
-                s.sendSystemMessage(Component.literal("§c 乳腺炎病程: $mastitis tick"))
-                s.sendSystemMessage(Component.literal("§d 泌乳刺激度: $stim tick (一直吸一直有)"))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§e[泌乳面板] §7===================="))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§f 当前储奶量: §b$milk §f/ §3$max"))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c 乳腺炎病程: $mastitis tick"))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§d 泌乳刺激度: $stim tick (一直吸一直有)"))
             }
 
             // 3. 属性 Setter
@@ -643,16 +646,16 @@ class PregnantCommand {
             ))
 
             // 4. 执行动作：手动挤奶 (/jr lactation extract <amount> [target])
-            val extractCmd = literal("extract").requires { it.hasPermission(2) }
+            val extractCmd = literal("extract").requires { it.hasPermissionLevel(2) }
                 .then(argument("amount", FloatArgumentType.floatArg(0.1f))
                     .executes { ctx ->
                         val amount = FloatArgumentType.getFloat(ctx, "amount")
                         run(ctx, null) { p, s ->
                             val extracted = p.extractMilk(amount)
                             if (extracted > 0) {
-                                s.sendSystemMessage(Component.literal("§a成功挤出了 ${String.format("%.1f", extracted)} ml乳汁！感觉一阵轻松..."))
+                                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§a成功挤出了 ${String.format("%.1f", extracted)} ml乳汁！感觉一阵轻松..."))
                             } else {
-                                s.sendSystemMessage(Component.literal("§c一滴也没有了..."))
+                                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c一滴也没有了..."))
                             }
                         }
                     }
@@ -662,9 +665,9 @@ class PregnantCommand {
                             run(ctx, "target") { p, s ->
                                 val extracted = p.extractMilk(amount)
                                 if (extracted > 0) {
-                                    s.sendSystemMessage(Component.literal("§a成功从目标身上挤出了 ${String.format("%.1f", extracted)} ml乳汁！"))
+                                    (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§a成功从目标身上挤出了 ${String.format("%.1f", extracted)} ml乳汁！"))
                                 } else {
-                                    s.sendSystemMessage(Component.literal("§c目标一滴也没有了..."))
+                                    (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c目标一滴也没有了..."))
                                 }
                             }
                         }
@@ -710,17 +713,17 @@ class PregnantCommand {
 
                 val days = String.format("%.1f", time / (20.0 * 60.0 * 20.0))
 
-                s.sendSystemMessage(Component.literal("§e[甲沟炎面板] §7===================="))
-                s.sendSystemMessage(Component.literal("§f 感染严重度: $stageStr"))
-                s.sendSystemMessage(Component.literal("§f 病程计时: §b${time} ticks §7(约${days}天)"))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§e[甲沟炎面板] §7===================="))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§f 感染严重度: $stageStr"))
+                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§f 病程计时: §b${time} ticks §7(约${days}天)"))
                 if (bumpChance > 0) {
-                    s.sendSystemMessage(Component.literal("§f 🔥磕到概率: §c1/$bumpChance §7(每次受击)"))
+                    (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§f 🔥磕到概率: §c1/$bumpChance §7(每次受击)"))
                 }
                 if (nailRemoved) {
                     val regrowDays = String.format("%.1f", regrow / (20.0 * 60.0 * 20.0))
-                    s.sendSystemMessage(Component.literal("§f 趾甲状态: §4已脱落 §7(再生剩余: ${regrow} ticks / 约${regrowDays}天)"))
+                    (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§f 趾甲状态: §4已脱落 §7(再生剩余: ${regrow} ticks / 约${regrowDays}天)"))
                 } else {
-                    s.sendSystemMessage(Component.literal("§f 趾甲状态: §a完好"))
+                    (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§f 趾甲状态: §a完好"))
                 }
             }
 
@@ -730,7 +733,7 @@ class PregnantCommand {
             ))
 
             // 3. /jr paronychia bump [cause] [target] — 🔥 戏剧性触发
-            val bumpCmd = literal("bump").requires { it.hasPermission(2) }
+            val bumpCmd = literal("bump").requires { it.hasPermissionLevel(2) }
                 .executes { ctx ->
                     run(ctx, null) { p, _ -> p.triggerParonychiaBump("命令触发") }
                 }
@@ -752,27 +755,27 @@ class PregnantCommand {
             cmd.then(bumpCmd)
 
             // 4. /jr paronychia drain [target] — 🔪 切开引流
-            val drainCmd = literal("drain").requires { it.hasPermission(2) }
+            val drainCmd = literal("drain").requires { it.hasPermissionLevel(2) }
             buildSelfAndTarget(drainCmd) { p, s ->
                 if (p.paronychia <= 0) {
-                    s.sendSystemMessage(Component.literal("§e目标没有甲沟炎，无需引流。"))
+                    (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§e目标没有甲沟炎，无需引流。"))
                 } else {
                     p.drainParonychiaAbscess()
                     val remaining = p.paronychia
                     val days = String.format("%.1f", remaining / (20.0 * 60.0 * 20.0))
-                    s.sendSystemMessage(Component.literal("§e已执行切开引流，剩余病程约${days}天。"))
+                    (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§e已执行切开引流，剩余病程约${days}天。"))
                 }
             }
             cmd.then(drainCmd)
 
             // 5. /jr paronychia nail_remove [target] — 🏥 拔甲手术
-            val nailRemoveCmd = literal("nail_remove").requires { it.hasPermission(2) }
+            val nailRemoveCmd = literal("nail_remove").requires { it.hasPermissionLevel(2) }
             buildSelfAndTarget(nailRemoveCmd) { p, s ->
                 if (p.paronychia <= 0 && !p.isNailRemoved) {
-                    s.sendSystemMessage(Component.literal("§e目标不需要拔甲（既无甲沟炎，趾甲也完好）。"))
+                    (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§e目标不需要拔甲（既无甲沟炎，趾甲也完好）。"))
                 } else {
                     p.removeNail()
-                    s.sendSystemMessage(Component.literal("§e已执行拔甲手术，感染已清除。趾甲将在约7天后重新长出。"))
+                    (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§e已执行拔甲手术，感染已清除。趾甲将在约7天后重新长出。"))
                 }
             }
             cmd.then(nailRemoveCmd)
@@ -789,16 +792,16 @@ class PregnantCommand {
             cmd.then(nailCmd)
 
             // 7. /jr paronychia infect <probability> [target] — 🦠 尝试感染
-            val infectCmd = literal("infect").requires { it.hasPermission(2) }
+            val infectCmd = literal("infect").requires { it.hasPermissionLevel(2) }
                 .then(argument("probability", FloatArgumentType.floatArg(0f, 1f))
                     .executes { ctx ->
                         val prob = FloatArgumentType.getFloat(ctx, "probability")
                         run(ctx, null) { p, s ->
                             p.tryInfectParonychia(prob)
                             if (p.paronychia > 0) {
-                                s.sendSystemMessage(Component.literal("§c目标感染了甲沟炎！"))
+                                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c目标感染了甲沟炎！"))
                             } else {
-                                s.sendSystemMessage(Component.literal("§a运气不错，目标没有感染（概率: $prob）。"))
+                                (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§a运气不错，目标没有感染（概率: $prob）。"))
                             }
                         }
                     }
@@ -808,9 +811,9 @@ class PregnantCommand {
                             run(ctx, "target") { p, s ->
                                 p.tryInfectParonychia(prob)
                                 if (p.paronychia > 0) {
-                                    s.sendSystemMessage(Component.literal("§c目标感染了甲沟炎！"))
+                                    (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c目标感染了甲沟炎！"))
                                 } else {
-                                    s.sendSystemMessage(Component.literal("§a运气不错，目标没有感染（概率: $prob）。"))
+                                    (s as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§a运气不错，目标没有感染（概率: $prob）。"))
                                 }
                             }
                         }

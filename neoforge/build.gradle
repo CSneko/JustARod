@@ -1,17 +1,10 @@
 plugins {
-    id 'com.github.johnrengelman.shadow'
+    id 'com.gradleup.shadow'
 }
 
 architectury {
     platformSetupLoomIde()
     neoForge()
-}
-
-repositories {
-    maven {
-        name = 'NeoForged'
-        url = 'https://maven.neoforged.net/releases'
-    }
 }
 
 configurations {
@@ -30,185 +23,40 @@ configurations {
     }
 }
 
-// 访问权限放宽：NeoForge 侧使用 META-INF/accesstransformer.cfg（由 common 的
-// accessWidener 转换而来），Loom 会自动应用它，无需声明 accessWidenerPath。
-
-// ---- TeamReborn Energy 重映射管线（需在 dependencies 块引用前注册）----
-// 原版 jar 是 Fabric 构建，类与方法引用全部是 intermediary 名（class_1799、
-// method_60655 等）。NeoForge 生产环境运行在 mojang 官方名上，直接打包会因
-// 描述符不匹配抛 NoSuchMethodError。Loom 自带的 RemapJarTask 在本工程
-// (layered officialMojangMappings) 下只重映射类名、方法引用一律不动，
-// 因此这里用 ASM + 项目 tiny 映射自行完成 intermediary→named 的完整重映射：
-//   - 生产：shadowBundle 打包重映射后的 jar（fabric.mod.json 会被 shadowJar 排除）
-//   - 开发：再包一层 lowcodefml 的 mods.toml 使其可被 FML 加载（纯 Fabric 模组会被拒绝）
-// 模板见 libs/energy-neoforge.mods.toml。
-
-def energyRaw = configurations.detachedConfiguration(
-    dependencies.create("teamreborn:energy:4.1.0") { transitive = false }
-)
-
-def energyNamedJar = layout.buildDirectory.file('energy/teamreborn-energy-4.1.0-named.jar')
-
-def remapEnergyJar = tasks.register('remapEnergyJar') {
-    group = 'build'
-    description = '将 TeamReborn Energy 从 intermediary 重映射为 mojang 官方名（ASM + tiny 映射）'
-    inputs.files(energyRaw)
-    inputs.files(configurations.mappings)
-    outputs.file(energyNamedJar)
-
-    doLast {
-        // 1. 解析项目映射（tiny v2：official / intermediary / named 三列）
-        def mappingsZip = new java.util.zip.ZipFile(configurations.mappings.singleFile)
-        def tinyEntry = mappingsZip.entries().toList().find { it.name.endsWith('.tiny') }
-        if (tinyEntry == null) throw new GradleException("mappings.jar 中找不到 .tiny 文件")
-        def reader = new BufferedReader(new InputStreamReader(
-            mappingsZip.getInputStream(tinyEntry), java.nio.charset.StandardCharsets.UTF_8))
-
-        // 列布局：头行 [tiny,2,0,<ns...>]；tiny v2 每行带类型标记：
-        //   类行    [c, <ns...>]
-        //   成员行  [f|m, desc, <ns...>]（深度制表符表示嵌套，owner 为上一层类）
-        def header = reader.readLine().split('\t').toList()
-        // 命名空间列固定从 token 3 开始（头行恒为 tiny/<v>/0/<ns...>）；
-        // 不同构建的映射文件其命名空间顺序可能不同，必须按头行动态确定相对位置
-        int iInt = header.indexOf('intermediary') - 3
-        int iNamed = header.indexOf('named') - 3
-        if (iInt < 0 || iNamed < 0) throw new GradleException("映射头不含 intermediary/named 列: " + header)
-
-        // 类：intermediary -> named；成员："intermediaryOwner.intermediaryName" -> namedName
-        def classMap = [:]
-        def memberMap = [:]
-        // intermediary 成员名全局唯一，可按裸名建一份回退表：
-        // 方法可能声明于接口 A、却经实现类 B 调用（如 DataComponentHolder.getOrDefault 经 ItemStack），
-        // 仅凭 "owner.name" 查不到，裸名兜底即可命中且无歧义
-        def nameOnlyMap = [:]
-        def classStack = [] as List<String[]>   // classStack[depth] = 该层类的命名空间列
-        reader.eachLine { line ->
-            if (!line || line.startsWith('#')) return
-            int depth = 0
-            while (depth < line.length() && line.charAt(depth) == '\t') depth++
-            def cols = line.substring(depth).split('\t')
-            def nsCols
-            if (depth == 0) {
-                // 类行（带 c 标记；兼容无标记写法）
-                nsCols = (cols[0] == 'c') ? cols.tail() : cols
-                classStack[0] = nsCols
-                if (iNamed < nsCols.size() && nsCols[iInt] != nsCols[iNamed]) {
-                    classMap[nsCols[iInt]] = nsCols[iNamed]
-                }
-                return
-            }
-            // 成员行（f|m 标记 + 描述符）；p（参数）行跳过
-            if (cols[0] == 'p' || cols.size() < iNamed + 2) return
-            def owner = classStack[depth - 1]
-            if (owner == null) return
-            nsCols = cols.drop(2)   // 去掉标记与描述符两列
-            def inty = nsCols[iInt], named = nsCols[iNamed]
-            if (inty == null || named == null || inty == named) return
-            // 注意用 String 拼接而非 GString 插值：GString 作 map 键与等值 String 不相等
-            memberMap[owner[iInt] + '.' + inty] = named
-            // 调用点经 ClassRemapper 会先把 owner 翻译成 named，再查成员——补一份 named 键
-            memberMap[owner[iNamed] + '.' + inty] = named
-            nameOnlyMap[inty] = named
-        }
-        reader.close()
-        mappingsZip.close()
-
-        // 2. ASM 重映射（类名 + 字段/方法引用与声明）
-        logger.lifecycle("energy remap: ${classMap.size()} 类映射, ${memberMap.size()} 成员映射")
-        // 不用 SimpleRemapper：其 mapMethodName 仅查带描述符的键，不回退到 "owner.name"
-        def remapper = new org.objectweb.asm.commons.Remapper() {
-            @Override
-            String map(String internalName) {
-                return classMap[internalName] ?: internalName
-            }
-
-            @Override
-            String mapMethodName(String owner, String name, String descriptor) {
-                return memberMap[owner + '.' + name] ?: nameOnlyMap[name] ?: super.mapMethodName(owner, name, descriptor)
-            }
-
-            @Override
-            String mapFieldName(String owner, String name, String descriptor) {
-                return memberMap[owner + '.' + name] ?: nameOnlyMap[name] ?: super.mapFieldName(owner, name, descriptor)
-            }
-        }
-        def zin = new java.util.zip.ZipFile(energyRaw.singleFile)
-        energyNamedJar.get().asFile.parentFile.mkdirs()
-        def zout = new java.util.zip.ZipOutputStream(new FileOutputStream(energyNamedJar.get().asFile))
-        int nClasses = 0
-        try {
-            zin.entries().each { entry ->
-                zout.putNextEntry(new java.util.zip.ZipEntry(entry.name))
-                if (!entry.isDirectory() && entry.name.endsWith('.class')) {
-                    nClasses++
-                    def cr = new org.objectweb.asm.ClassReader(zin.getInputStream(entry).bytes)
-                    def cw = new org.objectweb.asm.ClassWriter(cr, 0)
-                    cr.accept(new org.objectweb.asm.commons.ClassRemapper(cw, remapper), 0)
-                    zout << cw.toByteArray()
-                } else {
-                    zin.getInputStream(entry).transferTo(zout)
-                }
-                zout.closeEntry()
-            }
-        } finally {
-            zout.close()
-            zin.close()
-        }
-        logger.lifecycle("energy remap: 处理了 ${nClasses} 个类文件")
+repositories {
+    maven {
+        name = 'NeoForged'
+        url = 'https://maven.neoforged.net/releases'
     }
+    maven {
+        url "https://maven.su5ed.dev/releases"
+    }
+    maven {
+        name = 'KotlinForForge'
+        url = 'https://thedarkcolour.github.io/KotlinForForge/'
+    }
+    maven { url = uri("https://api.modrinth.com/maven") }
 }
-
-def packageEnergyDev = tasks.register('packageEnergyDev', Zip) {
-    group = 'build'
-    description = '为开发环境包装重映射后的 TeamReborn Energy（lowcodefml 无代码模组）'
-    dependsOn 'remapEnergyJar'
-    from({ zipTree(remapEnergyJar.map { it.outputs.files.singleFile }) }) {
-        exclude('fabric.mod.json', 'META-INF/fabric.mod.json')
-    }
-    from(rootProject.file('libs/energy-neoforge.mods.toml')) {
-        rename { 'META-INF/neoforge.mods.toml' }
-    }
-    archiveFileName = 'teamreborn-energy-4.1.0-neoforge.jar'
-    destinationDirectory = layout.buildDirectory.dir('energy')
-}
-
 
 dependencies {
-    neoForge "net.neoforged:neoforge:${rootProject.neoforge_version}"
+    neoForge "net.neoforged:neoforge:$rootProject.neoforge_version"
 
     common(project(path: ':common', configuration: 'namedElements')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
 
-    // Forgified Fabric API：在 NeoForge 上提供 Fabric API（公共代码无需改动）
-    // 用 modImplementation 让 Loom 在开发环境正确处理其 mixin/refmap（生产环境玩家自行安装）
-    modImplementation "org.sinytra.forgified-fabric-api:forgified-fabric-api:${rootProject.forgified_fabric_api_version}"
+    // loom-no-remap 无 mod* 配置（全部官方映射，无需重映射），mod 依赖走普通 implementation
+    // Forgified Fabric API：在 NeoForge 侧提供 net.fabricmc.* Fabric API 类
+    implementation "org.sinytra.forgified-fabric-api:forgified-fabric-api:$rootProject.forgified_fabric_api_version"
+    implementation "com.geckolib:geckolib-neoforge-26.1.2:$rootProject.geckolib_version"
 
-    modImplementation "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
-    // toNeko 的 NeoForge 版本：
-    // 注意：toneko-neoforge 的 architectury.common.json 里声明了 accessWidener，
-    // 而其 AW 文件是 mojang 命名空间，Loom 的 access-widener 处理器要求 intermediary，
-    // 直接作为 mod 依赖会导致 "Cannot remap access widener from namespace 'mojang'"。
-    // 因此这里用普通 compileOnly（NeoForge 生产 jar 本就是 mojmap 命名，无需重映射），
-    // 开发运行时改用 libs/ 下移除了该 AW 键的修补版（见 libs/README.md）。
-    compileOnly "maven.modrinth:tonekomod:${rootProject.toneko_neoforge_version}"
-    modLocalRuntime files(rootProject.file("libs/toneko-neoforge-1.9.2-awfix.jar"))
-    // Kotlin 运行时（Kotlin for Forge）
-    implementation "thedarkcolour:kotlinforforge-neoforge:${rootProject.kotlin_for_forge_version}"
-    // toNeko 需要的玩家动画库（开发运行时）
-    modLocalRuntime "dev.kosmx.player-anim:player-animation-lib-forge:${rootProject.player_animator_version}"
+    // toNeko 26.1.2 本地构建产物：仅用于开发运行时；正式发布时作为前置由玩家自行安装
+    runtimeOnly files("$rootProject.rootDir/libs/toneko-neoforge-2.0.0.jar")
+    // Kotlin 运行时由 Kotlin for Forge 提供，不打包进 mod
+    runtimeOnly files("$rootProject.rootDir/libs/kotlinforforge-neoforge-5.12.0.jar")
 
-    // TeamReborn Energy：
-    // 原版 jar 是 Fabric 构建（类里引用 intermediary 名如 class_1799），
-    // 而 NeoForge 生产环境运行在 mojang 官方名上——若把原版直接 shadow 进模组，
-    // TeamReborn Energy：构建期重映射管线（任务注册在文件顶部），见上方注释。
-    implementation files(packageEnergyDev.flatMap { it.archiveFile })
-
-    shadowBundle files(remapEnergyJar.map { it.outputs.files.singleFile })
+    // Kotlin stdlib 仅用于编译期；运行时由 Kotlin for Forge 提供，不打包进 mod
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$rootProject.kotlin_version"
 }
-
-// 显式接线：shadowJar 打包与开发运行都需要重映射产物先就绪
-tasks.named('shadowJar') { dependsOn 'remapEnergyJar' }
-tasks.matching { it.name in ['runClient', 'runServer'] }.configureEach { dependsOn 'packageEnergyDev' }
 
 processResources {
     inputs.property 'version', project.version
@@ -221,11 +69,11 @@ processResources {
 
 shadowJar {
     configurations = [project.configurations.shadowBundle]
-    archiveClassifier = 'dev-shadow'
-    // 不要把第三方模组的元数据带进来
-    exclude 'META-INF/fabric.mod.json', 'fabric.mod.json'
+    // loom-no-remap：无 remapJar 任务；shadowJar 即发布主产物
+    archiveClassifier = ''
 }
 
-remapJar {
-    input.set shadowJar.archiveFile
+tasks.named('jar') {
+    // 模块自身的裸 jar 保留为 thin 分类，避免与 shadowJar 主产物冲突
+    archiveClassifier = 'thin'
 }

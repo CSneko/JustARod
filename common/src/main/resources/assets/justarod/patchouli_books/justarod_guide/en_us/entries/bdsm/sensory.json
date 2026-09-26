@@ -1,0 +1,27 @@
+{
+  "name": "Sensory Toys",
+  "category": "justarod:bdsm",
+  "icon": "justarod:eye_patch",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Deprive one sense and the others grow sharper... the classic theory of training.$(br2)Same as always: right-click the target to equip or remove."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:ball_mouth",
+      "text": "$(item)Gag Mask$() — speech completely muted; only muffled squeaks come out♡ From another's view, it even looks kind of... cute? Wear it too long and you'll be drooling, meow~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:eye_patch",
+      "text": "$(item)Eye Patch$() — with sight taken away, every single touch brings double the surprise."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:earplug",
+      "text": "$(item)Earplug$() — can't hear the commands, so intuition is all that's left. Hey hey, whatever improper use you're imagining right now..."
+    }
+  ]
+}

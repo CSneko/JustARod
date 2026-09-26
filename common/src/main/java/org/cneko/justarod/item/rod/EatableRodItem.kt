@@ -1,8 +1,9 @@
 package org.cneko.justarod.item.rod
+import org.cneko.justarod.JRIds
 
 import net.minecraft.world.food.FoodProperties
 import net.minecraft.world.entity.LivingEntity
-import net.minecraft.world.entity.animal.Fox
+import net.minecraft.world.entity.animal.fox.Fox
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.server.level.ServerLevel
@@ -18,16 +19,17 @@ import org.cneko.justarod.item.JRComponents
 其实用过之后味道是有点酸的，也会有点咸咸的，你要喜欢可以舔舔，虽然可能有点细菌，不过不是不能接受
 （自己的就算了，毕竟... 不太好吃... 甚至有点难以下口）
  */
-class EatableRodItem: SelfUsedItem(Properties().food(FoodProperties.Builder().nutrition(1).saturationModifier(0.2f).build()).component(
+class EatableRodItem: SelfUsedItem(JRIds.itemProps("eatable_rod").food(FoodProperties.Builder().nutrition(1).saturationModifier(0.2f).build()).component(
     JRComponents.Companion.USED_TIME_MARK, 0).durability(200)){
-    override fun finishUsingItem(stack: ItemStack?, world: Level, user: LivingEntity): ItemStack {
+    override fun finishUsingItem(stack: ItemStack, world: Level, user: LivingEntity): ItemStack {
         val itemStack = super.finishUsingItem(stack, world, user)
         if (!world.isClientSide) {
             for (i in 0..15) {
                 val d = user.x + (user.random.nextDouble() - 0.5) * 16.0
+                // 26.x：minBuildHeight -> minY (getMinY)，logicalHeight -> getLogicalHeight()
                 val e = Mth.clamp(
-                    user.y + (user.random.nextInt(16) - 8).toDouble(), world.minBuildHeight.toDouble(),
-                    (world.minBuildHeight + (world as ServerLevel).logicalHeight - 1).toDouble()
+                    user.y + (user.random.nextInt(16) - 8).toDouble(), world.minY.toDouble(),
+                    (world.minY + world.height - 1).toDouble()
                 )
                 val f = user.z + (user.random.nextDouble() - 0.5) * 16.0
                 if (user.isPassenger()) {
@@ -46,7 +48,7 @@ class EatableRodItem: SelfUsedItem(Properties().food(FoodProperties.Builder().nu
                         soundCategory = SoundSource.PLAYERS
                     }
 
-                    world.playSound(null as Player?, user.x, user.y, user.z, soundEvent, soundCategory)
+                    world.playSound(null as net.minecraft.world.entity.Entity?, user.x, user.y, user.z, soundEvent, soundCategory)
                     user.resetFallDistance()
                     break
                 }
@@ -54,7 +56,7 @@ class EatableRodItem: SelfUsedItem(Properties().food(FoodProperties.Builder().nu
 
             if (user is Player) {
                 val playerEntity = user
-                playerEntity.cooldowns.addCooldown(this, 20)
+                playerEntity.cooldowns.addCooldown(stack, 20)
             }
         }
 

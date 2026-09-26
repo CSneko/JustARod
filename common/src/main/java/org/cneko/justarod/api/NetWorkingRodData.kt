@@ -1,9 +1,6 @@
 package org.cneko.justarod.api
 
 import com.google.gson.JsonParser
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -20,8 +17,8 @@ class NetWorkingRodData {
         }
 
         fun update() {
-            val scope = CoroutineScope(Dispatchers.IO)
-            scope.launch {
+            // 避免额外打包 kotlinx-coroutines，用普通线程执行异步 HTTP 请求
+            Thread {
                 try {
                     val client = HttpClient.newHttpClient()
                     val request = HttpRequest.newBuilder(URI.create(URL))
@@ -40,7 +37,7 @@ class NetWorkingRodData {
                 if (SPEED == 0){
                     SPEED = 1
                 }
-            }
+            }.start()
         }
     }
 }

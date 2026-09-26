@@ -1,8 +1,7 @@
 package org.cneko.justarod.client.gui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import org.cneko.justarod.Justarod;
 import org.cneko.justarod.entity.Pregnant;
@@ -14,15 +13,15 @@ public class UterusScanScreen extends MedicalScanScreen {
     // =========================================================================
 
     // 1. 基础器官
-    private static final ResourceLocation TEX_UTERUS_BASE = id("uterus_base");           // 健康的子宫、阴道和输卵管底图
-    private static final ResourceLocation TEX_OVARY_NORMAL = id("ovary_normal");         // 正常卵巢
+    private static final Identifier TEX_UTERUS_BASE = id("uterus_base");           // 健康的子宫、阴道和输卵管底图
+    private static final Identifier TEX_OVARY_NORMAL = id("ovary_normal");         // 正常卵巢
     //private static final Identifier TEX_OVARY_PCOS = id("ovary_pcos");             // 多囊卵巢(肿大，布满黑色未成熟小囊泡)
 
     // 2. 月经周期相关
-    private static final ResourceLocation TEX_FOLLICLE = id("cycle_follicle");           // 卵泡期：卵巢上的小亮点
-    private static final ResourceLocation TEX_OVUM = id("cycle_ovum");                   // 排卵期：悬浮在输卵管伞端的发光卵子
-    private static final ResourceLocation TEX_CORPUS_LUTEUM = id("cycle_luteum");        // 黄体期：卵巢上的黄色斑块，以及增厚的子宫内膜
-    private static final ResourceLocation TEX_MENSTRUAL_BLOOD = id("cycle_menstruation");// 月经期：宫腔和阴道内斑驳的暗红色液滴/血流
+    private static final Identifier TEX_FOLLICLE = id("cycle_follicle");           // 卵泡期：卵巢上的小亮点
+    private static final Identifier TEX_OVUM = id("cycle_ovum");                   // 排卵期：悬浮在输卵管伞端的发光卵子
+    private static final Identifier TEX_CORPUS_LUTEUM = id("cycle_luteum");        // 黄体期：卵巢上的黄色斑块，以及增厚的子宫内膜
+    private static final Identifier TEX_MENSTRUAL_BLOOD = id("cycle_menstruation");// 月经期：宫腔和阴道内斑驳的暗红色液滴/血流
 
     // 3. 孕产相关
     //private static final Identifier TEX_FETUS = id("preg_fetus");                  // 正常怀孕：宫腔内的胎儿剪影 (可根据孕期控制透明度/大小)
@@ -45,8 +44,8 @@ public class UterusScanScreen extends MedicalScanScreen {
 
     // =========================================================================
 
-    private static ResourceLocation id(String name) {
-        return ResourceLocation.fromNamespaceAndPath(Justarod.MODID, "textures/gui/medical/" + name + ".png");
+    private static Identifier id(String name) {
+        return Identifier.fromNamespaceAndPath(Justarod.MODID, "textures/gui/medical/" + name + ".png");
     }
 
     public UterusScanScreen(LivingEntity targetEntity) {
@@ -54,7 +53,7 @@ public class UterusScanScreen extends MedicalScanScreen {
     }
 
     @Override
-    protected void renderOrganLayers(GuiGraphics context, int x, int y, float delta) {
+    protected void renderOrganLayers(GuiGraphicsExtractor context, int x, int y, float delta) {
         // 如果没有子宫，屏幕中心画个空的或者保持扫描仪黑屏即可
         if (!pregnantData.hasUterus() || !pregnantData.isFemale()) {
             return;
@@ -105,10 +104,10 @@ public class UterusScanScreen extends MedicalScanScreen {
             } else if (pregnantData.isEctopicPregnancy()) {
                 // 宫外孕 (让它微微闪烁红光以示警告)
                 if (time % 20 < 10) {
-                    RenderSystem.setShaderColor(1.0F, 0.5F, 0.5F, 1.0F);
+                    // 26.x：着色已移除
                 }
                 //drawLayer(context, TEX_ECTOPIC, x, y);
-                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F); // 恢复正常颜色
+
             } else {
                 // 正常怀孕胎儿
                 //drawLayer(context, TEX_FETUS, x, y);
@@ -133,9 +132,9 @@ public class UterusScanScreen extends MedicalScanScreen {
         if (ruptureTime > 0) {
             if (pregnantData.isSevereCorpusLuteumRupture()) {
                 // 重症大出血，血海闪烁
-                if (time % 10 < 5) RenderSystem.setShaderColor(1.0F, 0.8F, 0.8F, 1.0F);
+                // 26.x：着色已移除
                 //drawLayer(context, TEX_HEMORRHAGE_SEVERE, x, y);
-                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+
             } else {
                 // 轻症小量积血
                 //drawLayer(context, TEX_HEMORRHAGE_LIGHT, x, y);
@@ -160,13 +159,11 @@ public class UterusScanScreen extends MedicalScanScreen {
             // 根据宫寒严重程度调整冰霜的透明度 (Alpha)
             int coldValue = pregnantData.getUterineCold();
             float alpha = Math.min(1.0F, coldValue / (20.0F * 60 * 20 * 5)); // 最高5天封顶
-            RenderSystem.enableBlend();
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, alpha);
+
 
             //drawLayer(context, TEX_UTERINE_COLD, x, y);
 
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            RenderSystem.disableBlend();
+
         }
     }
 }

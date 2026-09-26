@@ -1,15 +1,9 @@
 {
   "type": "minecraft:crafting_shaped",
   "key": {
-    "I": {
-      "item": "minecraft:iron_ingot"
-    },
-    "C": {
-      "item": "minecraft:chain"
-    },
-    "B": {
-      "item": "minecraft:iron_bars"
-    }
+    "I": "minecraft:iron_ingot",
+    "C": "minecraft:chain",
+    "B": "minecraft:iron_bars"
   },
   "pattern": [
     "ICI",

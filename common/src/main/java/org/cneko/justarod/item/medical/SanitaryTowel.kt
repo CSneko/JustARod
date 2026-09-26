@@ -5,12 +5,14 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionHand
+import org.cneko.justarod.config.JRConfig
 import org.cneko.justarod.entity.Pregnant
 
 class SanitaryTowel(properties: Properties) : MedicalItem(properties) {
 
-    // 舒适效果持续时间（10分钟）的常量，提高可读性
-    private val COMFORT_DURATION_TICKS = 20 * 60 * 10
+    // 舒适效果持续时间（分钟数可配置）
+    private val COMFORT_DURATION_TICKS: Int
+        get() = 20 * 60 * JRConfig.getSanitaryTowelComfortMinutes()
 
     /**
      * 卫生巾只能由当前处于月经周期的玩家使用

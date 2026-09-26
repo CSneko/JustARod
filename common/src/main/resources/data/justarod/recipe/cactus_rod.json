@@ -5,12 +5,8 @@
     " R "
   ],
   "key": {
-    "C": {
-      "item": "minecraft:cactus"
-    },
-    "R": {
-      "item": "minecraft:end_rod"
-    }
+    "C": "minecraft:cactus",
+    "R": "minecraft:end_rod"
   },
   "result": {
     "id": "justarod:cactus_rod",

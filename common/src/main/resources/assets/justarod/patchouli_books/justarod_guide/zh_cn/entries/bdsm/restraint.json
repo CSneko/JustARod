@@ -1,0 +1,27 @@
+{
+  "name": "束缚道具",
+  "category": "justarod:bdsm",
+  "icon": "justarod:handcuffes",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "束缚类道具的用法很统一：手持道具 $(thing)对目标右键$() 装上，再对已装备的目标使用即可取下。装上之后目标会获得相应的束缚状态，行动受到各种限制~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:handcuffes",
+      "text": "$(item)手铐$() —— 戴上后无法使用物品。另有 $(item)手铐环$() 与 $(item)手铐链$() 等配件可供把玩。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:shackles",
+      "text": "$(item)脚镣$() —— 大幅拖慢目标的移动速度，想跑？没门~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:binding_rope",
+      "text": "$(item)封禁绳$() —— 把目标捆得结结实实，动弹不得。「听说你们就喜欢这个？」"
+    }
+  ]
+}

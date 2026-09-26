@@ -8,7 +8,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.inventory.tooltip.TooltipComponent
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionHand
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import org.cneko.justarod.entity.Pregnant
 import org.cneko.justarod.item.tooltip.ChemicalStructureTooltipData
 import java.util.Optional
@@ -30,21 +30,21 @@ class TestosteroneItem(properties: Properties): MedicalItem(properties) {
 
         // 2. 药效生理反应 (类固醇狂热)
         // 瞬间获得少量力量增益，呼应激素系统长期的 +攻击力 Buff
-        target.addEffect(MobEffectInstance(MobEffects.DAMAGE_BOOST, 20 * 30, 0))
+        target.addEffect(MobEffectInstance(MobEffects.STRENGTH, 20 * 30, 0))
 
         if (target.random.nextBoolean()) {
             // 雄性激素导致代谢加快，容易饥饿
             target.addEffect(MobEffectInstance(MobEffects.HUNGER, 20 * 60, 0))
-            target.sendSystemMessage(Component.literal("§c一股暴躁的力量在体内横冲直撞，你感觉异常亢奋！"))
+            (target as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c一股暴躁的力量在体内横冲直撞，你感觉异常亢奋！"))
         } else {
-            target.sendSystemMessage(Component.literal("§6肌肉微微发热，你感觉充满力量。"))
+            (target as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§6肌肉微微发热，你感觉充满力量。"))
         }
 
     }
 
     override fun getTooltipImage(stack: ItemStack): Optional<TooltipComponent> {
         return Optional.of(
-            ChemicalStructureTooltipData(ResourceLocation.fromNamespaceAndPath("justarod", "textures/tooltip/testosterone.png"))
+            ChemicalStructureTooltipData(Identifier.fromNamespaceAndPath("justarod", "textures/tooltip/testosterone.png"))
         )
     }
 

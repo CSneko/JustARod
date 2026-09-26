@@ -6,15 +6,9 @@
     "IRI"
   ],
   "key": {
-    "I": {
-        "item": "minecraft:iron_ingot"
-    },
-    "R": {
-      "item": "minecraft:redstone"
-    },
-    "D": {
-        "item": "minecraft:diamond"
-    }
+    "I": "minecraft:iron_ingot",
+    "R": "minecraft:redstone",
+    "D": "minecraft:diamond"
   },
   "result": {
     "id": "justarod:electric_shock_device",

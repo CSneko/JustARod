@@ -1,10 +1,11 @@
 package org.cneko.justarod.client;
 
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.TooltipComponentCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.ClientTooltipComponentCallback;
 import net.minecraft.world.entity.player.Player;
 import org.cneko.justarod.client.event.ClientTickEvent;
 import org.cneko.justarod.client.event.JRClientNetworkingEvents;
+import org.cneko.justarod.client.event.JRHudRenderEvent;
 import org.cneko.justarod.client.event.RealClientTickEvent;
 import org.cneko.justarod.client.renderer.IcedTeaRenderer;
 import org.cneko.justarod.client.renderer.LoliNekoRenderer;
@@ -30,9 +31,16 @@ public class JustarodClient {
         EntityRendererRegistry.register(JREntities.ROD, RodRenderer::new);
         EntityRendererRegistry.register(JREntities.ICED_TEA_PROJECTILE, IcedTeaRenderer::new);
         JRClientNetworkingEvents.init();
+        // 驯服史莱姆：模型层 / 渲染器 / 体内容器界面
+        org.cneko.justarod.client.event.JRSlimeClientEvents.init();
+        // 诊断命令 /jrslime（排查容器两端不一致用）
+        org.cneko.justarod.client.command.SlimeDebugClientCommand.init();
         JRKeyBindings.init();
         ClientTickEvent.Companion.init();
         RealClientTickEvent.Companion.init();
+        JRHudRenderEvent.init();
+        // 骑着史莱姆时屏幕右侧的「按 G 吞噬 / 按 B 打开背包」提示
+        org.cneko.justarod.client.event.JRSlimeHud.init();
         NekoScreenRegistry.register(JREntities.SEEEEEX_NEKO_ID, JRScreenBuilders.SEEEEEX_NEKO_INTERACTIVE_SCREEN);
         NekoScreenRegistry.register(JREntities.LOLI_NEKO_ID, JRScreenBuilders.LOLI_NEKO_INTERACTIVE_SCREEN);
         var queen = new TickTaskQueue();
@@ -45,7 +53,7 @@ public class JustarodClient {
         queen.addTask(20,task);
         TickTasks.addClient(queen);
 
-        TooltipComponentCallback.EVENT.register(data ->{
+        ClientTooltipComponentCallback.EVENT.register(data ->{
             if (data instanceof ChemicalStructureTooltipData) {
                 return new ChemicalStructureTooltipComponent((ChemicalStructureTooltipData) data);
             }

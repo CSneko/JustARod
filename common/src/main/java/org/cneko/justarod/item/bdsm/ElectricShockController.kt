@@ -8,7 +8,7 @@ import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.InteractionHand
-import net.minecraft.world.InteractionResultHolder
+import net.minecraft.world.InteractionResult
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import org.cneko.justarod.entity.BDSMable
@@ -18,7 +18,7 @@ import org.cneko.justarod.entity.BDSMable
 哒... 哒咩！不...不要提高挡数了喵♡ 要受不了惹♡
  */
 class ElectricShockController(properties: Properties): Item(properties) {
-    override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
+    override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResult {
         if (world !is ServerLevel){
             return super.use(world, user, hand)
         }
@@ -53,7 +53,7 @@ class ElectricShockController(properties: Properties): Item(properties) {
                 10,
                 0.0, 0.0, 0.0, 0.1
             )
-            return InteractionResultHolder.success(user.getItemInHand(hand))
+            return InteractionResult.SUCCESS
         }
 
         return super.use(world, user, hand)

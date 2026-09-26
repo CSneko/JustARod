@@ -1,4 +1,5 @@
 package org.cneko.justarod.item.medical
+import org.cneko.justarod.JRIds
 
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.player.Player
@@ -14,13 +15,19 @@ import org.cneko.justarod.item.rod.hasEffect
 /**
  * 棉签物品类，用于医疗采样
  */
-class CottonSwabItem(properties: Properties) : MedicalItem(Properties().stacksTo(1)) {
+class CottonSwabItem(properties: Properties) : MedicalItem(JRIds.itemProps("cotton_swab").stacksTo(1)) {
 
     // 工具提示逻辑仅用于显示，保留在此类中
-    override fun appendHoverText(stack: ItemStack, context: TooltipContext, tooltip: MutableList<Component>, type: TooltipFlag) {
-        super.appendHoverText(stack, context, tooltip, type)
+        override fun appendHoverText(
+        stack: ItemStack,
+        context: net.minecraft.world.item.Item.TooltipContext,
+        display: net.minecraft.world.item.component.TooltipDisplay,
+        adder: java.util.function.Consumer<Component>,
+        type: TooltipFlag
+    ) {
+        super.appendHoverText(stack, context, display, adder, type)
         stack.get(JRComponents.SECRETIONS_APPEARANCE)?.let { appearance ->
-            tooltip.add(Component.literal("§7颜色&气味: §f$appearance")) // 添加分泌物外观提示
+            adder.accept(Component.literal("§7颜色&气味: §f$appearance")) // 添加分泌物外观提示
         }
     }
 

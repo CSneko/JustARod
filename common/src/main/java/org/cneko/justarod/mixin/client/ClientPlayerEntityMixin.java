@@ -11,7 +11,7 @@ public class ClientPlayerEntityMixin {
     @Inject(method = "drop", at = @At("HEAD"), cancellable = true)
     private void disableDropSelectedItem(boolean entireStack, CallbackInfoReturnable<Boolean> cir) {
         LocalPlayer player = (LocalPlayer) (Object) this;
-        if (player.getHandcuffed() > 0) {
+        if (((org.cneko.justarod.entity.BDSMable) (Object) player).getHandcuffed() > 0) {
             cir.setReturnValue(false);
         }
     }

@@ -1,4 +1,5 @@
 package org.cneko.justarod.item.syringe
+import org.cneko.justarod.JRIds
 
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
@@ -13,7 +14,7 @@ import org.cneko.toneko.common.mod.entities.NekoEntity
 /*
 主人快超我喵~~♡ 嗯啊~~♡ 主人~~
  */
-class RodAgentItem:BaseSyringeItem(Properties()) {
+class RodAgentItem:BaseSyringeItem(JRIds.itemProps("rod_agent")) {
     override fun applyEffect(target: LivingEntity) {
         // 如果生物是Neko
         if (target is NekoEntity) {
@@ -31,7 +32,7 @@ class RodAgentItem:BaseSyringeItem(Properties()) {
             }
         }else{
             // 否则给发情效果
-            target.addEffect(MobEffectInstance(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(JREffects.ESTRUS_EFFECT!!), 3600, 0))
+            target.addEffect(MobEffectInstance(JREffects.ESTRUS_EFFECT, 3600, 0))
         }
     }
 }

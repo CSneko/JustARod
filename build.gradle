@@ -1,30 +1,32 @@
 plugins {
-    id 'maven-publish'
-    id 'architectury-plugin' version '3.4-SNAPSHOT'
-    id 'dev.architectury.loom' version '1.9-SNAPSHOT' apply false
-    id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
-    id 'org.jetbrains.kotlin.jvm' version '2.0.0' apply false
+    // Loom 1.17 原生支持 26.x 去混淆版本：productionNamespace 自动为 official、
+    // 支持 classTweaker 格式的依赖 AW，不再需要 empty-mappings / noIntermediateMappings 等 workaround。
+    id 'dev.architectury.loom' version '1.17.491' apply false
+    // 26.x 为去混淆 Minecraft：Forge/NeoForge 需改用 loom-no-remap 变体（arch-loom 提示）
+    id 'dev.architectury.loom-no-remap' version '1.17.491' apply false
+    id 'architectury-plugin' version '3.5.168'
+    id 'com.gradleup.shadow' version '9.2.2' apply false
+    id 'org.jetbrains.kotlin.jvm' version "${kotlin_version}" apply false
 }
 
 architectury {
     minecraft = project.minecraft_version
 }
 
-version = project.mod_version
-group = project.maven_group
+allprojects {
+    group = rootProject.maven_group
+    version = rootProject.mod_version
+}
 
 subprojects {
+    // 所有子项目都是 Architectury/Loom 项目
+    apply plugin: project.name == 'neoforge' ? 'dev.architectury.loom-no-remap' : 'dev.architectury.loom'
+    apply plugin: 'architectury-plugin'
     apply plugin: 'maven-publish'
     apply plugin: 'org.jetbrains.kotlin.jvm'
-    apply plugin: 'dev.architectury.loom'
-    apply plugin: 'architectury-plugin'
-
-    // 子项目在根项目求值前初始化，不会自动继承根的 version/group，需显式设置
-    version = rootProject.mod_version
-    group = rootProject.maven_group
 
     base {
-        archivesName = "${rootProject.archives_base_name}-${project.name}"
+        archivesName = "${rootProject.archives_name}-${project.name}"
     }
 
     repositories {
@@ -33,33 +35,26 @@ subprojects {
             name = "Modrinth"
             url = "https://api.modrinth.com/maven"
         }
-
+        maven {
+            name = "TerraformersMC"
+            url = "https://maven.terraformersmc.com/"
+        }
+        maven {
+            name = "KosmX"
+            url = "https://maven.kosmx.dev/"
+        }
         maven {
             name = 'GeckoLib'
             url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
             content {
                 includeGroup("software.bernie.geckolib")
+                includeGroup("com.geckolib")
             }
         }
-
-        maven { url = 'https://oss.sonatype.org/content/groups/public/' }
-
-        // Forgified Fabric API
-        maven {
-            name = 'Sinytra'
-            url = 'https://maven.su5ed.dev/releases'
-        }
-
-        // Kotlin for Forge
-        maven {
-            name = 'KotlinForForge'
-            url = 'https://thedarkcolour.github.io/KotlinForForge/'
-        }
-
-        // PlayerAnimator (KosmX)
-        maven {
-            name = "KosmX"
-            url = "https://maven.kosmx.dev/"
+        maven { url = uri("https://oss.sonatype.org/content/groups/public/") }
+        maven { url 'https://jitpack.io' }
+        flatDir {
+            dirs 'libs'
         }
     }
 
@@ -68,36 +63,50 @@ subprojects {
     }
 
     dependencies {
-        minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
-        mappings loom.layered() {
-            officialMojangMappings()
+        minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
+        if (project.name != 'neoforge') {
+            // 26.x 去混淆后不需要真正的 mappings；但 arch-loom 仍校验 mappings configuration 必须有依赖，
+            // 故保留本地空 Tiny jar（仅 header "tiny\t2\t0\tofficial\tintermediary\tnamed"）。
+            mappings files("$rootProject.rootDir/libs/empty-mappings.jar")
+            modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
         }
-    }
+        // neoforge 侧的 mappings/Fabric API 由 neoforge/build.gradle 提供
 
-    def targetJavaVersion = 21
-    tasks.withType(JavaCompile).configureEach {
-        it.options.encoding = "UTF-8"
-        if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
-            it.options.release.set(targetJavaVersion)
-        }
+        compileOnly("org.projectlombok:lombok:1.18.46")
+        annotationProcessor("org.projectlombok:lombok:1.18.46")
     }
 
     java {
-        def javaVersion = JavaVersion.toVersion(targetJavaVersion)
-        if (JavaVersion.current() < javaVersion) {
-            toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
-        }
         withSourcesJar()
+        sourceCompatibility = JavaVersion.VERSION_25
+        targetCompatibility = JavaVersion.VERSION_25
+    }
+    tasks.withType(JavaCompile).configureEach {
+        it.options.encoding = "UTF-8"
+        it.options.release = 25
+        // JDK 23+ 默认关闭隐式注解处理；Gradle 9 + JDK 25 的 toolchain worker 会过滤
+        // `-proc`/`-processor`，且编译在 Gradle 进程内执行时 Lombok 无法修改 javac AST。
+        // 因此显式 fork 到当前 Java 25 的真实 javac 进程，Lombok 才会生效。
+        it.options.fork = true
+        it.options.forkOptions.executable = "${System.getProperty('java.home')}/bin/javac"
+        it.options.compilerArgumentProviders.add(new org.gradle.process.CommandLineArgumentProvider() {
+            @Override
+            List<String> asArguments() {
+                return ['-proc:full', '-processor', 'lombok.launch.AnnotationProcessorHider$AnnotationProcessor']
+            }
+        })
     }
 
     kotlin {
-        jvmToolchain(21)
+        jvmToolchain(25)
+        compilerOptions {
+            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_24
+        }
     }
 
-    // Configure Maven publishing
     publishing {
         publications {
-            create("mavenJava", MavenPublication) {
+            mavenJava(MavenPublication) {
                 artifactId = base.archivesName.get()
                 from components.java
             }

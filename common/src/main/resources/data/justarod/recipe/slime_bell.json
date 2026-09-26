@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GSG",
+    "GBG"
+  ],
+  "key": {
+    "G": "minecraft:gold_ingot",
+    "S": "minecraft:slime_block",
+    "B": "minecraft:bell"
+  },
+  "result": {
+    "id": "justarod:slime_bell",
+    "count": 1
+  }
+}

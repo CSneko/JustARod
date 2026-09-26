@@ -6,12 +6,8 @@
     "L  "
   ],
   "key": {
-    "S": {
-      "item": "minecraft:chain"
-    },
-    "L": {
-      "item": "minecraft:lightning_rod"
-    }
+    "S": "minecraft:chain",
+    "L": "minecraft:lightning_rod"
   },
   "result": {
     "id": "justarod:whip",

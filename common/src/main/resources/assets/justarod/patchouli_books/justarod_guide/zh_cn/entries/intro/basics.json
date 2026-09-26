@@ -1,0 +1,23 @@
+{
+  "name": "基础须知",
+  "category": "justarod:intro",
+  "icon": "justarod:lubricating_book",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "如何使用末地烛",
+      "text": "大部分末地烛分为两种用法：$(li)$(thing)对自己使用$() —— 拿在手上直接右键$(li)$(thing)对别人使用$() —— 潜行状态下对着目标右键$(br2)被插入的生物体内会留有一根末地烛，可以用$(item)取物器$()取出来。$(br2)使用次数会被记录在物品上，别问，问就是很精确。"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "润滑很重要！",
+      "text": "干涩的状态下强行来可是会受伤的喵！(°ﾛ°٥)$(br2)吃下 $(item)润滑书$() 可以为自己获得持久的$(#FF69B4)润滑$()效果，让之后的玩耍更加顺畅~$(br2)$(#FF69B4)不上润滑也能玩，但是你最好上一个哦！$()"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "前置要求",
+      "text": "$(thing)JustARod$() 需要 $(#FF69B4)toNeko$() 作为前置运行——猫娘、发情、怀孕等核心机制都来自 toNeko。$(br2)推荐同时安装 $(item)帕秋莉手册（Patchouli）$()，这样你才能阅读本书喵！（你正在看，说明已经装好了呢~）"
+    }
+  ]
+}

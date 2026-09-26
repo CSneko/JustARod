@@ -1,5 +1,7 @@
 package org.cneko.justarod.item.medical
 
+import org.cneko.justarod.spawnItemAtLocation
+
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.effect.MobEffects
 import net.minecraft.world.effect.MobEffectInstance
@@ -35,7 +37,7 @@ class AbortionPillItem(properties: Properties) : MedicalItem(properties) {
 
         if (target.pregnant >= LATE_TERM_PREGNANCY_TICKS) {
             target.hurt(target.level().damageSources().generic(), 1f)
-            target.sendSystemMessage(Component.literal("§c手术过程似乎比较顺利，但你仍然感到一阵剧痛。"))
+            (target as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c手术过程似乎比较顺利，但你仍然感到一阵剧痛。"))
         } else {
             val task = TickTaskQueue()
             for (i in 1..10) {
@@ -49,17 +51,17 @@ class AbortionPillItem(properties: Properties) : MedicalItem(properties) {
                 target.isSterilization = true
                 // 修复：原 addEffect(CONFUSION, 0, 20*15) 参数顺序错误（时长0/等级300），改为标准写法
                 target.addEffect(MobEffectInstance(
-                    MobEffects.CONFUSION, 20 * 15, 0
+                    MobEffects.NAUSEA, 20 * 15, 0
                 ))
                 if (user != target) {
-                    user.sendSystemMessage(Component.literal("§e并发症发生了..."))
+                    (user as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§e并发症发生了..."))
                 }
-                target.sendSystemMessage(Component.literal("§c并发症！对你造成了永久性损伤！"))
+                (target as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c并发症！对你造成了永久性损伤！"))
             }
         }
 
         target.pregnant = 0
-        target.spawnAtLocation(JRItems.MOLE.defaultInstance)
+        target.spawnItemAtLocation(JRItems.MOLE.defaultInstance)
     }
 
     override fun consumeItem(user: Player, target: LivingEntity, stack: ItemStack, hand: InteractionHand) {

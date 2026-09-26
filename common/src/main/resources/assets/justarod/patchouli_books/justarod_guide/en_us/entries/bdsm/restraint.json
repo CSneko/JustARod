@@ -1,0 +1,27 @@
+{
+  "name": "Restraints",
+  "category": "justarod:bdsm",
+  "icon": "justarod:handcuffes",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Restraints share one usage: hold the item and $(thing)right-click the target$() to put it on; use again on an equipped target to take it off. Equipped targets gain the corresponding restrained state with various limitations~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:handcuffes",
+      "text": "$(item)Handcuffs$() — while cuffed, the target cannot use items. There are also $(item)Handcuff Ring$() and $(item)Handcuff Chain$() accessories for extra fun."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:shackles",
+      "text": "$(item)Shackles$() — greatly slows the target's movement. Trying to run? Not a chance~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:binding_rope",
+      "text": "$(item)Binding Rope$() — ties the target up tight, unable to move a muscle. «So this is what you're into?»"
+    }
+  ]
+}

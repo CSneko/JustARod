@@ -3,6 +3,7 @@ package org.cneko.justarod.item.rod
 import net.minecraft.core.component.DataComponents
 import net.minecraft.world.item.enchantment.Enchantments
 import net.minecraft.world.entity.Entity
+import net.minecraft.world.entity.EquipmentSlot
 import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.MoverType
 import net.minecraft.world.effect.MobEffect
@@ -41,16 +42,25 @@ abstract class EndRodItem(properties: Properties) : Item(properties), EndRodItem
         return InteractionResult.SUCCESS
     }
 
-    override fun appendHoverText(stack: ItemStack?, context: TooltipContext?, tooltip: MutableList<Component>?, type: TooltipFlag?) {
-        super.appendHoverText(stack, context, tooltip, type)
+        override fun appendHoverText(
+        stack: ItemStack,
+        context: net.minecraft.world.item.Item.TooltipContext,
+        display: net.minecraft.world.item.component.TooltipDisplay,
+        adder: java.util.function.Consumer<Component>,
+        type: TooltipFlag
+    ) {
+        super.appendHoverText(stack, context, display, adder, type)
         // 将使用次数添加到tooltip中
         val markedCount: Int = stack?.getOrDefault(JRComponents.Companion.USED_TIME_MARK, 0)!!
-        tooltip?.add(Component.translatable("item.justarod.end_rod.used_count", markedCount).withStyle(ChatFormatting.GREEN))
-        tooltip?.add(Component.translatable("item.justarod.end_rod.owner", stack.getOrDefault(JRComponents.Companion.OWNER,"无")).withStyle(ChatFormatting.YELLOW))
+        adder.accept(Component.translatable("item.justarod.end_rod.used_count", markedCount).withStyle(ChatFormatting.GREEN))
+        adder.accept(Component.translatable("item.justarod.end_rod.owner", stack.getOrDefault(JRComponents.Companion.OWNER,"无")).withStyle(ChatFormatting.YELLOW))
     }
 
-    override fun onCraftedBy(stack: ItemStack?, world: Level?, player: Player?) {
-        super.onCraftedBy(stack, world, player)
+    override fun onCraftedBy(
+        stack: ItemStack,
+        player: Player
+) {
+        super.onCraftedBy(stack, player)
         stack?.set(JRComponents.Companion.OWNER, player?.name?.string)
     }
     abstract fun getInstruction(): EndRodInstructions
@@ -67,7 +77,7 @@ abstract class OtherUsedItem(properties: Properties):EndRodItem(properties), Oth
             }
             target.hurt(JRDamageTypes.grass(user), 3f)
             // TODO : 实现目标实体插入判断逻辑和取出的逻辑
-            user.sendSystemMessage(Component.translatable("item.justarod.end_rod.insert_success"))
+            (user as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.translatable("item.justarod.end_rod.insert_success"))
             return InteractionResult.SUCCESS
         }else if (getInstruction() == EndRodInstructions.USE_ON_OTHER_ATTACK){
             // 攻击其它实体
@@ -91,18 +101,24 @@ abstract class OtherUsedItem(properties: Properties):EndRodItem(properties), Oth
 }
 
 open class SelfUsedItem(properties: Properties) : EndRodItem(properties), SelfUsedItemInterface {
-    override fun appendHoverText(
-        stack: ItemStack?,
-        context: TooltipContext?,
-        tooltip: MutableList<Component>?,
-        type: TooltipFlag?
+        override fun appendHoverText(
+        stack: ItemStack,
+        context: net.minecraft.world.item.Item.TooltipContext,
+        display: net.minecraft.world.item.component.TooltipDisplay,
+        adder: java.util.function.Consumer<Component>,
+        type: TooltipFlag
     ) {
-        super.appendHoverText(stack, context, tooltip, type)
+        super.appendHoverText(stack, context, display, adder, type)
         val speed = this.getRodSpeed(stack)
-        tooltip?.add(Component.translatable("item.justarod.end_rod.speed", speed).withStyle(ChatFormatting.LIGHT_PURPLE))
+        adder.accept(Component.translatable("item.justarod.end_rod.speed", speed).withStyle(ChatFormatting.LIGHT_PURPLE))
     }
-    override fun inventoryTick(stack: ItemStack, world: Level?, entity: Entity?, slot: Int, selected: Boolean) {
-        super.inventoryTick(stack, world, entity, slot, selected)
+    override fun inventoryTick(
+        stack: ItemStack,
+        world: net.minecraft.server.level.ServerLevel,
+        entity: net.minecraft.world.entity.Entity,
+        slot: EquipmentSlot?
+) {
+        super.inventoryTick(stack, world, entity, slot)
         // 如果耐久为0或者实体不是LivingEntity，则不处理
         if(stack.damageValue == stack.maxDamage || entity !is LivingEntity) return
 
@@ -115,12 +131,12 @@ open class SelfUsedItem(properties: Properties) : EndRodItem(properties), SelfUs
         // 修bug:在工具栏第一格也生效
         if (
             e.getItemInHand(InteractionHand.OFF_HAND) == stack //是的,直接用==
-            || slot == Int.MIN_VALUE // now works with inserted rods
+            || slot == null // now works with inserted rods
             ){
             // 减少一点耐久 (即使没耐久也不损坏)
             stack.damageValue++
             // 执行
-            useOnSelf(stack, world, e, slot, selected)
+            useOnSelf(stack, world, e, slot?.ordinal ?: -1, true)
         }
 
     }
@@ -133,15 +149,16 @@ open class SelfUsedItem(properties: Properties) : EndRodItem(properties), SelfUs
 
 abstract class BothUsedItem(properties: Properties) : EndRodItem(properties),SelfUsedItemInterface, OtherUsedItemInterface {
 
-    override fun appendHoverText(
-        stack: ItemStack?,
-        context: TooltipContext?,
-        tooltip: MutableList<Component>?,
-        type: TooltipFlag?
+        override fun appendHoverText(
+        stack: ItemStack,
+        context: net.minecraft.world.item.Item.TooltipContext,
+        display: net.minecraft.world.item.component.TooltipDisplay,
+        adder: java.util.function.Consumer<Component>,
+        type: TooltipFlag
     ) {
-        super.appendHoverText(stack, context, tooltip, type)
+        super.appendHoverText(stack, context, display, adder, type)
         val speed = this.getRodSpeed(stack)
-        tooltip?.add(Component.translatable("item.justarod.end_rod.speed", speed).withStyle(ChatFormatting.LIGHT_PURPLE))
+        adder.accept(Component.translatable("item.justarod.end_rod.speed", speed).withStyle(ChatFormatting.LIGHT_PURPLE))
     }
     override fun useOnOther(stack: ItemStack, world: Level?, user: Player, target: LivingEntity):InteractionResult{
         // 插入其它实体
@@ -152,7 +169,7 @@ abstract class BothUsedItem(properties: Properties) : EndRodItem(properties),Sel
             }
             target.hurt(user.damageSources().generic(), 3f)
             // TODO : 实现目标实体插入判断逻辑和取出的逻辑
-            user.sendSystemMessage(Component.translatable("item.justarod.end_rod.insert_success"))
+            (user as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.translatable("item.justarod.end_rod.insert_success"))
             return InteractionResult.SUCCESS
         }else if (getInstruction() == EndRodInstructions.USE_ON_OTHER_ATTACK){
             // 攻击其它实体
@@ -172,8 +189,13 @@ abstract class BothUsedItem(properties: Properties) : EndRodItem(properties),Sel
         return useOnOther(stack, user.level(), user, entity)
     }
 
-    override fun inventoryTick(stack: ItemStack, world: Level?, entity: Entity?, slot: Int, selected: Boolean) {
-        super.inventoryTick(stack, world, entity, slot, selected)
+    override fun inventoryTick(
+        stack: ItemStack,
+        world: net.minecraft.server.level.ServerLevel,
+        entity: net.minecraft.world.entity.Entity,
+        slot: EquipmentSlot?
+) {
+        super.inventoryTick(stack, world, entity, slot)
 
         // 如果耐久为0或者实体不是LivingEntity，则不处理
         if(stack.damageValue == stack.maxDamage || entity !is LivingEntity) return
@@ -186,12 +208,12 @@ abstract class BothUsedItem(properties: Properties) : EndRodItem(properties),Sel
         // 如果放在副手
         if (
             e.getItemInHand(InteractionHand.OFF_HAND) == stack //是的,直接用==
-            || slot == Int.MIN_VALUE // now works with inserted rods
+            || slot == null // now works with inserted rods
         ){
             // 减少一点耐久 (即使没耐久也不损坏)
             stack.damageValue++
             // 执行
-            useOnSelf(stack, world, e, slot, selected)
+            useOnSelf(stack, world, e, slot?.ordinal ?: -1, true)
         }
 
     }
@@ -317,8 +339,11 @@ interface EndRodItemInterface{
             return 0
         }
         // 获取物品上的耐久附魔等级
-        val rm = world?.registryAccess()
-        val unbreakingLevel = stack.enchantments.getLevel(rm?.registry(Registries.ENCHANTMENT)?.get()?.getHolderOrThrow(Enchantments.UNBREAKING))
+        // 26.x：lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(ResourceKey)
+        val unbreakingLevel = world?.registryAccess()
+            ?.lookupOrThrow(Registries.ENCHANTMENT)
+            ?.getOrThrow(Enchantments.UNBREAKING)
+            ?.let { stack.enchantments.getLevel(it) } ?: 0
         var total = 0
         // 遍历每一点潜在耐久损失，进行概率判定
         for (i in 1..amount) {
@@ -354,8 +379,10 @@ fun LivingEntity.addEffect(effect: MobEffect?, duration: Int, amplifier: Int) {
     }
 }
 fun LivingEntity?.addEffect(effect: Holder<MobEffect>?, duration: Int, amplifier: Int) {
+    if (effect == null) return
     this?.addEffect(MobEffectInstance(effect, duration, amplifier))
 }
 fun LivingEntity.hasEffect(effect: MobEffect?): Boolean {
+    // 26.x：JREffects 已是 Holder，这里仅处理可能传入裸 MobEffect 的旧调用
     return effect?.let { this.hasEffect(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(it)) } ?: false
 }

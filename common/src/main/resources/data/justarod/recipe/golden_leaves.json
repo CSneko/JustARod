@@ -6,12 +6,8 @@
     "GGG"
   ],
   "key": {
-    "G": {
-      "item": "minecraft:gold_nugget"
-    },
-    "L": {
-      "tag": "minecraft:leaves"
-    }
+    "G": "minecraft:gold_nugget",
+    "L": "#minecraft:leaves"
   },
   "result": {
     "id": "justarod:golden_leaves",

@@ -1,0 +1,23 @@
+{
+  "name": "电击 Play",
+  "category": "justarod:bdsm",
+  "icon": "justarod:electric_shock_device",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:electric_shock_device",
+      "text": "$(item)电击器$() —— 给目标装上电击装置，有效期长达一整天（20 分钟）。装上之后……就可以遥控了哦。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:electric_shock_controller",
+      "text": "$(item)电击控制器$() —— 右键按下按钮，16 格内所有装有电击器的目标都会被电到跳起来！伴随着雷声与电火花……«哒...哒咩！不要提高挡数了喵♡ 要受不了惹♡»"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "温馨提示",
+      "text": "$4电击有风险，玩耍需适度！$()$(br2)虽然只是游戏里的 0.2 点魔法伤害，但被电到跳起来的样子真的很蠢……也很可爱就是了喵~"
+    }
+  ]
+}

@@ -9,12 +9,12 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.Registry
 import net.minecraft.core.Holder
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import org.cneko.justarod.Justarod.MODID
 
 class JRAttributes {
     companion object{
-        val PLAYER_LUBRICATING_ID:ResourceLocation = ResourceLocation.fromNamespaceAndPath(MODID, "player.lubricating")
+        val PLAYER_LUBRICATING_ID:Identifier = Identifier.fromNamespaceAndPath(MODID, "player.lubricating")
         val PLAYER_LUBRICATING: Holder<Attribute> = register(
             PLAYER_LUBRICATING_ID,
             RangedAttribute(
@@ -22,7 +22,7 @@ class JRAttributes {
                 1.0, 0.0, 1000.0
             ).setSyncable(true)
         )
-        val GENERIC_MAX_POWER_ID = ResourceLocation.fromNamespaceAndPath(MODID, "generic.max_power")
+        val GENERIC_MAX_POWER_ID = Identifier.fromNamespaceAndPath(MODID, "generic.max_power")
         val GENERIC_MAX_POWER: Holder<Attribute> = register(
             GENERIC_MAX_POWER_ID,
             RangedAttribute(
@@ -30,7 +30,7 @@ class JRAttributes {
                 100.0, 0.0, 1000.0
             ).setSyncable(true)
         )
-        fun register(id: ResourceLocation?, attribute: Attribute?): Holder<Attribute> {
+        fun register(id: Identifier, attribute: Attribute): Holder<Attribute> {
             return Registry.registerForHolder(BuiltInRegistries.ATTRIBUTE, id, attribute)
         }
         fun init(){

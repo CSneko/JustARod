@@ -17,8 +17,8 @@ class LilyPheromoneEffect : MobEffect(MobEffectCategory.BENEFICIAL, 0xFFC0CB) {
     }
 
     // 每次触发时执行的具体逻辑
-    override fun applyEffectTick(entity: LivingEntity, amplifier: Int): Boolean {
-        super.applyEffectTick(entity, amplifier)
+    override fun applyEffectTick(world: net.minecraft.server.level.ServerLevel, entity: LivingEntity, amplifier: Int): Boolean {
+        super.applyEffectTick(world, entity, amplifier)
 
         // 仅在服务端处理数值和粒子
         if (entity.level().isClientSide) return true

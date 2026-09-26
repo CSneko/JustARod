@@ -6,6 +6,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.cneko.justarod.entity.Pregnant;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -741,7 +743,7 @@ public class WitherEntityMixin implements Pregnant {
     @Override
     public Entity createBaby() {
         WitherBoss self = (WitherBoss) (Object) this;
-        Entity baby = getChildrenType().create(self.level());
+        Entity baby = getChildrenType().create(self.level(), net.minecraft.world.entity.EntitySpawnReason.BREEDING);
         if (baby instanceof Mob mob) {
             mob.setBaby(true);
         }
@@ -753,7 +755,7 @@ public class WitherEntityMixin implements Pregnant {
 
     // ==================== Tick ====================
     @Inject(method = "customServerAiStep", at = @At("HEAD"))
-    public void mobTick(CallbackInfo ci) {
+    public void mobTick(net.minecraft.server.level.ServerLevel level, CallbackInfo ci) {
         WitherBoss self = (WitherBoss) (Object) this;
         Pregnant.pregnantTick((LivingEntity & Pregnant) self);
         Pregnant.aidsTick((LivingEntity & Pregnant) self);
@@ -764,13 +766,16 @@ public class WitherEntityMixin implements Pregnant {
     }
 
     // ==================== NBT Persistence ====================
+    // 26.x：实体存档改为 ValueInput/ValueOutput，通过 NbtBridge 与现有 CompoundTag 逻辑桥接
     @Inject(method = "readAdditionalSaveData", at = @At("HEAD"))
-    public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
-        this.readPregnantFromNbt(nbt);
+    public void readAdditionalSaveData(ValueInput input, CallbackInfo ci) {
+        this.readPregnantFromNbt(org.cneko.justarod.JRNbtBridge.read(input));
     }
 
     @Inject(method = "addAdditionalSaveData", at = @At("HEAD"))
-    public void addAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
+    public void addAdditionalSaveData(ValueOutput output, CallbackInfo ci) {
+        CompoundTag nbt = new CompoundTag();
         this.writePregnantToNbt(nbt);
+        org.cneko.justarod.JRNbtBridge.store(nbt, output);
     }
 }

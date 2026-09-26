@@ -14,15 +14,16 @@ import net.minecraft.world.entity.Mob
 import net.minecraft.world.entity.monster.Phantom
 import net.minecraft.world.entity.animal.allay.Allay
 import net.minecraft.world.entity.ambient.Bat
-import net.minecraft.world.entity.animal.Bee
-import net.minecraft.world.entity.animal.Parrot
+import net.minecraft.world.entity.animal.bee.Bee
+import net.minecraft.world.entity.animal.parrot.Parrot
 import net.minecraft.world.entity.player.Player
-import net.minecraft.world.entity.projectile.ThrowableItemProjectile
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile
 import net.minecraft.world.item.Item
+import net.minecraft.world.item.ItemStack
 import net.minecraft.core.particles.ItemParticleOption
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.sounds.SoundEvents
-import net.minecraft.world.entity.boss.EnderDragonPart
+import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart
 import net.minecraft.world.phys.EntityHitResult
 import net.minecraft.world.phys.HitResult
 import net.minecraft.world.level.Level
@@ -30,10 +31,10 @@ import net.minecraft.world.phys.Vec3
 import org.cneko.justarod.damage.JRDamageTypes
 import org.cneko.justarod.entity.JREntities.ICED_TEA_PROJECTILE
 import org.cneko.justarod.item.JRItems.Companion.ICED_TEA
-import software.bernie.geckolib.animatable.GeoEntity
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache
-import software.bernie.geckolib.animation.AnimatableManager
-import software.bernie.geckolib.util.GeckoLibUtil
+import com.geckolib.animatable.GeoEntity
+import com.geckolib.animatable.instance.AnimatableInstanceCache
+import com.geckolib.animatable.manager.AnimatableManager
+import com.geckolib.util.GeckoLibUtil
 
 /*
 So let the light guide your way~ Hold every memory as you go~
@@ -47,7 +48,8 @@ class IcedTeaProjectileEntity : ThrowableItemProjectile, GeoEntity {
 
     // 实体所有者构造器
     constructor(entityType: EntityType<out ThrowableItemProjectile>, world: Level) : super(entityType, world)
-    constructor(world: Level, owner: LivingEntity?) : super(ICED_TEA_PROJECTILE, owner, world) {
+    // 26.x：ThrowableItemProjectile 需要显式 ItemStack 参数
+    constructor(world: Level, owner: LivingEntity?) : super(ICED_TEA_PROJECTILE, owner!!, world, ItemStack.EMPTY) {
         // 将实体生成在玩家前方
         owner?.let {
             val lookVec = it.rotationVector
@@ -100,8 +102,14 @@ class IcedTeaProjectileEntity : ThrowableItemProjectile, GeoEntity {
         // 忽略投掷者
         if (entity == owner) return
 
-        // 造成初始伤害
-        entity.hurt(entity.damageSources().thrown(this, this.owner), 0.5f)
+        // 26.x：Entity#hurt 拆分为 hurtServer/hurtClient；owner 字段为 EntityReference，用 getOwner() 拿实体
+        if (level() is net.minecraft.server.level.ServerLevel) {
+            entity.hurtServer(
+                level() as net.minecraft.server.level.ServerLevel,
+                entity.damageSources().thrown(this, this.getOwner()),
+                0.5f
+            )
+        }
         // 移除飞行相关效果
         if (entity is LivingEntity) {
             entity.removeEffect(MobEffects.SLOW_FALLING)
@@ -112,12 +120,13 @@ class IcedTeaProjectileEntity : ThrowableItemProjectile, GeoEntity {
         entity.deltaMovement = entity.getDeltaMovement().multiply(1.0, 0.0, 1.0)
         entity.addDeltaMovement(Vec3(0.0, -4.0, 0.0))
 
-        entity.`justARod$setFallenBy`(owner)
+        // EntityMixin 使 Entity 实现 Fallible
+        (entity as Fallible).`justARod$setFallenBy`(this.getOwner())
     }
 
     override fun handleEntityEvent(status: Byte) {
         if (status.toInt() == 3) {
-            val particleEffect = ItemParticleOption(ParticleTypes.ITEM, this.item)
+            val particleEffect = ItemParticleOption(ParticleTypes.ITEM, this.item.item)
             for (i in 0..7) {
                 this.level().addParticle(particleEffect, this.x, this.y, this.z, 0.0, 0.0, 0.0)
             }
@@ -144,15 +153,11 @@ class IcedTeaProjectileEntity : ThrowableItemProjectile, GeoEntity {
 
 
 
-    override fun registerControllers(controllers: AnimatableManager.ControllerRegistrar?) {
+    override fun registerControllers(controllers: AnimatableManager.ControllerRegistrar) {
     }
 
     override fun getAnimatableInstanceCache(): AnimatableInstanceCache {
         return cache
-    }
-
-    override fun defineSynchedData(builder: SynchedEntityData.Builder?) {
-        super.defineSynchedData(builder)
     }
 
 }

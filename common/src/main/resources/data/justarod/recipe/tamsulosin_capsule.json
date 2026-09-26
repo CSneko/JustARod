@@ -1,21 +1,11 @@
 {
   "type": "minecraft:crafting_shaped",
   "key": {
-    "R": {
-      "item": "minecraft:redstone"
-    },
-    "S": {
-      "item": "minecraft:sugar"
-    },
-    "G": {
-      "item": "minecraft:glowstone_dust"
-    },
-    "W": {
-      "item": "minecraft:wind_charge"
-    },
-    "I": {
-      "item": "minecraft:ink_sac"
-    }
+    "R": "minecraft:redstone",
+    "S": "minecraft:sugar",
+    "G": "minecraft:glowstone_dust",
+    "W": "minecraft:wind_charge",
+    "I": "minecraft:ink_sac"
   },
   "pattern": [
     "RWR",

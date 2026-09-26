@@ -1,0 +1,17 @@
+{
+  "name": "The Rod Family",
+  "category": "justarod:rods",
+  "icon": "justarod:slime_rod",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The stars of this mod are of course the many differently-shaped $(#FF69B4)end rods$()!$(br2)By usage they fall into three groups:$(li)$(thing)Self-use$() — only usable on yourself$(li)$(thing)Others-use$() — only usable on other creatures$(li)$(thing)Both$() — anyone can take it. Very fair.$(br2)Every rod has its own personality — flip through the next pages and pick a favorite~"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Usage Counter",
+      "text": "Every rod faithfully counts how many times it has been used; hover over the item to check.$(br2)$(#FFB6C1)A well-read rod performs masterfully, meow~$()"
+    }
+  ]
+}

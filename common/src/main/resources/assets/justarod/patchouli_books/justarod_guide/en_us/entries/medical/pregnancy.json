@@ -1,0 +1,28 @@
+{
+  "name": "Pregnancy & Birth",
+  "category": "justarod:medical",
+  "icon": "justarod:uterus",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:uterus",
+      "text": "$(item)Uterus$() — the organ of new life... and also a high-protein snack? (6 nutrition)$(br2)Install or remove it via surgery. Pregnancy requires one installed."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:sperm_retrieval_device",
+      "text": "$(item)Sperm Retrieval Device$() and $(item)Frozen Sperm Retrieval Device$() — collect and store samples for later artificial insemination. The frozen model keeps for a long time~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:abortion_pill",
+      "text": "$(item)Abortion Pill$() — terminates a pregnancy; late-term use (over 7 in-game days) carries extra risks.$(br2)$4Please weigh every decision carefully.$()"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:cloner_device",
+      "text": "$(item)Cloner Device$() and $(item)Parthenogenesis Catalyst$() — high tech for having offspring without a partner: one clones, the other catalyzes parthenogenesis.$(br2)$5The miracle of life, powered by science!$()"
+    }
+  ]
+}

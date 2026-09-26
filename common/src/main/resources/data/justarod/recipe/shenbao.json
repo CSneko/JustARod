@@ -5,15 +5,9 @@
     "qaq"
   ],
   "key": {
-    "w": {
-      "item": "minecraft:golden_apple"
-    },
-    "a": {
-      "item": "minecraft:carrot"
-    },
-    "q": {
-      "item": "minecraft:wheat"
-    }
+    "w": "minecraft:golden_apple",
+    "a": "minecraft:carrot",
+    "q": "minecraft:wheat"
   },
   "result": {
     "id": "justarod:shenbao",

@@ -41,6 +41,7 @@ object JRRegistry {
     val HEMORRHOIDS = registerTime("hemorrhoids", "痔疮", { it.hemorrhoids }, { e, v -> e.hemorrhoids = v }, isDisease = true)
     val PARONYCHIA = registerTime("paronychia", "甲沟炎", { it.paronychia }, { e, v -> e.paronychia = v }, isDisease = true)
     val CATARACT = registerTime("cataract", "白内障", { it.cataract }, { e, v -> e.cataract = v }, isDisease = true)
+    val FATIGUE = registerFatigue("fatigue", "疲劳值", { it.fatigue }, { e, v -> e.fatigue = v })
     val OVARIAN_CANCER = registerTime("ovarian_cancer", "卵巢癌", { it.ovarianCancer }, { e, v -> e.ovarianCancer = v }, isDisease = true)
     val BREAST_CANCER = registerTime("breast_cancer", "乳腺癌", { it.breastCancer }, { e, v -> e.breastCancer = v }, isDisease = true)
     val CORPUS_LUTEUM_RUPTURE = registerTime("corpus_luteum_rupture", "黄体破裂内出血", { it.corpusLuteumRupture }, { e, v -> e.corpusLuteumRupture = v }, isDisease = true)
@@ -71,6 +72,11 @@ object JRRegistry {
     }
     private fun registerTime(name: String, desc: String, get: (Pregnant) -> Int, set: (Pregnant, Int) -> Unit, isDisease: Boolean = false): JRProperty<Int> {
         val p = JRTimeProperty(name, desc, get, set, isDisease = isDisease)
+        PROPERTIES.add(p)
+        return p
+    }
+    private fun registerFatigue(name: String, desc: String, get: (Pregnant) -> Int, set: (Pregnant, Int) -> Unit): JRProperty<Int> {
+        val p = JRFatigueProperty(name, desc, get, set)
         PROPERTIES.add(p)
         return p
     }

@@ -1,0 +1,22 @@
+{
+  "parent": "justarod:rods/root",
+  "display": {
+    "icon": {
+      "count": 1,
+      "id": "minecraft:phantom_membrane"
+    },
+    "title": {
+      "translate": "advancements.justarod.fatigue.night_owl.title"
+    },
+    "description": {
+      "translate": "advancements.justarod.fatigue.night_owl.description"
+    },
+    "frame": "challenge"
+  },
+  "criteria": {
+    "night_owl": {
+      "trigger": "justarod:night_owl",
+      "conditions": {}
+    }
+  }
+}

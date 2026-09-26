@@ -8,6 +8,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import org.cneko.justarod.effect.JREffects;
 import org.cneko.toneko.common.mod.effects.ToNekoEffects;
 
@@ -110,24 +111,24 @@ public interface BDSMable {
     }
 
     default void readBDSMFromNbt(CompoundTag nbt){
-        setBallMouth(nbt.getInt("BallMouth"));
-        setElectricShock(nbt.getInt("ElectricShock"));
-        setBundled(nbt.getInt("Bundled"));
-        setEyePatch(nbt.getInt("EyePatch"));
-        setEarplug(nbt.getInt("Earplug"));
-        setHandcuffed(nbt.getInt("Handcuffed"));
-        setShackled(nbt.getInt("Shackled"));
-        setNoMatingPlz(nbt.getInt("NoMatingPlz"));
+        setBallMouth(nbt.getIntOr("BallMouth", 0));
+        setElectricShock(nbt.getIntOr("ElectricShock", 0));
+        setBundled(nbt.getIntOr("Bundled", 0));
+        setEyePatch(nbt.getIntOr("EyePatch", 0));
+        setEarplug(nbt.getIntOr("Earplug", 0));
+        setHandcuffed(nbt.getIntOr("Handcuffed", 0));
+        setShackled(nbt.getIntOr("Shackled", 0));
+        setNoMatingPlz(nbt.getIntOr("NoMatingPlz", 0));
     }
 
-    static <T extends LivingEntity & BDSMable> void ballMouthTick(T ballMouthable) {
+    static <T extends Player & BDSMable> void ballMouthTick(T ballMouthable) {
         ballMouthable.updateBallMouth();
         if (ballMouthable.getBallMouth() == 1 && ballMouthable.isShiftKeyDown()){
             ballMouthable.setBallMouth(0);
             ballMouthable.sendSystemMessage(Component.nullToEmpty("§a已摘除禁言口罩"));
         }
     }
-    static <T extends LivingEntity & BDSMable> void electricShockTick(T electricShockable) {
+    static <T extends Player & BDSMable> void electricShockTick(T electricShockable) {
         electricShockable.updateElectricShock();
 
         if (electricShockable.getElectricShock() > 0) {
@@ -160,15 +161,15 @@ public interface BDSMable {
                         net.minecraft.sounds.SoundEvents.REDSTONE_TORCH_BURNOUT,
                         electricShockable.getSoundSource(),
                         0.6F,
-                        1.5F + electricShockable.level().random.nextFloat() * 0.4F
+                        1.5F + electricShockable.getRandom().nextFloat() * 0.4F
                 );
             }
 
             // 生成火花粒子
             for (int i = 0; i < 3; i++) {
-                double offsetX = (electricShockable.level().random.nextDouble() - 0.5) * 0.5;
-                double offsetY = electricShockable.level().random.nextDouble() * 1.2;
-                double offsetZ = (electricShockable.level().random.nextDouble() - 0.5) * 0.5;
+                double offsetX = (electricShockable.getRandom().nextDouble() - 0.5) * 0.5;
+                double offsetY = electricShockable.getRandom().nextDouble() * 1.2;
+                double offsetZ = (electricShockable.getRandom().nextDouble() - 0.5) * 0.5;
                 ServerLevel world = (ServerLevel) electricShockable.level();
                 world.sendParticles(
                         ParticleTypes.ELECTRIC_SPARK,
@@ -190,7 +191,7 @@ public interface BDSMable {
         }
     }
 
-    static <T extends LivingEntity & BDSMable> void bundledTick(T bundled) {
+    static <T extends Player & BDSMable> void bundledTick(T bundled) {
         bundled.updateBundled();
         if (bundled.getBundled() == 1 && bundled.isShiftKeyDown()) {
             bundled.setBundled(0);
@@ -200,7 +201,7 @@ public interface BDSMable {
             // 添加束缚状态效果
             bundled.addEffect(
                     new MobEffectInstance(
-                            MobEffects.MOVEMENT_SLOWDOWN,
+                            MobEffects.SLOWNESS,
                             20,
                             10,
                             true,
@@ -218,7 +219,7 @@ public interface BDSMable {
             );
             bundled.addEffect(
                     new MobEffectInstance(
-                            MobEffects.DIG_SLOWDOWN,
+                            MobEffects.MINING_FATIGUE,
                             20,
                             10,
                             true,
@@ -227,7 +228,7 @@ public interface BDSMable {
             );
             bundled.addEffect(
                     new MobEffectInstance(
-                            BuiltInRegistries.MOB_EFFECT.wrapAsHolder(JREffects.Companion.getJUMP_NERF_EFFECT()),
+                            JREffects.Companion.getJUMP_NERF_EFFECT(),
                             20,
                             10, // 1秒刷新一次
                             true,
@@ -237,7 +238,7 @@ public interface BDSMable {
         }
     }
 
-    static <T extends LivingEntity & BDSMable> void eyePatchTick(T eyePatchable) {
+    static <T extends Player & BDSMable> void eyePatchTick(T eyePatchable) {
         eyePatchable.updateEyePatch();
         if (eyePatchable.getEyePatch() == 1 && eyePatchable.isShiftKeyDown()) {
             eyePatchable.setEyePatch(0);
@@ -256,7 +257,7 @@ public interface BDSMable {
         }
     }
 
-    static <T extends LivingEntity & BDSMable> void earplugTick(T earplugable) {
+    static <T extends Player & BDSMable> void earplugTick(T earplugable) {
         earplugable.updateEarplug();
         if (earplugable.getEarplug() == 1 && earplugable.isShiftKeyDown()) {
             earplugable.setEarplug(0);
@@ -264,7 +265,7 @@ public interface BDSMable {
         }
     }
 
-    static <T extends LivingEntity & BDSMable> void handcuffedTick(T handcuffed) {
+    static <T extends Player & BDSMable> void handcuffedTick(T handcuffed) {
         handcuffed.updateHandcuffed();
         if (handcuffed.getHandcuffed() == 1 && handcuffed.isShiftKeyDown()) {
             handcuffed.setHandcuffed(0);
@@ -272,7 +273,7 @@ public interface BDSMable {
         }
     }
 
-    static <T extends LivingEntity & BDSMable> void shackledTick(T shackled) {
+    static <T extends Player & BDSMable> void shackledTick(T shackled) {
         shackled.updateShackled();
         if (shackled.getShackled() == 1 && shackled.isShiftKeyDown()) {
             shackled.setShackled(0);
@@ -281,7 +282,7 @@ public interface BDSMable {
         if (shackled.getShackled()>0){
             shackled.addEffect(
                     new MobEffectInstance(
-                            BuiltInRegistries.MOB_EFFECT.wrapAsHolder(JREffects.Companion.getJUMP_NERF_EFFECT()),
+                            JREffects.Companion.getJUMP_NERF_EFFECT(),
                             20,
                             10, // 1秒刷新一次
                             true,
@@ -290,7 +291,7 @@ public interface BDSMable {
             );
             shackled.addEffect(
                     new MobEffectInstance(
-                            MobEffects.MOVEMENT_SLOWDOWN,
+                            MobEffects.SLOWNESS,
                             20,
                             10,
                             true,
@@ -300,7 +301,7 @@ public interface BDSMable {
         }
     }
 
-    static <T extends LivingEntity & BDSMable> void noMatingPlzTick(T noMatingPlzAble) {
+    static <T extends Player & BDSMable> void noMatingPlzTick(T noMatingPlzAble) {
         noMatingPlzAble.updateNoMatingPlz();
         if (noMatingPlzAble.getNoMatingPlz() == 1 && noMatingPlzAble.isShiftKeyDown()) {
             noMatingPlzAble.setNoMatingPlz(0);

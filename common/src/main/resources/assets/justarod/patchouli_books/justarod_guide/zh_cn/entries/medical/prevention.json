@@ -1,0 +1,38 @@
+{
+  "name": "预防与避孕",
+  "category": "justarod:medical",
+  "icon": "justarod:hpv_vaccine",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:hpv_vaccine",
+      "text": "$(item)HPV疫苗$() —— 预防 HPV 感染的经典三针疗法（本模组里一针就好啦）。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:aids_vaccine",
+      "text": "$(item)艾滋病疫苗$() —— 高危行为之前，先给自己来一针安心。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:byt",
+      "text": "$(item)BYT$() —— 事前戴好的话就能安心交配，还能避免传染对方的负面效果哦。$(br2)$(#FF69B4)安全套是最伟大的发明之一喵！$()"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:brith_controlling_pill",
+      "text": "$(item)避孕药$() —— 短期内不想生宝宝的话就吃这个。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:sterilization_pills",
+      "text": "$(item)绝育药丸$() —— 一劳永逸的终极避孕手段，吃下去就再也没有后顾之忧（也再也没有之后）了。慎用！"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:no_mating_plz",
+      "text": "$(item)繁殖锁定器$() —— 给不想被打扰的目标装上，TA 就无法参与繁殖了。「今天不行，真的不行喵！」"
+    }
+  ]
+}

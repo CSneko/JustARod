@@ -1,0 +1,25 @@
+{
+  "name": "Stay Up Late & Fatigue",
+  "category": "justarod:medical",
+  "icon": "justarod:shenbao",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Staying up late? Your body keeps score, meow!$(br2)Staying awake at $(#4b3869)night$() steadily builds $(item)Fatigue$(), and drowsiness follows a circadian rhythm - it peaks around $(#7b68ee)midnight$(). Pull enough all-nighters and you progress: mild -> moderate -> severe -> extreme.$(br2)From moderate on you grow weak, sluggish, get cold hands, crave midnight snacks; from severe you get nauseous, dizzy, hear your heart pounding, may even suffer $(#FF69B4)hallucinations and phantom visits$(), disrupted periods and faster infections..."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(9)Second Wind$()$(br)Deep in the night you may suddenly feel wide awake - don't celebrate. It's your brain burning its last reserves: fatigue builds x3 while it lasts, and the crash after is worse.$(br2)$(4)Sudden death warning$()$(br)Falling asleep mid-step at extreme fatigue is the lucky outcome - cardiac arrest means never waking up. The faster your eyelids close on screen, the closer danger is.$(br2)$(c)And yes, dark circles show on your face for everyone to see."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:shenbao",
+      "text": "$(item)Shenbao$() — the night owl's best friend! Eating one instantly removes a chunk of fatigue, and its $(item)Strong$() effect halves further fatigue buildup at night.$(br2)$(gray)One sip of Shenbao for a whole night of good sleep (not really).$()"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(#4b3869)Doctor's tips$()$(br)- Overusing your eyes at night accelerates cataracts.$(br)- Fatigue lowers immunity: urethritis, prostatitis, hemorrhoids and paronychia all progress faster.$(br)- Shaky hands make bad archers - don't expect accuracy past moderate fatigue.$(br)- Hallucinated sounds vary: wolf growls, cats, doors opening, footsteps... Don't turn around; it's probably fake. Probably.$(br)- Nekos are nocturnal - they only build half the fatigue at night.$(br)- The Nether and the End have no day/night cycle; there you count as staying up late all the time.$(br2)$6Early to bed, early to rise, meow~$()"
+    }
+  ]
+}

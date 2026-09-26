@@ -4,12 +4,8 @@
     "WC"
   ],
   "key": {
-    "W": {
-      "item": "justarod:whip"
-    },
-    "C": {
-      "item": "toneko:contract"
-    }
+    "W": "justarod:whip",
+    "C": "toneko:contract"
   },
   "result": {
     "id": "justarod:contract_whip",

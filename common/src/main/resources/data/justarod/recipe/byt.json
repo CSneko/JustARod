@@ -1,20 +1,16 @@
 {
   "type": "minecraft:crafting_shaped",
-  "key":{
-    "A":{
-      "item":"minecraft:ink_sac"
-    },
-    "B":{
-      "item":"minecraft:slime_ball"
-   }
+  "key": {
+    "A": "minecraft:ink_sac",
+    "B": "minecraft:slime_ball"
   },
-  "pattern":[
+  "pattern": [
     " A ",
     "ABA",
     "A A"
-    ],
-    "result":{
-      "count":4,
-      "id":"justarod:byt"
-    }
+  ],
+  "result": {
+    "count": 4,
+    "id": "justarod:byt"
   }
+}

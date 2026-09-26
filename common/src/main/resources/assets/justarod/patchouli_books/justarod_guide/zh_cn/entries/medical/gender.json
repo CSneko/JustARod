@@ -1,0 +1,32 @@
+{
+  "name": "性别转换科",
+  "category": "justarod:medical",
+  "icon": "justarod:estrogen",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "想换个性别体验人生？性别转换科欢迎你~$(br2)本科室的药物均$(thing)对目标生物右键使用$()。注意：药效有风险，变身需谨慎——有 $(#FF69B4)20%$() 的概率出现罕见的性别异常哦！"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:female_potion",
+      "text": "$(item)女性药水$() —— 一杯下去变成女孩子！（小概率异常除外）"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:male_potion",
+      "text": "$(item)男性药水$() —— 一杯下去变成男孩子！（同样不保证完全成功）"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:estrogen",
+      "text": "$(item)雌激素$() / $(item)睾酮$() —— 激素替代疗法的两大支柱，温和地调整身体的内分泌方向。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:anti_androgen",
+      "text": "$(item)螺内酯$()（抗雄激素）与 $(item)芳香化酶$() —— 抑制雄性激素或促进其转化，是激素疗法的重要辅助。$(br2)用药请遵医嘱（并没有医生喵）。"
+    }
+  ]
+}

@@ -2,6 +2,7 @@ package org.cneko.justarod.api
 
 import net.minecraft.world.entity.player.Player
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.server.level.ServerLevel
 import org.cneko.toneko.common.mod.entities.INeko
 import org.cneko.toneko.common.mod.entities.NekoEntity
 import org.cneko.toneko.common.mod.util.EntityUtil
@@ -53,7 +54,11 @@ private fun NekoEntity.canMate(player: Player): Boolean {
 }
 private fun NekoEntity.tryMating(player: Player) {
     if (player is ServerPlayer) {
-        this.tryMating(player.serverLevel(), player as INeko)
+        // 26.x：ServerPlayer#serverLevel() 移除，改用 level() 强转
+        val lvl = player.level()
+        if (lvl is ServerLevel) {
+            this.tryMating(lvl, player as INeko)
+        }
     }
 }
 fun Player.isEnableImpact(): Boolean {

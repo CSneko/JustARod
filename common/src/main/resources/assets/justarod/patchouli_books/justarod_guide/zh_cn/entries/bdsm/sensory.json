@@ -1,0 +1,27 @@
+{
+  "name": "感官道具",
+  "category": "justarod:bdsm",
+  "icon": "justarod:eye_patch",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "剥夺一种感官，其余的感官就会变得更加敏锐……调教的经典理论。$(br2)同样是对目标右键装备/取下。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:ball_mouth",
+      "text": "$(item)禁言口罩$() —— 其实就是……口求。戴上后完全说不出话，只能哼哼唧唧的♡ 在别人看来甚至还有点可爱呢？戴久了要流口水的喵~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:eye_patch",
+      "text": "$(item)眼罩$() —— 视觉被剥夺后，每一次触碰都会带来加倍的惊喜。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:earplug",
+      "text": "$(item)耳塞$() —— 听不见命令的话，就只能靠直觉行动了呢。喂喂，你还在想什么不正经的用途呢？"
+    }
+  ]
+}

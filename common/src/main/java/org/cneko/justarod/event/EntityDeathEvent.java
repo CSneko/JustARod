@@ -6,7 +6,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import org.cneko.justarod.entity.Insertable;
 
 // 啊我死了
@@ -28,11 +28,11 @@ public class EntityDeathEvent {
                 }
             }
 
-            if (!entity.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)
+            if (!((net.minecraft.server.level.ServerLevel) entity.level()).getGameRules().get(GameRules.KEEP_INVENTORY)
                     && !bindingCurseFlag
                     && !rodInside.isEmpty()
             ){//这个是死亡掉落,看情况决定要不要
-                entity.spawnAtLocation(rodInside);
+                org.cneko.justarod.JRUtilKt.spawnItemAtLocation(entity, rodInside);
                 insertable.setRodInside(ItemStack.EMPTY);//我试过null,但是在tick那边会npe,看了看发现有empty.我提议另一个也得改
             }
         }

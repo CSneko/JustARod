@@ -15,7 +15,6 @@ import net.minecraft.core.Holder
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.InteractionHand
-import net.minecraft.world.InteractionResultHolder
 import net.minecraft.world.level.Level
 import org.cneko.justarod.entity.BDSMable
 import kotlin.jvm.optionals.getOrNull
@@ -40,11 +39,11 @@ abstract class AbstractBDSMItem(
         if (entity is BDSMable && !entity.level().isClientSide) {
             val finalDuration = getExtendedDuration(stack)
             if (fieldGetter(entity) > 0) {
-                user.sendSystemMessage(Component.literal("$alreadyHasColor$alreadyHasMessage"))
+                (user as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("$alreadyHasColor$alreadyHasMessage"))
                 return InteractionResult.FAIL
             } else {
                 fieldSetter(entity, finalDuration)
-                user.sendSystemMessage(Component.literal("$successColor$successMessage"))
+                (user as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("$successColor$successMessage"))
                 if (!user.isCreative) {
                     stack.shrink(1)
                 }
@@ -54,21 +53,23 @@ abstract class AbstractBDSMItem(
         return super.interactLivingEntity(stack, user, entity, hand)
     }
 
-    override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
+    override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResult {
         val stack = user.getItemInHand(hand)
         // shift + 右键作用于自己
         if (!world.isClientSide && user.isShiftKeyDown()) {
             val finalDuration = getExtendedDuration(stack)
-            if (fieldGetter(user) > 0) {
+            // PlayerMixin 让 Player 实现 BDSMable
+            val self = user as BDSMable
+            if (fieldGetter(self) > 0) {
                 user.sendSystemMessage(Component.literal("$alreadyHasColor$alreadyHasMessage"))
-                return InteractionResultHolder.fail(stack)
+                return InteractionResult.FAIL
             } else {
-                fieldSetter(user, finalDuration)
+                fieldSetter(self, finalDuration)
                 user.sendSystemMessage(Component.literal("$successColor$successMessage"))
                 if (!user.isCreative) {
                     stack.shrink(1)
                 }
-                return InteractionResultHolder.success(stack)
+                return InteractionResult.SUCCESS
             }
         }
         return super.use(world, user, hand)
@@ -91,14 +92,8 @@ abstract class AbstractBDSMItem(
         return durationTicks
     }
 
-    override fun isEnchantable(stack: ItemStack): Boolean {
-        return true // 允许被附魔
-    }
-
-    override fun getEnchantmentValue(): Int {
-        return 10 // 附魔能力，数值越高越容易获得高级附魔
-    }
-
+    // 26.x：Item#isEnchantable / #getEnchantmentValue 已移除，附魔能力改由
+    // DataComponents.ENCHANTABLE 组件决定（在 JRItems 注册属性时设置）。
     override fun canBeEnchantedWith(
         stack: ItemStack,
         enchantment: Holder<Enchantment>,

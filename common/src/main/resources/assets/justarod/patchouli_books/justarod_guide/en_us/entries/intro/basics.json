@@ -1,0 +1,23 @@
+{
+  "name": "The Basics",
+  "category": "justarod:intro",
+  "icon": "justarod:lubricating_book",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "How to Use Rods",
+      "text": "Most rods have two ways of use:$(li)$(thing)On yourself$() — hold it and right-click$(li)$(thing)On others$() — right-click while sneaking towards your target$(br2)A rod used on someone stays inside them, and can be pulled back out with the $(item)Retriever$().$(br2)Each use is counted on the item itself. Don't ask why. It's just precise."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Lubrication Matters!",
+      "text": "Forcing things in while dry will hurt, meow! (°ﾛ°٥)$(br2)Eating a $(item)Lubrication Book$() grants yourself a long-lasting $(#FF69B4)Lubricated$() effect, making playtime much smoother afterwards.$(br2)$(#FF69B4)It works without lube... but you'd better use some!$()"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Requirements",
+      "text": "$(thing)JustARod$() requires $(#FF69B4)toNeko$() — core mechanics such as nekos, estrus and pregnancy all come from it.$(br2)Installing $(item)Patchouli$() is recommended so you can read this very book, meow! (You're reading it, so you're all set~)"
+    }
+  ]
+}

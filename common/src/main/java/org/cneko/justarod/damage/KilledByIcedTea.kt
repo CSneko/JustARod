@@ -8,9 +8,9 @@ import net.minecraft.core.Holder
 import net.minecraft.network.chat.Component
 
 // 哦哦哦哦~~~哦哦哦哦哦哦哦~~~~~
-class KilledByIcedTea(type: Holder<DamageType>?,val attacker: Entity?) :
+class KilledByIcedTea(type: Holder<DamageType>,val attacker: Entity?) :
     DamageSource(type, attacker) {
-    override fun getLocalizedDeathMessage(killed: LivingEntity?): Component {
-        return Component.literal(String.format("%s坠机了",killed!!.displayName,attacker?.displayName))
+    override fun getLocalizedDeathMessage(killed: LivingEntity): Component {
+        return Component.literal(String.format("%s坠机了",killed.displayName))
     }
 }

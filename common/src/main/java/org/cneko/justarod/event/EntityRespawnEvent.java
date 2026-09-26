@@ -9,9 +9,9 @@ public class EntityRespawnEvent {
     }
     private static final ServerPlayerEvents.AfterRespawn SET_ROD_AFTER_RESPAWN =
             (oldPlayer, newPlayer, alive) -> {
-        var rodInside = oldPlayer.getRodInside();
+        var rodInside = ((org.cneko.justarod.entity.Insertable) (Object) oldPlayer).getRodInside();
         if (!rodInside.isEmpty()){
-            newPlayer.setRodInside(rodInside);
+            ((org.cneko.justarod.entity.Insertable) (Object) newPlayer).setRodInside(rodInside);
         }
     };
 }

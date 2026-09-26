@@ -6,12 +6,8 @@
     "   "
   ],
   "key": {
-    "R": {
-      "item": "minecraft:stick"
-    },
-    "W": {
-      "tag": "minecraft:wool"
-    }
+    "R": "minecraft:stick",
+    "W": "#minecraft:wool"
   },
   "result": {
     "id": "justarod:cotton_swab",

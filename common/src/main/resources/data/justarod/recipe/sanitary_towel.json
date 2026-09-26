@@ -6,12 +6,8 @@
     "P"
   ],
   "key": {
-    "P": {
-      "item": "minecraft:paper"
-    },
-    "W": {
-      "tag": "minecraft:wool"
-    }
+    "P": "minecraft:paper",
+    "W": "#minecraft:wool"
   },
   "result": {
     "id": "justarod:sanitary_towel",

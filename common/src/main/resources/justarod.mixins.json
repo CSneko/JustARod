@@ -7,26 +7,33 @@
     "CommonChatEventMixin",
     "DefaultAttributeRegistryMixin",
     "EntityMixin",
+    "ItemStackMixin",
     "LivingEntityMixin",
     "NekoEntityMixin",
     "PlayerMixin",
+    "ProjectileMixin",
     "RavennEntityMixin",
     "WitherEntityMixin",
     "ServerCommonNetworkingHandlerMixin",
     "ServerPlayerMixin",
-    "ServerPlayNetworkHandlerMixin"
+    "ServerPlayNetworkHandlerMixin",
+    "SlimeInteractMixin",
+    "SlimeMoveControlAccessor",
+    "SlimePassengerCullMixin",
+    "debug.ServerPlayerSyncAccessor",
+    "SlimeTrustAccessor",
+    "SlimeTrustMixin"
   ],
   "server": [],
   "injectors": {
     "defaultRequire": 1
   },
   "client": [
-    "client.BackgroundRendererMixin",
     "client.ClientPlayerEntityMixin",
     "client.ClientPlayerInteractionManagerMixin",
-    "client.EnderDragonRendererMixin",
-    "client.PlayerEntityModelMixin",
+    "client.LivingEntityRendererScaleInvoker",
     "client.PlayerRendererMixin",
+    "client.SlimePassengerRenderMixin",
     "client.SoundManagerMixin"
   ]
 }

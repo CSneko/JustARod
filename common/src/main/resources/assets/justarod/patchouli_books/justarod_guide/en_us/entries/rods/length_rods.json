@@ -1,0 +1,33 @@
+{
+  "name": "Length & Element Series",
+  "category": "justarod:rods",
+  "icon": "justarod:longer_rod",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:long_rod",
+      "text": "$(item)Long Rod$() — «It's so long... (°Д°)»$(br2)Usable on both yourself and others. It truly reaches the very top!"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:longer_rod",
+      "text": "$(item)Longer Rod$() — even longer than the long one!$(br2)A large section still sticks out even at full depth... care to try sharing? Damage is upgraded to $(#FF69B4)10 points$()."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:lightning_end_rod",
+      "text": "$(item)Lightning End Rod$() — copper does carry a bit of poison, after all$(br2)Poisons the user for 10 seconds; during a $(#FF69B4)thunderstorm$() there's a 1/3 chance to summon an actual lightning bolt! Are you serious about using this?"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:redstone_rod",
+      "text": "$(item)Redstone Rod$() — the automatic model is great, no effort needed♡$(br2)A redstone-powered automatic model with $(#FF69B4)speed 2$() built in. Why do it by hand when a machine can?"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:networking_rod",
+      "text": "$(item)Networking Rod$() — seen this far? Go give the author a like already!$(br2)Use it on a block to pull the latest data from the network and update its durability cap. An online-updating end rod (believe it)."
+    }
+  ]
+}

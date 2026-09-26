@@ -37,7 +37,7 @@ class TamsulosinCapsuleItem(properties: Properties) : MedicalItem(properties) {
             // 1. 治疗前列腺炎 (大幅减轻)
             // 减少 3天 的病程
             if (target.prostatitis > 0) {
-                target.removeEffect(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(JREffects.PROSTATITIS_EFFECT!!))
+                target.removeEffect(JREffects.PROSTATITIS_EFFECT)
                 target.cureProstatitis(20 * 60 * 20 * 3)
             }
 
@@ -50,13 +50,13 @@ class TamsulosinCapsuleItem(properties: Properties) : MedicalItem(properties) {
             // 3. 辅助治疗尿道炎 (抗炎作用)
             // 稍微缓解一下尿道炎 (减少1天)，防止前列腺炎立刻复发
             if (target.urethritis > 0) {
-                target.removeEffect(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(JREffects.URETHRITIS_EFFECT!!))
+                target.removeEffect(JREffects.URETHRITIS_EFFECT)
                 val newUrethritis = max(0, target.urethritis - 20 * 60 * 20)
                 target.urethritis = newUrethritis
             }
 
             // 4. 移除痛苦带来的 Debuff
-            target.removeEffect(MobEffects.DIG_SLOWDOWN)
+            target.removeEffect(MobEffects.MINING_FATIGUE)
             target.removeEffect(MobEffects.WEAKNESS)
         }
     }

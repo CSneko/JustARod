@@ -9,7 +9,7 @@ import net.minecraft.world.inventory.tooltip.TooltipComponent
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionHand
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import org.cneko.justarod.entity.Pregnant
 import org.cneko.justarod.item.tooltip.ChemicalStructureTooltipData
 import java.util.Optional
@@ -32,21 +32,21 @@ class EstrogenItem(properties: Properties): MedicalItem(properties) {
         // 2. 药效生理反应
         if (target.random.nextBoolean()) {
             // 激素冲击带来的晕眩/恶心
-            target.addEffect(MobEffectInstance(MobEffects.CONFUSION, 120, 0))
+            target.addEffect(MobEffectInstance(MobEffects.NAUSEA, 120, 0))
         }
         if (target.random.nextBoolean()) {
             // 胸部发育/胀痛感
             target.hurt(target.level().damageSources().magic(), 1.0f)
-            target.sendSystemMessage(Component.literal("§d你感觉胸口传来一阵胀痛，身体变得异常敏感..."))
+            (target as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§d你感觉胸口传来一阵胀痛，身体变得异常敏感..."))
         } else {
-            target.sendSystemMessage(Component.literal("§d一股温热的感觉流遍全身..."))
+            (target as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§d一股温热的感觉流遍全身..."))
         }
 
     }
 
     override fun getTooltipImage(stack: ItemStack): Optional<TooltipComponent> {
         return Optional.of(
-            ChemicalStructureTooltipData(ResourceLocation.fromNamespaceAndPath("justarod", "textures/tooltip/estradiol.png"))
+            ChemicalStructureTooltipData(Identifier.fromNamespaceAndPath("justarod", "textures/tooltip/estradiol.png"))
         )
     }
 

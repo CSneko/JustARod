@@ -1,0 +1,28 @@
+{
+  "name": "Basic Rods",
+  "category": "justarod:rods",
+  "icon": "justarod:slime_rod",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:slime_rod",
+      "text": "$(item)Slime Rod$() — all sticky and gooey~ A successful use $(#FF69B4)clears Estrus$(), and there's a $(#FF69B4)1/500$() chance a tiny slime owned by the target spawns! (๑>ᴗ<๑)"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:giant_rod",
+      "text": "$(item)Giant Rod$() — «This might be too big to insert safely...»$(br2)In fact nobody can take it... except the $(#FF69B4)Ender Dragon$(). Using it on a dragon causes climax and makes it drop a $(item)Dragon Egg$()!"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:cactus_rod",
+      "text": "$(item)Cactus Rod$() — do NOT try this in real life!!!$(br2)Deals $(#FF69B4)10 points$() of cactus damage to the user. Pain and pleasure (not really)."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:eatable_rod",
+      "text": "$(item)Edible Rod$() — slightly sour, slightly salty after use...$(br2)Eat it and you'll be teleported somewhere nearby (the price of taste). $(#FF69B4)Your own one? Not recommended, meow.$()"
+    }
+  ]
+}

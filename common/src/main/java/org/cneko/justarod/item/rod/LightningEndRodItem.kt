@@ -1,4 +1,5 @@
 package org.cneko.justarod.item.rod
+import org.cneko.justarod.JRIds
 
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.LightningBolt
@@ -15,7 +16,7 @@ import org.cneko.justarod.item.JRComponents
 /*
 毕竟是铜做的，多少带点毒吧
  */
-class LightningEndRodItem: SelfUsedItem(Properties().stacksTo(1).durability(2000).component(JRComponents.Companion.USED_TIME_MARK,0)) {
+class LightningEndRodItem: SelfUsedItem(JRIds.itemProps("lightning_end_rod").stacksTo(1).durability(2000).component(JRComponents.Companion.USED_TIME_MARK,0)) {
     override fun useOnSelf(
         stack: ItemStack,
         world: Level?,
@@ -39,13 +40,14 @@ class LightningEndRodItem: SelfUsedItem(Properties().stacksTo(1).durability(2000
         return result
     }
 
-    override fun appendHoverText(
-        stack: ItemStack?,
-        context: TooltipContext?,
-        tooltip: MutableList<Component>?,
-        type: TooltipFlag?
+        override fun appendHoverText(
+        stack: ItemStack,
+        context: net.minecraft.world.item.Item.TooltipContext,
+        display: net.minecraft.world.item.component.TooltipDisplay,
+        adder: java.util.function.Consumer<Component>,
+        type: TooltipFlag
     ) {
-        super.appendHoverText(stack, context, tooltip, type)
-        tooltip?.add(Component.translatable("item.justarod.lightning_end_rod.tooltip"))
+        super.appendHoverText(stack, context, display, adder, type)
+        adder.accept(Component.translatable("item.justarod.lightning_end_rod.tooltip"))
     }
 }

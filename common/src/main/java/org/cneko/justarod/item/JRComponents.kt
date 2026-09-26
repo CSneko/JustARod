@@ -10,7 +10,7 @@ import net.minecraft.world.item.component.CustomData
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.core.Registry
 import net.minecraft.network.chat.Component
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import net.minecraft.util.StringRepresentable
 import org.cneko.justarod.Justarod.MODID
 import java.util.*
@@ -19,50 +19,50 @@ class JRComponents{
     companion object{
         val USED_TIME_MARK: DataComponentType<Int> = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
-            ResourceLocation.fromNamespaceAndPath(MODID, "used_time_mark"),
+            Identifier.fromNamespaceAndPath(MODID, "used_time_mark"),
             DataComponentType.builder<Int>().persistent(Codec.INT).build()
         )
         val OWNER: DataComponentType<String> = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
-            ResourceLocation.fromNamespaceAndPath(MODID, "owner"),
+            Identifier.fromNamespaceAndPath(MODID, "owner"),
             DataComponentType.builder<String>().persistent(Codec.STRING).build()
         )
         val SPEED: DataComponentType<Int> = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
-            ResourceLocation.fromNamespaceAndPath(MODID, "speed"),
+            Identifier.fromNamespaceAndPath(MODID, "speed"),
             DataComponentType.builder<Int>().persistent(Codec.INT).build()
         )
         val MODE: DataComponentType<String> = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
-            ResourceLocation.fromNamespaceAndPath(MODID, "mode"),
+            Identifier.fromNamespaceAndPath(MODID, "mode"),
             DataComponentType.builder<String>().persistent(Codec.STRING).build()
         )
         val ROD_INSIDE: DataComponentType<ItemStack> = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
-            ResourceLocation.fromNamespaceAndPath(MODID, "rod_inside"),
+            Identifier.fromNamespaceAndPath(MODID, "rod_inside"),
             DataComponentType.builder<ItemStack>().persistent(ItemStack.CODEC).build()
         )
         val SECRETIONS_APPEARANCE: DataComponentType<String> = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
-            ResourceLocation.fromNamespaceAndPath(MODID, "secretions_appearance"),
+            Identifier.fromNamespaceAndPath(MODID, "secretions_appearance"),
             DataComponentType.builder<String>().persistent(Codec.STRING).build()
         )
 
         val ENTITY_TYPE: DataComponentType<EntityType<*>> = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
-            ResourceLocation.fromNamespaceAndPath(MODID, "entity_type"),
+            Identifier.fromNamespaceAndPath(MODID, "entity_type"),
             DataComponentType.builder<EntityType<*>>()
                 .persistent(BuiltInRegistries.ENTITY_TYPE.byNameCodec())
                 .build()
         )
         val COLLECTED_TIME: DataComponentType<Int> = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
-            ResourceLocation.fromNamespaceAndPath(MODID, "collected_time"),
+            Identifier.fromNamespaceAndPath(MODID, "collected_time"),
             DataComponentType.builder<Int>().persistent(Codec.INT).build()
         )
         val PANTSU_STATE: DataComponentType<PantsuState> = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
-            ResourceLocation.fromNamespaceAndPath(MODID, "pantsu_state"),
+            Identifier.fromNamespaceAndPath(MODID, "pantsu_state"),
             DataComponentType.builder<PantsuState>().persistent(PantsuState.CODEC).build()
         )
 
@@ -78,8 +78,8 @@ class JRComponents{
         val CLONER_STATE: DataComponentType<String> =
             register("cloner_state", DataComponentType.builder<String>().persistent(Codec.STRING).build())
 
-        private fun <T> register(id: String, type: DataComponentType<T>): DataComponentType<T> {
-            return Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, ResourceLocation.fromNamespaceAndPath(MODID, id), type)
+        private fun <T : Any> register(id: String, type: DataComponentType<T>): DataComponentType<T> {
+            return Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, Identifier.fromNamespaceAndPath(MODID, id), type)
         }
 
 

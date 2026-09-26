@@ -7,7 +7,6 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.InteractionHand
-import net.minecraft.world.InteractionResultHolder
 import net.minecraft.world.level.Level
 
 /**
@@ -80,21 +79,21 @@ abstract class MedicalItem(properties: Properties) : Item(properties) {
 
 
 
-    override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
+    override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResult {
         val stack = user.getItemInHand(hand)
-        if (world.isClientSide) return InteractionResultHolder.pass(stack)
+        if (world.isClientSide) return InteractionResult.PASS
 
         // 只有按下 Shift 时才对自己使用
         if (!user.isShiftKeyDown()) {
-            return InteractionResultHolder.pass(stack)
+            return InteractionResult.PASS
         }
 
         val result = performAction(user, user, stack, hand)
 
         return if (result == InteractionResult.SUCCESS)
-            InteractionResultHolder.success(stack)
+            InteractionResult.SUCCESS
         else
-            InteractionResultHolder.fail(stack)
+            InteractionResult.FAIL
     }
 
 
@@ -121,20 +120,20 @@ abstract class MedicalItem(properties: Properties) : Item(properties) {
 
             // 发送消息
             getSuccessMessages(user, target, stack)?.let { messages ->
-                messages.userSuccessMessage?.let { user.sendSystemMessage(it) }
-                messages.userExtraMessage?.let { user.sendSystemMessage(it) }
+                messages.userSuccessMessage?.let { (user as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(it) }
+                messages.userExtraMessage?.let { (user as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(it) }
 
                 // 如果目标是其他玩家，也给他们发送消息
                 if (target != user && target is Player) {
-                    messages.targetSuccessMessage?.let { target.sendSystemMessage(it) }
-                    messages.targetExtraMessage?.let { target.sendSystemMessage(it) }
+                    messages.targetSuccessMessage?.let { (target as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(it) }
+                    messages.targetExtraMessage?.let { (target as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(it) }
                 }
             }
 
             return InteractionResult.SUCCESS
         } else {
             // 发送失败消息
-            getFailureMessage(user, target, stack)?.let { user.sendSystemMessage(it) }
+            getFailureMessage(user, target, stack)?.let { (user as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(it) }
             return InteractionResult.FAIL
         }
     }

@@ -8,7 +8,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.world.inventory.tooltip.TooltipComponent
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionHand
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import org.cneko.justarod.entity.Pregnant
 import org.cneko.justarod.item.tooltip.ChemicalStructureTooltipData
 import java.util.Optional
@@ -33,16 +33,16 @@ class AntiAndrogenItem(properties: Properties): MedicalItem(properties) {
         if (target.random.nextBoolean()) {
             // 抗雄会导致肌肉无力、疲惫，以及雄性冲动消退
             target.addEffect(MobEffectInstance(MobEffects.WEAKNESS, 20 * 60, 0))
-            target.sendSystemMessage(Component.literal("§7你感觉到体内的某种躁动正在消退，取而代之的是一阵虚弱感..."))
+            (target as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§7你感觉到体内的某种躁动正在消退，取而代之的是一阵虚弱感..."))
         }
 
         if (target.random.nextBoolean()) {
             // 联动排尿系统：现实中的抗雄药（螺内酯）是强效利尿剂
             // 瞬间增加极多的尿意（约 8 分钟的尿量积累）
             target.urination += 20 * 60 * 8
-            target.sendSystemMessage(Component.literal("§e药效发作了，抗雄药的利尿副作用让你突然很想去洗手间..."))
+            (target as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§e药效发作了，抗雄药的利尿副作用让你突然很想去洗手间..."))
         } else {
-            target.sendSystemMessage(Component.literal("§b大脑深处的燥热感被压制了，身体变得异常平静..."))
+            (target as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§b大脑深处的燥热感被压制了，身体变得异常平静..."))
         }
     }
 
@@ -51,7 +51,7 @@ class AntiAndrogenItem(properties: Properties): MedicalItem(properties) {
     }
     override fun getTooltipImage(stack: ItemStack): Optional<TooltipComponent> {
         return Optional.of(
-            ChemicalStructureTooltipData(ResourceLocation.fromNamespaceAndPath("justarod", "textures/tooltip/spironolacton.png"))
+            ChemicalStructureTooltipData(Identifier.fromNamespaceAndPath("justarod", "textures/tooltip/spironolacton.png"))
         )
     }
 

@@ -24,9 +24,8 @@ public interface Powerable{
     }
 
     default double readPowerFromNbt(@NotNull CompoundTag nbt){
-        if (nbt.contains("power")) {
-            return nbt.getDouble("power");
-        }else return 100;
+        // 26.x：CompoundTag 读取改带默认值
+        return nbt.getDoubleOr("power", 100);
     }
     default void writePowerToNbt(@NotNull CompoundTag nbt){
         nbt.putDouble("power", getPower());
@@ -40,7 +39,7 @@ public interface Powerable{
         // 如果能量低于0了，晕倒
         if (entity.getPower() <= 0) {
             entity.setPower(0);
-            entity.addEffect(new MobEffectInstance(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(JREffects.Companion.getFAINT_EFFECT()), 1000, 1));
+            entity.addEffect(new MobEffectInstance(JREffects.Companion.getFAINT_EFFECT(), 1000, 1));
         }
     }
 

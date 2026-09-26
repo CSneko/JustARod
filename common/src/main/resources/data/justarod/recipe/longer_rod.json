@@ -6,9 +6,7 @@
     " R "
   ],
   "key": {
-    "R": {
-      "item": "justarod:long_rod"
-    }
+    "R": "justarod:long_rod"
   },
   "result": {
     "id": "justarod:longer_rod",

@@ -1,7 +1,7 @@
 package org.cneko.justarod.client.screen
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.components.AbstractSliderButton
@@ -12,6 +12,8 @@ import org.cneko.toneko.common.mod.entities.NekoEntity
 
 // 交配... （只和自己交配过）（小声）
 // 和自己交配不了算是什么 -NT
+// 26.x：Screen#render(GuiGraphics) 改为 Screen#extractRenderState(GuiGraphicsExtractor, ...)，
+// drawString/drawCenteredString 改为 text/centeredText。
 class MateScreen(val nekoEntity: NekoEntity) : Screen(Component.empty()), INekoScreen {
     private var amountSlider: AmountSliderWidget? = null
     private var timeSlider: TimeSliderWidget? = null
@@ -25,62 +27,65 @@ class MateScreen(val nekoEntity: NekoEntity) : Screen(Component.empty()), INekoS
         super.init()
 
         // 数量滑块 (1.0-5.0)
-        amountSlider = AmountSliderWidget(
+        val amount = AmountSliderWidget(
             width / 2 - 100, height / 2 - 30,
             200, 20,
             Component.translatable("gui.justarod.amount"),
             amountValue.toFloat()
         )
-        addRenderableWidget(amountSlider)
+        amountSlider = amount
+        addRenderableWidget(amount)
 
         // 时间滑块 (10-60分钟)
-        timeSlider = TimeSliderWidget(
+        val time = TimeSliderWidget(
             width / 2 - 100, height / 2,
             200, 20,
             Component.translatable("gui.justarod.time"),
             timeValue
         )
-        addRenderableWidget(timeSlider)
+        timeSlider = time
+        addRenderableWidget(time)
 
         // 完成按钮
-        doneButton = Button.builder(Component.translatable("gui.justarod.done")) {
+        val done = Button.builder(Component.translatable("gui.justarod.done")) {
             onDone()
         }.bounds(width / 2 - 100, height / 2 + 30, 200, 20).build()
-        addRenderableWidget(doneButton)
+        doneButton = done
+        addRenderableWidget(done)
     }
 
-    override fun render(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
+        super.extractRenderState(context, mouseX, mouseY, delta)
+
         // 渲染标题
-        context.drawCenteredString(
+        context.centeredText(
             font,
             Component.translatable("gui.justarod.mate_settings"),
             width / 2, height / 2 - 60,
-            0xFFFFFF
+            0xFFFFFFFF.toInt()
         )
 
         // 渲染滑块提示文字
-        context.drawString(
+        context.text(
             font,
             Component.translatable("gui.justarod.amount_hint", "%.1f".format(amountValue)),
             width / 2 + 110, height / 2 - 25,
-            0xAAAAAA
+            0xFFAAAAAA.toInt()
         )
 
-        context.drawString(
+        context.text(
             font,
             Component.translatable("gui.justarod.time_hint", timeValue),
             width / 2 + 110, height / 2 + 5,
-            0xAAAAAA
+            0xFFAAAAAA.toInt()
         )
-
-        super.render(context, mouseX, mouseY, delta)
     }
 
     override fun isPauseScreen(): Boolean {
         return false
     }
 
-    override fun renderBackground(context: GuiGraphics?, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractBackground(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         // 不渲染背景
     }
 

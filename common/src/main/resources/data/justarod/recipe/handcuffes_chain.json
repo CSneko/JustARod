@@ -1,17 +1,15 @@
 {
   "type": "minecraft:crafting_shaped",
-  "key":{
-    "I":{
-      "item":"minecraft:iron_nugget"
-    }
+  "key": {
+    "I": "minecraft:iron_nugget"
   },
-  "pattern":[
+  "pattern": [
     " I ",
     "I I",
     "I I"
-    ],
-    "result":{
-      "count":1,
-      "id":"justarod:handcuffes_chain"
-    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "justarod:handcuffes_chain"
+  }
 }

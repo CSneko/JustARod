@@ -15,8 +15,8 @@ import net.minecraft.sounds.SoundSource
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionHand
-import net.minecraft.world.InteractionResultHolder
-import net.minecraft.world.item.UseAnim
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.item.ItemUseAnimation
 import net.minecraft.world.level.Level
 import net.minecraft.world.phys.Vec3
 import org.joml.Vector3f
@@ -28,16 +28,23 @@ import kotlin.math.sin
 /*
 啊~♡ 主人别打了喵~
  */
-open class WhipItem(properties: Properties) : Item(Properties().stacksTo(1).durability(1000)) {
+open class WhipItem(properties: Properties) : Item(properties.stacksTo(1).durability(1000)) {
 
-    override fun hurtEnemy(stack: ItemStack, target: LivingEntity, attacker: LivingEntity): Boolean {
+    // 26.x：hurtEnemy 返回 void
+    override fun hurtEnemy(stack: ItemStack, target: LivingEntity, attacker: LivingEntity) {
         // 左键普通攻击：主目标满伤（4点），其他目标半伤（2点）
         applyWhipEffect(attacker, 4.0, 0.4, 40, 1, 2.0f, charged = false)
-        return super.hurtEnemy(stack, target, attacker)
+        super.hurtEnemy(stack, target, attacker)
     }
 
-    override fun inventoryTick(stack: ItemStack, world: Level, entity: net.minecraft.world.entity.Entity, slot: Int, selected: Boolean) {
-        super.inventoryTick(stack, world, entity, slot, selected)
+    override fun inventoryTick(
+        stack: ItemStack,
+        world: net.minecraft.server.level.ServerLevel,
+        entity: net.minecraft.world.entity.Entity,
+        slot: EquipmentSlot?
+) {
+        super.inventoryTick(stack, world, entity, slot)
+        val selected = slot == EquipmentSlot.MAINHAND
 
         if (world.isClientSide && selected && entity is Player && entity.isUsingItem && entity.useItem == stack) {
             val useTicks = entity.getUseItemRemainingTicks()
@@ -56,13 +63,15 @@ open class WhipItem(properties: Properties) : Item(Properties().stacksTo(1).dura
                 val y = entity.eyeY - 0.3 + offsetY
                 val z = entity.z + cos(yawRad) * 0.5 + offsetZ
 
+                // 26.x：DustParticleOptions 改用打包 int 颜色（ARGB）
                 val r = 0.2f * (1 - chargeRatio).toFloat()
                 val g = 0.6f * (1 - chargeRatio).toFloat()
                 val b = (0.5 + 0.5 * chargeRatio).toFloat()
                 val size = 0.1f + 0.2f * chargeRatio.toFloat()
+                val color = ((255 shl 24) or ((r * 255).toInt() shl 16) or ((g * 255).toInt() shl 8) or (b * 255).toInt())
 
                 world.addParticle(
-                    DustParticleOptions(Vector3f(r, g, b), size),
+                    DustParticleOptions(color, size),
                     x, y, z,
                     0.0, 0.02, 0.0
                 )
@@ -70,25 +79,25 @@ open class WhipItem(properties: Properties) : Item(Properties().stacksTo(1).dura
         }
     }
 
-    override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
+    override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResult {
         user.startUsingItem(hand)
-        return InteractionResultHolder.consume(user.getItemInHand(hand))
+        return InteractionResult.CONSUME
     }
 
     override fun finishUsingItem(stack: ItemStack, world: Level, user: LivingEntity): ItemStack {
         return stack
     }
 
-    override fun getUseAnimation(stack: ItemStack): UseAnim {
-        return UseAnim.BOW
+    override fun getUseAnimation(stack: ItemStack): ItemUseAnimation {
+        return ItemUseAnimation.BOW
     }
 
-    override fun getUseDuration(stack: ItemStack?, user: LivingEntity?): Int {
+    override fun getUseDuration(stack: ItemStack, user: LivingEntity): Int {
         return 30
     }
 
-    override fun releaseUsing(stack: ItemStack, world: Level, user: LivingEntity, remainingUseTicks: Int) {
-        if (user !is Player) return
+    override fun releaseUsing(stack: ItemStack, world: Level, user: LivingEntity, remainingUseTicks: Int): Boolean {
+        if (user !is Player) return false
 
         val chargedTicks = getUseDuration(stack, user) - remainingUseTicks
         val chargeRatio = min(chargedTicks / getUseDuration(stack, user).toDouble(), 1.0)
@@ -106,6 +115,7 @@ open class WhipItem(properties: Properties) : Item(Properties().stacksTo(1).dura
         world.playSound(null, user.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 0.8f, 1.0f)
 
         stack.hurtAndBreak(2 + (chargeRatio * 2).toInt(), user, EquipmentSlot.MAINHAND)
+        return true
     }
 
     private fun applyWhipEffect(
@@ -138,9 +148,8 @@ open class WhipItem(properties: Properties) : Item(Properties().stacksTo(1).dura
             if (angle <= angleRange / 2) {
                 world.addParticle(ParticleTypes.CRIT, entity.x, entity.eyeY, entity.z, 0.0, 0.0, 0.0)
 
-                entity.addEffect(MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, slownessDuration, slownessLevel))
+                entity.addEffect(MobEffectInstance(MobEffects.SLOWNESS, slownessDuration, slownessLevel))
                 entity.addDeltaMovement(Vec3(-sin(attackerYaw) * knockbackStrength, 0.1, cos(attackerYaw) * knockbackStrength))
-                entity.hasImpulse = true
 
                 hitTarget(attacker, entity, damage)
             }

@@ -16,14 +16,14 @@ logoFile = "assets/justarod/icon.png"
 [[dependencies.justarod]]
 modId = "neoforge"
 type = "required"
-versionRange = "[21.1,)"
+versionRange = "[26.1.2,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.justarod]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21,1.21.2)"
+versionRange = "[26.1.2,26.2)"
 ordering = "NONE"
 side = "BOTH"
 
@@ -39,7 +39,7 @@ side = "BOTH"
 [[dependencies.justarod]]
 modId = "kotlinforforge"
 type = "required"
-versionRange = "[5,)"
+versionRange = "*"
 ordering = "NONE"
 side = "BOTH"
 
@@ -53,10 +53,17 @@ side = "BOTH"
 [[dependencies.justarod]]
 modId = "toneko"
 type = "required"
-versionRange = "[1.7.2,)"
+versionRange = "[2.0.0,)"
 ordering = "AFTER"
 side = "BOTH"
 
+# 帕秋莉手册（可选联动：安装后可获得指南书并阅读）
+[[dependencies.justarod]]
+modId = "patchouli"
+type = "optional"
+versionRange = "*"
+ordering = "AFTER"
+side = "BOTH"
 
 [[mixins]]
 config = "justarod.mixins.json"

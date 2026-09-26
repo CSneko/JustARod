@@ -1,0 +1,22 @@
+{
+  "name": "医疗中心概览",
+  "category": "justarod:medical",
+  "icon": "justarod:scalpel",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "欢迎来到$(#FF69B4)医疗中心$()！本模组内置了一套相当硬核的生理模拟系统：疾病、月经、怀孕、性病一应俱全。$(br2)医疗物品的通用用法：手持物品 $(thing)对目标生物右键$() 即可使用（也可以对自己）。用错对象会得到温柔的提示~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:scalpel",
+      "text": "$(item)手术刀$() 是外科手术的核心工具，配合各种$(#FF69B4)手术附魔$()（子宫切除、乳房切除、阑尾……啊不，斩首等）可以对目标实施各类「手术」。$(br2)下刀前请三思，有些手术是不可逆的喵！"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:cotton_swab",
+      "text": "$(item)棉签$() 用于医疗采样，可以采集目标的分泌物样本，观察颜色与气味，辅助判断健康状况。$(br2)$(#FF69B4)定期体检，早发现早治疗！$()"
+    }
+  ]
+}

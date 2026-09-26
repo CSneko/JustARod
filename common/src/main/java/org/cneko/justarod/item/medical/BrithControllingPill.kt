@@ -37,14 +37,14 @@ class BrithControllingPill(properties: Properties) : MedicalItem(properties) {
 
         // 3. 过量/重复服药的副作用 (激素超标导致恶心)
         if (wasTaking || target.exoP > 30.0f) {
-            target.addEffect(MobEffectInstance(MobEffects.CONFUSION, 20 * 15, 0))
-            target.sendSystemMessage(Component.literal("§c短时间内重复服药导致体内激素紊乱，你感到一阵恶心。"))
+            target.addEffect(MobEffectInstance(MobEffects.NAUSEA, 20 * 15, 0))
+            (target as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c短时间内重复服药导致体内激素紊乱，你感到一阵恶心。"))
         }
 
         // 4. 医学治疗：长效抑制雄激素，治疗多囊卵巢综合征 (PCOS)
         if (target.isPCOS && target.random.nextInt(3) == 0) {
             target.isPCOS = false
-            target.sendSystemMessage(Component.literal("§a在药物调节下，多囊卵巢的症状得到了缓解！"))
+            (target as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§a在药物调节下，多囊卵巢的症状得到了缓解！"))
         }
     }
 

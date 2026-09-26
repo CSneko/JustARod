@@ -23,7 +23,10 @@ public interface Insertable {
         if (hasRodInside()){
             var stack = this.getRodInside();
             var item = stack.getItem();
-            item.inventoryTick(stack, entity.level(), entity, Integer.MIN_VALUE, false);
+            // 26.x：inventoryTick 签名改为 (ItemStack, ServerLevel, Entity, EquipmentSlot?)
+            if (entity.level() instanceof net.minecraft.server.level.ServerLevel sl) {
+                item.inventoryTick(stack, sl, entity, null);
+            }
         }
     }
 }

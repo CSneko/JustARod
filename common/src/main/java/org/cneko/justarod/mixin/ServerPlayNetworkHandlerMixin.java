@@ -48,6 +48,6 @@ public class ServerPlayNetworkHandlerMixin {
     @Unique
     private boolean isDisabled() {
         ServerGamePacketListenerImpl handler = (ServerGamePacketListenerImpl) (Object) this;
-        return handler.player.getHandcuffed() > 0;
+        return ((org.cneko.justarod.entity.BDSMable) (Object) handler.player).getHandcuffed() > 0;
     }
 }

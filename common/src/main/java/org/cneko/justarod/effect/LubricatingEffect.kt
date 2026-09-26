@@ -18,7 +18,7 @@ class LubricatingEffect: MobEffect(MobEffectCategory.BENEFICIAL, 3507428) {
     override fun shouldApplyEffectTickThisTick(duration: Int, amplifier: Int): Boolean {
         return true
     }
-    override fun applyEffectTick(entity: LivingEntity, amplifier: Int): Boolean {
+    override fun applyEffectTick(world: net.minecraft.server.level.ServerLevel, entity: LivingEntity, amplifier: Int): Boolean {
         // 为玩家属性添加
         if (entity is Player){
             val player: Player = entity
@@ -26,6 +26,6 @@ class LubricatingEffect: MobEffect(MobEffectCategory.BENEFICIAL, 3507428) {
             attributes.put(JRAttributes.PLAYER_LUBRICATING, AttributeModifier(JRAttributes.PLAYER_LUBRICATING_ID, (amplifier+1)*2.0   , AttributeModifier.Operation.ADD_VALUE))
             player.attributes.addTransientAttributeModifiers(attributes)
         }
-        return super.applyEffectTick(entity, amplifier)
+        return super.applyEffectTick(world, entity, amplifier)
     }
 }

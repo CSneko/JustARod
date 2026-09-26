@@ -17,7 +17,7 @@ class BDSMCommand {
                         .executes { context ->
                             val entity = context.source.entity
                             if (entity is BDSMable){
-                                entity.sendSystemMessage(Component.literal("§a口球剩余时间：${entity.ballMouth/20}秒~"))
+                                (entity as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§a口球剩余时间：${entity.ballMouth/20}秒~"))
                             }
                             return@executes 1
                         }
@@ -57,7 +57,7 @@ class BDSMCommand {
                     .then(literal("ElectricShock")
                         .executes { context ->
                             val source = context.source.entity
-                            if (source is BDSMable){
+                            if (source is BDSMable && source is net.minecraft.world.entity.player.Player){
                                 source.sendSystemMessage(Component.literal("§a电击剩余时间：${source.electricShock/20}秒~"))
                             }
                             return@executes 1
@@ -65,8 +65,8 @@ class BDSMCommand {
                         .then(argument("target", EntityArgument.entity())
                             .executes { context ->
                                 val target = EntityArgument.getEntity(context, "target")
-                                if (target is BDSMable){
-                                    target.sendSystemMessage(Component.literal("§a电击剩余时间：${target.electricShock/20}秒~"))
+                                if (target is BDSMable && target is net.minecraft.world.entity.player.Player){
+                                    target?.sendSystemMessage(Component.literal("§a电击剩余时间：${target.electricShock/20}秒~"))
                                 }
                                 return@executes 1
                             }
@@ -98,7 +98,7 @@ class BDSMCommand {
                     .then(literal("bundled")
                         .executes { context ->
                             val source = context.source.entity
-                            if (source is BDSMable){
+                            if (source is BDSMable && source is net.minecraft.world.entity.player.Player){
                                 source.sendSystemMessage(Component.literal("§a捆绑剩余时间：${source.bundled/20}秒~"))
                             }
                             return@executes 1
@@ -106,8 +106,8 @@ class BDSMCommand {
                         .then(argument("target", EntityArgument.entity())
                             .executes { context ->
                                 val target = EntityArgument.getEntity(context, "target")
-                                if (target is BDSMable){
-                                    target.sendSystemMessage(Component.literal("§a捆绑剩余时间：${target.bundled/20}秒~"))
+                                if (target is BDSMable && target is net.minecraft.world.entity.player.Player){
+                                    target?.sendSystemMessage(Component.literal("§a捆绑剩余时间：${target.bundled/20}秒~"))
                                 }
                                 return@executes 1
                             }
@@ -140,15 +140,15 @@ class BDSMCommand {
                         .executes { context ->
                             val entity = context.source.entity
                             if (entity is BDSMable){
-                                entity.sendSystemMessage(Component.literal("§a眼罩剩余时间：${entity.eyePatch/20}秒~"))
+                                (entity as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§a眼罩剩余时间：${entity.eyePatch/20}秒~"))
                             }
                             return@executes 1
                         }
                         .then(argument("target", EntityArgument.entity())
                             .executes { context ->
                                 val target = EntityArgument.getEntity(context, "target")
-                                if (target is BDSMable){
-                                    target.sendSystemMessage(Component.literal("§a眼罩剩余时间：${target.eyePatch/20}秒~"))
+                                if (target is BDSMable && target is net.minecraft.world.entity.player.Player){
+                                    target?.sendSystemMessage(Component.literal("§a眼罩剩余时间：${target.eyePatch/20}秒~"))
                                 }
                                 return@executes 1
                             }
@@ -181,15 +181,15 @@ class BDSMCommand {
                         .executes { context ->
                             val entity = context.source.entity
                             if (entity is BDSMable){
-                                entity.sendSystemMessage(Component.literal("§a耳塞剩余时间：${entity.earplug/20}秒~"))
+                                (entity as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§a耳塞剩余时间：${entity.earplug/20}秒~"))
                             }
                             return@executes 1
                         }
                         .then(argument("target", EntityArgument.entity())
                             .executes { context ->
                                 val target = EntityArgument.getEntity(context, "target")
-                                if (target is BDSMable){
-                                    target.sendSystemMessage(Component.literal("§a耳塞剩余时间：${target.earplug/20}秒~"))
+                                if (target is BDSMable && target is net.minecraft.world.entity.player.Player){
+                                    target?.sendSystemMessage(Component.literal("§a耳塞剩余时间：${target.earplug/20}秒~"))
                                 }
                                 return@executes 1
                             }
@@ -223,15 +223,15 @@ class BDSMCommand {
                         .executes { context ->
                             val entity = context.source.entity
                             if (entity is BDSMable){
-                                entity.sendSystemMessage(Component.literal("§a手铐剩余时间：${entity.handcuffed/20}秒~"))
+                                (entity as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§a手铐剩余时间：${entity.handcuffed/20}秒~"))
                             }
                             return@executes 1
                         }
                         .then(argument("target", EntityArgument.entity())
                             .executes { context ->
                                 val target = EntityArgument.getEntity(context, "target")
-                                if (target is BDSMable){
-                                    target.sendSystemMessage(Component.literal("§a手铐剩余时间：${target.handcuffed/20}秒~"))
+                                if (target is BDSMable && target is net.minecraft.world.entity.player.Player){
+                                    target?.sendSystemMessage(Component.literal("§a手铐剩余时间：${target.handcuffed/20}秒~"))
                                 }
                                 return@executes 1
                             }
@@ -263,15 +263,15 @@ class BDSMCommand {
                         .executes { context ->
                             val entity = context.source.entity
                             if (entity is BDSMable){
-                                entity.sendSystemMessage(Component.literal("§a脚镣剩余时间：${entity.shackled/20}秒~"))
+                                (entity as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§a脚镣剩余时间：${entity.shackled/20}秒~"))
                             }
                             return@executes 1
                         }
                         .then(argument("target", EntityArgument.entity())
                             .executes { context ->
                                 val target = EntityArgument.getEntity(context, "target")
-                                if (target is BDSMable){
-                                    target.sendSystemMessage(Component.literal("§a脚镣剩余时间：${target.shackled/20}秒~"))
+                                if (target is BDSMable && target is net.minecraft.world.entity.player.Player){
+                                    target?.sendSystemMessage(Component.literal("§a脚镣剩余时间：${target.shackled/20}秒~"))
                                 }
                                 return@executes 1
                             }
@@ -303,7 +303,7 @@ class BDSMCommand {
                         .executes { context ->
                             val entity = context.source.entity
                             if (entity is BDSMable){
-                                entity.sendSystemMessage(Component.literal("§a禁交剩余时间：${entity.noMatingPlz / 20}秒~"))
+                                (entity as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§a禁交剩余时间：${entity.noMatingPlz / 20}秒~"))
                             }
                             return@executes 1
                         }
@@ -320,7 +320,7 @@ class BDSMCommand {
                             .then(argument("time", IntegerArgumentType.integer())
                                 .executes { context ->
                                     val source = context.source.entity
-                                    if (source is BDSMable){
+                                    if (source is BDSMable && source is net.minecraft.world.entity.player.Player){
                                         val time = IntegerArgumentType.getInteger(context, "time")
                                         source.noMatingPlz = time
                                         source.sendSystemMessage(Component.literal("§a已设置禁交时间：${time / 20}秒~"))

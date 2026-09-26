@@ -6,10 +6,10 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public record RavennPassiveMatingPayload (String uuid, String mateUuid) implements CustomPacketPayload {
-    public static final CustomPacketPayload.Type<RavennPassiveMatingPayload> ID = new  CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(MODID, "ravenn_passive_mate"));
+    public static final CustomPacketPayload.Type<RavennPassiveMatingPayload> ID = new  CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MODID, "ravenn_passive_mate"));
     public static final StreamCodec<RegistryFriendlyByteBuf, RavennPassiveMatingPayload> CODEC;
 
     public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {

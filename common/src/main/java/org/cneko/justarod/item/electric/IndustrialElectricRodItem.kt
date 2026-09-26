@@ -1,4 +1,5 @@
 package org.cneko.justarod.item.electric
+import org.cneko.justarod.JRIds
 
 import net.minecraft.world.item.ItemStack
 import org.cneko.justarod.item.JRComponents
@@ -6,7 +7,7 @@ import org.cneko.justarod.item.JRComponents
 /*
 这这这已经不是人可以承受的了，我我我我至少承受不住
  */
-class IndustrialElectricRodItem: MultiModeSelfUsedElectricRodItem(Properties().component(JRComponents.USED_TIME_MARK,0).durability(10000000).component(JRComponents.SPEED,50).component(JRComponents.MODE,"normal")) {
+class IndustrialElectricRodItem: MultiModeSelfUsedElectricRodItem(JRIds.itemProps("industrial_electric_rod").component(JRComponents.USED_TIME_MARK,0).durability(10000000).component(JRComponents.SPEED,50).component(JRComponents.MODE,"normal")) {
     override fun getModes(stack: ItemStack): List<String> {
         return listOf("normal","quick","fly")
     }
@@ -24,7 +25,7 @@ class IndustrialElectricRodItem: MultiModeSelfUsedElectricRodItem(Properties().c
         }
     }
 
-    override fun getEnergyMaxInput(stack: ItemStack?): Long {
+    override fun getEnergyMaxInput(stack: ItemStack): Long {
         return 100000
     }
 }

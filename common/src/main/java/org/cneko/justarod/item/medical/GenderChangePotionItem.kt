@@ -5,6 +5,7 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.network.chat.Component
 import net.minecraft.world.InteractionHand
+import org.cneko.justarod.config.JRConfig
 import org.cneko.justarod.entity.Pregnant
 import kotlin.random.Random
 
@@ -34,8 +35,8 @@ class GenderChangePotionItem(properties: Properties, val gender: Gender): Medica
         hand: InteractionHand
     ) {
         if (target is Pregnant) {
-            // 20% 概率出现性别异常
-            if (Random.nextDouble() < 0.2) {
+            // 概率可配置（默认 20%）出现性别异常
+            if (Random.nextDouble() < JRConfig.getGenderAnomalyChance()) {
                 if (Random.nextBoolean()) {
                     // 同时为 male 和 female
                     target.forceToMaleAndFemale()

@@ -1,4 +1,5 @@
 package org.cneko.justarod.item
+import org.cneko.justarod.JRIds
 
 import net.minecraft.world.entity.ExperienceOrb
 import net.minecraft.world.entity.player.Player
@@ -7,7 +8,7 @@ import net.minecraft.world.item.ItemStack
 import net.minecraft.sounds.SoundSource
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.InteractionHand
-import net.minecraft.world.InteractionResultHolder
+import net.minecraft.world.InteractionResult
 import net.minecraft.world.phys.Vec3
 import net.minecraft.world.level.Level
 
@@ -18,8 +19,8 @@ import net.minecraft.world.level.Level
 /*
 嗯~啊~出来了...
  */
-class XPGun : Item(Properties().stacksTo(1)) {
-    override fun use(world: Level?, user: Player?, hand: InteractionHand?): InteractionResultHolder<ItemStack> {
+class XPGun : Item(JRIds.itemProps("xp_gun").stacksTo(1)) {
+    override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResult {
         user ?: return super.use(world, user, hand)
         val handStack = user.getItemInHand(hand)
 
@@ -64,9 +65,9 @@ class XPGun : Item(Properties().stacksTo(1)) {
                 world!!.playSound(user, user.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0f, 1.0f)
             }
 
-            return InteractionResultHolder.success(handStack)
+            return InteractionResult.SUCCESS
         }
 
-        return InteractionResultHolder.pass(handStack)
+        return InteractionResult.PASS
     }
 }

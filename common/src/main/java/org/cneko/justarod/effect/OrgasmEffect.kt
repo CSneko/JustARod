@@ -42,8 +42,7 @@ class OrgasmEffect : MobEffect(MobEffectCategory.BENEFICIAL, 0xe9b8b3) {
     }
 
     // 这个方法在应用药水效果时的每个tick会被调用。
-    override fun applyEffectTick(entity: LivingEntity, amplifier: Int): Boolean {
-        val world = entity.level()
+    override fun applyEffectTick(world: net.minecraft.server.level.ServerLevel, entity: LivingEntity, amplifier: Int): Boolean {
         val random: RandomSource = world.random
         // 添加爱心效果
         world.addParticle(
@@ -88,6 +87,6 @@ class OrgasmEffect : MobEffect(MobEffectCategory.BENEFICIAL, 0xe9b8b3) {
                 Messaging.modifyAndSendMessageToAll(entity,screamTexts[random.nextInt(screamTexts.size)])
             }
         }
-        return super.applyEffectTick(entity, amplifier)
+        return super.applyEffectTick(world, entity, amplifier)
     }
 }

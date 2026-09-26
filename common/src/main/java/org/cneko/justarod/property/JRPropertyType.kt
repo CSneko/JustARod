@@ -33,14 +33,14 @@ class JRBoolProperty(
 
     override fun formatValue(value: Boolean): String = if (value) trueText else falseText
     override fun getValueColor(value: Boolean): Int {
-        if (value && isDisease) return 0xFF5555 // 红色警示
-        if (value) return 0xFFFF55 // 黄色高亮
-        return 0x55FF55 // 绿色表示否/健康
+        if (value && isDisease) return 0xFFFF5555.toInt() // 红色警示
+        if (value) return 0xFFFFFF55.toInt() // 黄色高亮
+        return 0xFF55FF55.toInt() // 绿色表示否/健康
     }
 }
 
 // --- 时间/整数类型属性 ---
-class JRTimeProperty(
+open class JRTimeProperty(
     name: String, displayName: String,
     getter: (Pregnant) -> Int, setter: (Pregnant, Int) -> Unit,
     val isDisease: Boolean = false
@@ -58,8 +58,34 @@ class JRTimeProperty(
     }
 
     override fun getValueColor(value: Int): Int {
-        if (value <= 0) return 0x55FF55 // 绿色
-        return if (isDisease) 0xFF5555 else 0xFFFF55 // 疾病红，普通黄
+        if (value <= 0) return 0xFF55FF55.toInt() // 绿色
+        return if (isDisease) 0xFFFF5555.toInt() else 0xFFFFFF55.toInt() // 疾病红，普通黄
+    }
+}
+
+// --- 疲劳值属性（带熬夜阶段标注与颜色渐变） ---
+class JRFatigueProperty(
+    name: String, displayName: String,
+    getter: (Pregnant) -> Int, setter: (Pregnant, Int) -> Unit
+) : JRTimeProperty(name, displayName, getter, setter) {
+
+    override fun formatValue(value: Int): String {
+        val base = super.formatValue(value)
+        return when (org.cneko.justarod.entity.Pregnant.fatigueStage(value)) {
+            1 -> "$base（轻度疲劳）"
+            2 -> "$base（中度疲劳）"
+            3 -> "$base（重度熬夜）"
+            4 -> "$base（极度危险！）"
+            else -> "$base"
+        }
+    }
+
+    override fun getValueColor(value: Int): Int = when (org.cneko.justarod.entity.Pregnant.fatigueStage(value)) {
+        0 -> 0xFF55FF55.toInt() // 清醒：绿
+        1 -> 0xFFFFFF55.toInt() // 轻度：黄
+        2 -> 0xFFFFA500.toInt() // 中度：橙
+        3 -> 0xFFFF5555.toInt() // 重度：红
+        else -> 0xFFAA00AA.toInt() // 极限：刺眼的紫
     }
 }
 

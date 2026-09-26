@@ -6,21 +6,11 @@
     "TET"
   ],
   "key": {
-    "T": {
-      "tag": "c:ingots/titanium"
-    },
-    "R": {
-      "tag": "justarod:lithium_ion_battery"
-    },
-    "E": {
-      "item": "justarod:basic_electric_rod"
-    },
-    "C": {
-      "tag": "justarod:advanced_circuit"
-    },
-    "D": {
-      "item": "minecraft:diamond"
-    }
+    "T": "#c:ingots/titanium",
+    "R": "#justarod:lithium_ion_battery",
+    "E": "justarod:basic_electric_rod",
+    "C": "#justarod:advanced_circuit",
+    "D": "minecraft:diamond"
   },
   "result": {
     "id": "justarod:advanced_electric_rod",

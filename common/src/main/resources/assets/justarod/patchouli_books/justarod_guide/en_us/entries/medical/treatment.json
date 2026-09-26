@@ -1,0 +1,28 @@
+{
+  "name": "Disease Treatment",
+  "category": "justarod:medical",
+  "icon": "justarod:penicillin",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:penicillin",
+      "text": "$(item)Penicillin$() — the universal antibiotic, nemesis of syphilis and other bacterial infections. A travel essential."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:chemotherapy_drug",
+      "text": "$(item)Chemotherapy Drug$() — course-based treatment for ovarian cancer; each dose cuts 3 days of progression and also suppresses breast cancer.$(br2)Chemo hurts the patient too though: nausea, weakness, some HP loss and even $(#FF69B4)hair loss$()..."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:tamsulosin_capsule",
+      "text": "$(item)Tamsulosin Capsule$() — specialized relief for prostatitis, urethritis and urine buildup. No need to panic at every bathroom trip."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:sanitary_towel",
+      "text": "$(item)Sanitary Towel$() — only usable while menstruating; grants a comfy effect lasting up to $(#FF69B4)10 minutes$().$(br2)Take good care of yourself during that time of the month, meow~"
+    }
+  ]
+}

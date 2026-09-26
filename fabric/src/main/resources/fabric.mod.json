@@ -25,15 +25,23 @@
     ],
     "fabric-datagen": [
       "org.cneko.justarod.datagen.JRDataGen"
+    ],
+    "modmenu": [
+      "org.cneko.justarod.fabric.JRModMenu"
     ]
   },
   "depends": {
-    "fabricloader": "*",
-    "fabric": "*",
+    "fabricloader": ">=0.19.4",
+    "fabric-api": "*",
     "minecraft": ">=${minecraft_version}",
     "fabric-language-kotlin": "*",
+    "java": ">=25",
     "geckolib": "*",
-    "toneko": ">=1.7.2"
+    "toneko": ">=2.0.0"
+  },
+  "suggests": {
+    "patchouli": "*",
+    "modmenu": "*"
   },
   "mixins": [
     "justarod.mixins.json"
@@ -41,15 +49,15 @@
   "accessWidener" : "justarod.accessWideners.accessWidener",
   "custom": {
     "loom:injected_interfaces": {
-      "net/minecraft/class_1657": [
+      "net/minecraft/world/entity/player/Player": [
         "org/cneko/justarod/entity/Powerable",
         "org/cneko/justarod/entity/Pregnant",
         "org/cneko/justarod/entity/BDSMable"
       ],
-      "org/cneko/toneko/common/mod/entities/RavennEntity": ["org/cneko/justarod/entity/Pregnant","org/cneko/justarod/entity/Sexual","org/cneko/justarod/entity/Intex"],
+      "org/cneko/toneko/common/mod/entities/RavennEntity": ["org/cneko/justarod/entity/Pregnant"],
       "org/cneko/toneko/common/mod/entities/NekoEntity": ["org/cneko/justarod/entity/Insertable"],
-      "net/minecraft/class_1297": ["org/cneko/justarod/entity/Fallible"],
-      "net/minecraft/class_1309": ["org/cneko/justarod/entity/Insertable"]
+      "net/minecraft/world/entity/Entity": ["org/cneko/justarod/entity/Fallible"],
+      "net/minecraft/world/entity/LivingEntity": ["org/cneko/justarod/entity/Insertable"]
     }
   }
 }

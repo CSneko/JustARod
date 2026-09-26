@@ -29,8 +29,7 @@ class SmearyEffect : MobEffect(
         return true
     }
 
-    override fun applyEffectTick(entity: LivingEntity, amplifier: Int): Boolean {
-        val world = entity.level()
+    override fun applyEffectTick(world: net.minecraft.server.level.ServerLevel, entity: LivingEntity, amplifier: Int): Boolean {
         val random = entity.random
 
         // 1. 粒子效果逻辑
@@ -76,6 +75,6 @@ class SmearyEffect : MobEffect(
             }
         }
 
-        return super.applyEffectTick(entity, amplifier)
+        return super.applyEffectTick(world, entity, amplifier)
     }
 }

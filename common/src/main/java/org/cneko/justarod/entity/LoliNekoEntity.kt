@@ -24,16 +24,16 @@ import org.spongepowered.asm.mixin.Unique
  */
 class LoliNekoEntity(private val type: EntityType<LoliNekoEntity>, world: Level): NekoEntity(type, world) {
     companion object{
-        val SHOWING_AGE: EntityDataAccessor<Int?> = SynchedEntityData.defineId(LoliNekoEntity::class.java, EntityDataSerializers.INT)
+        val SHOWING_AGE: EntityDataAccessor<Int> = SynchedEntityData.defineId(LoliNekoEntity::class.java, EntityDataSerializers.INT)
     }
     override fun getBreedOffspring(
-        p0: ServerLevel?,
-        p1: INeko?
+        p0: ServerLevel,
+        p1: INeko
     ): NekoEntity? {
-        return p0?.let { LoliNekoEntity(type, it) }
+        return LoliNekoEntity(type, p0)
     }
     fun getShowingAge(): Int {
-        return entityData.get(SHOWING_AGE)!!
+        return entityData.get(SHOWING_AGE)
     }
     fun setShowingAge(age: Int) {
         entityData.set(SHOWING_AGE, age)
@@ -43,17 +43,14 @@ class LoliNekoEntity(private val type: EntityType<LoliNekoEntity>, world: Level)
         super.defineSynchedData(builder)
         builder.define(SHOWING_AGE,18)
     }
-    override fun addAdditionalSaveData(compound: CompoundTag) {
-        super.addAdditionalSaveData(compound)
-        compound.putInt("showing_age", this.getShowingAge())
+    // 26.x：实体存档改为 ValueInput/ValueOutput
+    override fun addAdditionalSaveData(out: net.minecraft.world.level.storage.ValueOutput) {
+        super.addAdditionalSaveData(out)
+        out.putInt("showing_age", this.getShowingAge())
     }
-    override fun readAdditionalSaveData(compound: CompoundTag) {
-        super.readAdditionalSaveData(compound)
-        if (compound.contains("showing_age")) {
-            this.setShowingAge(compound.getInt("showing_age"))
-        }else {
-            this.setShowingAge(random.nextInt(1000)+18)
-        }
+    override fun readAdditionalSaveData(input: net.minecraft.world.level.storage.ValueInput) {
+        super.readAdditionalSaveData(input)
+        this.setShowingAge(input.getInt("showing_age").orElseGet { random.nextInt(1000)+18 })
     }
 
     override fun getAge(): Int {

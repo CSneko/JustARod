@@ -91,8 +91,9 @@ public class EntityMixin implements Fallible, Insertable {
                     } else {
                         self.hurt(JRDamageTypes.icedTea(fallenBy), damage);
                     }
-                    if (self instanceof LivingEntity livingSelf) {
-                        fallenBy.sendSystemMessage(Component.nullToEmpty("§c"+livingSelf.getName().getString()+"坠机了！"));
+                    if (fallenBy instanceof net.minecraft.world.entity.player.Player fallenPlayer) {
+                        // 26.x：sendSystemMessage 移到 Player
+                        fallenPlayer.sendSystemMessage(Component.nullToEmpty("§c"+self.getName().getString()+"坠机了！"));
                     }
                 }
                 // 重置
@@ -119,9 +120,10 @@ public class EntityMixin implements Fallible, Insertable {
     @Inject(method = "isCurrentlyGlowing", at = @At("RETURN"), cancellable = true)
     private void justARod$isGlowing(CallbackInfoReturnable<Boolean> cir) {
         Entity self = (Entity) (Object) this;
-        if (self.level().isClientSide){
+        if (self.level().isClientSide()){
             Player clientPlayer = JustarodClient.getClientPlayer();
-            if (clientPlayer.getEyePatch() >0 && clientPlayer.getEarplug() <= 0 && self.distanceTo(clientPlayer) < 22){
+            if (clientPlayer instanceof org.cneko.justarod.entity.BDSMable bdsmPlayer
+                    && bdsmPlayer.getEyePatch() >0 && bdsmPlayer.getEarplug() <= 0 && self.distanceTo(clientPlayer) < 22){
                 cir.setReturnValue(true);
             }
         }

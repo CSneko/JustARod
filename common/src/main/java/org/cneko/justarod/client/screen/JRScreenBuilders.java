@@ -54,7 +54,7 @@ public class JRScreenBuilders {
     public static final class JRButtonFactories {
         public static final ButtonFactory SEEEEEX_NEKO_BREED_BUTTON = screen -> Button.builder(Component.translatable("screen.toneko.seeeeeex_neko_entity_interactive.button.breed"), (btn) -> {
             if (screen.getNeko() instanceof Sexual) {
-                if (getInstance().player.hasEffect(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(JREffects.Companion.getKENJA_TIME_EFFECT()))){
+                if (getInstance().player.hasEffect(JREffects.Companion.getKENJA_TIME_EFFECT())){
                     getInstance().player.sendSystemMessage(Component.nullToEmpty("§c你现在还不想交配!"));
                 }
                 Minecraft.getInstance().setScreen(new InteractionScreen(Component.empty(), screen.getNeko(), screen.lastScreen, SEEEEEX_NEKO_BREED_SCREEN));
@@ -62,7 +62,7 @@ public class JRScreenBuilders {
         });
         public static final ButtonFactory SEEEEEX_NEKO_ATTACKING_BUTTON = screen -> Button.builder(Component.translatable("screen.toneko.neko_entity_interactive.button.attacking"), (btn) -> {
             // 设置为灰色
-            if (getInstance().player.getPower() < 60) {
+            if (((org.cneko.justarod.entity.Powerable)(Object) getInstance().player).getPower() < 60) {
                 btn.active = false;
                 btn.setTooltip(Tooltip.create(Component.translatable("screen.toneko.neko_entity_interactive.button.attacking.fail"))); // 哼哼~ 不持久我都看不上呢
             }else {
@@ -87,7 +87,7 @@ public class JRScreenBuilders {
         });
         public static final ButtonFactory RAVENN_BREED_ATTACKING_BUTTON = screen -> Button.builder(Component.translatable("screen.toneko.neko_entity_interactive.button.attacking"), (btn) -> {
             // 设置为灰色
-            if (getInstance().player.getPower() < 60) {
+            if (((org.cneko.justarod.entity.Powerable)(Object) getInstance().player).getPower() < 60) {
                 btn.active = false;
                 btn.setTooltip(Tooltip.create(Component.translatable("screen.toneko.neko_entity_interactive.button.attacking.fail"))); // 哼哼~ 不持久我都看不上呢
             }

@@ -9,8 +9,8 @@ import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.world.InteractionHand
-import net.minecraft.world.InteractionResultHolder
-import net.minecraft.world.item.UseAnim
+import net.minecraft.world.InteractionResult
+import net.minecraft.world.item.ItemUseAnimation
 import net.minecraft.world.level.Level
 import org.cneko.justarod.item.JRComponents
 
@@ -45,8 +45,8 @@ class FrozenSpermRetrievalDeviceItem(properties: Properties) : SpermRetrievalDev
 
     private fun applyFrozenEffectWithParticles(entity: LivingEntity, world: ServerLevel) {
         // 添加冰冻状态
-        val iceEffect = MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 20 * 10, 1)
-        val frostEffect = MobEffectInstance(MobEffects.DIG_SLOWDOWN, 20 * 10, 0)
+        val iceEffect = MobEffectInstance(MobEffects.SLOWNESS, 20 * 10, 1)
+        val frostEffect = MobEffectInstance(MobEffects.MINING_FATIGUE, 20 * 10, 0)
         entity.addEffect(iceEffect)
         entity.addEffect(frostEffect)
 
@@ -62,15 +62,15 @@ class FrozenSpermRetrievalDeviceItem(properties: Properties) : SpermRetrievalDev
         }
     }
 
-    override fun getUseAnimation(stack: ItemStack): UseAnim = UseAnim.DRINK
+    override fun getUseAnimation(stack: ItemStack): ItemUseAnimation = ItemUseAnimation.DRINK
 
-    override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResultHolder<ItemStack> {
+    override fun use(world: Level, user: Player, hand: InteractionHand): InteractionResult {
         val stack = user.getItemInHand(hand)
         // 只有有精液时才能饮用
         return if (stack.has(JRComponents.ENTITY_TYPE)) {
             super.use(world, user, hand)
         } else {
-            InteractionResultHolder.pass(stack)
+            InteractionResult.PASS
         }
     }
 }

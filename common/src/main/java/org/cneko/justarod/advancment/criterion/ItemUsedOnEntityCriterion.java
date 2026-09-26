@@ -5,17 +5,17 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.cneko.justarod.Justarod;
 
 import java.util.Optional;
-import net.minecraft.advancements.critereon.ContextAwarePredicate;
-import net.minecraft.advancements.critereon.EntityPredicate;
-import net.minecraft.advancements.critereon.ItemPredicate;
-import net.minecraft.advancements.critereon.SimpleCriterionTrigger;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.advancements.criterion.ContextAwarePredicate;
+import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.criterion.SimpleCriterionTrigger;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 
 public class ItemUsedOnEntityCriterion extends SimpleCriterionTrigger<ItemUsedOnEntityCriterion.Conditions> {
-    public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath(Justarod.MODID, "item_used_on_entity");
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(Justarod.MODID, "item_used_on_entity");
 
     @Override
     public Codec<Conditions> codec() {

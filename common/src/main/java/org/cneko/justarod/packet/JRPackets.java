@@ -4,14 +4,21 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 
 public class JRPackets {
     public static void init(){
-        PayloadTypeRegistry.playS2C().register(FrictionPayload.ID, FrictionPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(FullHeatPayload.ID, FullHeatPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(JRSyncPayload.ID, JRSyncPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(MatePayload.ID, MatePayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(PassiveMatingPayload.ID, PassiveMatingPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(RavennPassiveMatingPayload.ID,RavennPassiveMatingPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(BDSMPayload.ID, BDSMPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(MedicalPayload.ID, MedicalPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(XRayScanScreenPayload.ID, XRayScanScreenPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(FrictionPayload.ID, FrictionPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(FullHeatPayload.ID, FullHeatPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(JRSyncPayload.ID, JRSyncPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(MatePayload.ID, MatePayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(PassiveMatingPayload.ID, PassiveMatingPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(RavennPassiveMatingPayload.ID,RavennPassiveMatingPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(BDSMPayload.ID, BDSMPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(MedicalPayload.ID, MedicalPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(XRayScanScreenPayload.ID, XRayScanScreenPayload.CODEC);
+        // ===== 驯服史莱姆 =====
+        PayloadTypeRegistry.serverboundPlay().register(SlimeContainerActionPayload.ID, SlimeContainerActionPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(SlimeEntityListPayload.ID, SlimeEntityListPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(SlimeMenuContextPayload.ID, SlimeMenuContextPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(SlimeContentsPayload.ID, SlimeContentsPayload.CODEC);
+        // 手动「吞噬」技能状态（冷却 / 附近可吞目标数 / 放大动画进度）
+        PayloadTypeRegistry.clientboundPlay().register(SlimeDevourStatePayload.ID, SlimeDevourStatePayload.CODEC);
     }
 }

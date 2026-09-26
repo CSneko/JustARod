@@ -1,90 +1,95 @@
 package org.cneko.justarod.item.armor
 
-import net.minecraft.world.item.ArmorItem
-import net.minecraft.world.item.ArmorMaterial
-import net.minecraft.world.item.Items
-import net.minecraft.world.item.crafting.Ingredient
-import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.core.Registry
 import net.minecraft.core.Holder
+import net.minecraft.core.registries.Registries
+import net.minecraft.resources.Identifier
+import net.minecraft.resources.ResourceKey
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundEvents
-import java.util.function.Supplier
+import net.minecraft.tags.TagKey
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.equipment.ArmorMaterial
+import net.minecraft.world.item.equipment.ArmorType
+import net.minecraft.world.item.equipment.EquipmentAsset
+import net.minecraft.world.item.equipment.EquipmentAssets
 import org.cneko.justarod.JRUtil.Companion.rodId
 
+/**
+ * 26.x 迁移说明：ArmorMaterial 变为 record（不再注册），ArmorItem 移除后
+ * 由 Item.Properties#humanoidArmor 装配，装备资源使用 custom EquipmentAsset。
+ */
 class JRArmorMaterials {
     companion object{
-        val FIREWORKS_ROD_MATERIAL:Holder<ArmorMaterial> = register(
+        val FIREWORKS_ROD_MATERIAL: ArmorMaterial = create(
             "fireworks_rod",
             mapOf(
-                ArmorItem.Type.BOOTS to 1,
-                ArmorItem.Type.LEGGINGS to 1,
-                ArmorItem.Type.CHESTPLATE to 1,
-                ArmorItem.Type.HELMET to 1
+                ArmorType.BOOTS to 1,
+                ArmorType.LEGGINGS to 1,
+                ArmorType.CHESTPLATE to 1,
+                ArmorType.HELMET to 1
             ),
-            0,
-            SoundEvents.ARMOR_EQUIP_NETHERITE,
-            {Ingredient.of(Items.PAPER)},
-            0f,
-            0f,
-            false
+            durability = 15,
+            enchantability = 1,
+            equipSound = SoundEvents.ARMOR_EQUIP_NETHERITE,
+            repairTag = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", "paper")),
+            toughness = 0f,
+            knockbackResistance = 0f
         )
 
-        val PANTSU_MATERIAL:Holder<ArmorMaterial> = register(
+        val PANTSU_MATERIAL: ArmorMaterial = create(
             "pantsu",
             mapOf(
-                ArmorItem.Type.BOOTS to 1,
-                ArmorItem.Type.LEGGINGS to 3,
-                ArmorItem.Type.CHESTPLATE to 2,
-                ArmorItem.Type.HELMET to 1
+                ArmorType.BOOTS to 1,
+                ArmorType.LEGGINGS to 3,
+                ArmorType.CHESTPLATE to 2,
+                ArmorType.HELMET to 1
             ),
-            15,
-            SoundEvents.ARMOR_EQUIP_LEATHER,
-            {Ingredient.of(Items.WHITE_WOOL)},
-            0f,
-            0f,
-            true
+            durability = 15,
+            enchantability = 15,
+            equipSound = SoundEvents.ARMOR_EQUIP_LEATHER,
+            repairTag = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", "wool")),
+            toughness = 0f,
+            knockbackResistance = 0f
         )
 
-        val DIAPER_MATERIAL:Holder<ArmorMaterial> = register(
+        val DIAPER_MATERIAL: ArmorMaterial = create(
             "diaper",
             mapOf(
-                ArmorItem.Type.BOOTS to 1,
-                ArmorItem.Type.LEGGINGS to 4,
-                ArmorItem.Type.CHESTPLATE to 3,
-                ArmorItem.Type.HELMET to 1
+                ArmorType.BOOTS to 1,
+                ArmorType.LEGGINGS to 4,
+                ArmorType.CHESTPLATE to 3,
+                ArmorType.HELMET to 1
             ),
-            10,
-            SoundEvents.ARMOR_EQUIP_LEATHER,
-            {Ingredient.of(Items.WHITE_WOOL)},
-            0f,
-            0f,
-            true
+            durability = 15,
+            enchantability = 10,
+            equipSound = SoundEvents.ARMOR_EQUIP_LEATHER,
+            repairTag = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", "wool")),
+            toughness = 0f,
+            knockbackResistance = 0f
         )
 
-        fun register(
+        private fun create(
             id: String,
-            defensePoints: Map<ArmorItem.Type?, Int?>?,
+            defense: Map<ArmorType, Int>,
+            durability: Int,
             enchantability: Int,
-            equipSound: Holder<SoundEvent?>?,
-            repairIngredientSupplier: Supplier<Ingredient?>?,
+            equipSound: Holder<SoundEvent>?,
+            repairTag: TagKey<Item>,
             toughness: Float,
-            knockbackResistance: Float,
-            dyeable: Boolean
-        ): Holder<ArmorMaterial> {
-            val layers = listOf(ArmorMaterial.Layer(rodId(id), "", dyeable))
-            var material = ArmorMaterial(
-                defensePoints,
+            knockbackResistance: Float
+        ): ArmorMaterial {
+            val asset = ResourceKey.create(EquipmentAssets.ROOT_ID, rodId(id))
+            return ArmorMaterial(
+                durability,
+                defense,
                 enchantability,
-                equipSound,
-                repairIngredientSupplier,
-                layers,
+                equipSound ?: SoundEvents.ARMOR_EQUIP_GENERIC, // 26.x：SoundEvents 字段本身即 Holder.Reference
                 toughness,
-                knockbackResistance
+                knockbackResistance,
+                repairTag,
+                asset
             )
-            material =
-                Registry.register(BuiltInRegistries.ARMOR_MATERIAL, rodId(id), material) as ArmorMaterial
-            return Holder.direct(material)
         }
     }
 }

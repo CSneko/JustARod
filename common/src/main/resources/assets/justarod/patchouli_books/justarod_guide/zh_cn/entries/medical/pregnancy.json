@@ -1,0 +1,28 @@
+{
+  "name": "怀孕与生育",
+  "category": "justarod:medical",
+  "icon": "justarod:uterus",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:uterus",
+      "text": "$(item)子宫$() —— 孕育生命的器官，也是可以食用的……高蛋白食材？（营养值 6）$(br2)通过手术可以安装或摘除，安装后才能怀孕哦。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:sperm_retrieval_device",
+      "text": "$(item)取精器$() 与 $(item)冰冻取精器$() —— 采集并保存样本，供日后的人工授精使用。冰冻款支持长期保存~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:abortion_pill",
+      "text": "$(item)堕胎药$() —— 终止妊娠的药物，孕晚期（7 个游戏日以上）使用会有额外风险。$(br2)$4请慎重做出每一个决定。$()"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:cloner_device",
+      "text": "$(item)克隆器$() 与 $(item)孤雌生殖催化剂$() —— 不需要另一半也能孕育后代的高科技：一个负责克隆，一个催化孤雌生殖。$(br2)$5生命的奇迹，科学的力量！$()"
+    }
+  ]
+}

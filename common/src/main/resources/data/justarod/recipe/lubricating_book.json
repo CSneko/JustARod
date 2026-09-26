@@ -6,12 +6,8 @@
     "BBB"
   ],
   "key": {
-    "B": {
-      "item": "minecraft:milk_bucket"
-    },
-    "E": {
-      "item": "minecraft:book"
-    }
+    "B": "minecraft:milk_bucket",
+    "E": "minecraft:book"
   },
   "result": {
     "id": "justarod:lubricating_book",

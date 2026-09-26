@@ -217,7 +217,7 @@ public class RavennEntityMixin implements Pregnant {
     @Override
     public Entity createBaby() {
         RavennEntity ravenn = (RavennEntity) (Object) this;
-        var baby = (Entity) getChildrenType().create(ravenn.level());
+        var baby = (Entity) getChildrenType().create(ravenn.level(), net.minecraft.world.entity.EntitySpawnReason.BREEDING);
         if (baby instanceof Mob mob) {
             mob.setBaby(true);
             mob.tickCount = -48000;

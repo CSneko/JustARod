@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "minecraft:magma_cream",
+    "minecraft:potion",
+    "minecraft:golden_apple"
+  ],
+  "result": {
+    "id": "justarod:decompose_catalyst",
+    "count": 1
+  }
+}

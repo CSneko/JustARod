@@ -50,14 +50,14 @@ class SuckMilkGoal(private val baby: NekoEntity) : Goal() {
     }
 
     override fun tick() {
-        if (targetMother == null) return
-        val mother = targetMother as Pregnant
+        val motherEntity = targetMother ?: return
+        val mother = motherEntity as Pregnant
 
         //baby.lookGoal.Flag.lookAt(targetMother, 30.0f, 30.0f)
 
         // 距离大于 2 格，走过去
-        if (baby.distanceToSqr(targetMother!!) > 4.0) {
-            baby.navigation.moveTo(targetMother, 0.6)
+        if (baby.distanceToSqr(motherEntity) > 4.0) {
+            baby.navigation.moveTo(motherEntity, 0.6)
         } else {
             // 贴贴喝奶阶段
             baby.navigation.stop()
@@ -84,9 +84,9 @@ class SuckMilkGoal(private val baby: NekoEntity) : Goal() {
 
                     // ====== 疾病传播逻辑 ======
                     // 1. 艾滋病 (AIDS) 垂直传播
-                    if (mother.aids > 0 && baby is Pregnant) {
-                        if (baby.aids == 0 && baby.random.nextInt(10) == 0) {
-                            baby.aids = 1 // 幼崽染上艾滋
+                    if (mother.getAids() > 0 && baby is Pregnant) {
+                        if (baby.getAids() == 0 && baby.random.nextInt(10) == 0) {
+                            baby.setAids(1) // 幼崽染上艾滋
                         }
                     }
                     // 2. 梅毒 (Syphilis) 传播
@@ -98,7 +98,7 @@ class SuckMilkGoal(private val baby: NekoEntity) : Goal() {
                     // 3. 喝了严重乳腺炎的毒奶 -> 拉肚子/中毒
                     if (mother.mastitis > 20 * 60 * 10) {
                         baby.addEffect(MobEffectInstance(MobEffects.POISON, 20 * 5, 0))
-                        baby.addEffect(MobEffectInstance(MobEffects.CONFUSION, 20 * 10, 0))
+                        baby.addEffect(MobEffectInstance(MobEffects.NAUSEA, 20 * 10, 0))
                     }
                 }
             }

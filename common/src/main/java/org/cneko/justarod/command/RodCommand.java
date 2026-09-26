@@ -29,27 +29,27 @@ public class RodCommand {
     }
 
     private static int getRodItem(ServerPlayer player) {
-        ItemStack stack = player.getRodInside();
+        ItemStack stack = ((org.cneko.justarod.entity.Insertable) (Object) player).getRodInside();
         if (stack!= null && stack!= ItemStack.EMPTY) {
-            Component message = Component.translatable("command.justarod.rod.get.success",stack.getItem().getDescription().getString());
-            player.displayClientMessage(message, false);
+            Component message = Component.translatable("command.justarod.rod.get.success",stack.getHoverName().getString());
+            player.sendOverlayMessage(message);
             return SINGLE_SUCCESS;
         }
         else {
-            player.displayClientMessage(Component.translatable("command.justarod.rod.get.failure"), false);
+            player.sendOverlayMessage(Component.translatable("command.justarod.rod.get.failure"));
             return 0;
         }
     }
 
     private static int setRodItem(ServerPlayer player, ItemStack stack) {
-        player.setRodInside(stack);
-        player.displayClientMessage(Component.translatable("command.justarod.rod.set.success"), false);
+        ((org.cneko.justarod.entity.Insertable) (Object) player).setRodInside(stack);
+        player.sendOverlayMessage(Component.translatable("command.justarod.rod.set.success"));
         return SINGLE_SUCCESS;
     }
 
     private static int removeRodItem(ServerPlayer player) {
-        player.setRodInside(ItemStack.EMPTY);
-        player.displayClientMessage(Component.translatable("command.justarod.rod.remove.success"), false);
+        ((org.cneko.justarod.entity.Insertable) (Object) player).setRodInside(ItemStack.EMPTY);
+        player.sendOverlayMessage(Component.translatable("command.justarod.rod.remove.success"));
         // 出来了出来了
         return SINGLE_SUCCESS;
     }

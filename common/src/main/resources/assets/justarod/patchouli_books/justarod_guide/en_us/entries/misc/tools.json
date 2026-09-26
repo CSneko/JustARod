@@ -1,0 +1,28 @@
+{
+  "name": "Practical Tools",
+  "category": "justarod:misc",
+  "icon": "justarod:xp_gun",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:xp_gun",
+      "text": "$(item)XP Gun$() — «There it is~ it's coming out...»$(br2)Each shot consumes 5 experience points and sprays out 5 XP orbs. Who says experience has to be earned the hard way?"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:retriever",
+      "text": "$(item)Retriever$() — «Pull it out, then put it back in.» Use on a creature with a rod inside to retrieve that rod."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:insertion_pedestal",
+      "text": "$(item)Insertion Pedestal$() — load a rod into the pedestal and sneakily give someone a surprise. Right-click an insertable target to install; interact again to retrieve. «It won't fit, no matter what» (if there's already one)."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:pantsu_getter",
+      "text": "$(item)Panties Getter$() and $(item)Panties$() — a wonderful gadget chain for obtaining and wearing panties. The $(item)Diaper$() is wearable legwear too~"
+    }
+  ]
+}

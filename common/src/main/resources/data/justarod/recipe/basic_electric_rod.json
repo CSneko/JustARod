@@ -6,15 +6,9 @@
     " C "
   ],
   "key": {
-    "R": {
-      "tag": "justarod:red_cell_battery"
-    },
-    "E": {
-      "item": "justarod:redstone_rod"
-    },
-    "C": {
-      "tag": "justarod:electronic_circuit"
-    }
+    "R": "#justarod:red_cell_battery",
+    "E": "justarod:redstone_rod",
+    "C": "#justarod:electronic_circuit"
   },
   "result": {
     "id": "justarod:basic_electric_rod",

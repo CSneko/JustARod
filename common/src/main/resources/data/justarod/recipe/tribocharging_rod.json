@@ -5,12 +5,8 @@
     " R "
   ],
   "key": {
-    "G": {
-      "item": "minecraft:paper"
-    },
-    "R": {
-      "item": "minecraft:end_rod"
-    }
+    "G": "minecraft:paper",
+    "R": "minecraft:end_rod"
   },
   "result": {
     "id": "justarod:tribocharging_rod",

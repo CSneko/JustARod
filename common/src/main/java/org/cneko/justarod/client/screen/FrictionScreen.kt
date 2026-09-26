@@ -2,8 +2,9 @@ package org.cneko.justarod.client.screen
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import net.minecraft.network.chat.Component
@@ -15,6 +16,8 @@ import kotlin.math.max
 
 // 好奇芦管是什么感觉
 // 解释不了怎么办
+// 26.x：Screen#render(GuiGraphics) → extractRenderState(GuiGraphicsExtractor,...)；
+// 鼠标事件参数改为 MouseButtonEvent；GuiGraphics.pose() 返回 Matrix3x2fStack。
 class FrictionScreen : Screen(Component.empty()) {
     private var heat = 0.0f
     private var sliderPosition = 0.5f // 初始位置在中间
@@ -32,7 +35,7 @@ class FrictionScreen : Screen(Component.empty()) {
     private var shakeOffsetY = 0f
     private var lastShakeTime = 0L
 
-    override fun render(context: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         // 更新热力值
         updateHeat(delta)
 
@@ -41,7 +44,7 @@ class FrictionScreen : Screen(Component.empty()) {
 
         // 应用屏幕抖动
         val matrices = context.pose()
-        matrices.pushPose()
+        matrices.pushMatrix()
         if (heat > shakeThreshold) {
             val shakeIntensity = (heat - shakeThreshold) / (maxHeat - shakeThreshold) // 0-1之间的强度
             val currentTime = System.currentTimeMillis()
@@ -50,7 +53,7 @@ class FrictionScreen : Screen(Component.empty()) {
                 shakeOffsetY = Random.nextFloat() * 10f * shakeIntensity - 5f * shakeIntensity
                 lastShakeTime = currentTime
             }
-            matrices.translate(shakeOffsetX, shakeOffsetY, 0f)
+            matrices.translate(shakeOffsetX, shakeOffsetY)
         } else {
             shakeOffsetX = 0f
             shakeOffsetY = 0f
@@ -100,7 +103,7 @@ class FrictionScreen : Screen(Component.empty()) {
         val stack = ItemStack(Items.PAPER)
         val itemX = (sliderThumbX - 8).toInt()
         val itemY = (sliderY - 4).toInt()
-        context.renderItem(stack, itemX, itemY)
+        context.item(stack, itemX, itemY)
 
 
         // 绘制粒子
@@ -109,9 +112,9 @@ class FrictionScreen : Screen(Component.empty()) {
                 (particle.x + particle.size).toInt(), (particle.y + particle.size).toInt(), 0xFFFFFFFF.toInt())
         }
 
-        matrices.popPose()
+        matrices.popMatrix()
 
-        super.render(context, mouseX, mouseY, delta)
+        super.extractRenderState(context, mouseX, mouseY, delta)
     }
 
     private fun updateHeat(delta: Float) {
@@ -189,11 +192,14 @@ class FrictionScreen : Screen(Component.empty()) {
         }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    // 26.x：鼠标事件参数改为 MouseButtonEvent
+    override fun mouseClicked(event: MouseButtonEvent, doubleClick: Boolean): Boolean {
         val sliderWidth = 100f
         val sliderHeight = 20f
         val sliderX = (width - sliderWidth) / 2
         val sliderY = height * 0.5f
+        val mouseX = event.x
+        val mouseY = event.y
 
         if (mouseX >= sliderX && mouseX <= sliderX + sliderWidth &&
             mouseY >= sliderY && mouseY <= sliderY + sliderHeight) {
@@ -202,20 +208,20 @@ class FrictionScreen : Screen(Component.empty()) {
             return true
         }
 
-        return super.mouseClicked(mouseX, mouseY, button)
+        return super.mouseClicked(event, doubleClick)
     }
 
-    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseReleased(event: MouseButtonEvent): Boolean {
         sliderDragging = false
-        return super.mouseReleased(mouseX, mouseY, button)
+        return super.mouseReleased(event)
     }
 
-    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
+    override fun mouseDragged(event: MouseButtonEvent, deltaX: Double, deltaY: Double): Boolean {
         if (sliderDragging) {
-            updateSliderPosition(mouseX.toFloat())
+            updateSliderPosition(event.x.toFloat())
             return true
         }
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+        return super.mouseDragged(event, deltaX, deltaY)
     }
 
     private fun updateSliderPosition(mouseX: Float) {
@@ -228,7 +234,7 @@ class FrictionScreen : Screen(Component.empty()) {
         return false
     }
 
-    override fun renderBackground(context: GuiGraphics?, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractBackground(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
     }
 
     private data class Particle(

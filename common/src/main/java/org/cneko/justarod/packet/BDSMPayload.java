@@ -5,10 +5,10 @@ import static org.cneko.justarod.Justarod.MODID;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public record BDSMPayload(String uuid, boolean ballMouth, boolean electricShock,boolean bundled,boolean eyePatch,boolean earplug,boolean handcuffed,boolean shackled,boolean noMatingPlz) implements CustomPacketPayload{
-    public static final CustomPacketPayload.Type<BDSMPayload> ID = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(MODID, "bdsm"));
+    public static final CustomPacketPayload.Type<BDSMPayload> ID = new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MODID, "bdsm"));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, BDSMPayload> CODEC = StreamCodec.ofMember(
             // 编码（写入）

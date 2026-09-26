@@ -1,4 +1,7 @@
 package org.cneko.justarod.item.medical
+import org.cneko.justarod.JRIds
+
+import org.cneko.justarod.spawnItemAtLocation
 
 import net.minecraft.core.component.DataComponents
 import net.minecraft.world.item.component.ResolvableProfile
@@ -21,45 +24,51 @@ import org.cneko.justarod.entity.Pregnant
 import org.cneko.toneko.common.mod.util.TickTaskQueue
 
 // 新增实体类导入，用于斩首时判断生物类型并掉落对应头颅
-import net.minecraft.world.entity.monster.Skeleton
-import net.minecraft.world.entity.monster.WitherSkeleton
-import net.minecraft.world.entity.monster.Zombie
+import net.minecraft.world.entity.monster.skeleton.Skeleton
+import net.minecraft.world.entity.monster.skeleton.WitherSkeleton
+import net.minecraft.world.entity.monster.zombie.Zombie
 import net.minecraft.world.entity.monster.Creeper
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon
 
 // 继承自 MedicalItem
-class ScalpelItem(properties: Properties) : MedicalItem(Properties().stacksTo(1).durability(4)) {
+class ScalpelItem(properties: Properties) : MedicalItem(JRIds.itemProps("scalpel").stacksTo(1).durability(4)) {
 
-    override fun appendHoverText(stack: ItemStack, context: TooltipContext, tooltip: MutableList<Component>, type: TooltipFlag) {
-        super.appendHoverText(stack, context, tooltip, type)
+        override fun appendHoverText(
+        stack: ItemStack,
+        context: net.minecraft.world.item.Item.TooltipContext,
+        display: net.minecraft.world.item.component.TooltipDisplay,
+        adder: java.util.function.Consumer<Component>,
+        type: TooltipFlag
+    ) {
+        super.appendHoverText(stack, context, display, adder, type)
         if (stack.containsEnchantment(JREnchantments.HYSTERECTOMY)) {
-            tooltip.add(Component.literal("§c使用它可进行子宫切除"))
-            tooltip.add(Component.literal("§c此操作会永久切除子宫，请谨慎使用！"))
+            adder.accept(Component.literal("§c使用它可进行子宫切除"))
+            adder.accept(Component.literal("§c此操作会永久切除子宫，请谨慎使用！"))
         } else if (stack.containsEnchantment(JREnchantments.UTERUS_INSTALLATION)) {
-            tooltip.add(Component.literal("§a使用它可以安装子宫"))
+            adder.accept(Component.literal("§a使用它可以安装子宫"))
         } else if (stack.containsEnchantment(JREnchantments.MASTECTOMY)) {
-            tooltip.add(Component.literal("§c使用它可以进行乳房切除"))
+            adder.accept(Component.literal("§c使用它可以进行乳房切除"))
         } else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)) {
-            tooltip.add(Component.literal("§a想练此功，必先自宫"))
+            adder.accept(Component.literal("§a想练此功，必先自宫"))
         } else if (stack.containsEnchantment(JREnchantments.AMPUTATING)) {
-            tooltip.add(Component.literal("§c使用它可以进行截肢"))
-            tooltip.add(Component.literal("§d嗯... 你应该不是病娇吧？"))
+            adder.accept(Component.literal("§c使用它可以进行截肢"))
+            adder.accept(Component.literal("§d嗯... 你应该不是病娇吧？"))
         } else if (stack.containsEnchantment(JREnchantments.BEHEADING)) {
-            tooltip.add(Component.literal("§c使用它可以进行斩首"))
-            tooltip.add(Component.literal("§d这样做的话... 嗯... 小心点哦~"))
+            adder.accept(Component.literal("§c使用它可以进行斩首"))
+            adder.accept(Component.literal("§d这样做的话... 嗯... 小心点哦~"))
         } else if (stack.containsEnchantment(JREnchantments.HEMORRHOIDECTOMY)) {
-            tooltip.add(Component.literal("§c使用它可进行痔疮切除术"))
-            tooltip.add(Component.literal("§7彻底解决难言之隐"))
+            adder.accept(Component.literal("§c使用它可进行痔疮切除术"))
+            adder.accept(Component.literal("§7彻底解决难言之隐"))
         } else if (stack.containsEnchantment(JREnchantments.HYMENOTOMY)) {
-            tooltip.add(Component.literal("§c使用它可进行处女膜切开术"))
-            tooltip.add(Component.literal("§a用来切除闭锁问题"))
-            tooltip.add(Component.literal("§7当然你也可以选择放弃处的身份"))
+            adder.accept(Component.literal("§c使用它可进行处女膜切开术"))
+            adder.accept(Component.literal("§a用来切除闭锁问题"))
+            adder.accept(Component.literal("§7当然你也可以选择放弃处的身份"))
         } else if (stack.containsEnchantment(JREnchantments.LAPAROSCOPY)) {
-            tooltip.add(Component.literal("§c使用它可进行腹腔镜微创手术"))
-            tooltip.add(Component.literal("§a用于修补黄体破裂及清理腹腔积血"))
+            adder.accept(Component.literal("§c使用它可进行腹腔镜微创手术"))
+            adder.accept(Component.literal("§a用于修补黄体破裂及清理腹腔积血"))
         } else if (stack.containsEnchantment(JREnchantments.CATARACT_SURGERY)) {
-            tooltip.add(Component.literal("§c使用它可进行白内障手术（晶状体置换）"))
-            tooltip.add(Component.literal("§a撕开浑浊的晶状体，换上一片崭新的人工晶体"))
+            adder.accept(Component.literal("§c使用它可进行白内障手术（晶状体置换）"))
+            adder.accept(Component.literal("§a撕开浑浊的晶状体，换上一片崭新的人工晶体"))
         }
     }
 
@@ -152,18 +161,18 @@ class ScalpelItem(properties: Properties) : MedicalItem(Properties().stacksTo(1)
                 target.hurt(target.level().damageSources().generic(), 1000f)
                 if (target.random.nextBoolean()) {
                     val head = Items.PLAYER_HEAD.defaultInstance
-                    head.set(DataComponents.PROFILE, ResolvableProfile(target.gameProfile))
-                    target.spawnAtLocation(head)
+                    head.set(DataComponents.PROFILE, ResolvableProfile.createResolved(target.gameProfile))
+                    target.spawnItemAtLocation(head)
                 } else {
-                    target.spawnAtLocation(Items.BONE.defaultInstance)
+                    target.spawnItemAtLocation(Items.BONE.defaultInstance)
                 }
             } else {
                 when {
-                    target is WitherSkeleton -> target.spawnAtLocation(Items.WITHER_SKELETON_SKULL.defaultInstance)
-                    target is Skeleton -> target.spawnAtLocation(Items.SKELETON_SKULL.defaultInstance)
-                    target is Zombie -> target.spawnAtLocation(Items.ZOMBIE_HEAD.defaultInstance)
-                    target is Creeper -> target.spawnAtLocation(Items.CREEPER_HEAD.defaultInstance)
-                    target is EnderDragon -> target.spawnAtLocation(Items.DRAGON_HEAD.defaultInstance)
+                    target is WitherSkeleton -> target.spawnItemAtLocation(Items.WITHER_SKELETON_SKULL.defaultInstance)
+                    target is Skeleton -> target.spawnItemAtLocation(Items.SKELETON_SKULL.defaultInstance)
+                    target is Zombie -> target.spawnItemAtLocation(Items.ZOMBIE_HEAD.defaultInstance)
+                    target is Creeper -> target.spawnItemAtLocation(Items.CREEPER_HEAD.defaultInstance)
+                    target is EnderDragon -> target.spawnItemAtLocation(Items.DRAGON_HEAD.defaultInstance)
                 }
                 target.hurt(target.level().damageSources().generic(), 1000f)
             }
@@ -176,14 +185,14 @@ class ScalpelItem(properties: Properties) : MedicalItem(Properties().stacksTo(1)
 
         // 通用效果：扣血和状态效果
         target.hurt(target.level().damageSources().generic(), 10f)
-        target.addEffect(MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 600, 1))
-        target.addEffect(MobEffectInstance(MobEffects.DIG_SLOWDOWN, 600, 1))
-        target.addEffect(MobEffectInstance(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(JREffects.FAINT_EFFECT!!), 300, 1))
+        target.addEffect(MobEffectInstance(MobEffects.SLOWNESS, 600, 1))
+        target.addEffect(MobEffectInstance(MobEffects.MINING_FATIGUE, 600, 1))
+        target.addEffect(MobEffectInstance(JREffects.FAINT_EFFECT, 300, 1))
 
         // 根据附魔执行特定效果
         if (stack.containsEnchantment(JREnchantments.HYSTERECTOMY)) {
             target.setHasUterus(false)
-            target.spawnAtLocation(ItemStack(JRItems.UTERUS))
+            target.spawnItemAtLocation(ItemStack(JRItems.UTERUS))
         } else if (stack.containsEnchantment(JREnchantments.UTERUS_INSTALLATION)) {
             target.setHasUterus(true)
             val offhandStack = user.getItemInHand(if (hand == InteractionHand.MAIN_HAND) InteractionHand.OFF_HAND else InteractionHand.MAIN_HAND)
@@ -207,33 +216,33 @@ class ScalpelItem(properties: Properties) : MedicalItem(Properties().stacksTo(1)
                     // 修复：原写法 addEffect(CONFUSION, 0, 20*15) 会被解析成"时长0、等级300"，
                     // 且依赖的 rod.addEffect 扩展在 mojmap 迁移后无法解析；改用标准 MobEffectInstance
                     target.addEffect(MobEffectInstance(
-                        MobEffects.CONFUSION, 20 * 15, 0
+                        MobEffects.NAUSEA, 20 * 15, 0
                     ))
                     val complicationMsg = "§c并发症！手术对你造成了永久性损伤！"
                     if (user != target) {
-                        user.sendSystemMessage(Component.literal("§e并发症发生了..."))
+                        (user as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§e并发症发生了..."))
                     }
-                    target.sendSystemMessage(Component.literal(complicationMsg))
+                    (target as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal(complicationMsg))
                 }
             }
             target.pregnant = 0
-            target.spawnAtLocation(JRItems.MOLE.defaultInstance)
+            target.spawnItemAtLocation(JRItems.MOLE.defaultInstance)
         } else if (stack.containsEnchantment(JREnchantments.MASTECTOMY)) {
             target.breastCancer = 0
-            target.spawnAtLocation(Items.CHICKEN.defaultInstance)
+            target.spawnItemAtLocation(Items.CHICKEN.defaultInstance)
         } else if (stack.containsEnchantment(JREnchantments.ORCHIECTOMY)) {
             target.isOrchiectomy = true
             val eggs = Items.EGG.defaultInstance
             eggs.count = 2
-            target.spawnAtLocation(eggs)
+            target.spawnItemAtLocation(eggs)
             target.hurt(target.level().damageSources().generic(), 6f)
         } else if (stack.containsEnchantment(JREnchantments.AMPUTATING)) {
             target.isAmputated = true
             target.hurt(target.level().damageSources().generic(), 8f)
-            target.spawnAtLocation(Items.BONE.defaultInstance)
+            target.spawnItemAtLocation(Items.BONE.defaultInstance)
         } else if (stack.containsEnchantment(JREnchantments.HEMORRHOIDECTOMY)) {
             target.hemorrhoids = 0
-            target.spawnAtLocation(ItemStack(JRItems.MOLE))
+            target.spawnItemAtLocation(ItemStack(JRItems.MOLE))
             target.hurt(target.level().damageSources().generic(), 4f)
             target.addEffect(MobEffectInstance(MobEffects.WEAKNESS, 1200, 0))
         } else if (stack.containsEnchantment(JREnchantments.HYMENOTOMY)) {
@@ -243,12 +252,12 @@ class ScalpelItem(properties: Properties) : MedicalItem(Properties().stacksTo(1)
             // 调用治愈方法 (cure方法内部会给予瞬间恢复效果，正好抵消上面的通用10点扣血)
             target.cureCorpusLuteumRupture()
             // 掉落清理出来的腹腔积血 (血块)
-            target.spawnAtLocation(JRItems.MOLE.defaultInstance)
+            target.spawnItemAtLocation(JRItems.MOLE.defaultInstance)
         } else if (stack.containsEnchantment(JREnchantments.CATARACT_SURGERY)) {
             // 调用治愈方法 (cureCataract 内部会给予短暂的术后畏光失明，符合手术设定)
             target.cureCataract()
             // 掉落被摘除的浑浊晶状体
-            target.spawnAtLocation(JRItems.MOLE.defaultInstance)
+            target.spawnItemAtLocation(JRItems.MOLE.defaultInstance)
         }
     }
 

@@ -1,0 +1,18 @@
+{
+  "name": "Mating Items",
+  "category": "justarod:misc",
+  "icon": "justarod:yuri_mating_mating_mating",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:free_mating",
+      "text": "$(item)Free Mating$() — use on any creature to mate instantly and get pregnant; the baby type follows the partner!$(br2)Note: going without a $(item)Condom$() means inheriting the partner's negative effects too~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:yuri_mating_mating_mating",
+      "text": "$(item)Yuri Mating Mating Mating$() — a rare item. Use it on a yuri-inclined partner so the two of you can create a «crystallization of love» together!$(br2)$dIf she isn't into girls, please don't force her...$()"
+    }
+  ]
+}

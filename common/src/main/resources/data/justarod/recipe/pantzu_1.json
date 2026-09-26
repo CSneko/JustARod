@@ -1,15 +1,9 @@
 {
   "type": "minecraft:crafting_shaped",
   "key": {
-    "L": {
-      "item": "minecraft:light_blue_carpet"
-    },
-    "W": {
-      "item": "minecraft:white_carpet"
-    },
-    "S": {
-      "item": "minecraft:string"
-    }
+    "L": "minecraft:light_blue_carpet",
+    "W": "minecraft:white_carpet",
+    "S": "minecraft:string"
   },
   "pattern": [
     "SLS",

@@ -60,17 +60,17 @@ class YuriQuirk : JRDefaultQuirk("yuri") {
                 level.sendParticles(ParticleTypes.HEART, player.x, player.y + 1.0, player.z, 5, 0.5, 0.5, 0.5, 0.1)
 
                 // 给BUFF
-                entity.addEffect(MobEffectInstance(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(JREffects.LILY_PHEROMONE_EFFECT!!), 20 * 5, 0))
-                player.addEffect(MobEffectInstance(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(JREffects.LILY_PHEROMONE_EFFECT!!), 20 * 5, 0))
+                entity.addEffect(MobEffectInstance(JREffects.LILY_PHEROMONE_EFFECT, 20 * 5, 0))
+                player.addEffect(MobEffectInstance(JREffects.LILY_PHEROMONE_EFFECT, 20 * 5, 0))
 
                 // 发送提示文本
                 if (player is ServerPlayer) {
                     val msgKey = "你与 ${entity.name.string} 贴贴了!"
-                    player.sendSystemMessage(Component.literal(msgKey).withStyle(ChatFormatting.LIGHT_PURPLE))
+                    (player as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal(msgKey).withStyle(ChatFormatting.LIGHT_PURPLE))
                 }
                 if (entity is ServerPlayer) {
                     val msgKey = "你与 ${player.name.string} 贴贴了!"
-                    entity.sendSystemMessage(Component.literal(msgKey).withStyle(ChatFormatting.LIGHT_PURPLE))
+                    (entity as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal(msgKey).withStyle(ChatFormatting.LIGHT_PURPLE))
                 }
             }
 

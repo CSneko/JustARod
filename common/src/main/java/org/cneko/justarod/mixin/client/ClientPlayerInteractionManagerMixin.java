@@ -54,6 +54,6 @@ public class ClientPlayerInteractionManagerMixin {
 
     @Unique
     private boolean isDisabled() {
-        return Minecraft.getInstance().player.getHandcuffed() > 0;
+        return ((org.cneko.justarod.entity.BDSMable) (Object) Minecraft.getInstance().player).getHandcuffed() > 0;
     }
 }

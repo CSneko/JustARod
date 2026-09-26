@@ -1,0 +1,18 @@
+{
+  "name": "Dungeon 101: Whips",
+  "category": "justarod:bdsm",
+  "icon": "justarod:whip",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:whip",
+      "text": "$(item)Whip$() — «Ahh~♡ No more, master~»$(br2)Left-click to strike for damage with knockback and particles; $(thing)hold right-click to charge$() and unleash a whip wave that hits every target in range!"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:contract_whip",
+      "text": "$(item)Contract Whip$() — the whip's upgraded form. Striking a neko has a $(#FF69B4)1/3$() chance to form a master-servant contract, making her accept you as her owner! (once per target)$(br2)$5One lash to seal the bond. That's how domineering it is, meow~$()"
+    }
+  ]
+}

@@ -34,22 +34,16 @@ public class LivingEntityMixin implements Insertable {
     }
 
 
+    // 26.x：实体存档改为 ValueInput/ValueOutput，ItemStack 走 Codec
     @Inject(method = "readAdditionalSaveData", at = @At("HEAD"))
-    public void readAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
-        LivingEntity self = (LivingEntity) (Object) this;
-        if (nbt.contains("rodInside")) {
-            var rod = ItemStack.parse(self.registryAccess(),nbt.getCompound("rodInside"));
-            rod.ifPresent(this::setRodInside);
-        }
+    public void readAdditionalSaveData(net.minecraft.world.level.storage.ValueInput in, CallbackInfo ci) {
+        in.read("rodInside", ItemStack.OPTIONAL_CODEC).ifPresent(this::setRodInside);
     }
 
     @Inject(method = "addAdditionalSaveData", at = @At("HEAD"))
-    public void addAdditionalSaveData(CompoundTag nbt, CallbackInfo ci) {
-        LivingEntity self = (LivingEntity) (Object) this;
+    public void addAdditionalSaveData(net.minecraft.world.level.storage.ValueOutput out, CallbackInfo ci) {
         if (!getRodInside().isEmpty()) {
-            nbt.put("rodInside", getRodInside().save(
-                    self.registryAccess()
-            ));
+            out.store("rodInside", ItemStack.CODEC, getRodInside());
         }
     }
 
@@ -68,8 +62,9 @@ public class LivingEntityMixin implements Insertable {
         builder.add(JRAttributes.Companion.getGENERIC_MAX_POWER());
     }
 
-    @Inject(method = "hurt", at = @At("HEAD"))
-    public void onDamage(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+    // 26.x：LivingEntity#hurt 拆分为 hurtServer/hurtClient，注入服务端版本
+    @Inject(method = "hurtServer", at = @At("HEAD"))
+    public void onDamage(net.minecraft.server.level.ServerLevel level, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         LivingEntity self = (LivingEntity) (Object) this;
         if (self instanceof Pregnant pregnant && amount >=7 && pregnant.isPregnant()){
             // 流产

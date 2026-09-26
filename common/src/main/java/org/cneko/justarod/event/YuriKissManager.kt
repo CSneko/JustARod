@@ -117,7 +117,7 @@ object YuriKissManager {
         world.sendParticles(ParticleTypes.HEART, midX, midY, midZ, 8, 0.3, 0.3, 0.3, 0.05)
 
         // 赋予百合花香效果 (持续 5 秒 = 100 tick)
-        e1.addEffect(MobEffectInstance(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(JREffects.LILY_PHEROMONE_EFFECT!!), 20 * 5, 0))
-        e2.addEffect(MobEffectInstance(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(JREffects.LILY_PHEROMONE_EFFECT!!), 20 * 5, 0))
+        e1.addEffect(MobEffectInstance(JREffects.LILY_PHEROMONE_EFFECT, 20 * 5, 0))
+        e2.addEffect(MobEffectInstance(JREffects.LILY_PHEROMONE_EFFECT, 20 * 5, 0))
     }
 }

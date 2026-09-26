@@ -3,6 +3,7 @@ package org.cneko.justarod;
 import org.cneko.justarod.api.NetWorkingRodData;
 import org.cneko.justarod.block.JRBlocks;
 import org.cneko.justarod.command.JRCommands;
+import org.cneko.justarod.config.JRConfig;
 import org.cneko.justarod.effect.JREffects;
 import org.cneko.justarod.entity.JREntities;
 import org.cneko.justarod.genetics.RodGenetics;
@@ -26,6 +27,9 @@ public class Justarod {
     public static final String MODID = "justarod";
 
     public static void init() {
+        // 配置文件（config/justarod.json），需在注册前加载
+        JRConfig.load();
+
         NetWorkingRodData.Companion.init();
         JRItems.Companion.init();
         JRBlocks.init();
@@ -41,8 +45,14 @@ public class Justarod {
         JRNetWorkingEvents.init();
         JRCriteria.init();
 
+        // ===== 驯服史莱姆系统 =====
+        org.cneko.justarod.entity.slime.JRMenus.init();
+        JRSlimeNetworking.init();
+
         EntityDeathEvent.init();
         EntityRespawnEvent.init();
+        SleepEvents.init();
+        GuideBookEvent.Companion.init();
         LactationInteractionEvents.Companion.init();
         RodGenetics.INSTANCE.init();
     }

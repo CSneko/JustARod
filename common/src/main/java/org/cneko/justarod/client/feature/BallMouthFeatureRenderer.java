@@ -1,53 +1,41 @@
 package org.cneko.justarod.client.feature;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.PlayerModel;
-import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.model.player.PlayerModel;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import net.minecraft.client.renderer.entity.state.AvatarRenderState;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.world.item.ItemDisplayContext;
-import org.cneko.justarod.entity.BDSMable;
-import org.cneko.justarod.item.JRItems;
 
-public class BallMouthFeatureRenderer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
+/**
+ * 26.x 提交式渲染管线：
+ * AvatarRenderer 在 extract 阶段把口球物品解析为 ItemStackRenderState，
+ * 这里在 submit 阶段贴到头部模型上。
+ */
+public class BallMouthFeatureRenderer extends RenderLayer<AvatarRenderState, PlayerModel> {
 
-
-    public BallMouthFeatureRenderer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> context) {
+    public BallMouthFeatureRenderer(RenderLayerParent<AvatarRenderState, PlayerModel> context) {
         super(context);
     }
 
     @Override
-    public void render(PoseStack matrices, MultiBufferSource vertexConsumers, int light,
-                       AbstractClientPlayer player, float limbAngle, float limbDistance,
-                       float tickDelta, float animationProgress, float headYaw, float headPitch) {
+    public void submit(PoseStack poseStack, SubmitNodeCollector collector, int light,
+                       AvatarRenderState state, float partialTick, float f) {
+        ItemStackRenderState item = BallMouthRenderStateCache.get(state);
+        if (item == null || item.isEmpty()) {
+            return;
+        }
 
-        if (!(player instanceof BDSMable bm) || bm.getBallMouth() <= 0) return;
+        poseStack.pushPose();
 
-        matrices.pushPose();
+        getParentModel().head.translateAndRotate(poseStack);
+        poseStack.translate(0.0F, 0.1F, 0.0F);
+        poseStack.scale(0.7F, 0.7F, 0.7F);
 
-        // 跟随头部旋转
-        getParentModel().head.translateAndRotate(matrices);
+        item.submit(poseStack, collector, light, OverlayTexture.NO_OVERLAY, state.outlineColor);
 
-        // 平移：x 左右，y 上下，z 前后（单位是方块的 1/16）
-        matrices.translate(0.0F, 0.1f, 0f);
-        // 缩放：让口球稍微小一点
-        matrices.scale(0.7F, 0.7F, 0.7F);
-
-        Minecraft.getInstance().getItemRenderer().renderStatic(
-                JRItems.Companion.getBALL_MOUTH().getDefaultInstance(),
-                ItemDisplayContext.FIXED,
-                light,
-                OverlayTexture.NO_OVERLAY,
-                matrices,
-                vertexConsumers,
-                player.level(),
-                0
-        );
-
-        matrices.popPose();
+        poseStack.popPose();
     }
-
 }

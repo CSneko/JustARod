@@ -1,12 +1,8 @@
 {
   "type": "minecraft:crafting_shaped",
   "key": {
-    "Q": {
-      "item": "minecraft:quartz_block"
-    },
-    "P": {
-      "item": "minecraft:purpur_block"
-    }
+    "Q": "minecraft:quartz_block",
+    "P": "minecraft:purpur_block"
   },
   "pattern": [
     " Q ",

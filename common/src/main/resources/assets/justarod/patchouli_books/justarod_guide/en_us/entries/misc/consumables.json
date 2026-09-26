@@ -1,0 +1,33 @@
+{
+  "name": "Food & Drugs",
+  "category": "justarod:misc",
+  "icon": "justarod:bremelanotide",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:iced_tea",
+      "text": "$(item)Iced Tea$() — right-click to throw! Anyone hit gets to enjoy an extremely embarrassing sound clip...«Boss, I missed you [crying][crying]»"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:shenbao",
+      "text": "$(item)Kidney Tonic$() — grants 5 minutes of Strength when eaten. Strong kidneys, strong body!"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:growth_agent",
+      "text": "$(item)Growth Agent$() / $(item)Reverse Growth Agent$() — injections that grow or shrink the target's body size (±0.1 per dose). Where lolicons and giant-lovers meet~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:bremelanotide",
+      "text": "$(item)C50H68N14O10$() (Bremelanotide) — puts the target into a long $(#FF69B4)estrus$() state with nausea on the side. The chemical formula is printed right on the item. Professional, meow~"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:mole",
+      "text": "$(item)Strange Fleshy Lump$() and $(item)Feces$() — technically edible... causes nausea though. WHO exactly is eating this?!"
+    }
+  ]
+}

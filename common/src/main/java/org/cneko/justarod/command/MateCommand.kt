@@ -53,16 +53,16 @@ class MateCommand {
 
             // 验证逻辑
             if (mateRequests.containsKey(target)) {
-                requester.sendSystemMessage(Component.literal("§c该玩家已有待处理请求"))
+                (requester as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c该玩家已有待处理请求"))
                 return 1
             }
             if (target == requester) {
-                requester.sendSystemMessage(Component.literal("§c不能和自己交配"))
+                (requester as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c不能和自己交配"))
                 return 1
             }
 
             if (target.distanceTo(requester)> 10){
-                requester.sendSystemMessage(Component.literal("§c距离太远，无法交配"))
+                (requester as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c距离太远，无法交配"))
                 return 1
             }
 
@@ -72,26 +72,26 @@ class MateCommand {
             // 创建同意按钮
             val acceptButton: MutableComponent = MutableComponent.create(LiteralContents("§2[同意]"))
             acceptButton.style = acceptButton.style
-                .withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/mate accept"))
-                .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("点击同意")))
+                .withClickEvent(ClickEvent.RunCommand("/mate accept"))
+                .withHoverEvent(HoverEvent.ShowText(Component.literal("点击同意")))
                 .withColor(ChatFormatting.GREEN)
 
             if (!force) {
                 // 创建拒绝按钮
                 val denyButton: MutableComponent = MutableComponent.create(LiteralContents(" §c[拒绝]"))
                 denyButton.style = denyButton.style
-                    .withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/mate deny"))
-                    .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("点击拒绝")))
+                    .withClickEvent(ClickEvent.RunCommand("/mate deny"))
+                    .withHoverEvent(HoverEvent.ShowText(Component.literal("点击拒绝")))
                     .withColor(ChatFormatting.RED)
 
                 // 将按钮添加到消息中
-                target?.sendSystemMessage(requestMessage.append(acceptButton).append(denyButton))
-                target?.sendSystemMessage(Component.literal("§7 10秒钟不应答则视为拒绝"))
+                (target as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(requestMessage.append(acceptButton).append(denyButton))
+                (target as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§7 10秒钟不应答则视为拒绝"))
                 mateRequests[target] = requester
             } else {
                 // 强制模式下只显示同意按钮
-                target?.sendSystemMessage(requestMessage.append(acceptButton).append(acceptButton))
-                target?.sendSystemMessage(Component.literal("§7 10秒钟不应答则视为接受"))
+                (target as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(requestMessage.append(acceptButton).append(acceptButton))
+                (target as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§7 10秒钟不应答则视为接受"))
 
                 mateRequests[target] = requester
             }
@@ -101,8 +101,8 @@ class MateCommand {
             queen.addTask(10 * 20) {
                 if (mateRequests.containsKey(target)) {
                     if (!force) {
-                        requester.sendSystemMessage(Component.literal("§c交配请求超时，交配请求已取消"))
-                        target.sendSystemMessage(Component.literal("§c你没有应答交配请求，交配请求已取消"))
+                        (requester as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c交配请求超时，交配请求已取消"))
+                        (target as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c你没有应答交配请求，交配请求已取消"))
                     }else{
                         mate(requester, target)
                     }
@@ -120,14 +120,14 @@ class MateCommand {
                 mateRequests.remove(target)
                 target?.let { mate(requester, it) }
             } else {
-                target?.sendSystemMessage(Component.literal("§c你没有收到交配请求"))
+                (target as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c你没有收到交配请求"))
             }
             return 1
         }
 
         private fun mate(requester:Player, target:Player){
-            requester.sendSystemMessage(Component.literal("§a交配成功！"))
-            target.sendSystemMessage(Component.literal("§a交配成功！"))
+            (requester as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§a交配成功！"))
+            (target as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§a交配成功！"))
             val entity = SeeeeexNekoEntity(JREntities.SEEEEEX_NEKO, requester.level())
             val world = requester.level()
             if (world is ServerLevel){
@@ -144,11 +144,11 @@ class MateCommand {
             val player: Player? = ctx.source.player
             val requester = mateRequests[player]
             if (requester != null) {
-                player?.sendSystemMessage(Component.literal("§c你拒绝了${requester.name?.string}的交配请求"))
-                requester.sendSystemMessage(Component.literal("§c${player?.name?.string}拒绝了你的交配请求"))
+                (player as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c你拒绝了${requester.name?.string}的交配请求"))
+                (requester as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c${player?.name?.string}拒绝了你的交配请求"))
                 mateRequests.remove(player)
             } else {
-                player?.sendSystemMessage(Component.literal("§c你没有收到交配请求"))
+                (player as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.literal("§c你没有收到交配请求"))
             }
             return 1
         }

@@ -6,12 +6,8 @@
     "SLS"
   ],
   "key": {
-    "S": {
-      "item": "minecraft:string"
-    },
-    "L": {
-      "item": "minecraft:leather"
-    }
+    "S": "minecraft:string",
+    "L": "minecraft:leather"
   },
   "result": {
     "id": "justarod:binding_rope",

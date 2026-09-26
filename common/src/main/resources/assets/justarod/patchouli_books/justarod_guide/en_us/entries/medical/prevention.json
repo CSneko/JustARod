@@ -1,0 +1,38 @@
+{
+  "name": "Prevention & Contraception",
+  "category": "justarod:medical",
+  "icon": "justarod:hpv_vaccine",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:hpv_vaccine",
+      "text": "$(item)HPV Vaccine$() — the classic shot against HPV infection. (Only takes one here.)"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:aids_vaccine",
+      "text": "$(item)AIDS Vaccine$() — before any risky business, give yourself a shot of peace of mind."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:byt",
+      "text": "$(item)Condom (BYT)$() — wear one beforehand for worry-free mating; it even keeps the partner's negative effects from infecting you.$(br2)$(#FF69B4)The condom is one of humanity's greatest inventions, meow!$()"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:brith_controlling_pill",
+      "text": "$(item)Birth Control Pill$() — take this if you don't want babies anytime soon."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:sterilization_pills",
+      "text": "$(item)Sterilization Pills$() — the ultimate permanent contraceptive. No more worries... ever. Use with extreme caution!"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:no_mating_plz",
+      "text": "$(item)Breeding Lock$() — attach it to someone who wants peace and they can no longer breed. «Not today. Really not today, meow.»"
+    }
+  ]
+}

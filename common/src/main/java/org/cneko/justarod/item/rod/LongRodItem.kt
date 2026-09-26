@@ -1,4 +1,5 @@
 package org.cneko.justarod.item.rod
+import org.cneko.justarod.JRIds
 
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.LivingEntity
@@ -13,7 +14,7 @@ import org.cneko.justarod.item.JRComponents
 /*
 其实可以插到顶了
  */
-class LongRodItem : BothUsedItem(Properties().component(JRComponents.Companion.USED_TIME_MARK, 0).durability(2000).stacksTo(1)){
+class LongRodItem : BothUsedItem(JRIds.itemProps("long_rod").component(JRComponents.Companion.USED_TIME_MARK, 0).durability(2000).stacksTo(1)){
     override fun getInstruction(): EndRodInstructions {
         return EndRodInstructions.USE_ON_OTHER_INSERT
     }
@@ -25,18 +26,19 @@ class LongRodItem : BothUsedItem(Properties().component(JRComponents.Companion.U
         val result = super.useOnSelf(stack, world, entity, slot, selected)
         if (result == InteractionResult.SUCCESS){
             entity.hurt(JRDamageTypes.sexualExcitement(entity), 5.0f)
-            entity.sendSystemMessage(Component.translatable("item.justarod.long_rod.already_top"))
+            (entity as? net.minecraft.world.entity.player.Player)?.sendSystemMessage(Component.translatable("item.justarod.long_rod.already_top"))
         }
         return result
     }
 
-    override fun appendHoverText(
-        stack: ItemStack?,
-        context: TooltipContext?,
-        tooltip: MutableList<Component>?,
-        type: TooltipFlag?
+        override fun appendHoverText(
+        stack: ItemStack,
+        context: net.minecraft.world.item.Item.TooltipContext,
+        display: net.minecraft.world.item.component.TooltipDisplay,
+        adder: java.util.function.Consumer<Component>,
+        type: TooltipFlag
     ) {
-        super.appendHoverText(stack, context, tooltip, type)
-        tooltip?.add(Component.translatable("item.justarod.long_rod.tooltip"))
+        super.appendHoverText(stack, context, display, adder, type)
+        adder.accept(Component.translatable("item.justarod.long_rod.tooltip"))
     }
 }

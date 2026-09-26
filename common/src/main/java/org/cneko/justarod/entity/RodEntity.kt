@@ -3,6 +3,7 @@ package org.cneko.justarod.entity
 import net.minecraft.world.entity.*
 import net.minecraft.world.entity.ai.goal.*
 import net.minecraft.world.entity.ai.goal.target.*
+import net.minecraft.world.entity.ai.targeting.TargetingConditions
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier
 import net.minecraft.world.entity.ai.attributes.Attributes
 import net.minecraft.world.damagesource.DamageSource
@@ -27,7 +28,10 @@ import net.minecraft.util.TimeUtil
 import net.minecraft.world.DifficultyInstance
 import net.minecraft.world.level.ServerLevelAccessor
 import net.minecraft.world.level.Level
+import net.minecraft.world.level.storage.ValueInput
+import net.minecraft.world.level.storage.ValueOutput
 import org.cneko.justarod.genetics.RodGenetics
+import org.cneko.justarod.api.VisualSized
 import org.cneko.toneko.common.mod.genetics.api.*
 import org.cneko.justarod.block.JRBlocks
 import org.cneko.justarod.effect.JREffects
@@ -36,15 +40,15 @@ import net.minecraft.core.registries.BuiltInRegistries
 import org.cneko.toneko.common.mod.entities.NekoEntity
 import org.cneko.toneko.common.mod.items.ToNekoItems
 import org.cneko.toneko.common.mod.misc.mixininterface.SlowTickable
-import software.bernie.geckolib.animatable.GeoEntity
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache
-import software.bernie.geckolib.animation.AnimatableManager
-import software.bernie.geckolib.animation.AnimationController
-import software.bernie.geckolib.animation.AnimationController.AnimationStateHandler
-import software.bernie.geckolib.animation.AnimationState
-import software.bernie.geckolib.animation.RawAnimation
-import software.bernie.geckolib.constant.DefaultAnimations
-import software.bernie.geckolib.util.GeckoLibUtil
+import com.geckolib.animatable.GeoEntity
+import com.geckolib.animatable.instance.AnimatableInstanceCache
+import com.geckolib.animatable.manager.AnimatableManager
+import com.geckolib.animation.AnimationController
+import com.geckolib.animation.AnimationController.AnimationStateHandler
+import com.geckolib.animation.state.AnimationTest
+import com.geckolib.animation.RawAnimation
+import com.geckolib.constant.DefaultAnimations
+import com.geckolib.util.GeckoLibUtil
 import java.util.*
 
 /*
@@ -52,7 +56,7 @@ import java.util.*
 哇哦哇哦，那可得太爽了呀~
  */
 class RodEntity(private val entityType:EntityType<RodEntity>, world: Level):TamableAnimal(entityType,world),GeoEntity,NeutralMob,
-    Enemy, SlowTickable, IGeneticEntity {
+    Enemy, SlowTickable, IGeneticEntity, VisualSized {
     private val animCache: AnimatableInstanceCache = GeckoLibUtil.createInstanceCache(this)
     private val defSpeed:Double = 0.8
     private val slowSpeed:Double = 0.6
@@ -79,11 +83,11 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: Level):Tama
         }
     }
 
-    override fun getBreedOffspring(world: ServerLevel?, entity: AgeableMob?): AgeableMob {
-        val baby = RodEntity(entityType, world!!)
-        if (entity is IGeneticEntity) {
+    override fun getBreedOffspring(level: ServerLevel, partner: AgeableMob): AgeableMob {
+        val baby = RodEntity(entityType, level)
+        if (partner is IGeneticEntity) {
             val paternal = genome.createGamete(random)
-            val maternal = entity.genome.createGamete(entity.random)
+            val maternal = partner.genome.createGamete(partner.random)
             baby.setGenome(Genome.combine(paternal, maternal, RodGenetics.KARYOTYPE))
         } else {
             val g1 = Genome.generateFallbackGamete(random, RodGenetics.KARYOTYPE)
@@ -94,8 +98,8 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: Level):Tama
         return baby
     }
 
-    override fun isFood(stack: ItemStack?): Boolean {
-        return stack?.`is`(Items.END_ROD) == true
+    override fun isFood(stack: ItemStack): Boolean {
+        return stack.`is`(Items.END_ROD)
     }
 
     override fun registerGoals() {
@@ -121,42 +125,48 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: Level):Tama
             addGoal(1, OwnerHurtTargetGoal(this@RodEntity)) // 跟踪攻击主人的目标
             addGoal(2, OwnerHurtByTargetGoal(this@RodEntity))    // 攻击主人攻击的目标
             addGoal(3, HurtByTargetGoal(this@RodEntity).setAlertOthers()) // 被攻击时复仇
+            // 26.x：第四参数改为 TargetingConditions.Selector (test(LivingEntity, ServerLevel))
             addGoal(10, NearestAttackableTargetGoal(
                 this@RodEntity,
                 Monster::class.java,  // 主动攻击所有敌对生物
-                true
-            ) { _ -> true })
+                true,
+                TargetingConditions.Selector { _, _ -> true }
+            ))
 
             // 修改后的玩家目标选择条件
             addGoal(1, NearestAttackableTargetGoal(
                 this@RodEntity,
                 Player::class.java,
-                false
-            ) { entity ->
-                isAngryAt(entity as LivingEntity) // 移除!isTamed条件
-            })
+                false,
+                TargetingConditions.Selector { entity, _ ->
+                    // 愤怒中的玩家作为目标
+                    this@RodEntity.isAngry && this@RodEntity.getPersistentAngerTarget()?.getUUID() == entity.uuid
+                }
+            ))
 
             addGoal(5, ResetUniversalAngerTargetGoal(this@RodEntity, true)) // 通用愤怒机制
         }
     }
 
-    override fun doHurtTarget(target: Entity?): Boolean {
-        if (target is LivingEntity){
+    // 26.x：doHurtTarget 需要 ServerLevel 参数
+    override fun doHurtTarget(level: ServerLevel, target: Entity): Boolean {
+        if (target is LivingEntity) {
             val intensity = getOrgasmIntensity()
-            target.addEffect(MobEffectInstance(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(JREffects.ORGASM_EFFECT!!), (100 * intensity).toInt(), 0))
+            target.addEffect(MobEffectInstance(JREffects.ORGASM_EFFECT, (100 * intensity).toInt(), 0))
         }
-        return super.doHurtTarget(target)
+        return super.doHurtTarget(level, target)
     }
 
-    override fun registerControllers(controllers: AnimatableManager.ControllerRegistrar?) {
-        controllers!!.add(AnimationController<RodEntity>(this, 20, AnimationStateHandler { state: AnimationState<*>? ->
+    // GeckoLib 5：AnimationController 构造不再接收 animatable，状态类型为 AnimationTest
+    override fun registerControllers(controllers: AnimatableManager.ControllerRegistrar) {
+        controllers.add(AnimationController<RodEntity>("main", 20, AnimationStateHandler { state: AnimationTest<RodEntity> ->
             if (this.pose == Pose.SWIMMING && !this.isInLiquid) {
-                return@AnimationStateHandler state!!.setAndContinue(DefaultAnimations.CRAWL)
+                return@AnimationStateHandler state.setAndContinue(DefaultAnimations.CRAWL)
             } else if (this.isInLiquid && this.isEyeInFluid(FluidTags.WATER)) {
-                return@AnimationStateHandler if (state!!.isMoving) state.setAndContinue(DefaultAnimations.SWIM) else state.setAndContinue(
+                return@AnimationStateHandler if (state.isMoving) state.setAndContinue(DefaultAnimations.SWIM) else state.setAndContinue(
                     DefaultAnimations.CRAWL
                 )
-            } else if (!state!!.isMoving) {
+            } else if (!state.isMoving) {
                 return@AnimationStateHandler if (this.isInSittingPose) state.setAndContinue(
                     RawAnimation.begin().thenLoop("misc.sit")
                 ) else state.setAndContinue(DefaultAnimations.IDLE)
@@ -189,7 +199,7 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: Level):Tama
         // 如果头上有生物，给予orgasm（强度受基因影响）
         if (firstPassenger is LivingEntity) {
             val intensity = getOrgasmIntensity()
-            (firstPassenger as LivingEntity).addEffect(MobEffectInstance(BuiltInRegistries.MOB_EFFECT.wrapAsHolder(JREffects.ORGASM_EFFECT!!), (100 * intensity).toInt(), 0))
+            (firstPassenger as LivingEntity).addEffect(MobEffectInstance(JREffects.ORGASM_EFFECT, (100 * intensity).toInt(), 0))
         }
         if (slowTickCount++> 20) {
             slowTickCount = 0
@@ -211,14 +221,14 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: Level):Tama
         }
     }
 
-    override fun mobInteract(player: Player?, hand: InteractionHand?): InteractionResult {
-        val stack = player?.getItemInHand(hand!!)
-        if (!isTame && stack?.`is`(Items.END_ROD) == true) {
+    override fun mobInteract(player: Player, hand: InteractionHand): InteractionResult {
+        val stack = player.getItemInHand(hand)
+        if (!isTame && stack.`is`(Items.END_ROD)) {
             if (!level().isClientSide) {
                 if (random.nextInt(3) == 0) {
                     tryTame(player)
                     level().broadcastEntityEvent(this, EntityEvent.TAMING_SUCCEEDED)
-                    if (!player.isCreative()) {
+                    if (!player.isCreative) {
                         stack.shrink(1)
                     }
                     return InteractionResult.SUCCESS
@@ -229,25 +239,22 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: Level):Tama
             return InteractionResult.SUCCESS
         }
         if (isTame && isOwnedBy(player)) {
-            if (stack?.`is`(JRBlocks.GOLDEN_LEAVES.asItem()) == true && health < maxHealth) {
+            if (stack.`is`(JRBlocks.GOLDEN_LEAVES.asItem()) && health < maxHealth) {
                 if (!level().isClientSide) {
                     heal(4.0f)
-                    if (!player.isCreative()) {
+                    if (!player.isCreative) {
                         stack.shrink(1)
                     }
                 }
                 return InteractionResult.SUCCESS
             }
         }
-        if (player?.isHolding{
-                    i -> i.item == ToNekoItems.NEKO_POTION
-            } == true){
-            if (!player.isCreative()) {
-                player.getItemInHand(hand!!).shrink(1)
+        if (player.isHolding { i: ItemStack -> i.item == ToNekoItems.NEKO_POTION }) {
+            if (!player.isCreative) {
+                player.getItemInHand(hand).shrink(1)
                 player.addItem(ItemStack(Items.GLASS_BOTTLE))
             }
             if (level() is ServerLevel) {
-                level() as ServerLevel
                 this.remove(RemovalReason.DISCARDED)
                 val neko = SeeeeexNekoEntity(JREntities.SEEEEEX_NEKO, level())
                 neko.setPos(this.x, this.y, this.z)
@@ -261,13 +268,13 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: Level):Tama
         return super.mobInteract(player, hand)
     }
 
-    override fun handleDamageEvent(damageSource: DamageSource?) {
-        super.handleDamageEvent(damageSource)
-        if (damageSource?.entity is Player && !isOwnedBy((damageSource.entity as Player))) {
-            angryAt = (damageSource.entity as Player).uuid
+    // 26.x：handleDamageEvent 已移除，改在 hurtServer 中处理受击逻辑
+    override fun hurtServer(level: ServerLevel, damageSource: DamageSource, amount: Float): Boolean {
+        if (damageSource.entity is Player && !isOwnedBy(damageSource.entity as Player)) {
+            this.angerTargetRef = EntityReference.of(damageSource.entity as LivingEntity)
             startPersistentAngerTimer()
         }
-        if (damageSource?.entity is NekoEntity){
+        if (damageSource.entity is NekoEntity) {
             // 变大
             this.getAttribute(Attributes.SCALE)?.let {
                 it.baseValue = it.baseValue + 0.2
@@ -276,16 +283,17 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: Level):Tama
                 it.baseValue = it.baseValue + 2.0
             }
             this.health = this.health + 2.0f
-            angryAt = damageSource.entity?.uuid
+            this.angerTargetRef = EntityReference.of(damageSource.entity as LivingEntity)
         }
-
+        return super.hurtServer(level, damageSource, amount)
     }
 
     // ========== 遗传学初始化（自然生成时分配随机基因） ==========
+    // 26.x：MobSpawnType 更名为 EntitySpawnReason
     override fun finalizeSpawn(
         world: ServerLevelAccessor,
         difficulty: DifficultyInstance,
-        reason: MobSpawnType,
+        reason: EntitySpawnReason,
         entityData: SpawnGroupData?
     ): SpawnGroupData? {
         val g1 = Genome.generateFallbackGamete(random, RodGenetics.KARYOTYPE)
@@ -304,10 +312,28 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: Level):Tama
     /** 高潮强度倍率 (1.0 = 普通) */
     fun getOrgasmIntensity(): Float = entityData.get(ORGASM_INTENSITY)
 
+    /**
+     * 渲染尺寸（格）：供「缩进史莱姆体内」这类逻辑使用（见 [VisualSized] / SlimeContentSizing）。
+     *
+     * <p>GeckoLib 的渲染器不是 `LivingEntityRenderer`，量不到模型，而且模型本身还会
+     * 按遗传学缩放（[RodRenderer] 里 `widthScale` 走 X/Z、`lengthScale` 走 Y），
+     * 幼年再减半。碰撞箱只有 0.5 格，拿它当渲染尺寸会让杆子在体内捅出壳外。
+     */
+    override fun visualSize(): Float {
+        val lengthScale = 1.0f + getLengthBonus()
+        val widthScale = 1.0f + getWidthBonus()
+        // geo/entity/rod.geo.json：底座 6×2×6 + 杆 2×17×2（像素）→ 高 19 像素 = 1.1875 格
+        val height = ROD_MODEL_HEIGHT * lengthScale
+        val width = ROD_MODEL_WIDTH * widthScale
+        val babyScale = if (isBaby) 0.5f else 1.0f
+        return maxOf(height, width) * babyScale
+    }
+
     private fun tryTame(player: Player) {
-        ownerUUID = player.uuid
-        setTame(true,true)
+        // 26.x：TamableAnimal 用 EntityReference 存储主人
+        setTame(true, true)
         tame(player)
+        this.angerTargetRef = null
         target = null
         isInSittingPose = false
     }
@@ -320,71 +346,61 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: Level):Tama
     }
     override fun defineSynchedData(builder: SynchedEntityData.Builder) {
         super.defineSynchedData(builder)
-        builder.define(ANGER_TIME,0)
         builder.define(LENGTH_BONUS, 0.0f)
         builder.define(WIDTH_BONUS, 0.0f)
         builder.define(ORGASM_INTENSITY, 1.0f)
     }
 
-    override fun addAdditionalSaveData(nbt: CompoundTag) {
-        super.addAdditionalSaveData(nbt)
-        addPersistentAngerSaveData(nbt)
-        nbt.put("Genome", genome.save())
-        nbt.put("GeneticData", geneticData)
+    // 26.x：实体存档改为 ValueInput/ValueOutput，NBT 数据块走 Codec
+    override fun addAdditionalSaveData(out: ValueOutput) {
+        super.addAdditionalSaveData(out)
+        out.store("Genome", CompoundTag.CODEC, genome.save())
+        out.store("GeneticData", CompoundTag.CODEC, geneticData)
     }
 
-    override fun readAdditionalSaveData(nbt: CompoundTag) {
-        super.readAdditionalSaveData(nbt)
-        readPersistentAngerSaveData(level(), nbt)
-        if (nbt.contains("Genome")) {
-            genome.load(nbt.getCompound("Genome"))
-        }
-        if (nbt.contains("GeneticData")) {
-            val loaded = nbt.getCompound("GeneticData")
-            for (key in loaded.allKeys) {
-                geneticData.put(key, loaded.get(key))
+    override fun readAdditionalSaveData(input: ValueInput) {
+        super.readAdditionalSaveData(input)
+        input.read("Genome", CompoundTag.CODEC).ifPresent { genome.load(it) }
+        input.read("GeneticData", CompoundTag.CODEC).ifPresent { loaded ->
+            // 26.x：CompoundTag#getAllKeys -> keySet，get(String) 直接返回 Tag
+            for (key in loaded.keySet()) {
+                loaded.get(key)?.let { value -> geneticData.put(key, value) }
             }
         }
         expressTraits()
     }
 
-    private var angerTime = 0
-    private var angryAt: UUID? = null
+    // 26.x：NeutralMob 不再由 Mob 实现，RodEntity 需自行实现“愤怒结束时间”模型。
+    private var angerEndTime: Long = NeutralMob.NO_ANGER_END_TIME
+    private var angerTargetRef: EntityReference<LivingEntity>? = null
 
-    override fun getRemainingPersistentAngerTime(): Int = entityData.get(ANGER_TIME)
-    override fun setRemainingPersistentAngerTime(time: Int) = entityData.set(ANGER_TIME, time)
-
-    override fun getPersistentAngerTarget() = angryAt
-    override fun setPersistentAngerTarget(uuid: UUID?) { angryAt = uuid }
-
+    override fun getPersistentAngerEndTime(): Long = angerEndTime
+    override fun setPersistentAngerEndTime(endTime: Long) { angerEndTime = endTime }
+    override fun getPersistentAngerTarget(): EntityReference<LivingEntity>? = angerTargetRef
+    override fun setPersistentAngerTarget(persistentAngerTarget: EntityReference<LivingEntity>?) { angerTargetRef = persistentAngerTarget }
     override fun startPersistentAngerTimer() {
-        remainingPersistentAngerTime = ANGER_TIME_RANGE.sample(this.random)
+        this.setPersistentAngerEndTime(this.level().gameTime + ANGER_TIME_RANGE.sample(this.random))
     }
 
-    override fun isAngryAt(entity: LivingEntity?): Boolean {
-        return this.isAngry && this.angryAt?.equals(entity?.uuid) == true
-    }
-
+    /** 愤怒计时推进（原 tickPersistentAnger，改用 NeutralMob 默认逻辑） */
     fun tickPersistentAnger() {
         if (level().isClientSide) return
-        if (isAngry) {
-            remainingPersistentAngerTime = (remainingPersistentAngerTime - 1)
-            if (!isAngry) {
-                onAngerRemoved()
-            }
+        val lvl = level()
+        if (lvl is ServerLevel) {
+            this.updatePersistentAnger(lvl, true)
         }
-    }
-    private fun onAngerRemoved() {
-        angryAt = null
-        target = null
     }
 
 
     companion object{
+        /** 渲染尺寸用：geo/entity/rod.geo.json 的杆高 19 像素（底座 2 + 杆 17） */
+        private const val ROD_MODEL_HEIGHT = 19.0f / 16.0f
+        /** 渲染尺寸用：底座宽 6 像素（杆只有 2 像素，取大者） */
+        private const val ROD_MODEL_WIDTH = 6.0f / 16.0f
+
         fun createRodAttribute():AttributeSupplier.Builder{
             return createMobAttributes().add(Attributes.ATTACK_DAMAGE,4.0)
         }
-        private val ANGER_TIME = SynchedEntityData.defineId(RodEntity::class.java, EntityDataSerializers.INT)
         private val ANGER_TIME_RANGE = TimeUtil.rangeOfSeconds(20, 39)
 
         // 遗传学同步数据

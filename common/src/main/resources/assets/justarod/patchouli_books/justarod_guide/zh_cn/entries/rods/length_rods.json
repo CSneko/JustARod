@@ -1,0 +1,33 @@
+{
+  "name": "长度与元素系列",
+  "category": "justarod:rods",
+  "icon": "justarod:longer_rod",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:long_rod",
+      "text": "$(item)超长末地烛$() —— «这也太长了吧(°Д°)»$(br2)对自己和他人都可以使用，真的可以插到顶！"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:longer_rod",
+      "text": "$(item)比长更长末地烛$() —— 一节更比六节长！$(br2)插到顶了之后还会露出很大一截……你想试试共用吗？伤害也升级为 $(#FF69B4)10 点$()。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:lightning_end_rod",
+      "text": "$(item)避雷针末地烛$() —— 毕竟是铜做的，多少带点毒吧$(br2)使用后会中毒 10 秒；若正处于$(#FF69B4)雷雨天$()，还有 1/3 的概率召唤一道真实的落雷！你真要用这玩意？"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:redstone_rod",
+      "text": "$(item)红石末地烛$() —— 自动款的好用喵，不费力呢♡$(br2)自带 $(#FF69B4)2 级速度$()的红石自动化款式，躺着就能完成的事为什么要自己动手呢？"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "justarod:networking_rod",
+      "text": "$(item)网络末地烛$() — 都看到这里了，还不去给作者点个三连啊！$(br2)对着方块使用可以从网络拉取最新数据更新耐久上限，在线更新的末地烛（确信）。"
+    }
+  ]
+}

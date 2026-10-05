@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "justarod-tests",
+  "version": "1.0.0",
+  "name": "JustARod slime regression tests",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-gametest": [
+      "org.cneko.justarod.test.SlimeGameTests"
+    ],
+    "fabric-client-gametest": [
+      "org.cneko.justarod.test.SlimeClientGameTests"
+    ]
+  },
+  "depends": {
+    "justarod": "*",
+    "fabric-gametest-api-v1": "*"
+  }
+}

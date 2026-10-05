@@ -1,0 +1,4 @@
+[11:13:44] [main/INFO]: [STDERR]: java.lang.InstantiationException: net.minecraft.world.level.Level
+[11:13:44] [main/INFO]: [STDERR]: 	at java.base/jdk.internal.misc.Unsafe.allocateInstance(Native Method)
+[11:13:44] [main/INFO]: [STDERR]: 	at jdk.unsupported/sun.misc.Unsafe.allocateInstance(Unsafe.java:1185)
+[11:13:44] [main/INFO]: [STDERR]: 	at org.cneko.justarod.debug.SlimeSyncTest.main(SlimeSyncTest.java:27)

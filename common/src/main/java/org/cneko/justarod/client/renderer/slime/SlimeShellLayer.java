@@ -57,14 +57,15 @@ public class SlimeShellLayer extends RenderLayer<SlimeRenderState, JRTamedSlimeM
     public void submit(PoseStack poseStack, SubmitNodeCollector collector, int lightCoords,
                        SlimeRenderState state, float limbSwing, float limbSwingAmount) {
         if (state.isInvisible) return;
-        int overlayCoords = LivingEntityRenderer.getOverlayCoords(state, 0.0F);
+        int overlayCoords = LivingEntityRenderer.getOverlayCoords(state, state.flash ? 1.0F : 0.0F);
+        int tint = state.flash ? ARGB.color(235, 255, 255, 255) : SHELL_TINT;
         collector.submitCustomGeometry(poseStack,
                 RenderTypes.entityTranslucent(JRTamedSlimeRenderer.TEXTURE),
                 (pose, consumer) -> {
                     // 回调是延迟执行的（真正绘制时），所以只捕获数值、不捕获状态
                     PoseStack local = new PoseStack();
                     local.last().set(pose);
-                    this.shellModel.root().render(local, consumer, lightCoords, overlayCoords, SHELL_TINT);
+                    this.shellModel.root().render(local, consumer, lightCoords, overlayCoords, tint);
                 });
     }
 }

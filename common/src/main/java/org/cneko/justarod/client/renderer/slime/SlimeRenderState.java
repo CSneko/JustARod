@@ -27,6 +27,11 @@ public class SlimeRenderState extends LivingEntityRenderState {
      * </ul>
      */
     public float devourScale = 1.0F;
+    public org.cneko.justarod.entity.slime.SlimeAbility ability = org.cneko.justarod.entity.slime.SlimeAbility.NONE;
+    public float chargeProgress;
+    public float pulseAge = 100;
+    public int absorptionTicks;
+    public boolean flash;
     /** 仅渲染期使用：当前正在渲染的史莱姆（体内内容层需要它取乘客与物品） */
     public TamedSlimeEntity slime;
 }

@@ -1,8 +1,5 @@
 plugins {
-    // Loom 1.17 原生支持 26.x 去混淆版本：productionNamespace 自动为 official、
-    // 支持 classTweaker 格式的依赖 AW，不再需要 empty-mappings / noIntermediateMappings 等 workaround。
-    id 'dev.architectury.loom' version '1.17.491' apply false
-    // 26.x 为去混淆 Minecraft：Forge/NeoForge 需改用 loom-no-remap 变体（arch-loom 提示）
+    // 26.x 全平台使用官方名称；no-remap 保持 Fabric 依赖的 classTweaker 命名空间一致。
     id 'dev.architectury.loom-no-remap' version '1.17.491' apply false
     id 'architectury-plugin' version '3.5.168'
     id 'com.gradleup.shadow' version '9.2.2' apply false
@@ -20,7 +17,7 @@ allprojects {
 
 subprojects {
     // 所有子项目都是 Architectury/Loom 项目
-    apply plugin: project.name == 'neoforge' ? 'dev.architectury.loom-no-remap' : 'dev.architectury.loom'
+    apply plugin: 'dev.architectury.loom-no-remap'
     apply plugin: 'architectury-plugin'
     apply plugin: 'maven-publish'
     apply plugin: 'org.jetbrains.kotlin.jvm'
@@ -65,12 +62,10 @@ subprojects {
     dependencies {
         minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
         if (project.name != 'neoforge') {
-            // 26.x 去混淆后不需要真正的 mappings；但 arch-loom 仍校验 mappings configuration 必须有依赖，
-            // 故保留本地空 Tiny jar（仅 header "tiny\t2\t0\tofficial\tintermediary\tnamed"）。
-            mappings files("$rootProject.rootDir/libs/empty-mappings.jar")
-            modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
+            // Minecraft 26.x uses official names at runtime. Do not remap dependencies to named.
+            implementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
         }
-        // neoforge 侧的 mappings/Fabric API 由 neoforge/build.gradle 提供
+        // NeoForge 侧使用 neoforge/build.gradle 声明的 Forgified Fabric API。
 
         compileOnly("org.projectlombok:lombok:1.18.46")
         annotationProcessor("org.projectlombok:lombok:1.18.46")

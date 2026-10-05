@@ -4,10 +4,10 @@ architectury {
 
 dependencies {
     // Fabric Loader 仅用于编译期注解（@Environment 等），不要在公共代码中使用它的其他类
-    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+    implementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
 
     // GeckoLib 5.x for 26.1.2 moved to com.geckolib
-    modImplementation "com.geckolib:geckolib-common-26.1.2:$rootProject.geckolib_version"
+    implementation "com.geckolib:geckolib-common-26.1.2:$rootProject.geckolib_version"
 
     // 前置：toNeko（使用本地 26.1.2 构建产物）
     compileOnly files("$rootProject.rootDir/libs/toneko-common-2.0.0.jar")

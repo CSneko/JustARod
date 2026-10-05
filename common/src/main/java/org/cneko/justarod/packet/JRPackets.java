@@ -20,5 +20,7 @@ public class JRPackets {
         PayloadTypeRegistry.clientboundPlay().register(SlimeContentsPayload.ID, SlimeContentsPayload.CODEC);
         // 手动「吞噬」技能状态（冷却 / 附近可吞目标数 / 放大动画进度）
         PayloadTypeRegistry.clientboundPlay().register(SlimeDevourStatePayload.ID, SlimeDevourStatePayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(SlimeCaptivityStatePayload.ID, SlimeCaptivityStatePayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(SlimeFloatingPositionsPayload.ID, SlimeFloatingPositionsPayload.CODEC);
     }
 }

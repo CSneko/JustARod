@@ -67,7 +67,41 @@ public class JRConfig {
                     "Fatigue accumulation multiplier while pregnant (1 = same as normal)")
             .addInt("fatigue.shenbao_relief_ticks", 7200, null,
                     "每份肾宝可以消除的疲劳值（20 tick = 1 秒）",
-                    "Fatigue removed per serving of Shenbao (20 ticks = 1 second)");
+                    "Fatigue removed per serving of Shenbao (20 ticks = 1 second)")
+            // ===== 驯服史莱姆（服务端权威；界面切换可覆盖每只史莱姆的默认分解模式） =====
+            .addBoolean("slime.direct_digestion", false, null,
+                    "新史莱姆默认直接消化吞入的生物；物品仍需催化剂。可在史莱姆界面单独切换",
+                    "Default to automatic prey digestion for new slimes; stored items still need a catalyst")
+            .addBoolean("slime.player_captivity", true, null,
+                    "Lv.5 以下被吞玩家只囚禁不分解，主人主动钻入可驾驶；Lv.5 始终失控并延迟缓慢消化玩家",
+                    "Below level 5 imprison players instead of digesting; level 5 always uses delayed slow digestion")
+            .addBoolean("slime.abilities.enabled", true, null,
+                    "消化苦力怕、末影人、潜影贝后吸收能力", "Absorb abilities from digested creepers, endermen and shulkers")
+            .addFloat("slime.abilities.explosion_power", 5.0f, null,
+                    "爆炸强度（限制 0.5~12）；保护史莱姆、乘客、宠物及 Lv.5 以下的主人",
+                    "Explosion power (0.5-12); protects slime, passengers, pets and the owner below level 5")
+            .addBoolean("slime.abilities.explosion_break_blocks", false, null,
+                    "爆炸是否破坏方块（启用后也遵守 mobGriefing）", "Allow explosion block damage, respecting mobGriefing")
+            .addInt("slime.abilities.creeper_fuse_ticks", 40, null,
+                    "闪烁膨胀到爆炸的时间（tick，限制 10~200）", "Creeper charge duration in ticks (10-200)")
+            .addInt("slime.abilities.cooldown_ticks", 600, null,
+                    "Lv.5 以下能力冷却（tick，至少 20）；Lv.5 冷却为 200 tick（10 秒）", "Ability cooldown below level 5 (at least 20 ticks); level 5 uses 200 ticks")
+            .addFloat("slime.abilities.teleport_range", 16.0f, null,
+                    "瞬移狩猎的最大距离（格，限制 4~64）", "Maximum hunting teleport range in blocks (4-64)")
+            .addFloat("slime.abilities.levitation_radius", 6.0f, null,
+                    "漂浮冲击的范围（碰撞箱外扩格数，限制 1~16）", "Levitation pulse range beyond slime bounds (1-16)")
+            .addInt("slime.abilities.levitation_ticks", 100, null,
+                    "猎物升空聚拢时长（tick，限制 20~400）", "Prey lift and gathering duration in ticks (20-400)")
+            .addInt("slime.level5.player_grace_ticks", 3600, null,
+                    "Lv.5 囚禁玩家后开始消化前的宽限时间（默认 3 分钟，20 tick = 1 秒）",
+                    "Level 5 player grace period before digestion (default 3 minutes)")
+            .addInt("slime.level5.player_damage_interval", 100, null,
+                    "玩家缓慢消化的伤害间隔（tick，至少 20；默认 5 秒）", "Player digestion damage interval (at least 20 ticks)")
+            .addFloat("slime.level5.player_damage", 1f, null,
+                    "每次玩家消化伤害（生命值，默认半颗心，限制 0.5~4）", "Damage per player digestion pulse (0.5-4 health)")
+            .addInt("slime.level5.player_blur_ramp_ticks", 1200, null,
+                    "消化开始后视野模糊逐渐增强至最大所用时间（tick，默认 1 分钟）",
+                    "Time for digestion blur to reach maximum (default 1 minute)");
 
     /** 初始化配置文件（缺失的键会被补全），在模组初始化时调用 */
     public static void load() {
@@ -79,33 +113,37 @@ public class JRConfig {
     }
 
     private static float getFloat(String key, float min) {
-        float v;
-        try {
-            v = CONFIG_BUILDER.getConfig().getFloat(key);
-        } catch (Exception e) {
-            v = ((Number) CONFIG_BUILDER.get(key).value).floatValue();
-        }
-        return Math.max(v, min);
+        Object value = CONFIG_BUILDER.getExist(key).value;
+        float number = value instanceof Number n ? n.floatValue() : ((Number) CONFIG_BUILDER.get(key).value).floatValue();
+        if (!Float.isFinite(number)) number = ((Number) CONFIG_BUILDER.get(key).value).floatValue();
+        return Math.max(min, number);
     }
 
     private static boolean getBoolean(String key) {
-        try {
-            return CONFIG_BUILDER.getConfig().getBoolean(key);
-        } catch (Exception e) {
-            Object value = CONFIG_BUILDER.get(key).value;
-            return value instanceof Boolean b && b;
-        }
+        Object value = CONFIG_BUILDER.getExist(key).value;
+        return value instanceof Boolean b ? b : (Boolean) CONFIG_BUILDER.get(key).value;
     }
 
     public static int getInt(String key, int min) {
-        int v;
-        try {
-            v = CONFIG_BUILDER.getConfig().getInt(key);
-        } catch (Exception e) {
-            v = ((Number) CONFIG_BUILDER.get(key).value).intValue();
-        }
-        return Math.max(v, min);
+        Object value = CONFIG_BUILDER.getExist(key).value;
+        return Math.max(min, value instanceof Number n ? n.intValue() : ((Number) CONFIG_BUILDER.get(key).value).intValue());
     }
+
+    // ===== 驯服史莱姆 =====
+    public static boolean isSlimeDirectDigestion() { return getBoolean("slime.direct_digestion"); }
+    public static boolean isSlimePlayerCaptivity() { return getBoolean("slime.player_captivity"); }
+    public static boolean isSlimeAbilitiesEnabled() { return getBoolean("slime.abilities.enabled"); }
+    public static float getSlimeExplosionPower() { return Math.min(12f, getFloat("slime.abilities.explosion_power", 0.5f)); }
+    public static boolean isSlimeExplosionBreakBlocks() { return getBoolean("slime.abilities.explosion_break_blocks"); }
+    public static int getSlimeFuseTicks() { return Math.min(200, getInt("slime.abilities.creeper_fuse_ticks", 10)); }
+    public static int getSlimeAbilityCooldown() { return getInt("slime.abilities.cooldown_ticks", 20); }
+    public static float getSlimeTeleportRange() { return Math.min(64f, getFloat("slime.abilities.teleport_range", 4f)); }
+    public static float getSlimeLevitationRadius() { return Math.min(16f, getFloat("slime.abilities.levitation_radius", 1f)); }
+    public static int getSlimeLevitationTicks() { return Math.min(400, getInt("slime.abilities.levitation_ticks", 20)); }
+    public static int getSlimePlayerGraceTicks() { return Math.min(24000, getInt("slime.level5.player_grace_ticks", 20)); }
+    public static int getSlimePlayerDamageInterval() { return Math.min(1200, getInt("slime.level5.player_damage_interval", 20)); }
+    public static float getSlimePlayerDamage() { return Math.min(4f, getFloat("slime.level5.player_damage", 0.5f)); }
+    public static int getSlimePlayerBlurRampTicks() { return Math.min(24000, getInt("slime.level5.player_blur_ramp_ticks", 20)); }
 
     // ===== 怀孕 =====
 

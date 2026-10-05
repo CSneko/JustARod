@@ -57,7 +57,7 @@ public final class SlimeDevourClientState {
     public static TamedSlimeEntity riddenSlime() {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return null;
-        return player.getVehicle() instanceof TamedSlimeEntity slime && slime.isOwner(player) ? slime : null;
+        return player.getVehicle() instanceof TamedSlimeEntity slime && slime.isOwner(player) && slime.isDriver(player) ? slime : null;
     }
 
     /** 冷却剩余秒数（向上取整，玩家看到「1s」时确实还剩一点冷却） */

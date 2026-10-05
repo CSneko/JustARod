@@ -62,6 +62,10 @@ public class SlimeStorage {
      * 但不参与挣扎；被**技能**吞进来的别的玩家不免疫，照常能挣扎逃出。
      */
     private final List<Boolean> struggleImmune = new ArrayList<>();
+    private final java.util.Map<UUID, Boolean> originalNoAi = new java.util.HashMap<>();
+
+    public void rememberMobAi(UUID id, boolean disabled) { originalNoAi.putIfAbsent(id, disabled); }
+    public boolean originalNoAi(UUID id) { return originalNoAi.getOrDefault(id, false); }
 
     /** 内部实体被分解时挂起的原因（血量不足），非空时 UI 会提示 */
     @Getter
@@ -252,6 +256,7 @@ public class SlimeStorage {
         containedEntities.remove(index);
         struggleProgress.remove(index);
         struggleImmune.remove(index);
+        originalNoAi.remove(uuid);
         return entityVolumes.remove(index);
     }
 
@@ -264,6 +269,7 @@ public class SlimeStorage {
         struggleProgress.clear();
         entityVolumes.clear();
         struggleImmune.clear();
+        originalNoAi.clear();
     }
 
     /** 取出「第一个」非空物品（分解用），该格随之置空 */
@@ -309,8 +315,10 @@ public class SlimeStorage {
         var struggles = out.list(KEY_STRUGGLE, com.mojang.serialization.Codec.FLOAT);
         var volumes = out.list(KEY_VOLUMES, com.mojang.serialization.Codec.INT);
         var immune = out.list(KEY_IMMUNE, com.mojang.serialization.Codec.BOOL);
+        var ai = out.list("OriginalNoAi", com.mojang.serialization.Codec.BOOL);
         for (int i = 0; i < containedEntities.size(); i++) {
             entities.add(containedEntities.get(i));
+            ai.add(originalNoAi(containedEntities.get(i)));
             struggles.add(struggleProgress.get(i));
             volumes.add(entityVolumes.get(i));
             immune.add(i < struggleImmune.size() && struggleImmune.get(i));
@@ -323,6 +331,7 @@ public class SlimeStorage {
         struggleProgress.clear();
         entityVolumes.clear();
         struggleImmune.clear();
+        originalNoAi.clear();
 
         in.listOrEmpty(KEY_ITEMS, ItemStack.OPTIONAL_CODEC).forEach(stack -> items.add(stack));
         List<UUID> ids = new ArrayList<>();
@@ -334,7 +343,10 @@ public class SlimeStorage {
         List<Boolean> immune = new ArrayList<>();
         in.listOrEmpty(KEY_IMMUNE, com.mojang.serialization.Codec.BOOL).forEach(immune::add);
 
+        List<Boolean> ai = new ArrayList<>();
+        in.listOrEmpty("OriginalNoAi", com.mojang.serialization.Codec.BOOL).forEach(ai::add);
         for (int i = 0; i < ids.size(); i++) {
+            originalNoAi.put(ids.get(i), i < ai.size() && ai.get(i));
             containedEntities.add(ids.get(i));
             struggleProgress.add(i < struggles.size() ? struggles.get(i) : 0.0F);
             entityVolumes.add(i < volumes.size() ? volumes.get(i) : 1);

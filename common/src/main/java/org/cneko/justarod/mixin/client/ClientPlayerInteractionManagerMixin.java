@@ -54,6 +54,9 @@ public class ClientPlayerInteractionManagerMixin {
 
     @Unique
     private boolean isDisabled() {
+        Player player = Minecraft.getInstance().player;
+        if (player == null) return false;
+        if (player.getVehicle() instanceof org.cneko.justarod.entity.slime.TamedSlimeEntity slime && slime.isCaptive(player)) return true;
         return ((org.cneko.justarod.entity.BDSMable) (Object) Minecraft.getInstance().player).getHandcuffed() > 0;
     }
 }

@@ -23,6 +23,7 @@ public class JRKeyBindings {
     public static KeyMapping SLIME_BAG_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.justarod.slime_bag", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_B, CATEGORY));
     /** 骑着史莱姆时按下的手动「吞噬」技能 */
     public static KeyMapping SLIME_DEVOUR_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.justarod.slime_devour", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, CATEGORY));
+    public static KeyMapping SLIME_ABILITY_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.justarod.slime_ability", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, CATEGORY));
     public static void init(){
     }
 }

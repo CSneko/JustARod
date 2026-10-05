@@ -20,9 +20,12 @@
     "SlimeInteractMixin",
     "SlimeMoveControlAccessor",
     "SlimePassengerCullMixin",
+    "SlimeCaptivePlayerMixin",
+    "SlimePlayerRegenerationMixin",
     "debug.ServerPlayerSyncAccessor",
     "SlimeTrustAccessor",
-    "SlimeTrustMixin"
+    "SlimeTrustMixin",
+    "SlimeDigestionExperienceMixin"
   ],
   "server": [],
   "injectors": {
@@ -34,6 +37,8 @@
     "client.LivingEntityRendererScaleInvoker",
     "client.PlayerRendererMixin",
     "client.SlimePassengerRenderMixin",
-    "client.SoundManagerMixin"
+    "client.SlimeDigestionBlurMixin",
+    "client.SoundManagerMixin",
+    "client.SlimeFloatingPlayerModelMixin"
   ]
 }

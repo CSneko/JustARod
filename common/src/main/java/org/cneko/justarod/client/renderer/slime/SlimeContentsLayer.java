@@ -103,7 +103,7 @@ public class SlimeContentsLayer extends RenderLayer<SlimeRenderState, JRTamedSli
         // 吞噬技能的放大倍数：渲染器在这次渲染里额外乘了它，所以这里必须除回去。
         // 除回去的净效果是「内容跟着壳一起放大」——壳张开 4 倍把生物吸进来时，
         // 体内的内容也同步变大，比例始终和自己平时一样。
-        double devourScale = Math.max(1.0D, state.devourScale);
+        double devourScale = Math.max(0.8D, state.devourScale);
 
         int index = 0;
         for (Entity passenger : passengers) {
@@ -124,7 +124,8 @@ public class SlimeContentsLayer extends RenderLayer<SlimeRenderState, JRTamedSli
             // 量不到就退回碰撞箱。按**最长的那条边**算，而不是只按高度——
             // 美西螈就是被高度坑的（碰撞箱 0.42 高、模型却有 1.69 格长）。
             SlimeContentSizing.RenderedSize size = SlimeContentSizing.measure(renderer, containedState, passenger);
-            double maxDimension = size.maxDimension();
+            // Fitting uses the original size, otherwise the fit multiplier would grow and cancel digestion shrinkage.
+            double maxDimension = size.maxDimension() / Math.max(0.1, TamedSlimeEntity.digestionScale(passenger));
 
             // ① 原尺寸：图层 → 世界的倍率是 2 * blockSize * devourScale，
             //    乘 1/(...) 正好抵消，实体在体内就是它平时的大小（**绝不放大**）。
@@ -138,13 +139,22 @@ public class SlimeContentsLayer extends RenderLayer<SlimeRenderState, JRTamedSli
             // 实体是「从脚往上长」的：把它的中心压到空腔中心上
             double centerY = CAVITY_Y + size.bottomOffset() * scale + contentHeight * 0.5D;
 
-            double[] offset = innerOffset(index++, contentWidth, centerY, contentHeight);
+            boolean floating = slime.isFloatingCaptive(passenger);
+            double[] offset;
+            if (floating) {
+                // Parent transforms are Ry(180-bodyRot), Rz(180), then the slime scale. Invert them for world offsets.
+                var local = slime.floatingOffset(passenger, partialTick).yRot((float) Math.toRadians(state.bodyRot - 180));
+                double parentScale = 2 * blockSize * devourScale;
+                offset = new double[]{-local.x / parentScale, 1.5 - local.y / parentScale, local.z / parentScale};
+                index++;
+            } else offset = innerOffset(index++, contentWidth, centerY, contentHeight);
 
             poseStack.pushPose();
             poseStack.translate(offset[0], offset[1], offset[2]);
             // 图层空间是「+Y 朝下」的模型空间（外壳 Rz(180) 之后），而实体渲染器假设 +Y 朝上
             // 并且自己还会再翻一次 → 这里先补一个 Rz(180) 抵消，模型才是正的（否则整个人是倒的）
             poseStack.mulPose(Axis.ZP.rotationDegrees(180.0F));
+            if (floating) poseStack.mulPose(Axis.YP.rotationDegrees(state.bodyRot - 180));
             poseStack.scale(scale, scale, scale);
             submitContained(renderer, containedState, poseStack, collector);
             poseStack.popPose();

@@ -32,20 +32,20 @@ configurations {
 }
 
 dependencies {
-    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+    implementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
     // Fabric API is already added in the root build for non-neoforge subprojects.
-    modImplementation "com.geckolib:geckolib-fabric-26.1.2:$rootProject.geckolib_version"
+    implementation "com.geckolib:geckolib-fabric-26.1.2:$rootProject.geckolib_version"
 
-    common(project(path: ':common', configuration: 'namedElements')) { transitive false }
+    common(project(':common')) { transitive false }
     shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
 
     // toNeko 26.1.2 本地构建产物：仅用于开发运行时；正式发布时作为前置由玩家自行安装
-    modLocalRuntime files("$rootProject.rootDir/libs/toneko-fabric-2.0.0.jar")
+    runtimeOnly files("$rootProject.rootDir/libs/toneko-fabric-2.0.0.jar")
     // Kotlin 运行时由 Fabric Language Kotlin 提供，不打包进 mod
-    modLocalRuntime files("$rootProject.rootDir/libs/fabric-language-kotlin-1.11.0+kotlin.2.0.0.jar")
+    runtimeOnly files("$rootProject.rootDir/libs/fabric-language-kotlin-1.11.0+kotlin.2.0.0.jar")
 
     // ModMenu（可选，提供配置屏幕入口）
-    modCompileOnly "com.terraformersmc:modmenu:$rootProject.modmenu_version"
+    compileOnly "com.terraformersmc:modmenu:$rootProject.modmenu_version"
 
     // Kotlin stdlib 仅用于编译期；运行时由 Fabric Language Kotlin 提供，不打包进 mod
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$rootProject.kotlin_version"
@@ -64,12 +64,11 @@ processResources {
 
 shadowJar {
     configurations = [project.configurations.shadowBundle]
-    archiveClassifier = 'dev-shadow'
+    archiveClassifier = ''
 }
 
-remapJar {
-    input.set shadowJar.archiveFile
-}
+jar { archiveClassifier = 'thin' }
+tasks.named('assemble') { dependsOn 'shadowJar' }
 
 fabricApi {
     configureDataGeneration() {
@@ -80,3 +79,111 @@ fabricApi {
     }
 }
 
+
+// Headless regression tests run in an isolated world and are excluded from release jars.
+fabricApi.configureTests {
+    createSourceSet = true
+    modId = 'justarod-tests'
+    enableGameTests = true
+    enableClientGameTests = providers.gradleProperty('slimeClientTests').isPresent()
+    clearRunDirectory = false
+}
+loom.runs.gameTest.vmArg "-Dfabric-api.gametest.report-file=${layout.buildDirectory.get().asFile}/slime-gametest.xml"
+
+// The bundled toNeko fixture uses the old "fabric" dependency ID. Correct it only in the test world.
+tasks.register('prepareSlimeGameTests') {
+    doLast {
+        def configDir = layout.buildDirectory.dir('run/gameTest/config').get().asFile
+        configDir.mkdirs()
+        new File(configDir, 'fabric_loader_dependencies.json').text = '''{
+  "version": 1,
+  "overrides": {
+    "toneko": {"-depends": {"fabric": "*"}, "+depends": {"fabric-api": "*"}}
+  }
+}'''
+    }
+}
+tasks.named('runGameTest') { dependsOn 'prepareSlimeGameTests' }
+
+// Group shared resources with the platform entrypoint in development runs.
+loom {
+    mods {
+        justarod {
+            sourceSet sourceSets.main
+            sourceSet project(':common').sourceSets.main
+        }
+    }
+}
+
+// The supplied toNeko fixture retains pre-26 injection targets and save descriptors.
+// Disable its entrypoints, datapack and injections in a test copy, keeping interface implementations. This suite tests JustARod,
+// not toNeko compatibility; the original dependency jar and release artifacts stay untouched.
+tasks.named('prepareSlimeGameTests') {
+    doLast {
+        def output = layout.buildDirectory.file('gametest-fixtures/toneko-fabric-2.0.0.jar').get().asFile
+        output.parentFile.mkdirs()
+        def input = new java.util.zip.ZipFile(rootProject.file('libs/toneko-fabric-2.0.0.jar'))
+        def zip = new java.util.zip.ZipOutputStream(new FileOutputStream(output))
+        try {
+            input.entries().each { entry ->
+                if (entry.name.startsWith('data/')) return
+                zip.putNextEntry(new java.util.zip.ZipEntry(entry.name))
+                if (!entry.directory) {
+                    def bytes = input.getInputStream(entry).bytes
+                    if (entry.name == 'fabric.mod.json') {
+                        def json = new groovy.json.JsonSlurper().parse(bytes)
+                        json.entrypoints = [:]
+                        bytes = groovy.json.JsonOutput.toJson(json).getBytes('UTF-8')
+                    } else if (entry.name == 'toneko.mixins.json') {
+                        def text = new String(bytes, 'UTF-8').replaceAll(/,\s*([}\]])/, '$1')
+                        def json = new groovy.json.JsonSlurper().parseText(text)
+                        bytes = groovy.json.JsonOutput.toJson(json).getBytes('UTF-8')
+                    } else if (entry.name.startsWith('org/cneko/toneko/common/mod/mixin/') && entry.name.endsWith('.class')) {
+                        def writer = new org.objectweb.asm.ClassWriter(0)
+                        def visitor = new org.objectweb.asm.ClassVisitor(org.objectweb.asm.Opcodes.ASM9, writer) {
+                            @Override
+                            org.objectweb.asm.MethodVisitor visitMethod(int access, String name, String descriptor,
+                                                                       String signature, String[] exceptions) {
+                                def delegate = super.visitMethod(access, name, descriptor, signature, exceptions)
+                                return new org.objectweb.asm.MethodVisitor(org.objectweb.asm.Opcodes.ASM9, delegate) {
+                                    @Override
+                                    org.objectweb.asm.AnnotationVisitor visitAnnotation(String annotation, boolean visible) {
+                                        return annotation.startsWith('Lorg/spongepowered/asm/mixin/injection/')
+                                                ? null : super.visitAnnotation(annotation, visible)
+                                    }
+                                }
+                            }
+                        }
+                        new org.objectweb.asm.ClassReader(bytes).accept(visitor, 0)
+                        bytes = writer.toByteArray()
+                    }
+                    zip.write(bytes)
+                }
+                zip.closeEntry()
+            }
+        } finally {
+            zip.close()
+            input.close()
+        }
+    }
+}
+tasks.named('runGameTest') {
+    classpath = classpath.filter { it.name != 'toneko-fabric-2.0.0.jar' } +
+            files(layout.buildDirectory.file('gametest-fixtures/toneko-fabric-2.0.0.jar'))
+}
+
+if (providers.gradleProperty('slimeClientTests').isPresent()) {
+    tasks.named('prepareSlimeGameTests') {
+        doLast {
+            def configDir = layout.buildDirectory.dir('run/clientGameTest/config').get().asFile
+            configDir.mkdirs()
+            new File(configDir, 'fabric_loader_dependencies.json').text =
+                    layout.buildDirectory.file('run/gameTest/config/fabric_loader_dependencies.json').get().asFile.text
+        }
+    }
+    tasks.named('runClientGameTest') {
+        dependsOn 'prepareSlimeGameTests'
+        classpath = classpath.filter { it.name != 'toneko-fabric-2.0.0.jar' } +
+                files(layout.buildDirectory.file('gametest-fixtures/toneko-fabric-2.0.0.jar'))
+    }
+}

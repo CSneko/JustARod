@@ -45,6 +45,7 @@ public final class JRSlimeNetworking {
      * </ol>
      */
     public static void open(ServerPlayer player, TamedSlimeEntity slime) {
+        if (!slime.canManage(player)) return;
         ServerPlayNetworking.send(player, new SlimeMenuContextPayload(
                 -1, slime.getId(), slime.getTierLevel()));
         player.openMenu(new SimpleMenuProvider(
@@ -97,7 +98,7 @@ public final class JRSlimeNetworking {
         // 因此放在下面「必须已经开着我们的菜单」那道检查之前——
         // 玩家在体内时通常并没有界面（按背包键的那一刻也正是要打开它）。
         if (payload.action() == SlimeContainerActionPayload.ACTION_OPEN_BAG) {
-            if (player.getVehicle() instanceof TamedSlimeEntity vehicle && vehicle.isOwner(player)) {
+            if (player.getVehicle() instanceof TamedSlimeEntity vehicle && vehicle.canManage(player)) {
                 open(player, vehicle);
             }
             return;
@@ -109,12 +110,21 @@ public final class JRSlimeNetworking {
             return;
         }
 
+        if (payload.action() == SlimeContainerActionPayload.ACTION_ABILITY) {
+            if (player.getVehicle() instanceof TamedSlimeEntity vehicle) vehicle.triggerAbility(player);
+            return;
+        }
         SlimeMenu menu = player.containerMenu instanceof SlimeMenu slimeMenu ? slimeMenu : null;
         TamedSlimeEntity slime = menu == null ? null : menu.slime();
         if (menu == null || slime == null || !slime.isAlive()) return;
-        if (menu.containerId != payload.containerId()) return;
+        if (menu.containerId != payload.containerId() || !slime.canManage(player)) return;
 
         switch (payload.action()) {
+            case SlimeContainerActionPayload.ACTION_SET_DIGESTION -> {
+                slime.setDirectDigestion(payload.value() != 0);
+                player.sendOverlayMessage(Component.translatable(slime.isDirectDigestion()
+                        ? "justarod.slime.digestion.direct" : "justarod.slime.digestion.catalyst"));
+            }
             case SlimeContainerActionPayload.ACTION_REFRESH -> sendEntityList(player, slime, menu.containerId);
             case SlimeContainerActionPayload.ACTION_SET_PAGE -> {
                 if (!slime.isOwner(player)) return;
@@ -129,7 +139,7 @@ public final class JRSlimeNetworking {
                 sendEntityList(player, slime, menu.containerId);
             }
             case SlimeContainerActionPayload.ACTION_FEED_CATALYST -> {
-                // 界面上的「喂催化物」按钮（按钮本身尚未接上）：规则与右键完全一致——
+                // 界面上的「喂催化物」按钮：规则与右键完全一致——
                 // 手里必须是催化物，批内拒绝，成功才消耗一份
                 if (slime.isOwner(player)) {
                     slime.useCatalyst(player, player.getMainHandItem());

@@ -33,6 +33,8 @@ public record SlimeContainerActionPayload(int containerId, int action, int value
     public static final int ACTION_OPEN_BAG = 7;
     /** 手动「吞噬」技能：骑着史莱姆时按吞噬键 */
     public static final int ACTION_DEVOUR = 8;
+    public static final int ACTION_ABILITY = 9;
+    public static final int ACTION_SET_DIGESTION = 10;
 
     public static final CustomPacketPayload.Type<SlimeContainerActionPayload> ID =
             new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(Justarod.MODID, "slime_container_action"));

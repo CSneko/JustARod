@@ -75,6 +75,8 @@ public class SlimeScreen extends AbstractContainerScreen<SlimeMenu> {
     private Button nextButton;
     /** 底栏中部的模式按钮：文字要跟着同步过来的指令走，否则点了看不出变化 */
     private Button commandButton;
+    private Button digestionButton;
+    private Button catalystButton;
 
     /** MenuScreens 工厂用：从待打开上下文里取实体 */
     public static SlimeScreen create(SlimeMenu menu, Inventory inventory, Component title) {
@@ -132,7 +134,20 @@ public class SlimeScreen extends AbstractContainerScreen<SlimeMenu> {
         this.commandButton = this.addRenderableWidget(Button.builder(commandLabel(), b -> cycleCommand())
                 .bounds(x + 30, y + 126, 118, 16).build());
 
+        this.digestionButton = this.addRenderableWidget(Button.builder(digestionLabel(), b -> {
+            if (slime != null) ClientPlayNetworking.send(SlimeContainerActionPayload.of(menu.containerId,
+                    SlimeContainerActionPayload.ACTION_SET_DIGESTION, slime.isDirectDigestion() ? 0 : 1, 0));
+        }).bounds(x + 180, y + 18, 66, 18).build());
+        this.catalystButton = this.addRenderableWidget(Button.builder(Component.translatable("justarod.slime.gui.catalyst"), b ->
+                ClientPlayNetworking.send(SlimeContainerActionPayload.of(menu.containerId,
+                        SlimeContainerActionPayload.ACTION_FEED_CATALYST, 0, 0)))
+                .bounds(x + 180, y + 40, 66, 18).build());
         updateButtonStates();
+    }
+
+    private Component digestionLabel() {
+        return Component.translatable(slime != null && slime.isDirectDigestion()
+                ? "justarod.slime.gui.digestion.direct" : "justarod.slime.gui.digestion.catalyst");
     }
 
     private void switchTab(int tab) {
@@ -169,6 +184,11 @@ public class SlimeScreen extends AbstractContainerScreen<SlimeMenu> {
         }
         // 指令是服务端权威的：点完等数据槽回来再刷新文字（updateButtonStates 每 tick 调一次）
         if (commandButton != null) commandButton.setMessage(commandLabel());
+        if (digestionButton != null) {
+            digestionButton.setMessage(digestionLabel());
+            digestionButton.active = slime != null;
+            digestionButton.setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.translatable("justarod.slime.gui.digestion.tooltip")));
+        }
     }
 
     @Override
@@ -186,6 +206,12 @@ public class SlimeScreen extends AbstractContainerScreen<SlimeMenu> {
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
         super.extractRenderState(graphics, mouseX, mouseY, delta);
 
+        if (slime != null && slime.getAbility() != org.cneko.justarod.entity.slime.SlimeAbility.NONE) {
+            graphics.item(new ItemStack(slime.getAbility().icon()), this.leftPos + 205, this.topPos + 65);
+            graphics.text(this.font, Component.nullToEmpty(this.font.plainSubstrByWidth(
+                    Component.translatable(slime.getAbility().translationKey()).getString(), 66)),
+                    this.leftPos + 180, this.topPos + 86, 0xFFCDA4FF);
+        }
         if (menu.getTab() == SlimeMenu.TAB_ENTITIES) {
             renderEntityList(graphics, mouseX, mouseY);
         } else {
@@ -234,7 +260,8 @@ public class SlimeScreen extends AbstractContainerScreen<SlimeMenu> {
         int used = list == null ? 0 : list.usedSpace();
         int total = list == null ? 0 : list.totalSpace();
         graphics.text(this.font,
-                Component.translatable("justarod.slime.gui.capacity").append("  " + used + " / " + total),
+                Component.translatable("justarod.slime.gui.capacity").append("  " + used + " / " + total)
+                        .append(slime != null && slime.getDigestedExperience() > 0 ? "  XP: " + slime.getDigestedExperience() : ""),
                 x0 + 5, y0 + 3, 0xFFD0D0D0);
 
         if (list == null || list.entries().isEmpty()) {

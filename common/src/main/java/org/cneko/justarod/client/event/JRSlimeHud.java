@@ -58,24 +58,63 @@ public final class JRSlimeHud {
     private static void render(GuiGraphicsExtractor graphics) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null || minecraft.options.hideGui) return;
-        TamedSlimeEntity slime = SlimeDevourClientState.riddenSlime();
-        if (slime == null) return;
-
+        if (!(minecraft.player.getVehicle() instanceof TamedSlimeEntity slime)) return;
+        float blur = org.cneko.justarod.client.slime.SlimeCaptivityClientState.blur();
+        if (blur > 0) graphics.fill(0, 0, graphics.guiWidth(), graphics.guiHeight(),
+                (Math.round(blur * 55) << 24) | 0x315529);
         Font font = minecraft.font;
-        String devourKey = keyName(JRKeyBindings.SLIME_DEVOUR_KEY);
-        String bagKey = keyName(JRKeyBindings.SLIME_BAG_KEY);
-
-        Component title = Component.translatable("justarod.slime.hud.title", slime.getTierLevel())
-                .withStyle(ChatFormatting.GRAY);
-        Component devourLine = SlimeDevourClientState.devourHint(devourKey);
-        Component bagLine = Component.translatable("justarod.slime.bag.hint", bagKey);
-
-        int titleWidth = font.width(title);
-        int devourWidth = font.width(devourLine);
-        int bagWidth = font.width(bagLine);
-        int contentWidth = Math.max(titleWidth, Math.max(devourWidth, bagWidth));
+        boolean driver = slime.isDriver(minecraft.player);
+        java.util.List<Component> lines = new java.util.ArrayList<>();
+        java.util.List<Integer> colors = new java.util.ArrayList<>();
+        lines.add(Component.translatable("justarod.slime.hud.title", slime.getTierLevel()));
+        colors.add(TITLE_COLOR);
+        if (slime.isUncontrolled()) {
+            lines.add(Component.translatable("justarod.slime.uncontrolled.short"));
+            colors.add(0xFFFFA060);
+            lines.add(Component.translatable("justarod.slime.captivity.float_controls"));
+            colors.add(BAG_COLOR);
+        }
+        if (slime.getDigestedExperience() > 0) {
+            lines.add(Component.translatable("justarod.slime.digestion.xp", slime.getDigestedExperience()));
+            colors.add(0xFFB7EA9F);
+        }
+        if (driver) {
+            lines.add(SlimeDevourClientState.devourHint(keyName(JRKeyBindings.SLIME_DEVOUR_KEY)));
+            colors.add(SlimeDevourClientState.devourHintColor());
+        } else {
+            lines.add(Component.translatable("justarod.slime.captivity.inside"));
+            colors.add(0xFFB7EA9F);
+            lines.add(Component.translatable("justarod.slime.captivity.struggle", keyName(JRKeyBindings.SLIME_STRUGGLE_KEY)));
+            colors.add(BAG_COLOR);
+            int grace = org.cneko.justarod.client.slime.SlimeCaptivityClientState.graceTicks();
+            if (grace >= 0) {
+                lines.add(Component.translatable(grace > 0 ? "justarod.slime.captivity.grace" : "justarod.slime.captivity.digesting",
+                        (grace + 19) / 20));
+                colors.add(grace > 0 ? 0xFFFFD24A : 0xFFFF8060);
+                lines.add(Component.translatable("justarod.slime.captivity.progress",
+                        Math.round(org.cneko.justarod.client.slime.SlimeCaptivityClientState.struggle() * 100)));
+                colors.add(BAG_COLOR);
+            }
+        }
+        Component abilityName = Component.translatable(slime.getAbility().translationKey());
+        if (slime.isAbilityCharging()) {
+            lines.add(Component.translatable("justarod.slime.ability.charging", abilityName));
+            colors.add(0xFFFFA060);
+        } else if (driver && slime.getAbilityCooldown() > 0) {
+            lines.add(Component.translatable("justarod.slime.ability.cooldown", (slime.getAbilityCooldown() + 19) / 20));
+            colors.add(0xFFFFD24A);
+        } else {
+            lines.add(Component.translatable(driver ? "justarod.slime.ability.hint" : "justarod.slime.ability.current",
+                    driver ? keyName(JRKeyBindings.SLIME_ABILITY_KEY) : abilityName, abilityName));
+            colors.add(slime.getAbility() == org.cneko.justarod.entity.slime.SlimeAbility.NONE ? 0xFF8A8A8A : 0xFFCDA4FF);
+        }
+        if (driver) {
+            lines.add(Component.translatable("justarod.slime.bag.hint", keyName(JRKeyBindings.SLIME_BAG_KEY)));
+            colors.add(BAG_COLOR);
+        }
+        int contentWidth = lines.stream().mapToInt(font::width).max().orElse(0);
         int lineHeight = font.lineHeight;
-        int contentHeight = lineHeight * 3 + LINE_SPACING * 2;
+        int contentHeight = lineHeight * lines.size() + LINE_SPACING * (lines.size() - 1);
 
         int panelWidth = contentWidth + PADDING_X * 2;
         int panelHeight = contentHeight + PADDING_Y * 2;
@@ -91,11 +130,10 @@ public final class JRSlimeHud {
         graphics.fill(x1 - 1, y0, x1, y1, BORDER);
 
         int y = y0 + PADDING_Y;
-        graphics.text(font, title, x0 + PADDING_X, y, TITLE_COLOR);
-        y += lineHeight + LINE_SPACING;
-        graphics.text(font, devourLine, x0 + PADDING_X, y, SlimeDevourClientState.devourHintColor());
-        y += lineHeight + LINE_SPACING;
-        graphics.text(font, bagLine, x0 + PADDING_X, y, BAG_COLOR);
+        for (int i = 0; i < lines.size(); i++) {
+            graphics.text(font, lines.get(i), x0 + PADDING_X, y, colors.get(i));
+            y += lineHeight + LINE_SPACING;
+        }
     }
 
     /** 按键的显示名（跟随玩家的按键绑定设置） */

@@ -131,12 +131,16 @@ public class SlimeMenu extends AbstractContainerMenu {
                 this.addSlot(new Slot(container, viewIndex, 8 + col * 18, 18 + row * 18) {
                     @Override
                     public boolean mayPlace(ItemStack stack) {
-                        return !stack.isEmpty() && isActive();
+                        return !stack.isEmpty() && isActive() && !digestionLocked();
                     }
 
                     @Override
                     public boolean mayPickup(Player player) {
-                        return isActive();
+                        return isActive() && !digestionLocked();
+                    }
+
+                    private boolean digestionLocked() {
+                        return slime != null && slime.isDecomposingItemSlot(page * PAGE_SIZE + viewIndex);
                     }
 
                     @Override
@@ -238,14 +242,14 @@ public class SlimeMenu extends AbstractContainerMenu {
         // 服务端失效时会主动发关界面包；这里返回 false 只会让客户端自己把界面判定为非法。
         if (slime == null) return true;
         // 只有主人能用这个背包：非主人（哪怕被别的途径塞进这个菜单）会被服务端自动关掉
-        return slime.isAlive() && slime.isOwner(player) && slime.distanceTo(player) < 64.0F;
+        return slime.isAlive() && slime.canManage(player) && slime.distanceTo(player) < 64.0F;
     }
 
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         if (index < 0 || index >= this.slots.size()) return ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
-        if (!slot.hasItem()) return ItemStack.EMPTY;
+        if (!slot.hasItem() || !slot.mayPickup(player)) return ItemStack.EMPTY;
         ItemStack stack = slot.getItem();
         ItemStack copy = stack.copy();
         int containerSlots = PAGE_SIZE;

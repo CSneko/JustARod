@@ -65,6 +65,16 @@ class ClientTickEvent {
                     }
                 }
 
+                while (org.cneko.justarod.client.JRKeyBindings.SLIME_ABILITY_KEY.consumeClick()) {
+                    if (noScreen && vehicle is org.cneko.justarod.entity.slime.TamedSlimeEntity) {
+                        net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(
+                            org.cneko.justarod.packet.SlimeContainerActionPayload.of(
+                                -1, org.cneko.justarod.packet.SlimeContainerActionPayload.ACTION_ABILITY, 0, 0
+                            )
+                        )
+                    }
+                }
+
                 // 骑着史莱姆按吞噬键：请求发动手动「吞噬」技能。
                 // 同样不做 isOwner 自查：冷却/等级/目标/空间/归属全部由服务端裁决。
                 while (org.cneko.justarod.client.JRKeyBindings.SLIME_DEVOUR_KEY.consumeClick()) {

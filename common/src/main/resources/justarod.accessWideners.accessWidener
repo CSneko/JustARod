@@ -1,4 +1,4 @@
-accessWidener v2 named
+accessWidener v2 official
 accessible method net/minecraft/client/renderer/entity/LivingEntityRenderer addLayer (Lnet/minecraft/client/renderer/entity/layers/RenderLayer;)Z
 accessible field net/minecraft/world/entity/LivingEntity useItem Lnet/minecraft/world/item/ItemStack;
 # 驯服史莱姆：26.x 的 MenuType 构造器为私有，common 侧需要直接注册菜单类型

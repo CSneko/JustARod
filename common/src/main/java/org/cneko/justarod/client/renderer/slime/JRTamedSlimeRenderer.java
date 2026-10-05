@@ -23,6 +23,7 @@ public class JRTamedSlimeRenderer extends MobRenderer<TamedSlimeEntity, SlimeRen
         super(context, new JRTamedSlimeModel(context.bakeLayer(JRTamedSlimeModel.LAYER)), 0.5F);
         // 顺序很重要：内容是「先画进去」，外壳最后叠加颜色（见 JRTamedSlimeShellModel 的说明）
         this.addLayer(new SlimeContentsLayer(this, context.getItemModelResolver()));
+        this.addLayer(new SlimeAbilityLayer(this, context.getItemModelResolver()));
         this.addLayer(new SlimeShellLayer(this, new JRTamedSlimeShellModel(
                 context.bakeLayer(JRTamedSlimeShellModel.LAYER))));
     }
@@ -40,7 +41,19 @@ public class JRTamedSlimeRenderer extends MobRenderer<TamedSlimeEntity, SlimeRen
         state.decomposeState = entity.getDecomposeState();
         state.decomposeProgress = entity.getDecomposeProgress();
         // 吞噬技能的放大动画：用 partialTick 插值，30 tick 的动画才不会一卡一卡
-        state.devourScale = entity.devourScale(partialTick);
+        state.ability = entity.getAbility();
+        state.absorptionTicks = entity.getAbilityAbsorptionTicks();
+        state.pulseAge = entity.abilityPulseAge(partialTick);
+        state.chargeProgress = entity.getAbilityCharge() <= 0 ? 0f
+                : Math.min(1f, (entity.getAbilityCharge() + partialTick) / Math.max(1f, entity.getAbilityFuse()));
+        // A swelling pulse builds towards the explosion, followed by a short gelatin recoil.
+        float chargeScale = 1f + 0.65f * state.chargeProgress * state.chargeProgress;
+        if (state.chargeProgress > 0) chargeScale += 0.025f * (float) Math.sin(state.ageInTicks * 2.2f);
+        float recoil = state.pulseAge >= 0 && state.pulseAge < 20
+                ? 1f + 0.18f * (float) Math.sin(state.pulseAge * 0.65f) * (1f - state.pulseAge / 20f) : 1f;
+        state.devourScale = entity.devourScale(partialTick) * chargeScale * recoil;
+        int flashPeriod = Math.max(2, (int) (10 - 8 * state.chargeProgress));
+        state.flash = state.chargeProgress > 0 && ((int) state.ageInTicks % flashPeriod < Math.max(1, flashPeriod / 2));
         // 体内内容渲染层需要实体本身（乘客实体 + 体内物品列表）
         state.slime = entity;
     }
@@ -59,7 +72,7 @@ public class JRTamedSlimeRenderer extends MobRenderer<TamedSlimeEntity, SlimeRen
         //
         // 再乘 devourScale 就是手动「吞噬」技能的「先放大到 4 倍」：
         // 纯渲染倍数，碰撞箱/挂载点/容量都不动（需求确认「仅视觉效果」）。
-        float size = Math.max(0.2F, state.blockSize) * 2.0F * Math.max(1.0F, state.devourScale);
+        float size = Math.max(0.2F, state.blockSize) * 2.0F * Math.max(0.8F, state.devourScale);
         poseStack.scale(size, size, size);
     }
 

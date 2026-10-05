@@ -33,6 +33,12 @@ public final class JRSlimeClientEvents {
     }
 
     public static void init() {
+        ClientPlayNetworking.registerGlobalReceiver(org.cneko.justarod.packet.SlimeFloatingPositionsPayload.ID,
+                (payload, context) -> context.client().execute(() -> org.cneko.justarod.client.slime.SlimeFloatingClientState.accept(payload)));
+        net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
+                org.cneko.justarod.client.slime.SlimeFloatingClientState.reset());
+        ClientPlayNetworking.registerGlobalReceiver(org.cneko.justarod.packet.SlimeCaptivityStatePayload.ID,
+                (payload, context) -> context.client().execute(() -> org.cneko.justarod.client.slime.SlimeCaptivityClientState.accept(payload)));
         // 模型层 + 渲染器
         ModelLayerRegistry.registerModelLayer(JRTamedSlimeModel.LAYER, JRTamedSlimeModel::createBodyLayer);
         ModelLayerRegistry.registerModelLayer(JRTamedSlimeShellModel.LAYER, JRTamedSlimeShellModel::createBodyLayer);

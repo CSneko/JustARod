@@ -41,6 +41,16 @@ public abstract class PlayerRendererMixin {
             at = @At("TAIL")
     )
     private void justarod$captureBallMouth(Avatar player, AvatarRenderState state, float partialTick, CallbackInfo ci) {
+        if (player.getVehicle() instanceof org.cneko.justarod.entity.slime.TamedSlimeEntity slime && slime.isFloatingCaptive(player)) {
+            state.isPassenger = false;
+            state.isCrouching = false;
+            state.isFallFlying = false;
+            state.pose = net.minecraft.world.entity.Pose.STANDING;
+            state.swimAmount = 0;
+            state.walkAnimationSpeed = 0;
+            state.bodyRot = player.getYRot();
+            state.yRot = 0;
+        }
         BallMouthRenderStateCache.remove(state);
         if (player instanceof BDSMable bdsm && bdsm.getBallMouth() > 0) {
             ItemStackRenderState itemState = new ItemStackRenderState();

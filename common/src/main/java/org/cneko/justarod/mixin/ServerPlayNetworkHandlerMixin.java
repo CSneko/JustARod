@@ -48,6 +48,8 @@ public class ServerPlayNetworkHandlerMixin {
     @Unique
     private boolean isDisabled() {
         ServerGamePacketListenerImpl handler = (ServerGamePacketListenerImpl) (Object) this;
+        if (handler.player.getVehicle() instanceof org.cneko.justarod.entity.slime.TamedSlimeEntity slime
+                && slime.isCaptive(handler.player)) return true;
         return ((org.cneko.justarod.entity.BDSMable) (Object) handler.player).getHandcuffed() > 0;
     }
 }

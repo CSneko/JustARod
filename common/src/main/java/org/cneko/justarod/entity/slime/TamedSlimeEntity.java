@@ -38,6 +38,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.cneko.justarod.JRUtil;
+import org.cneko.justarod.config.JRConfig;
 import org.cneko.justarod.api.VisualSized;
 import org.cneko.justarod.entity.JREntities;
 import org.cneko.justarod.item.JRItems;
@@ -120,6 +121,96 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
     private static final Identifier HEALTH_MODIFIER_ID =
             Identifier.fromNamespaceAndPath("justarod", "slime_tier_health");
 
+    private static final EntityDataAccessor<String> DATA_DRIVER = SynchedEntityData.defineId(TamedSlimeEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<Boolean> DATA_CAPTIVITY = SynchedEntityData.defineId(TamedSlimeEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> DATA_DIRECT_DIGESTION = SynchedEntityData.defineId(TamedSlimeEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> DATA_ABILITY = SynchedEntityData.defineId(TamedSlimeEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_ABILITY_COOLDOWN = SynchedEntityData.defineId(TamedSlimeEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_ABILITY_CHARGE = SynchedEntityData.defineId(TamedSlimeEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_ABILITY_FUSE = SynchedEntityData.defineId(TamedSlimeEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_ABILITY_ABSORPTION = SynchedEntityData.defineId(TamedSlimeEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Long> DATA_ABILITY_PULSE = SynchedEntityData.defineId(TamedSlimeEntity.class, EntityDataSerializers.LONG);
+    private final SlimeAbilityController abilities = new SlimeAbilityController(this);
+    private final SlimeCaptivityController captivity = new SlimeCaptivityController(this);
+    private boolean automaticStep;
+    /** Set only by a movement goal running this tick; a stale controller destination is not an AI intent. */
+    private boolean aiMovementRequested;
+    @Nullable private UUID pendingEntityId;
+    public static final Identifier DIGESTION_SCALE_ID = Identifier.fromNamespaceAndPath("justarod", "slime_digestion_scale");
+    private static final EntityDataAccessor<Integer> DATA_DIGESTED_XP = SynchedEntityData.defineId(TamedSlimeEntity.class, EntityDataSerializers.INT);
+    private final List<net.minecraft.world.entity.item.ItemEntity> digestionDrops = new ArrayList<>();
+    public int getDigestedExperience() { return entityData.get(DATA_DIGESTED_XP); }
+    public void absorbDigestionExperience(int amount) {
+        entityData.set(DATA_DIGESTED_XP, (int) Math.min(Integer.MAX_VALUE, (long) getDigestedExperience() + Math.max(0, amount)));
+    }
+    public void queueDigestionDrop(net.minecraft.world.entity.item.ItemEntity item) { digestionDrops.add(item); }
+    private void collectDigestionDrops() {
+        for (var item : digestionDrops) {
+            if (item.isRemoved() || item.getItem().isEmpty()) continue;
+            int accepted = storage.addItem(item.getItem(), tier().internalSpace());
+            if (accepted == item.getItem().getCount()) item.discard();
+            else if (accepted > 0) { var remaining = item.getItem().copy(); remaining.shrink(accepted); item.setItem(remaining); }
+        }
+        digestionDrops.clear();
+    }
+    public boolean isFloatingCaptive(Entity entity) { return isUncontrolled() && entity instanceof Player p && isCaptive(p); }
+    public Vec3 defaultFloatingOffset(Entity player) {
+        double index = Math.max(0, getPassengers().indexOf(player));
+        double angle = index * 2.399963;
+        return clampFloatingOffset(player, new Vec3(Math.cos(angle) * 0.4, (getBbHeight() - player.getBbHeight()) * 0.5, Math.sin(angle) * 0.4));
+    }
+    public Vec3 clampFloatingOffset(Entity player, Vec3 point) {
+        double radius = Math.max(0, getBbWidth() * 0.5 - Math.max(1.1 * (player instanceof LivingEntity living ? living.getScale() : 1), player.getBbWidth()) * 0.5 - 0.15);
+        double top = Math.max(0.15, getBbHeight() - player.getBbHeight() - 0.15);
+        return new Vec3(Math.clamp(point.x, -radius, radius), Math.clamp(point.y, 0.15, top), Math.clamp(point.z, -radius, radius));
+    }
+    public Vec3 floatingOffset(Entity player, float partialTick) {
+        Vec3 point = level().isClientSide() ? org.cneko.justarod.client.slime.SlimeFloatingClientState.offset(this, player, partialTick) : captivity.offset(player);
+        double bob = Math.sin((level().getGameTime() + partialTick) * 0.08 + player.getId()) * 0.045;
+        return clampFloatingOffset(player, point.add(0, bob, 0));
+    }
+    @Override
+    protected void positionRider(Entity passenger, Entity.MoveFunction move) {
+        if (isFloatingCaptive(passenger)) {
+            passenger.setPose(net.minecraft.world.entity.Pose.STANDING);
+            Vec3 point = position().add(floatingOffset(passenger, 1));
+            move.accept(passenger, point.x, point.y, point.z);
+        } else super.positionRider(passenger, move);
+    }
+    public static float digestionScale(Entity entity) {
+        if (!(entity instanceof LivingEntity living)) return 1;
+        var attribute = living.getAttribute(Attributes.SCALE);
+        var modifier = attribute == null ? null : attribute.getModifier(DIGESTION_SCALE_ID);
+        return modifier == null ? 1 : (float) (1 + modifier.amount());
+    }
+    public static void clearDigestionScale(Entity entity) {
+        if (entity instanceof LivingEntity living && living.getAttribute(Attributes.SCALE) != null) {
+            living.getAttribute(Attributes.SCALE).removeModifier(DIGESTION_SCALE_ID);
+            living.refreshDimensions();
+        }
+    }
+    private void tickDigestionScale() {
+        for (Entity entity : getPassengers()) if (entity instanceof LivingEntity living) {
+            float progress = stepActive && entity.getUUID().equals(pendingEntityId) ? entityData.get(DATA_DECOMPOSE_PROGRESS)
+                    : entity instanceof Player p ? captivity.digestionProgress(p) : 0;
+            double amount = -0.9 * progress;
+            var attribute = living.getAttribute(Attributes.SCALE);
+            if (attribute == null) continue;
+            if (progress <= 0) { if (attribute.hasModifier(DIGESTION_SCALE_ID)) clearDigestionScale(living); }
+            else {
+                var old = attribute.getModifier(DIGESTION_SCALE_ID);
+                if (old == null || Math.abs(old.amount() - amount) > 0.0001) {
+                    attribute.addOrUpdateTransientModifier(new AttributeModifier(DIGESTION_SCALE_ID, amount, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+                    living.refreshDimensions();
+                }
+            }
+        }
+    }
+    private int reservedVolume(Entity entity) {
+        int index = storage.containedEntities().indexOf(entity.getUUID());
+        return index < 0 ? SlimeTier.volumeOf(entity) : storage.entityVolumes().get(index);
+    }
+
     // ==================== 驯服与指令 ====================
 
     /** 驯服信任阈值：累计喂食多少个粘液球 */
@@ -150,6 +241,7 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
 
     /** 每个被吞实体对应的乘客序号；用于按 1:1 顺序更新挣扎进度 */
     private final List<UUID> passengerOrder = new ArrayList<>();
+    private final java.util.Map<UUID, Long> escapedPlayers = new java.util.HashMap<>();
 
     // ==================== 分解器 ====================
 
@@ -200,6 +292,10 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         this.setSize(1, true);
         this.storage.ensureSlots(SlimeTier.T0.capacity());
         this.setPersistenceRequired();
+        if (!level.isClientSide()) {
+            entityData.set(DATA_DIRECT_DIGESTION, JRConfig.isSlimeDirectDigestion());
+            entityData.set(DATA_CAPTIVITY, JRConfig.isSlimePlayerCaptivity());
+        }
     }
 
     /** 由野生史莱姆转化而来（保留血量与信任值） */
@@ -236,6 +332,16 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         builder.define(DATA_DEVOUR_ANIM_START, 0L);
         builder.define(DATA_DEVOUR_ANIM_ACTIVE, false);
         builder.define(DATA_DEVOUR_ANIM_TICKS, 0);
+        builder.define(DATA_DRIVER, "");
+        builder.define(DATA_CAPTIVITY, true);
+        builder.define(DATA_DIRECT_DIGESTION, false);
+        builder.define(DATA_ABILITY, 0);
+        builder.define(DATA_ABILITY_COOLDOWN, 0);
+        builder.define(DATA_ABILITY_CHARGE, 0);
+        builder.define(DATA_ABILITY_FUSE, 0);
+        builder.define(DATA_ABILITY_ABSORPTION, 0);
+        builder.define(DATA_ABILITY_PULSE, -100L);
+        builder.define(DATA_DIGESTED_XP, 0);
     }
 
     /**
@@ -325,12 +431,109 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         return command;
     }
 
+    public boolean isUncontrolled() { return getTierLevel() >= SlimeTier.MAX_LEVEL; }
+    public boolean canAutoHunt() { return isUncontrolled() || command != COMMAND_STAY; }
+    public int abilityCooldownTicks() { return isUncontrolled() ? 200 : JRConfig.getSlimeAbilityCooldown(); }
+    public int devourCooldownTicks() { return isUncontrolled() ? 200 : DEVOUR_COOLDOWN_TICKS; }
+    public int getDevourCooldown() { return devourCooldown; }
+    public SlimeCaptivityController captivity() { return captivity; }
+
     public void cycleCommand() {
         this.command = (this.command + 1) % 3;
     }
 
     public void setCommand(int command) {
-        this.command = command;
+        this.command = Math.clamp(command, COMMAND_FOLLOW, COMMAND_SWALLOW);
+        if (this.command == COMMAND_STAY) this.riddenMovementReset();
+    }
+
+    public boolean isDirectDigestion() { return entityData.get(DATA_DIRECT_DIGESTION); }
+    public void setDirectDigestion(boolean direct) { entityData.set(DATA_DIRECT_DIGESTION, direct); }
+    public SlimeAbility getAbility() { return SlimeAbility.byId(entityData.get(DATA_ABILITY)); }
+    public int getAbilityCooldown() { return entityData.get(DATA_ABILITY_COOLDOWN); }
+    public int getAbilityCharge() { return entityData.get(DATA_ABILITY_CHARGE); }
+    public int getAbilityFuse() { return entityData.get(DATA_ABILITY_FUSE); }
+    public int getAbilityAbsorptionTicks() { return entityData.get(DATA_ABILITY_ABSORPTION); }
+    public boolean isAbilityCharging() { return getAbilityCharge() > 0; }
+    public void markAbilityPulse() { entityData.set(DATA_ABILITY_PULSE, level().getGameTime()); }
+    public float abilityPulseAge(float partialTick) {
+        return (float) (level().getGameTime() - entityData.get(DATA_ABILITY_PULSE)) + partialTick;
+    }
+    public void syncAbility(SlimeAbility ability, int cooldown, int charge, int fuse, int absorption) {
+        entityData.set(DATA_ABILITY, ability.id());
+        entityData.set(DATA_ABILITY_COOLDOWN, cooldown);
+        entityData.set(DATA_ABILITY_CHARGE, charge);
+        entityData.set(DATA_ABILITY_FUSE, fuse);
+        entityData.set(DATA_ABILITY_ABSORPTION, absorption);
+    }
+
+    /** UUID is synchronized; role never depends on the client's config or owner name. */
+    public boolean isDriver(Player player) {
+        return !isUncontrolled() && player.getVehicle() == this && entityData.get(DATA_DRIVER).equals(player.getUUID().toString());
+    }
+    public boolean isCaptive(Player player) {
+        return player.getVehicle() == this && !isDriver(player);
+    }
+    public boolean canManage(Player player) { return !isUncontrolled() && isOwner(player) && !isCaptive(player); }
+
+    public boolean isAbilityFriendly(Entity entity) {
+        if (entity == this || entity.getVehicle() == this) return true;
+        if (!isUncontrolled() && ownerUuid != null && ownerUuid.equals(entity.getUUID())) return true;
+        if (entity instanceof TamedSlimeEntity other && other.isTameData()) return true;
+        return entity instanceof TamableAnimal animal && animal.isTame();
+    }
+
+    public boolean isValidPrey(@Nullable LivingEntity target) {
+        if (target == null || !target.isAlive() || target == this || target.isPassenger()
+                || storage.containsEntity(target.getUUID())) return false;
+        if (target instanceof Player player) {
+            return escapedPlayers.getOrDefault(player.getUUID(), 0L) <= level().getGameTime()
+                    && !player.isSpectator() && !player.isCreative()
+                    && (isUncontrolled() || command == COMMAND_SWALLOW && entityData.get(DATA_CAPTIVITY));
+        }
+        return !isAbilityFriendly(target);
+    }
+    public boolean canHunt(@Nullable LivingEntity prey) {
+        return isValidPrey(prey) && tier().canSwallowEntities()
+                && storage.canSwallow(SlimeTier.volumeOf(prey), tier().internalSpace());
+    }
+    @Nullable public LivingEntity findAbilityPrey(double range, boolean facing) {
+        LivingEntity current = getTarget();
+        if (!facing && isValidPrey(current) && (getAbility() != SlimeAbility.ENDERMAN || canHunt(current))
+                && getBoundingBox().inflate(range).intersects(current.getBoundingBox())) return current;
+        Vec3 look = devourFacing();
+        return level().getEntitiesOfClass(LivingEntity.class, getBoundingBox().inflate(range), e -> isValidPrey(e)
+                        && (getAbility() != SlimeAbility.ENDERMAN || canHunt(e))
+                        && (!facing || look.dot(e.getBoundingBox().getCenter().subtract(getEyePosition()).normalize()) >= 0.5))
+                .stream().min(java.util.Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
+    }
+    public boolean triggerAbility(Player player) {
+        if (level().isClientSide() || !isDriver(player) || !isOwner(player)) return false;
+        LivingEntity target = findAbilityPrey(JRConfig.getSlimeTeleportRange(), true);
+        boolean success = abilities.activate(target);
+        if (!success) player.sendOverlayMessage(Component.translatable(getAbilityCooldown() > 0
+                ? "justarod.slime.ability.cooldown" : "justarod.slime.ability.unavailable",
+                (getAbilityCooldown() + 19) / 20));
+        return success;
+    }
+    public boolean isSwallowReady() { return swallowCooldown <= 0; }
+    public boolean startAbilitySwallow(LivingEntity prey) {
+        return startAbilitySwallowBatch(java.util.List.of(prey));
+    }
+    public boolean startAbilitySwallowBatch(java.util.List<LivingEntity> prey) {
+        if (isDevouring() || isAbilityCharging() || swallowCooldown > 0 || prey.isEmpty()) return false;
+        int remaining = storage.freeSpace(tier().internalSpace());
+        for (LivingEntity target : prey) {
+            if (!canHunt(target)) return false;
+            remaining -= SlimeTier.volumeOf(target);
+            if (remaining < 0) return false;
+        }
+        devourQueue.clear();
+        devourQueue.addAll(prey);
+        entityData.set(DATA_DEVOUR_ANIM_START, devourClock());
+        entityData.set(DATA_DEVOUR_ANIM_TICKS, DEVOUR_ANIM_TICKS);
+        entityData.set(DATA_DEVOUR_ANIM_ACTIVE, true);
+        return true;
     }
 
     public int getRecallCooldown() {
@@ -379,19 +582,7 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         return !ownerName.isEmpty() && ownerName.equals(player.getGameProfile().name());
     }
 
-    /**
-     * 「不主动攻击」判定：自己 + 同一主人的其它驯服史莱姆。
-     *
-     * <p><b>主人不在其中</b>（这是刻意改的）：需求是「分解实体不再看是否是主人，主人也可以被分解」，
-     * 而主人能被吞入体内是能被分解的前提。之前这里把主人也算作友军，
-     * {@code findSwallowTarget} 就会永远跳过主人——于是主人一辈子进不了自己史莱姆的分解队列。
-     *
-     * <p>安全性由别处保证：自动吞入模式仍然**不吞玩家**（{@code findSwallowTarget} 里单独判），
-     * 所以放开这里不会导致「路过的主人被自动吞掉」；要吞主人只能用下面
-     * {@link #devourBatch()} 那条手动技能路径，或者主人自己主动钻进去。
-     *
-     * <p>刻意不做「同名即友军」的模糊匹配（命名牌可以随便改，会误伤真敌人）。
-     */
+    /** Shared-owner slime allies. Automatic prey admission and ability protection have separate rules. */
     public static boolean isAllyOf(TamedSlimeEntity slime, Entity entity) {
         if (entity == slime) return true;
         if (slime.ownerUuid == null) return false;
@@ -413,6 +604,23 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         // 物品槽位数跟随容量变化
         this.storage.ensureSlots(SlimeTier.of(clamped).capacity());
         this.clearFire();
+        if (!level().isClientSide() && isUncontrolled()) enforceUncontrolledState();
+    }
+
+    private void enforceUncontrolledState() {
+        if (!isUncontrolled()) return;
+        boolean hadDriver = !entityData.get(DATA_DRIVER).isEmpty();
+        entityData.set(DATA_DRIVER, "");
+        devourCooldown = Math.min(devourCooldown, devourCooldownTicks());
+        for (Entity entity : getPassengers()) {
+            if (entity instanceof Player player) {
+                storage.syncContained(player.getUUID(), reservedVolume(player), false);
+                captivity.onEnter(player);
+                if (hadDriver) player.sendOverlayMessage(Component.translatable("justarod.slime.uncontrolled"));
+                if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer
+                        && serverPlayer.containerMenu instanceof SlimeMenu) serverPlayer.closeContainer();
+            }
+        }
     }
 
     private void applyHealthModifier() {
@@ -446,8 +654,8 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         this.goalSelector.addGoal(1, new SlimeFloatGoal(this));
         this.goalSelector.addGoal(2, new SlimeMeleeGoal(this, 0.55D));
         this.goalSelector.addGoal(3, new SlimeSwallowGoal(this));
+        this.goalSelector.addGoal(3, new SlimeUncontrolledHuntGoal(this));
         this.goalSelector.addGoal(5, new SlimeFollowOwnerGoal(this, 0.6D, 8.0F, 2.5F));
-        this.goalSelector.addGoal(6, new SlimeKeepJumpingGoal(this));
         this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F));
         this.goalSelector.addGoal(9, new RandomLookAroundGoal(this));
 
@@ -468,7 +676,7 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
 
         @Override
         public boolean canUse() {
-            if (slime.ownerUuid == null) return false;
+            if (slime.isUncontrolled() || slime.ownerUuid == null) return false;
             Player owner = slime.level().getPlayerInAnyDimension(slime.ownerUuid);
             if (owner == null) return false;
             LivingEntity target = owner.getLastHurtMob();
@@ -498,8 +706,9 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         @Override
         public boolean canUse() {
             // 主人在体内操控时，AI 不许抢移动
-            if (slime.getControllingPassenger() != null) return false;
-            if (!slime.tier().canSwallowEntities()) return false;
+            if (slime.isUncontrolled()) return false;
+            if (slime.getControllingPassenger() != null || slime.isAbilityCharging() || slime.isDevouring() || slime.abilities.isGathering()) return false;
+            if (slime.command == COMMAND_STAY || !slime.tier().canSwallowEntities()) return false;
             if (slime.swallowCooldown > 0) return false;
             LivingEntity target = slime.findSwallowTarget(6.0D);
             if (target == null) return false;
@@ -511,7 +720,9 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
 
         @Override
         public boolean canContinueToUse() {
-            if (target == null || !target.isAlive() || target.isPassenger()) return false;
+            if (slime.isUncontrolled()) return false;
+            if (slime.getControllingPassenger() != null || slime.isAbilityCharging() || slime.isDevouring() || slime.abilities.isGathering()
+                    || slime.command == COMMAND_STAY || !slime.isValidPrey(target)) return false;
             return slime.distanceToSqr(target) > 1.2D && this.cooldown-- > 0;
         }
 
@@ -527,6 +738,9 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         }
 
         @Override
+        public boolean requiresUpdateEveryTick() { return true; }
+
+        @Override
         public void tick() {
             if (target == null) return;
             slime.getLookControl().setLookAt(target, 30.0F, 30.0F);
@@ -538,6 +752,32 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
             } else {
                 slime.hopToward(target.getX(), target.getY(), target.getZ(), 1.0D, true);
             }
+        }
+    }
+
+    /** At maximum level, choose any admissible nearby prey and approach it for the animated devour skill. */
+    public static class SlimeUncontrolledHuntGoal extends net.minecraft.world.entity.ai.goal.Goal {
+        private final TamedSlimeEntity slime;
+        @Nullable private LivingEntity prey;
+        public SlimeUncontrolledHuntGoal(TamedSlimeEntity slime) {
+            this.slime = slime;
+            setFlags(EnumSet.of(Flag.MOVE, Flag.JUMP, Flag.TARGET));
+        }
+        @Override public boolean canUse() {
+            if (!slime.isUncontrolled() || slime.isDevouring() || slime.isAbilityCharging() || slime.abilities.isGathering()) return false;
+            prey = slime.level().getEntitiesOfClass(LivingEntity.class, slime.getBoundingBox().inflate(16), slime::canHunt)
+                    .stream().min(java.util.Comparator.comparingDouble(slime::distanceToSqr)).orElse(null);
+            return prey != null;
+        }
+        @Override public boolean canContinueToUse() {
+            return slime.isUncontrolled() && slime.canHunt(prey) && !slime.isDevouring() && !slime.isAbilityCharging()
+                    && !slime.abilities.isGathering() && slime.distanceToSqr(prey) < 24 * 24;
+        }
+        @Override public boolean requiresUpdateEveryTick() { return true; }
+        @Override public void stop() { prey = null; slime.getNavigation().stop(); }
+        @Override public void tick() {
+            if (prey != null && !slime.getBoundingBox().inflate(slime.devourRange()).intersects(prey.getBoundingBox()))
+                slime.hopToward(prey.getX(), prey.getY(), prey.getZ(), 0.8, true);
         }
     }
 
@@ -565,51 +805,9 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
 
         @Override
         public void tick() {
+            slime.aiMovementRequested = true;
             if (slime.getRandom().nextFloat() < 0.8F) {
                 slime.getJumpControl().jump();
-            }
-        }
-    }
-
-    /** 像原版史莱姆一样持续朝 MoveControl 的目标点跳跃前进 */
-    public static class SlimeKeepJumpingGoal extends net.minecraft.world.entity.ai.goal.Goal {
-        private final TamedSlimeEntity slime;
-
-        public SlimeKeepJumpingGoal(TamedSlimeEntity slime) {
-            this.slime = slime;
-            this.setFlags(EnumSet.of(Flag.JUMP, Flag.MOVE));
-        }
-
-        @Override
-        public boolean canUse() {
-            // 主人正坐在体内操控时不要抢移动（原版 SlimeKeepOnJumpingGoal 同样是 !isPassenger()）
-            if (slime.getControllingPassenger() != null) return false;
-            return !slime.getNavigation().isDone() || slime.getMoveControl().hasWanted();
-        }
-
-        @Override
-        public boolean canContinueToUse() {
-            // 必须也有这一条：否则「骑着的那一刻」这个 goal 不会停，
-            // 它 tick 里的 setSpeed/setZza 会继续把史莱姆往前推（平移的另一个来源）。
-            if (slime.getControllingPassenger() != null) return false;
-            return !slime.getNavigation().isDone() || slime.getMoveControl().hasWanted();
-        }
-
-        @Override
-        public void stop() {
-            slime.setSpeed(0.0F);
-            slime.setZza(0.0F);
-        }
-
-        @Override
-        public void tick() {
-            if (slime.getMoveControl().hasWanted()) {
-                double speed = slime.getMoveControl().getSpeedModifier();
-                slime.setSpeed((float) speed);
-                slime.setZza(1.0F);
-            } else {
-                slime.setSpeed(0.0F);
-                slime.setZza(0.0F);
             }
         }
     }
@@ -633,7 +831,8 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         @Override
         public boolean canUse() {
             if (slime.getCommand() != COMMAND_FOLLOW) return false;
-            if (slime.getControllingPassenger() != null) return false;
+            if (slime.isUncontrolled()) return false;
+            if (slime.getControllingPassenger() != null || slime.isAbilityCharging() || slime.isDevouring() || slime.abilities.isGathering()) return false;
             if (slime.getOwnerUuid() == null) return false;
             this.owner = slime.level().getPlayerInAnyDimension(slime.getOwnerUuid());
             if (owner == null || owner.isSpectator()) return false;
@@ -644,7 +843,8 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         @Override
         public boolean canContinueToUse() {
             if (slime.getCommand() != COMMAND_FOLLOW) return false;
-            if (slime.getControllingPassenger() != null) return false;
+            if (slime.isUncontrolled() || owner != null && owner.isPassenger()) return false;
+            if (slime.getControllingPassenger() != null || slime.isAbilityCharging() || slime.isDevouring() || slime.abilities.isGathering()) return false;
             if (owner == null || !owner.isAlive()) return false;
             return slime.distanceToSqr(owner) > (double) (stopDistance * stopDistance);
         }
@@ -652,6 +852,9 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         @Override
         public void start() {
         }
+
+        @Override
+        public boolean requiresUpdateEveryTick() { return true; }
 
         @Override
         public void stop() {
@@ -690,22 +893,25 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
 
         @Override
         public boolean canUse() {
-            if (slime.getControllingPassenger() != null) return false;
+            if (slime.getControllingPassenger() != null || slime.isAbilityCharging() || slime.isDevouring() || slime.abilities.isGathering()) return false;
             LivingEntity target = slime.getTarget();
-            return target != null && target.isAlive() && !slime.isAlliedTo(target);
+            return !slime.isUncontrolled() && slime.command != COMMAND_STAY && slime.isValidPrey(target);
         }
 
         @Override
         public boolean canContinueToUse() {
-            if (slime.getControllingPassenger() != null) return false;
+            if (slime.getControllingPassenger() != null || slime.isAbilityCharging() || slime.isDevouring() || slime.abilities.isGathering()) return false;
             LivingEntity target = slime.getTarget();
-            return target != null && target.isAlive() && !slime.isAlliedTo(target);
+            return !slime.isUncontrolled() && slime.command != COMMAND_STAY && slime.isValidPrey(target);
         }
 
         @Override
         public void stop() {
             slime.getNavigation().stop();
         }
+
+        @Override
+        public boolean requiresUpdateEveryTick() { return true; }
 
         @Override
         public void tick() {
@@ -729,15 +935,15 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
 
     @Nullable
     private LivingEntity findSwallowTarget(double radius) {
-        if (!this.tier().canSwallowEntities()) return null;
+        if (command == COMMAND_STAY || !this.tier().canSwallowEntities()) return null;
         if (this.swallowCooldown > 0) return null;      // 与 SlimeSwallowGoal.canUse 同一道闸
         int space = this.tier().internalSpace();
         AABB area = this.getBoundingBox().inflate(radius);
         List<LivingEntity> candidates = this.level().getEntitiesOfClass(LivingEntity.class, area,
                 e -> e.isAlive() && e != this && !e.isPassenger());
         for (LivingEntity candidate : candidates) {
-            if (candidate instanceof Player) continue;              // 玩家绝不自动吞
-            if (isAllyOf(this, candidate)) continue;                 // 其它驯服史莱姆（主人已不算友军，见 isAllyOf）
+            if (!isValidPrey(candidate)) continue;
+            if (isAllyOf(this, candidate)) continue;                 // 同主人的其它驯服史莱姆
             if (candidate instanceof TamedSlimeEntity other && other.isTameData()) continue;
             if (candidate instanceof TamableAnimal animal && animal.isTame()) continue;
             int volume = SlimeTier.volumeOf(candidate);
@@ -799,6 +1005,7 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         for (LivingEntity candidate : candidates) {
             // 必须是「没被载着」的：已经骑在别的东西上、或已在体内登记的，都跳过
             if (candidate.isPassenger() || storage.containsEntity(candidate.getUUID())) continue;
+            if (candidate instanceof Player p && (p.isCreative() || p.isSpectator())) continue;
             if (isAllyOf(this, candidate)) continue;                 // 同一主人的其它驯服史莱姆
             if (candidate instanceof TamedSlimeEntity other && other.isTameData()) continue;
             if (candidate instanceof TamableAnimal animal && animal.isTame()) continue;
@@ -893,7 +1100,8 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         if (!this.tier().canSwallowEntities()) {
             return false;
         }
-        if (target.isPassenger() || target == this) return false;
+        if (!target.isAlive() || target.isPassenger() || target == this) return false;
+        if (target instanceof Player p && p.isSpectator()) return false;
         if (storage.containsEntity(target.getUUID())) return false;
         int volume = SlimeTier.volumeOf(target);
         int space = this.tier().internalSpace();
@@ -903,34 +1111,75 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         if (!target.startRiding(this, true, true)) return false;
 
         storage.addEntity(target.getUUID(), volume);
+        if (target instanceof Mob mob) {
+            storage.rememberMobAi(target.getUUID(), mob.isNoAi());
+            mob.setNoAi(true);
+            mob.setTarget(null);
+        }
         passengerOrder.add(target.getUUID());
         this.swallowCooldown = 10;
+        if (target instanceof Player player && isCaptive(player)) {
+            captivity.onEnter(player);
+            player.sendOverlayMessage(Component.translatable(isUncontrolled()
+                    ? "justarod.slime.captivity.level5" : "justarod.slime.captivity.enter"));
+            if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) serverPlayer.closeContainer();
+        }
         return true;
     }
 
     /** 释放一个被吞实体 */
     public boolean releaseEntity(UUID uuid) {
+        if (!storage.containsEntity(uuid)) return false;
+        if (uuid.equals(pendingEntityId)) cancelDecomposeStep();
+        if (entityData.get(DATA_DRIVER).equals(uuid.toString())) entityData.set(DATA_DRIVER, "");
+        Entity entity = findContainedEntity(uuid);
+        clearDigestionScale(entity);
+        if (entity instanceof Mob mob) mob.setNoAi(storage.originalNoAi(uuid));
+        if (isUncontrolled() && entity instanceof Player player && player.isAlive()) {
+            escapedPlayers.put(uuid, level().getGameTime() + 100);
+        }
+        captivity.forget(uuid);
         storage.removeEntity(uuid);
         passengerOrder.remove(uuid);
-        Entity entity = findContainedEntity(uuid);
         if (entity != null) {
             entity.stopRiding();
-            if (entity instanceof LivingEntity living) {
+            if (entity instanceof LivingEntity living && living.isAlive()) {
                 living.setHealth(Math.max(1.0F, living.getHealth()));
             }
             // 放到史莱姆脚下，避免卡在体内
-            Vec3 pos = this.position().add(0.0D, this.getBbHeight() * 0.5D, 0.0D);
+            Vec3 pos = releasePosition(entity);
             entity.teleportTo(pos.x, pos.y, pos.z);
+            entity.setDeltaMovement(Vec3.ZERO);
+            entity.resetFallDistance();
         }
         return true;
     }
 
     /** 释放全部被吞实体（死亡 / 强制驱散） */
+    private Vec3 releasePosition(Entity entity) {
+        double radius = (getBbWidth() + entity.getBbWidth()) * 0.5 + 0.5;
+        for (int i = 0; i < 12; i++) {
+            double angle = i * Math.PI / 6;
+            Vec3 pos = position().add(Math.cos(angle) * radius, 0.1, Math.sin(angle) * radius);
+            AABB box = entity.getBoundingBox().move(pos.subtract(entity.position()));
+            if (level().getWorldBorder().isWithinBounds(box) && level().noCollision(entity, box)) return pos;
+        }
+        return position().add(0, getBbHeight() + 0.1, 0);
+    }
+
     public void releaseAllEntities() {
+        cancelDecomposeStep();
+        entityData.set(DATA_DRIVER, "");
         for (UUID uuid : new ArrayList<>(storage.containedEntities())) {
             Entity entity = findContainedEntity(uuid);
             if (entity != null) {
+                clearDigestionScale(entity);
+                captivity.forget(uuid);
+                if (entity instanceof Mob mob) mob.setNoAi(storage.originalNoAi(uuid));
                 entity.stopRiding();
+                Vec3 position = releasePosition(entity);
+                entity.teleportTo(position.x, position.y, position.z);
+                entity.resetFallDistance();
             }
         }
         storage.clearEntities();
@@ -1002,26 +1251,21 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         return null;
     }
 
-    /** 主人主动钻进来 */
+    /** Voluntary entry grants a driver role; passive swallowing never grants it. */
     public boolean swallowOwner(Player player) {
         if (!this.isOwner(player)) return false;
+        if (isCaptive(player)) return false;
         if (player.isPassenger()) {
             player.stopRiding();
         }
-        return performSwallow(player);
+        entityData.set(DATA_DRIVER, isUncontrolled() ? "" : player.getUUID().toString());
+        escapeLatched = true;
+        if (performSwallow(player)) return true;
+        entityData.set(DATA_DRIVER, "");
+        return false;
     }
 
-    /**
-     * 让「主人是否在体内」这件事与实际挂载关系保持一致（服务端每 tick）。
-     *
-     * <p>主人进来时服务端没有把他登记进 {@code storage}，于是打开背包时实体页显示
-     * 「体内没有实体」——明明人就坐在里面（本轮反馈的问题）。这里改成**状态对账**：
-     * 不再要求每个入口都记得登记，而是每 tick 比一次「实际挂载」与「账本」。
-     *
-     * <p>主人登记后是**免疫挣扎**的（见 {@code SlimeStorage#struggleImmune}）：
-     * 他进来是为了操控史莱姆，不该像别的猎物那样被自动漂移甩出去。
-     * 被**技能**吞进来的别的玩家不免疫，照常能挣扎逃出。
-     */
+    /** Reconcile the owner's ledger entry, granting struggle immunity only to a voluntary driver. */
     private void reconcileContainedOwner() {
         if (!(this.level() instanceof ServerLevel serverLevel)) return;
         if (this.ownerUuid == null) return;
@@ -1034,7 +1278,7 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
 
         if (riding && !registered) {
             int volume = SlimeTier.volumeOf(owner);
-            storage.addEntity(owner.getUUID(), volume, true);
+            storage.addEntity(owner.getUUID(), volume, isDriver(owner));
             passengerOrder.add(owner.getUUID());
             storage.bumpVersion();
         } else if (!riding && registered) {
@@ -1044,7 +1288,7 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
             storage.bumpVersion();
         } else if (riding) {
             // 已在账本里：确保免疫标记对（老存档读回来是 false）
-            if (storage.syncContained(owner.getUUID(), SlimeTier.volumeOf(owner), true)) {
+            if (storage.syncContained(owner.getUUID(), reservedVolume(owner), isDriver(owner))) {
                 storage.bumpVersion();
             }
         }
@@ -1070,8 +1314,8 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
      */
     public boolean triggerDevour(Player player) {
         if (this.level().isClientSide()) return false;
-        if (!this.isOwner(player)) return false;
-        if (this.isDevouring()) return false;
+        if (!this.isOwner(player) || !this.isDriver(player)) return false;
+        if (this.isDevouring() || isAbilityCharging() || abilities.isGathering()) return false;
 
         if (devourCooldown > 0) {
             player.sendOverlayMessage(Component.translatable("justarod.slime.devour.cooldown",
@@ -1104,7 +1348,7 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         this.entityData.set(DATA_DEVOUR_ANIM_START, this.devourClock());
         this.entityData.set(DATA_DEVOUR_ANIM_TICKS, DEVOUR_ANIM_TICKS);
         this.entityData.set(DATA_DEVOUR_ANIM_ACTIVE, true);
-        this.devourCooldown = DEVOUR_COOLDOWN_TICKS;
+        this.devourCooldown = devourCooldownTicks();
         this.devourSyncTimer = 0;
         return true;
     }
@@ -1161,16 +1405,36 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
      * 放大动画的状态机（服务端每 tick）。
      *
      * <p>时间线：{@code [start, start + total/2)} 放大，中点<b>执行吞噬 + 放音效</b>，
-     * 之后收缩回原大小。执行的那一帧之后清掉动画标志，客户端自然回到 1 倍。
+     * 之后收缩回原大小，在整段动画结束后清掉标志。
      */
     private void tickDevour() {
         if (!this.isDevouring()) return;
         int total = Math.max(1, this.getDevourAnimTicks());
         long elapsed = this.devourClock() - this.entityData.get(DATA_DEVOUR_ANIM_START);
-        if (elapsed >= total / 2) {
-            this.performDevourGulp();
-            this.entityData.set(DATA_DEVOUR_ANIM_ACTIVE, false);
+        if (elapsed >= total / 2 && !devourQueue.isEmpty()) this.performDevourGulp();
+        if (elapsed >= total) this.entityData.set(DATA_DEVOUR_ANIM_ACTIVE, false);
+    }
+
+    private void tickAutonomousDevour() {
+        if (!isUncontrolled() || isNoAi() || devourCooldown > 0 || isDevouring() || isAbilityCharging() || abilities.isGathering()
+                || swallowCooldown > 0 || tickCount % 5 != 0) return;
+        List<LivingEntity> candidates = level().getEntitiesOfClass(LivingEntity.class,
+                getBoundingBox().inflate(devourRange()), this::canHunt);
+        candidates.sort(java.util.Comparator.comparingDouble(this::distanceToSqr));
+        int remaining = storage.freeSpace(tier().internalSpace());
+        devourQueue.clear();
+        for (LivingEntity prey : candidates) {
+            int volume = SlimeTier.volumeOf(prey);
+            if (volume <= remaining && devourQueue.size() < getTierLevel()) {
+                devourQueue.add(prey);
+                remaining -= volume;
+            }
         }
+        if (devourQueue.isEmpty()) return;
+        entityData.set(DATA_DEVOUR_ANIM_START, devourClock());
+        entityData.set(DATA_DEVOUR_ANIM_TICKS, DEVOUR_ANIM_TICKS);
+        entityData.set(DATA_DEVOUR_ANIM_ACTIVE, true);
+        devourCooldown = devourCooldownTicks();
     }
 
     /** 动画峰值：真正把目标吞进来，并播放黏糊吞咽声 */
@@ -1178,7 +1442,9 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         if (this.level().isClientSide()) return;
         int swallowed = 0;
         for (LivingEntity target : this.devourQueue) {
-            if (!target.isAlive()) continue;
+            if (!target.isAlive() || !getBoundingBox().inflate(devourRange()).intersects(target.getBoundingBox())) continue;
+            if (target instanceof TamableAnimal animal && animal.isTame()) continue;
+            if (target instanceof TamedSlimeEntity other && other.isTameData()) continue;
             if (!this.performSwallow(target)) continue;
             swallowed++;
             if (target instanceof Player victim) {
@@ -1259,11 +1525,13 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
      * @param aggressive      是否激进（缩短起跳间隔，追击时用）
      */
     public void hopToward(double x, double y, double z, double speedMultiplier, boolean aggressive) {
+        if (!canAutoHunt() || getControllingPassenger() != null || isAbilityCharging() || isDevouring() || abilities.isGathering()) return;
         double dx = x - this.getX();
         double dz = z - this.getZ();
         if (dx * dx + dz * dz < 1.0E-4D) {
             return;
         }
+        aiMovementRequested = true;
         float yaw = (float) (net.minecraft.util.Mth.atan2(dz, dx) * 180.0D / Math.PI) - 90.0F;
         if (this.getMoveControl() instanceof org.cneko.justarod.mixin.SlimeMoveControlAccessor control) {
             control.justarod$setDirection(yaw, aggressive);
@@ -1287,6 +1555,17 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         return false;
     }
 
+    /** Client-side authority is a separate vanilla hook: inheriting it lets a local rider simulate stale AI input. */
+    @Override
+    protected boolean isLocalClientAuthoritative() {
+        return false;
+    }
+
+    @Override
+    public boolean canSimulateMovement() {
+        return !level().isClientSide();
+    }
+
     // ==================== 乘客挂载点：全部放在体内中心 ====================
 
     @Override
@@ -1295,6 +1574,7 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         // 2 倍缩放 bug），所以体内的可用空间就是 blockSize。
         // 乘客要**整个待在体内**：竖直按乘客自身高度居中，再往下压 5% 给模型上多出来的
         // 耳朵/帽子留余量；比外壳还高的乘客只能站在壳底（此时压不过 0，直接夹住）。
+        if (isFloatingCaptive(passenger)) return floatingOffset(passenger, 1);
         double size = this.tier().blockSize();
         double passengerHeight = Math.max(0.1D, passenger.getBbHeight());
         double y = Math.max(0.0D, (size - passengerHeight) * 0.5D - size * 0.05D);
@@ -1313,7 +1593,7 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
     public LivingEntity getControllingPassenger() {
         // 主人在体内时取得操控权
         for (Entity passenger : this.getPassengers()) {
-            if (passenger instanceof Player player && this.isOwner(player)) {
+            if (passenger instanceof Player player && this.isOwner(player) && this.isDriver(player)) {
                 return player;
             }
         }
@@ -1322,7 +1602,7 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
 
     @Override
     protected Vec3 getRiddenInput(Player player, Vec3 movementInput) {
-        return movementInput;
+        return player instanceof net.minecraft.server.level.ServerPlayer serverPlayer ? riddenDirection(serverPlayer) : Vec3.ZERO;
     }
 
     /** 主人的按键 → 世界方向（相对主人的视线：W 前、A 左…）；没按方向键返回零向量 */
@@ -1356,17 +1636,19 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
 
     @Override
     public void travel(Vec3 travelVector) {
+        if (level().isClientSide()) return;
         Player controller = this.getControllingPassenger() instanceof Player p ? p : null;
+        if (isAbilityCharging() || abilities.isGathering()) {
+            this.riddenMovementReset();
+            super.travel(Vec3.ZERO);
+            return;
+        }
         if (!(controller instanceof net.minecraft.server.level.ServerPlayer serverPlayer)) {
-            // 身上带着乘客、但没人操控它时，必须把「前进量」彻底清掉。
-            //
-            // 漂移就是这样来的：原版 `Mob` 是「乘客即司机」的模型
-            // （`Mob#travel` 会自己 `getRiddenInput(...)` 然后 `travelRidden(...)`），
-            // 所以一个**非主人**的乘客会让 `super.travel` 拿 `zza` 去推史莱姆前进；
-            // 而 `zza`/`speed` 会被 AI 目标（跳跃/跟随）写成残留值，于是它就一直往前平移。
-            // 这条路径下史莱姆应当完全不动，移动只由 `travelRiddenHopping` 负责。
-            if (!this.getPassengers().isEmpty()) {
+            // Captive passengers keep valid hunting/following AI, but never sustain an old movement command.
+            if (!level().isClientSide() && !aiMovementRequested) {
                 this.riddenMovementReset();
+                super.travel(Vec3.ZERO);
+                return;
             }
             super.travel(travelVector);
             return;
@@ -1377,16 +1659,19 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
     /**
      * 清掉所有「会让它自己往前走」的残留状态。
      *
-     * <p>`zza`（前进量）、`speed`（速度倍率）、跳跃间隔、以及 MoveControl/Navigation 的
-     * 目标点，任何一项留下残值都会让史莱姆在没人操控时继续滑行。
+     * <p>清除方向输入、速度、水平惯性及 MoveControl/Navigation 的移动指令。
+     * 竖直速度保留，让重力和已经开始的跳跃正常落地。
      */
     private void riddenMovementReset() {
         this.rideHopCooldown = 0;
         this.setSpeed(0.0F);
         this.setZza(0.0F);
+        this.setXxa(0.0F);
+        this.setYya(0.0F);
+        this.setDeltaMovement(0.0D, this.getDeltaMovement().y, 0.0D);
         if (!this.level().isClientSide()) {
             this.getNavigation().stop();
-            this.getMoveControl().setWantedPosition(this.getX(), this.getY(), this.getZ(), 0.0D);
+            this.getMoveControl().setWait();
         }
     }
 
@@ -1403,6 +1688,16 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         this.riddenMovementReset();
     }
 
+    @Override
+    protected void removePassenger(Entity passenger) {
+        super.removePassenger(passenger);
+        if (!level().isClientSide()) clearDigestionScale(passenger);
+        if (!level().isClientSide() && entityData.get(DATA_DRIVER).equals(passenger.getUUID().toString())) {
+            entityData.set(DATA_DRIVER, "");
+            riddenMovementReset();
+        }
+    }
+
     /**
      * 主人操控时的移动：**和野生史莱姆一样是跳的**，不是平移。
      *
@@ -1414,9 +1709,7 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         Vec3 direction = this.riddenDirection(player);
         if (direction.lengthSqr() < 1.0E-6D) {
             // 没给方向：站住（重力/摩擦交给父类），并把跳跃间隔清零，下次按方向键立刻起跳
-            this.rideHopCooldown = 0;
-            this.setSpeed(0.0F);
-            this.setZza(0.0F);
+            this.riddenMovementReset();
             super.travel(Vec3.ZERO);
             return;
         }
@@ -1464,20 +1757,29 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
 
     @Override
     public void tick() {
+        aiMovementRequested = false;
         super.tick();
         if (this.level().isClientSide()) {
             this.tickClient();
             return;
         }
+        escapedPlayers.entrySet().removeIf(entry -> entry.getValue() <= level().getGameTime());
         if (recallCooldown > 0) recallCooldown--;
         if (swallowCooldown > 0) swallowCooldown--;
         if (devourCooldown > 0) devourCooldown--;
 
         this.tickDevour();
+        if (isUncontrolled() && !entityData.get(DATA_DRIVER).isEmpty()) enforceUncontrolledState();
+        entityData.set(DATA_CAPTIVITY, JRConfig.isSlimePlayerCaptivity());
         this.enforceContainedEntities();
         this.tickOwnerSneakEscape();
         this.reconcileContainedOwner();
+        this.abilities.tick();
+        this.tickAutonomousDevour();
+        this.captivity.tick();
         this.tickDecompose();
+        this.tickDigestionScale();
+        this.collectDigestionDrops();
         this.tickGrowthSettle();
         this.tickSlimeBallHeal();
         this.tickContentsSync();
@@ -1486,28 +1788,11 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
 
         // 主人不在体内时，待命指令下保持静止
         if (this.getControllingPassenger() == null) {
-            // 身上带着乘客却没人操控它：把 AI 遗留的前进量清掉，否则它会自己一直往前平移
-            // （见 travel() 里的说明）。放在 AI 之前，保证同一 tick 内 AI 再写也会被这一步覆盖。
-            this.enforceIdleWhenUncontrolled();
-            if (command == COMMAND_STAY) {
+            if (!canAutoHunt()) {
                 this.getNavigation().stop();
                 this.setDeltaMovement(this.getDeltaMovement().multiply(0.6D, 1.0D, 0.6D));
             }
         }
-    }
-
-    /**
-     * 身上有乘客、但没有「主人操控」时，不让它自己走动。
-     *
-     * <p>这是「骑上去就一直往前平移」的兜底闸：`zza`/`speed` 是原版给
-     * 「乘客即司机」模型用的公共状态（`Mob#travel` 会拿它推进载具），
-     * AI 目标也会写它；只要有任何一处留下残值，史莱姆就会平移。
-     * 这里每 tick 清一次，配合 {@link #travel} 里的判断，把这条路彻底堵死。
-     */
-    private void enforceIdleWhenUncontrolled() {
-        if (this.getPassengers().isEmpty()) return;
-        if (this.getControllingPassenger() != null) return;
-        this.riddenMovementReset();
     }
 
     /**
@@ -1527,7 +1812,11 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
     }
 
     private void tickClient() {
-        // 客户端只负责渲染插值；体内实体的位置由服务端同步
+        // Cosmetic particles only; ability and passenger authority stay on the server.
+        if (getAbility() == SlimeAbility.ENDERMAN && tickCount % 3 == 0) {
+            level().addParticle(ParticleTypes.PORTAL, getX(), getY() + getBbHeight() * 0.72, getZ(),
+                    (random.nextDouble() - 0.5) * 0.15, 0.05, (random.nextDouble() - 0.5) * 0.15);
+        }
         if (entityData.get(DATA_DECOMPOSE_STATE) == DECOMPOSE_RUNNING) {
             float p = entityData.get(DATA_DECOMPOSE_PROGRESS);
             if (p > 0.0F && this.random.nextInt(6) == 0) {
@@ -1546,6 +1835,7 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
             UUID uuid = ids.get(i);
             Entity entity = findContainedEntity(uuid);
             if (entity == null) {
+                if (uuid.equals(pendingEntityId)) cancelDecomposeStep();
                 // 实体已消失（死亡/卸载）：归还空间
                 storage.removeEntity(uuid);
                 passengerOrder.remove(uuid);
@@ -1556,6 +1846,8 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
             // 不做这一步的话，下面那句 startRiding 会把它重新按上车，
             // 玩家复活后仍然卡在史莱姆体内（本轮反馈的问题）。
             if (isDeadPassenger(entity)) {
+                if (uuid.equals(pendingEntityId)) cancelDecomposeStep();
+                clearDigestionScale(entity);
                 entity.stopRiding();
                 storage.removeEntity(uuid);
                 passengerOrder.remove(uuid);
@@ -1571,11 +1863,20 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
             }
             entity.setDeltaMovement(Vec3.ZERO);
             entity.resetFallDistance();
-            // 锁住视线与朝向，避免被吞者看到外面（也顺便防止转向带来的移动）
-            entity.setYRot(this.getYRot());
-            entity.yRotO = this.getYRot();
-            entity.setXRot(this.getXRot());
-            entity.xRotO = this.getXRot();
+            // Players can look around while imprisoned; driving also needs their real view vector.
+            if (!(entity instanceof Player)) {
+                entity.setYRot(this.getYRot());
+                entity.yRotO = this.getYRot();
+                entity.setXRot(this.getXRot());
+                entity.xRotO = this.getXRot();
+            }
+            if (entity instanceof Mob mob) {
+                storage.rememberMobAi(uuid, mob.isNoAi());
+                mob.setNoAi(true);
+                if (mob instanceof net.minecraft.world.entity.monster.Creeper creeper) creeper.setSwellDir(-1);
+                mob.setTarget(null);
+                mob.getNavigation().stop();
+            }
             if (entity instanceof LivingEntity living) {
                 living.hurtMarked = false;
                 // 体内不受窒息/火焰伤害
@@ -1672,6 +1973,7 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
 
     /** 每个实体每 tick 自动积累的挣扎进度：越大的史莱姆越难逃出 */
     private float autoStrugglePerTick(Entity entity) {
+        if (isUncontrolled() && entity instanceof Player) return 0;
         float base = entity instanceof Player ? 0.35F : 0.5F;
         // 阈值随等级线性上升，这里让"漂移速度"相应下降
         return base / (float) Math.max(1, this.tierLevel + 1);
@@ -1716,9 +2018,15 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         return Math.max(1, this.tier().capacity() / 4);
     }
 
-    /** 是否有一批分解正在进行（进行期间拒绝新的催化物） */
-    public boolean isDecomposing() {
-        return decomposeTasks > 0;
+    /** Active or suspended digestion prevents consuming another catalyst. */
+    public boolean isDecomposing() { return decomposeTasks > 0 || stepActive; }
+    public boolean isDecomposingItemSlot(int slot) { return stepActive && activeItemSlot == slot; }
+    private boolean isProtectedFromDigestion(Entity entity, boolean automatic) {
+        return (entity instanceof Player && (isUncontrolled() || entityData.get(DATA_CAPTIVITY)))
+                || (automatic && entity instanceof Player p && isDriver(p));
+    }
+    public boolean hasDigestibleContent() {
+        return storage.firstNonEmptySlot() >= 0 || firstDecomposableEntity(false) != null;
     }
 
     /**
@@ -1727,9 +2035,10 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
      * @return false 表示已有批次在跑（调用方不该消耗催化物）
      */
     public boolean addDecomposeTask() {
-        if (decomposeTasks > 0) {
+        if (decomposeTasks > 0 || stepActive || !hasDigestibleContent()) {
             return false;
         }
+        automaticStep = false;
         decomposeTasks = this.decomposeBatchSize();
         return true;
     }
@@ -1753,7 +2062,24 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
     private float overflowHealBuffer = 0.0F;
 
     private void tickDecompose() {
-        if (decomposeTasks <= 0) {
+        if (stepActive && pendingEntityId != null) {
+            Entity target = findContainedEntity(pendingEntityId);
+            if (target == null || isDeadPassenger(target) || target.getVehicle() != this
+                    || !storage.containsEntity(pendingEntityId) || isProtectedFromDigestion(target, automaticStep)) {
+                cancelDecomposeStep();
+            }
+        }
+        // A suspended automatic step is not a paid catalyst batch; stop it when changing mode.
+        if (!stepActive && automaticStep && !isDirectDigestion() && !isUncontrolled()) {
+            decomposeTasks = 0;
+            automaticStep = false;
+        }
+        // Automatic digestion only consumes prey; catalysts can still process stored items.
+        if (!stepActive && decomposeTasks <= 0 && (isDirectDigestion() || isUncontrolled()) && firstDecomposableEntity(true) != null) {
+            automaticStep = true;
+            decomposeTasks = 1;
+        }
+        if (decomposeTasks <= 0 && !stepActive) {
             if (decomposeState != DECOMPOSE_IDLE) {
                 decomposeState = DECOMPOSE_IDLE;
                 entityData.set(DATA_DECOMPOSE_STATE, DECOMPOSE_IDLE);
@@ -1783,7 +2109,8 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
                 this.consumeItemTrickle(true);   // 收尾：把这一格剩下的吃完
             }
             this.finishDecomposeStep();
-            decomposeTasks--;
+            decomposeTasks = Math.max(0, decomposeTasks - 1);
+            automaticStep = false;
         }
     }
 
@@ -1848,12 +2175,12 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
      * @return false 表示没东西可分解 / 血量不足被挂起
      */
     private boolean beginDecomposeStep() {
-        int slot = storage.firstNonEmptySlot();
+        int slot = automaticStep ? -1 : storage.firstNonEmptySlot();
         if (slot >= 0) {
             activeItemSlot = slot;
             activeItemCount = storage.items().get(slot).getCount();
             activeItemConsumed = 0;
-            pendingEntity = null;
+            pendingEntityId = null;
             pendingEntityVolume = 1;
             decomposeTotal = DECOMPOSE_STEP_TICKS;
             // 关键：计时器必须在这里种上。以前漏了这一句 → decomposeTimer 一直是 0，
@@ -1866,7 +2193,7 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         }
 
         activeItemSlot = -1;
-        Entity entity = this.firstDecomposableEntity();
+        Entity entity = this.firstDecomposableEntity(automaticStep);
         if (entity == null) {
             // 体内已被分解干净
             decomposeTasks = 0;
@@ -1888,11 +2215,9 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         // 一个实体 = 一组 = 4 秒
         decomposeTotal = DECOMPOSE_STEP_TICKS;
 
-        // 从登记表移除并记住，结算时再丢弃实体
+        // Keep capacity reserved and passenger constraints active until successful settlement.
         int volume = SlimeTier.volumeOf(entity);
-        storage.removeEntity(entity.getUUID());
-        passengerOrder.remove(entity.getUUID());
-        pendingEntity = entity;
+        pendingEntityId = entity.getUUID();
         pendingEntityVolume = Math.max(1, volume);
         decomposeTimer = decomposeTotal;
         stepActive = true;
@@ -1906,27 +2231,39 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         entityData.set(DATA_DECOMPOSE_STATE, DECOMPOSE_RUNNING);
     }
 
-    private void finishDecomposeStep() {
+    private void cancelDecomposeStep() {
         stepActive = false;
-        boolean wasEntity = pendingEntity != null;
-
-        if (wasEntity) {
-            // 实体被彻底分解：回血 + 按体积记成长（物品组的回血/成长在 consumeItemTrickle 里逐条结算）
-            float overflow = healWithOverflow(HEAL_PER_ENTITY);
-            addGrowthProgress(pendingEntityVolume + (int) overflow);
-            pendingEntity.stopRiding();
-            this.settleDecomposedEntity(pendingEntity);
-            pendingEntity = null;
-        }
-
+        pendingEntityId = null;
         activeItemSlot = -1;
-        activeItemCount = 0;
-        activeItemConsumed = 0;
+        activeItemCount = activeItemConsumed = decomposeTimer = decomposeTotal = 0;
+        if (automaticStep) decomposeTasks = 0;
+        automaticStep = false;
+        decomposeState = DECOMPOSE_IDLE;
+        entityData.set(DATA_DECOMPOSE_STATE, DECOMPOSE_IDLE);
+        entityData.set(DATA_DECOMPOSE_PROGRESS, 0f);
+        storage.setSuspendedReason(null);
+    }
 
+    private void finishDecomposeStep() {
+        Entity prey = pendingEntityId == null ? null : findContainedEntity(pendingEntityId);
+        if (prey != null && prey.getVehicle() == this && storage.containsEntity(prey.getUUID())
+                && !isDeadPassenger(prey) && !isProtectedFromDigestion(prey, automaticStep)) {
+            // Award growth/ability only after a living prey is successfully killed by digestion.
+            if (settleDecomposedEntity(prey)) {
+                float overflow = healWithOverflow(HEAL_PER_ENTITY);
+                addGrowthProgress(pendingEntityVolume + (int) overflow);
+                if (prey instanceof LivingEntity living) abilities.absorb(living);
+            }
+            storage.removeEntity(prey.getUUID());
+            passengerOrder.remove(prey.getUUID());
+        }
+        pendingEntityId = null;
+        stepActive = false;
+        activeItemSlot = -1;
+        activeItemCount = activeItemConsumed = 0;
         if (this.level() instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(ParticleTypes.HAPPY_VILLAGER,
-                    this.getX(), this.getY() + this.getBbHeight() * 0.5D, this.getZ(),
-                    6, 0.3D, 0.3D, 0.3D, 0.01D);
+            serverLevel.sendParticles(ParticleTypes.HAPPY_VILLAGER, getX(), getY() + getBbHeight() * 0.5, getZ(),
+                    6, 0.3, 0.3, 0.3, 0.01);
         }
     }
 
@@ -1951,12 +2288,8 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
      *   <li><b>玩家绝不 discard</b>：打不死的（无敌、创造模式）只放出来交给原版处理。</li>
      * </ol>
      */
-    private void settleDecomposedEntity(Entity entity) {
-        if (!(this.level() instanceof ServerLevel serverLevel)) {
-            entity.discard();
-            return;
-        }
-        if (entity == this) return;
+    private boolean settleDecomposedEntity(Entity entity) {
+        if (!(this.level() instanceof ServerLevel serverLevel) || entity == this) return false;
 
         // 先下车、再致死。顺序很关键：
         // 原版 `LivingEntity#die` / `ServerPlayer#die` **都不会**把乘客放下来
@@ -1970,18 +2303,20 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
                 ? serverLevel.damageSources().playerAttack(owner)
                 : serverLevel.damageSources().genericKill();
         if (entity instanceof LivingEntity living) {
-            living.hurtServer(serverLevel, source, Float.MAX_VALUE);
+            SlimeDigestionLoot.hurt(this, living, () -> living.hurtServer(serverLevel, source, Float.MAX_VALUE));
         }
         // 打不死的实体（无敌、创造模式玩家等）兜底清理。玩家绝不走 discard()：
         // 那会把玩家实体整个拆掉而不是「死亡并重生」，所以只把它放出来。
-        if (entity.isAlive() && !(entity instanceof Player)) {
-            entity.discard();
+        boolean digested = entity instanceof LivingEntity living && living.isDeadOrDying();
+        if (entity.isAlive()) {
+            clearDigestionScale(entity);
+            Vec3 pos = releasePosition(entity);
+            entity.teleportTo(pos.x, pos.y, pos.z);
         }
+        if (entity instanceof Mob mob && entity.isAlive()) mob.setNoAi(storage.originalNoAi(entity.getUUID()));
+        return digested;
     }
 
-    /** 当前步骤正在分解的实体（物品步骤为 null） */
-    @Nullable
-    private Entity pendingEntity = null;
     /** 当前步骤的内容体积（实体步骤用实体体积，物品步骤为 1） */
     private int pendingEntityVolume = 0;
     /** 是否有正在计时的分解步骤 */
@@ -1995,24 +2330,15 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         return Math.max(0.5F, Math.round(cost * 2.0F) / 2.0F);
     }
 
-    /**
-     * 体内**可被分解**的第一个实体。
-     *
-     * <p>就是登记表的第 0 个，**没有**任何「主人豁免」：需求要的就是
-     * 「分解实体不再看是不是主人，主人也可以被分解」。主人进到体内的唯一方式
-     * 就是当乘客，而 {@link #getControllingPassenger()} 只要主人在乘客里就返回他，
-     * 所以「跳过操控者」等于**永久跳过主人** —— 那正是「主人还是分解不了」的原因。
-     *
-     * <p>主人会被分解这件事本身是安全的，前提是**结算方式必须能真的杀死玩家**：
-     * 早期版本用「主人打主人」（`playerAttack(owner)`）结算，而
-     * `ServerPlayer#hurtServer` 会用 `canHarmPlayer(来源玩家)` 过滤，自己打自己永远为 false
-     * → 不掉血 → 落进 `discard()` 兜底把玩家实体拆掉，史莱姆跟着一起完蛋。
-     * 现在结算见 {@link #settleDecomposedEntity}：受害者与伤害来源是同一个人时改用
-     * `genericKill()`，玩家会走正常的死亡/掉落/重生流程。
-     */
+    /** Select living contained prey, honoring player captivity and the driver's automatic-mode exemption. */
     @Nullable
-    private Entity firstDecomposableEntity() {
-        return pickFirstDecomposable(storage.containedEntities(), null, this::findContainedEntity);
+    private Entity firstDecomposableEntity(boolean automatic) {
+        for (UUID uuid : storage.containedEntities()) {
+            Entity entity = findContainedEntity(uuid);
+            if (entity != null && !isDeadPassenger(entity) && entity.getVehicle() == this
+                    && !isProtectedFromDigestion(entity, automatic)) return entity;
+        }
+        return null;
     }
 
     /**
@@ -2099,6 +2425,11 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
             return InteractionResult.SUCCESS;
         }
 
+        if (isUncontrolled() && (!stack.isEmpty() || player.isShiftKeyDown())) {
+            player.sendOverlayMessage(Component.translatable("justarod.slime.uncontrolled"));
+            return InteractionResult.CONSUME;
+        }
+
         // (1) 分解催化物：开启一个分解任务（26.x 的 Item#interactLivingEntity 只在命名牌/刷怪蛋上被调用，
         //     所以物品对实体的右键逻辑必须写在 mobInteract 里）
         if (stack.is(JRItems.Companion.getDECOMPOSE_CATALYST())) {
@@ -2123,7 +2454,7 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
 
         // (3) 潜行 + 右键：打开体内容器 GUI（只有主人能开）
         if (player.isShiftKeyDown()) {
-            if (!this.isOwner(player)) {
+            if (!this.canManage(player)) {
                 player.sendOverlayMessage(Component.translatable("justarod.slime.not_owner")
                         .withStyle(ChatFormatting.RED));
                 return InteractionResult.CONSUME;
@@ -2134,7 +2465,7 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
 
         // (4) 手持可堆叠物品普通右键：投入一整组（一组占一格）；只有主人能喂
         if (!stack.isEmpty() && stack.getMaxStackSize() > 1) {
-            if (!this.isOwner(player)) {
+            if (!this.canManage(player)) {
                 player.sendOverlayMessage(Component.translatable("justarod.slime.not_owner")
                         .withStyle(ChatFormatting.RED));
                 return InteractionResult.CONSUME;
@@ -2161,8 +2492,8 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         // (5) 空手普通右键：主人钻进去；其他人只提示归属（不给开背包）
         if (stack.isEmpty()) {
             if (this.isOwner(player)) {
-                this.swallowOwner(player);
-                player.sendOverlayMessage(Component.translatable("justarod.slime.enter"));
+                player.sendOverlayMessage(Component.translatable(this.swallowOwner(player)
+                        ? (isUncontrolled() ? "justarod.slime.captivity.level5" : "justarod.slime.enter") : "justarod.slime.no_space"));
             } else {
                 player.sendOverlayMessage(Component.translatable("justarod.slime.not_owner")
                         .withStyle(ChatFormatting.RED));
@@ -2180,7 +2511,7 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
      * 右键喂与 GUI 按钮（{@code ACTION_FEED_CATALYST}）共用这一份规则。
      */
     public InteractionResult useCatalyst(Player player, ItemStack stack) {
-        if (!this.isOwner(player)) {
+        if (!this.canManage(player)) {
             player.sendOverlayMessage(Component.translatable("justarod.slime.not_owner")
                     .withStyle(ChatFormatting.RED));
             return InteractionResult.CONSUME;
@@ -2195,7 +2526,7 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
                     this.getDecomposeTasks()).withStyle(ChatFormatting.YELLOW));
             return InteractionResult.CONSUME;
         }
-        if (!this.storage.hasContent()) {
+        if (!this.hasDigestibleContent()) {
             player.sendOverlayMessage(Component.translatable("justarod.slime.decompose.empty")
                     .withStyle(ChatFormatting.YELLOW));
             return InteractionResult.CONSUME;
@@ -2216,6 +2547,10 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
 
     /** 铃铛召回：把史莱姆传送到主人身边（可跨维度） */
     public void recallTo(Player player) {
+        if (isUncontrolled()) {
+            player.sendOverlayMessage(Component.translatable("justarod.slime.uncontrolled"));
+            return;
+        }
         if (this.level() != player.level()) {
             if (player.level() instanceof ServerLevel target) {
                 this.teleportTo(target, player.getX(), player.getY(), player.getZ(), java.util.Set.of(), player.getYRot(), player.getXRot(), false);
@@ -2236,7 +2571,7 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
 
     /** 打开体内容器（服务端）：只有主人能开，别处再调也拦得住 */
     protected void openContainer(Player player) {
-        if (!this.isOwner(player)) return;
+        if (!this.canManage(player)) return;
         if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
             org.cneko.justarod.event.JRSlimeNetworking.open(serverPlayer, this);
         }
@@ -2252,7 +2587,23 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         out.putInt("Trust", trust);
         out.putInt("Command", command);
         out.putInt("GrowthProgress", growthProgress);
+        out.putInt("DigestedExperience", getDigestedExperience());
         out.putInt("DecomposeTasks", decomposeTasks);
+        out.putBoolean("DirectDigestion", isDirectDigestion());
+        out.putString("Driver", entityData.get(DATA_DRIVER));
+        out.putBoolean("StepActive", stepActive);
+        out.putBoolean("AutomaticStep", automaticStep);
+        out.putInt("DecomposeTimer", decomposeTimer);
+        out.putInt("DecomposeTotal", decomposeTotal);
+        out.putInt("ActiveItemSlot", activeItemSlot);
+        out.putInt("ActiveItemCount", activeItemCount);
+        out.putInt("ActiveItemConsumed", activeItemConsumed);
+        out.putInt("PendingEntityVolume", pendingEntityVolume);
+        if (pendingEntityId != null) out.store("PendingEntity", net.minecraft.core.UUIDUtil.CODEC, pendingEntityId);
+        out.putInt("PendingGrowthItems", pendingGrowthItems);
+        out.putFloat("OverflowHealBuffer", overflowHealBuffer);
+        abilities.save(out.child("AbsorbedAbility"));
+        captivity.save(out.child("PlayerCaptivity"));
         out.putInt("DevourCooldown", devourCooldown);
         if (ownerUuid != null) {
             out.store("Owner", net.minecraft.core.UUIDUtil.CODEC, ownerUuid);
@@ -2270,16 +2621,41 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         this.trust = in.getIntOr("Trust", 0);
         this.command = in.getIntOr("Command", COMMAND_FOLLOW);
         this.growthProgress = in.getIntOr("GrowthProgress", 0);
-        this.decomposeTasks = in.getIntOr("DecomposeTasks", 0);
+        entityData.set(DATA_DIGESTED_XP, Math.max(0, in.getIntOr("DigestedExperience", 0)));
+        this.decomposeTasks = Math.max(0, in.getIntOr("DecomposeTasks", 0));
+        entityData.set(DATA_DIRECT_DIGESTION, in.getBooleanOr("DirectDigestion", JRConfig.isSlimeDirectDigestion()));
+        entityData.set(DATA_CAPTIVITY, JRConfig.isSlimePlayerCaptivity());
+        this.stepActive = in.getBooleanOr("StepActive", false);
+        this.automaticStep = in.getBooleanOr("AutomaticStep", false);
+        this.decomposeTotal = Math.clamp(in.getIntOr("DecomposeTotal", DECOMPOSE_STEP_TICKS), 1, DECOMPOSE_STEP_TICKS);
+        this.decomposeTimer = Math.clamp(in.getIntOr("DecomposeTimer", 0), 0, decomposeTotal);
+        this.activeItemSlot = in.getIntOr("ActiveItemSlot", -1);
+        this.activeItemCount = Math.clamp(in.getIntOr("ActiveItemCount", 0), 0, 99);
+        this.activeItemConsumed = Math.clamp(in.getIntOr("ActiveItemConsumed", 0), 0, activeItemCount);
+        this.pendingEntityId = in.read("PendingEntity", net.minecraft.core.UUIDUtil.CODEC).orElse(null);
+        this.pendingEntityVolume = Math.max(1, in.getIntOr("PendingEntityVolume", 1));
+        this.pendingGrowthItems = Math.max(0, in.getIntOr("PendingGrowthItems", 0));
+        this.overflowHealBuffer = Math.max(0, in.getFloatOr("OverflowHealBuffer", 0));
+        abilities.load(in.childOrEmpty("AbsorbedAbility"));
+        captivity.load(in.childOrEmpty("PlayerCaptivity"));
         this.devourCooldown = Math.max(0, in.getIntOr("DevourCooldown", 0));
         this.ownerUuid = in.read("Owner", net.minecraft.core.UUIDUtil.CODEC).orElse(null);
         this.ownerName = in.getStringOr("OwnerName", "");
+        // Old saves treated any contained owner as driver; preserve that role when migrating.
+        entityData.set(DATA_DRIVER, in.getStringOr("Driver", ownerUuid == null ? "" : ownerUuid.toString()));
         this.entityData.set(DATA_OWNER_NAME, this.ownerName);
         storage.load(in.childOrEmpty("SlimeStorage"));
         storage.ensureSlots(SlimeTier.of(this.tierLevel).capacity());
         this.setSize(tierLevel + 1, false);
         this.applyHealthModifier();
         this.refreshDimensions();
+        if (!level().isClientSide() && isUncontrolled()) {
+            entityData.set(DATA_DRIVER, "");
+            devourCooldown = Math.min(devourCooldown, devourCooldownTicks());
+        }
+        if (stepActive && (activeItemSlot >= storage.items().size() || (activeItemSlot < 0 && pendingEntityId == null))) {
+            cancelDecomposeStep();
+        }
     }
 
     @Override
@@ -2290,8 +2666,12 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
             for (ItemStack stack : storage.drainItems()) {
                 this.spawnAtLocation((ServerLevel) this.level(), stack);
             }
+            abilities.cancelGathering((ServerLevel) level());
             releaseAllEntities();
+            if (getDigestedExperience() > 0) ExperienceOrb.award((ServerLevel) level(), position(), getDigestedExperience());
+            entityData.set(DATA_DIGESTED_XP, 0);
         }
+        if (level().isClientSide()) org.cneko.justarod.client.slime.SlimeFloatingClientState.forget(getId());
         super.remove(reason);
     }
 

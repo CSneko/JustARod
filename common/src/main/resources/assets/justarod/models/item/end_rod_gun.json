@@ -1,0 +1,43 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "rod": "minecraft:block/end_rod",
+    "grip": "minecraft:block/purpur_block",
+    "particle": "minecraft:block/end_rod"
+  },
+  "elements": [
+    {
+      "from": [6, 8, 1], "to": [10, 12, 15],
+      "faces": {
+        "north": {"texture": "#rod", "uv": [2, 0, 4, 2]}, "south": {"texture": "#rod", "uv": [2, 0, 4, 2]},
+        "east": {"texture": "#rod", "uv": [0, 0, 2, 15]}, "west": {"texture": "#rod", "uv": [0, 0, 2, 15]},
+        "up": {"texture": "#rod", "uv": [0, 0, 2, 15]}, "down": {"texture": "#rod", "uv": [0, 0, 2, 15]}
+      },
+      "light_emission": 12
+    },
+    {
+      "from": [5, 6, 10], "to": [11, 13, 14],
+      "faces": {
+        "north": {"texture": "#grip"}, "south": {"texture": "#grip"},
+        "east": {"texture": "#grip"}, "west": {"texture": "#grip"},
+        "up": {"texture": "#grip"}, "down": {"texture": "#grip"}
+      }
+    },
+    {
+      "from": [6, 1, 10], "to": [10, 8, 14],
+      "faces": {
+        "north": {"texture": "#grip"}, "south": {"texture": "#grip"},
+        "east": {"texture": "#grip"}, "west": {"texture": "#grip"},
+        "up": {"texture": "#grip"}, "down": {"texture": "#grip"}
+      }
+    }
+  ],
+  "display": {
+    "gui": {"rotation": [25, -135, 0], "scale": [0.9, 0.9, 0.9]},
+    "ground": {"translation": [0, 3, 0], "scale": [0.5, 0.5, 0.5]},
+    "firstperson_righthand": {"rotation": [0, 0, 0], "translation": [1, 1, -2], "scale": [0.7, 0.7, 0.7]},
+    "firstperson_lefthand": {"rotation": [0, 0, 0], "translation": [1, 1, -2], "scale": [0.7, 0.7, 0.7]},
+    "thirdperson_righthand": {"rotation": [180, 180, 0], "translation": [0, 1, -2], "scale": [0.7, 0.7, 0.7]},
+    "thirdperson_lefthand": {"rotation": [180, 180, 0], "translation": [0, 1, -2], "scale": [0.7, 0.7, 0.7]}
+  }
+}

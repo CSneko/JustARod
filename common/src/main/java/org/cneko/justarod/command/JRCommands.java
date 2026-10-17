@@ -9,6 +9,7 @@ public class JRCommands {
                 (dispatcher, dedicatedServer, registryAccess) -> {
                     RodCommand.register(dispatcher);
                     org.cneko.justarod.command.SlimeDebugCommand.register(dispatcher);
+                    BodyCommand.register(dispatcher);
                 }
         );
         ImpartCommand.Companion.init();

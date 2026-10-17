@@ -43,7 +43,7 @@ class RodRenderer(renderManager: EntityRendererProvider.Context) :
 class RodModel : GeoModel<RodEntity>() {
     // 26.x：getModelResource/getTextureResource 的参数改为 GeoRenderState
     override fun getModelResource(renderState: GeoRenderState): Identifier {
-        return rodId("geo/entity/rod.geo.json")
+        return rodId("entity/rod")
     }
 
     override fun getTextureResource(renderState: GeoRenderState): Identifier {
@@ -51,7 +51,8 @@ class RodModel : GeoModel<RodEntity>() {
     }
 
     override fun getAnimationResource(animatable: RodEntity): Identifier {
-        // 26.x：toNeko 的 IdentifierUtil 改名为 ResourceLocationUtil
-        return org.cneko.toneko.common.mod.util.ResourceLocationUtil.toNekoLoc("animations/neko/common.animation.json")
+        // Rod has only bb_main; the old neko animations target unrelated bones.
+        // Keep the existing static poses in a local resource loaded by GeckoLib 5.5.
+        return rodId("entity/rod")
     }
 }

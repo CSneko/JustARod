@@ -1,0 +1,11 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "misc.idle": {"loop": true, "animation_length": 1.5, "bones": {}},
+    "misc.sit": {"loop": true, "animation_length": 1.5, "bones": {}},
+    "move.walk": {"loop": true, "animation_length": 0.75, "bones": {}},
+    "move.run": {"loop": true, "animation_length": 0.4583, "bones": {}},
+    "move.crawl": {"loop": true, "animation_length": 1.5, "bones": {}},
+    "move.swim": {"loop": true, "animation_length": 1.5, "bones": {}}
+  }
+}

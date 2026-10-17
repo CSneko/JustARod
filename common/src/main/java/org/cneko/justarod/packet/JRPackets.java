@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 
 public class JRPackets {
     public static void init(){
+        PayloadTypeRegistry.clientboundPlay().register(EndRodGunShotPayload.ID, EndRodGunShotPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(FrictionPayload.ID, FrictionPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(FullHeatPayload.ID, FullHeatPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(JRSyncPayload.ID, JRSyncPayload.CODEC);
@@ -15,6 +16,7 @@ public class JRPackets {
         PayloadTypeRegistry.clientboundPlay().register(XRayScanScreenPayload.ID, XRayScanScreenPayload.CODEC);
         // ===== 驯服史莱姆 =====
         PayloadTypeRegistry.serverboundPlay().register(SlimeContainerActionPayload.ID, SlimeContainerActionPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(BodyTravelPayload.ID, BodyTravelPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(SlimeEntityListPayload.ID, SlimeEntityListPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(SlimeMenuContextPayload.ID, SlimeMenuContextPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(SlimeContentsPayload.ID, SlimeContentsPayload.CODEC);

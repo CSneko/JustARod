@@ -41,6 +41,11 @@ public abstract class PlayerRendererMixin {
             at = @At("TAIL")
     )
     private void justarod$captureBallMouth(Avatar player, AvatarRenderState state, float partialTick, CallbackInfo ci) {
+        if (org.cneko.justarod.item.EndRodGunItem.isSpinning(player)) {
+            state.bodyRot = org.cneko.justarod.item.EndRodGunItem.spinAngle(player, partialTick);
+            state.yRot = 0;
+            state.xRot = 0;
+        }
         if (player.getVehicle() instanceof org.cneko.justarod.entity.slime.TamedSlimeEntity slime && slime.isFloatingCaptive(player)) {
             state.isPassenger = false;
             state.isCrouching = false;

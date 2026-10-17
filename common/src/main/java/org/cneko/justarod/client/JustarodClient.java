@@ -30,12 +30,15 @@ public class JustarodClient {
         EntityRendererRegistry.register(JREntities.LOLI_NEKO, LoliNekoRenderer::new);
         EntityRendererRegistry.register(JREntities.ROD, RodRenderer::new);
         EntityRendererRegistry.register(JREntities.ICED_TEA_PROJECTILE, IcedTeaRenderer::new);
+        EntityRendererRegistry.register(JREntities.END_ROD_PROJECTILE, org.cneko.justarod.client.renderer.EndRodProjectileRenderer::new);
         JRClientNetworkingEvents.init();
+        org.cneko.justarod.client.renderer.EndRodGunAnimation.init();
         // 驯服史莱姆：模型层 / 渲染器 / 体内容器界面
         org.cneko.justarod.client.event.JRSlimeClientEvents.init();
         // 诊断命令 /jrslime（排查容器两端不一致用）
         org.cneko.justarod.client.command.SlimeDebugClientCommand.init();
         JRKeyBindings.init();
+        org.cneko.justarod.client.event.BodyClientEvents.init();
         ClientTickEvent.Companion.init();
         RealClientTickEvent.Companion.init();
         JRHudRenderEvent.init();

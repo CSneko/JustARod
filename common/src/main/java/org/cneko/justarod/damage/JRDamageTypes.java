@@ -11,6 +11,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 
 public class JRDamageTypes {
+    public static final ResourceKey<DamageType> END_ROD_GUN = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(MODID, "end_rod_gun"));
     public static final ResourceKey<DamageType> SEXUAL_EXCITEMENT = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(MODID, "sexual_excitement"));
     public static final ResourceKey<DamageType> GRASS = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(MODID, "grass"));
     public static final ResourceKey<DamageType> ICED_TEA = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(MODID, "iced_tea"));

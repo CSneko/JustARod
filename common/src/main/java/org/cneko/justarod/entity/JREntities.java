@@ -24,6 +24,12 @@ import static org.cneko.justarod.Justarod.MODID;
 超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！
  */
 public class JREntities {
+    public static final Identifier END_ROD_PROJECTILE_ID = Identifier.fromNamespaceAndPath(MODID, "end_rod_projectile");
+    public static final EntityType<EndRodProjectile> END_ROD_PROJECTILE = Registry.register(
+            BuiltInRegistries.ENTITY_TYPE, END_ROD_PROJECTILE_ID,
+            EntityType.Builder.<EndRodProjectile>of(EndRodProjectile::new, MobCategory.MISC)
+                    .sized(0.15f, 0.15f).clientTrackingRange(8).updateInterval(1).noSave().noSummon()
+                    .build(ResourceKey.create(Registries.ENTITY_TYPE, END_ROD_PROJECTILE_ID)));
     public static final Identifier SEEEEEX_NEKO_ID = Identifier.fromNamespaceAndPath(MODID, "seeeeeex_neko");
     public static final ResourceKey<EntityType<?>> SEEEEEX_NEKO_KEY = ResourceKey.create(Registries.ENTITY_TYPE, SEEEEEX_NEKO_ID);
     public static final EntityType<SeeeeexNekoEntity> SEEEEEX_NEKO = Registry.register(

@@ -88,6 +88,10 @@ fabricApi.configureTests {
     enableClientGameTests = providers.gradleProperty('slimeClientTests').isPresent()
     clearRunDirectory = false
 }
+dependencies {
+    // Rod regression tests resolve its toNeko interfaces; keep this dependency out of release jars.
+    gametestCompileOnly files("$rootProject.rootDir/libs/toneko-common-2.0.0.jar")
+}
 loom.runs.gameTest.vmArg "-Dfabric-api.gametest.report-file=${layout.buildDirectory.get().asFile}/slime-gametest.xml"
 
 // The bundled toNeko fixture uses the old "fabric" dependency ID. Correct it only in the test world.

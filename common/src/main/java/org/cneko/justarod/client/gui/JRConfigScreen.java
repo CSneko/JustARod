@@ -427,8 +427,9 @@ public class JRConfigScreen extends Screen {
             } else {
                 EditBox editBox = new EditBox(Minecraft.getInstance().font, 0, 0, inputWidth, 20, Component.nullToEmpty(node.fullKey));
                 editBox.setMaxLength(32);
-                editBox.setValue(String.valueOf(node.entry.value));
-                editBox.setResponder(text -> JRConfig.CONFIG_BUILDER.getConfig().set(node.fullKey, text));
+                editBox.setValue(String.valueOf(JRConfig.CONFIG_BUILDER.getExist(node.fullKey).value));
+                editBox.setResponder(text -> editBox.setTextColor(
+                        JRConfig.CONFIG_BUILDER.setFromText(node.fullKey, text) ? 0xFFFFFFFF : 0xFFFF5555));
                 editBox.setBordered(true);
                 editBox.setTextColor(0xFFFFFFFF);
                 inputWidget = editBox;

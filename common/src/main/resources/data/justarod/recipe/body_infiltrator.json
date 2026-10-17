@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " E ",
+    "SCS",
+    " R "
+  ],
+  "key": {
+    "E": "minecraft:ender_pearl",
+    "S": "minecraft:slime_ball",
+    "C": "minecraft:compass",
+    "R": "minecraft:blaze_rod"
+  },
+  "result": {
+    "id": "justarod:body_infiltrator",
+    "count": 1
+  }
+}

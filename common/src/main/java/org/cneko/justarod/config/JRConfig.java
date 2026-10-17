@@ -101,7 +101,21 @@ public class JRConfig {
                     "每次玩家消化伤害（生命值，默认半颗心，限制 0.5~4）", "Damage per player digestion pulse (0.5-4 health)")
             .addInt("slime.level5.player_blur_ramp_ticks", 1200, null,
                     "消化开始后视野模糊逐渐增强至最大所用时间（tick，默认 1 分钟）",
-                    "Time for digestion blur to reach maximum (default 1 minute)");
+                    "Time for digestion blur to reach maximum (default 1 minute)")
+            // ===== 玩家体内维度 =====
+            .addBoolean("inside_body.enabled", true, null,
+                    "启用玩家体内维度的进入、区域和运行逻辑；关闭后维度仍注册，但不 tick，也不允许进入",
+                    "Enable player body dimension gameplay; when disabled the dimension remains registered but does not tick or accept entry")
+            // ===== 整活（客户端视觉效果） =====
+            .addBoolean("fun.entity_squash.enabled", false, null,
+                    "让所有实体按同一 4/2 拍节奏变宽变矮、恢复原状，同时绕竖直轴每小节旋转一圈；仅改变客户端显示",
+                    "Squash and restore all entities together in 4/2 time while rotating once per bar around the vertical axis; client-side visuals only")
+            .addFloat("fun.entity_squash.compression_ratio", 0.5f, null,
+                    "压缩时保留的高度比例（限制 0.1~1）：0.5 表示半高、横向 2 倍，1 表示不压缩但仍会旋转",
+                    "Height retained when squashed (0.1-1): 0.5 means half height and twice the width; 1 keeps rotation without squashing")
+            .addFloat("fun.entity_squash.bpm", 120f, null,
+                    "节奏速度（四分音符 BPM，限制 10~600）；4/2 拍每个二分音符切换一次，120 BPM 时每秒切换",
+                    "Tempo in quarter-note BPM (10-600); alternate on each half note in 4/2 time, once per second at 120 BPM");
 
     /** 初始化配置文件（缺失的键会被补全），在模组初始化时调用 */
     public static void load() {
@@ -129,8 +143,14 @@ public class JRConfig {
         return Math.max(min, value instanceof Number n ? n.intValue() : ((Number) CONFIG_BUILDER.get(key).value).intValue());
     }
 
+    // ===== 整活 =====
+    public static boolean isEntitySquashEnabled() { return getBoolean("fun.entity_squash.enabled"); }
+    public static float getEntitySquashCompressionRatio() { return Math.min(1f, getFloat("fun.entity_squash.compression_ratio", 0.1f)); }
+    public static float getEntitySquashBpm() { return Math.min(600f, getFloat("fun.entity_squash.bpm", 10f)); }
+
     // ===== 驯服史莱姆 =====
     public static boolean isSlimeDirectDigestion() { return getBoolean("slime.direct_digestion"); }
+    public static boolean isInsideBodyEnabled() { return getBoolean("inside_body.enabled"); }
     public static boolean isSlimePlayerCaptivity() { return getBoolean("slime.player_captivity"); }
     public static boolean isSlimeAbilitiesEnabled() { return getBoolean("slime.abilities.enabled"); }
     public static float getSlimeExplosionPower() { return Math.min(12f, getFloat("slime.abilities.explosion_power", 0.5f)); }

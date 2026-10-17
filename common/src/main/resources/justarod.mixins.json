@@ -16,6 +16,8 @@
     "WitherEntityMixin",
     "ServerCommonNetworkingHandlerMixin",
     "ServerPlayerMixin",
+    "BodyWorldTickMixin",
+    "BodyPlayerDeathMixin",
     "ServerPlayNetworkHandlerMixin",
     "SlimeInteractMixin",
     "SlimeMoveControlAccessor",
@@ -32,11 +34,14 @@
     "defaultRequire": 1
   },
   "client": [
+    "client.EndRodGunModelMixin",
+    "client.EndRodGunHandRendererMixin",
     "client.ClientPlayerEntityMixin",
     "client.ClientPlayerInteractionManagerMixin",
     "client.LivingEntityRendererScaleInvoker",
     "client.PlayerRendererMixin",
     "client.SlimePassengerRenderMixin",
+    "client.EntitySquashRenderMixin",
     "client.SlimeDigestionBlurMixin",
     "client.SoundManagerMixin",
     "client.SlimeFloatingPlayerModelMixin"

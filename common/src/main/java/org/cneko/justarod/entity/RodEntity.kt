@@ -14,6 +14,7 @@ import net.minecraft.world.entity.monster.Monster
 import net.minecraft.world.entity.monster.Enemy
 import net.minecraft.world.entity.AgeableMob
 import net.minecraft.world.entity.TamableAnimal
+import net.minecraft.world.entity.animal.Animal
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
@@ -322,7 +323,7 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: Level):Tama
     override fun visualSize(): Float {
         val lengthScale = 1.0f + getLengthBonus()
         val widthScale = 1.0f + getWidthBonus()
-        // geo/entity/rod.geo.json：底座 6×2×6 + 杆 2×17×2（像素）→ 高 19 像素 = 1.1875 格
+        // geckolib/models/entity/rod.geo.json：底座 6×2×6 + 杆 2×17×2（像素）→ 高 19 像素 = 1.1875 格
         val height = ROD_MODEL_HEIGHT * lengthScale
         val width = ROD_MODEL_WIDTH * widthScale
         val babyScale = if (isBaby) 0.5f else 1.0f
@@ -393,13 +394,13 @@ class RodEntity(private val entityType:EntityType<RodEntity>, world: Level):Tama
 
 
     companion object{
-        /** 渲染尺寸用：geo/entity/rod.geo.json 的杆高 19 像素（底座 2 + 杆 17） */
+        /** 渲染尺寸用：geckolib/models/entity/rod.geo.json 的杆高 19 像素（底座 2 + 杆 17） */
         private const val ROD_MODEL_HEIGHT = 19.0f / 16.0f
         /** 渲染尺寸用：底座宽 6 像素（杆只有 2 像素，取大者） */
         private const val ROD_MODEL_WIDTH = 6.0f / 16.0f
 
         fun createRodAttribute():AttributeSupplier.Builder{
-            return createMobAttributes().add(Attributes.ATTACK_DAMAGE,4.0)
+            return Animal.createAnimalAttributes().add(Attributes.ATTACK_DAMAGE,4.0)
         }
         private val ANGER_TIME_RANGE = TimeUtil.rangeOfSeconds(20, 39)
 

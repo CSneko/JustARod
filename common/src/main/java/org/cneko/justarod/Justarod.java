@@ -39,9 +39,11 @@ public class Justarod {
         EntityAttackEvent.init();
         MessagingEvent.Companion.init();
         JREntities.init();
+        EndRodGunEvents.init();
         TickEvent.Companion.init();
         JRCommands.init();
         JRPackets.init();
+        org.cneko.justarod.body.BodyWorld.init();
         JRNetWorkingEvents.init();
         JRCriteria.init();
 

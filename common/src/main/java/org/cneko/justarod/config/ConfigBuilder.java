@@ -4,6 +4,7 @@ import com.google.gson.JsonPrimitive;
 import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
+import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -75,6 +76,33 @@ public class ConfigBuilder {
     public void setString(String key, String value) { config.set(key, value); config.save(path); }
     public void setNumber(String key, Number value) { config.set(key, value); config.save(path); }
 
+    /** Apply text-box input using the declared type; incomplete/invalid numbers keep the last valid value. */
+    public boolean setFromText(String key, String text) {
+        Entry def = get(key);
+        if (def == null) return false;
+        if (def.type == Entry.Types.STRING) {
+            config.set(key, text);
+            return true;
+        }
+        if (def.type != Entry.Types.NUMBER) return false;
+        Number number = parseNumber(text, (Number) def.value);
+        if (number == null) return false;
+        config.set(key, number);
+        return true;
+    }
+
+    private static Number parseNumber(String text, Number defaultValue) {
+        try {
+            if (defaultValue instanceof Integer) {
+                return new BigDecimal(text.trim()).intValueExact();
+            }
+            float number = Float.parseFloat(text.trim());
+            return Float.isFinite(number) ? number : null;
+        } catch (NumberFormatException | ArithmeticException ignored) {
+            return null;
+        }
+    }
+
     /** 获取某个键的默认值条目 */
     public Entry get(String key) {
         return defaults.get(key);
@@ -95,6 +123,11 @@ public class ConfigBuilder {
             }
         }
         Entry def = get(key);
+        // Older config screens saved numeric edits as JSON strings. Preserve those values when reading.
+        if (def != null && def.type == Entry.Types.NUMBER && value instanceof String text) {
+            Number number = parseNumber(text, (Number) def.value);
+            value = number != null ? number : def.value;
+        }
         if (value == null) {
             value = def != null ? def.value : null;
         }
@@ -125,6 +158,15 @@ public class ConfigBuilder {
             if (!config.contains(key)) {
                 config.set(key, defaults.get(key).value);
                 changed = true;
+            } else if (defaults.get(key).type == Entry.Types.NUMBER) {
+                var stored = config.get(key);
+                if (stored instanceof JsonPrimitive primitive && primitive.isString()) {
+                    Number number = parseNumber(primitive.getAsString(), (Number) defaults.get(key).value);
+                    if (number != null) {
+                        config.set(key, number);
+                        changed = true;
+                    }
+                }
             }
         }
         if (changed || !containsAnyKey()) {

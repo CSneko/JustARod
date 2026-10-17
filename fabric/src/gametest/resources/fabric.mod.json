@@ -6,10 +6,17 @@
   "environment": "*",
   "entrypoints": {
     "fabric-gametest": [
-      "org.cneko.justarod.test.SlimeGameTests"
+      "org.cneko.justarod.test.EndRodGunGameTests",
+      "org.cneko.justarod.test.SlimeGameTests",
+      "org.cneko.justarod.body.BodyWorldGameTests"
     ],
     "fabric-client-gametest": [
-      "org.cneko.justarod.test.SlimeClientGameTests"
+      "org.cneko.justarod.test.EndRodGunClientGameTests",
+      "org.cneko.justarod.test.RodClientGameTests",
+      "org.cneko.justarod.test.ConfigClientGameTests",
+      "org.cneko.justarod.test.EntitySquashClientGameTests",
+      "org.cneko.justarod.test.SlimeClientGameTests",
+      "org.cneko.justarod.body.BodyClientGameTests"
     ]
   },
   "depends": {

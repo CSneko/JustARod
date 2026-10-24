@@ -25,6 +25,9 @@ public final class JRSounds {
     public static final SoundEvent SLIME_SWALLOW =
             SoundEvent.createVariableRangeEvent(Identifier.fromNamespaceAndPath(Justarod.MODID, "slime_swallow"));
 
+    public static final SoundEvent DOLL_SQUEEZE =
+            SoundEvent.createVariableRangeEvent(Identifier.fromNamespaceAndPath(Justarod.MODID, "doll_squeeze"));
+
     private JRSounds() {
     }
 }

@@ -40,6 +40,7 @@ public class Justarod {
         MessagingEvent.Companion.init();
         JREntities.init();
         EndRodGunEvents.init();
+        org.cneko.justarod.empathy.EmpathyDollEvents.init();
         TickEvent.Companion.init();
         JRCommands.init();
         JRPackets.init();

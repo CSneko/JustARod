@@ -44,6 +44,11 @@
     "client.EntitySquashRenderMixin",
     "client.SlimeDigestionBlurMixin",
     "client.SoundManagerMixin",
-    "client.SlimeFloatingPlayerModelMixin"
+    "client.SlimeFloatingPlayerModelMixin",
+    "client.FumoSpecialModelMixin",
+    "client.EmpathyPlayerModelMixin",
+    "client.EmpathyPlayerRenderMixin",
+    "client.EmpathyHandMixin",
+    "client.EmpathyCameraMixin"
   ]
 }

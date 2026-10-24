@@ -106,6 +106,13 @@ public class JRConfig {
             .addBoolean("inside_body.enabled", true, null,
                     "启用玩家体内维度的进入、区域和运行逻辑；关闭后维度仍注册，但不 tick，也不允许进入",
                     "Enable player body dimension gameplay; when disabled the dimension remains registered but does not tick or accept entry")
+            // ===== 共感娃娃 =====
+            .addBoolean("empathy_doll.enabled", true, null,
+                    "启用共感娃娃的绑定、摆放和互动", "Enable empathy doll binding, placement and interactions")
+            .addInt("empathy_doll.cooldown_ticks", 20, null,
+                    "同一目标的互动冷却（tick，限制 5~200）；连续挤压允许立即重播", "Shared interaction cooldown per target (5-200 ticks); consecutive squeezes can restart immediately")
+            .addBoolean("empathy_doll.camera_motion", true, null,
+                    "共感反应时启用轻微第一人称视角反馈（本地设置）", "Gentle first-person camera feedback during reactions (local setting)")
             // ===== 整活（客户端视觉效果） =====
             .addBoolean("fun.entity_squash.enabled", false, null,
                     "让所有实体按同一 4/2 拍节奏变宽变矮、恢复原状，同时绕竖直轴每小节旋转一圈；仅改变客户端显示",
@@ -142,6 +149,10 @@ public class JRConfig {
         Object value = CONFIG_BUILDER.getExist(key).value;
         return Math.max(min, value instanceof Number n ? n.intValue() : ((Number) CONFIG_BUILDER.get(key).value).intValue());
     }
+
+    public static boolean isEmpathyDollEnabled() { return getBoolean("empathy_doll.enabled"); }
+    public static int getEmpathyDollCooldown() { return Math.min(200, getInt("empathy_doll.cooldown_ticks", 5)); }
+    public static boolean isEmpathyDollCameraMotion() { return getBoolean("empathy_doll.camera_motion"); }
 
     // ===== 整活 =====
     public static boolean isEntitySquashEnabled() { return getBoolean("fun.entity_squash.enabled"); }

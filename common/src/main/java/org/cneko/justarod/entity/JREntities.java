@@ -24,6 +24,12 @@ import static org.cneko.justarod.Justarod.MODID;
 超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！
  */
 public class JREntities {
+    public static final Identifier EMPATHY_DOLL_ID = Identifier.fromNamespaceAndPath(MODID, "empathy_doll");
+    public static final EntityType<EmpathyDollEntity> EMPATHY_DOLL = Registry.register(
+            BuiltInRegistries.ENTITY_TYPE, EMPATHY_DOLL_ID,
+            EntityType.Builder.<EmpathyDollEntity>of(EmpathyDollEntity::new, MobCategory.MISC)
+                    .sized(0.7f, 0.95f).clientTrackingRange(8).updateInterval(3)
+                    .build(ResourceKey.create(Registries.ENTITY_TYPE, EMPATHY_DOLL_ID)));
     public static final Identifier END_ROD_PROJECTILE_ID = Identifier.fromNamespaceAndPath(MODID, "end_rod_projectile");
     public static final EntityType<EndRodProjectile> END_ROD_PROJECTILE = Registry.register(
             BuiltInRegistries.ENTITY_TYPE, END_ROD_PROJECTILE_ID,

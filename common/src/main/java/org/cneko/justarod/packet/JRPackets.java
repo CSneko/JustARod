@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 
 public class JRPackets {
     public static void init(){
+        PayloadTypeRegistry.clientboundPlay().register(EmpathyReactionPayload.ID, EmpathyReactionPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(EndRodGunShotPayload.ID, EndRodGunShotPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(FrictionPayload.ID, FrictionPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(FullHeatPayload.ID, FullHeatPayload.CODEC);

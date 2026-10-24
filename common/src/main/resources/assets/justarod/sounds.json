@@ -17,5 +17,14 @@
         "stream": false
       }
     ]
+  },
+  "doll_squeeze": {
+    "subtitle": "subtitles.justarod.doll_squeeze",
+    "sounds": [
+      {
+        "name": "justarod:doll_squeeze",
+        "stream": false
+      }
+    ]
   }
 }

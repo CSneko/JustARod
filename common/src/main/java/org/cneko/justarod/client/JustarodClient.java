@@ -31,6 +31,8 @@ public class JustarodClient {
         EntityRendererRegistry.register(JREntities.ROD, RodRenderer::new);
         EntityRendererRegistry.register(JREntities.ICED_TEA_PROJECTILE, IcedTeaRenderer::new);
         EntityRendererRegistry.register(JREntities.END_ROD_PROJECTILE, org.cneko.justarod.client.renderer.EndRodProjectileRenderer::new);
+        EntityRendererRegistry.register(JREntities.EMPATHY_DOLL, org.cneko.justarod.client.renderer.empathy.FumoDollRenderer::new);
+        org.cneko.justarod.client.renderer.empathy.EmpathyAnimation.init();
         JRClientNetworkingEvents.init();
         org.cneko.justarod.client.renderer.EndRodGunAnimation.init();
         // 驯服史莱姆：模型层 / 渲染器 / 体内容器界面

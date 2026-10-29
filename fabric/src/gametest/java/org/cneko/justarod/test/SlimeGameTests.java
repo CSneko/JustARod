@@ -39,7 +39,7 @@ public class SlimeGameTests {
     @GameTest(maxTicks = 70)
     public void enteringWithoutInputStopsPreviousMovement(GameTestHelper h) {
         TamedSlimeEntity slime = movingSlime(h);
-        ServerPlayer owner = h.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.serverPlayerInLevel(h);
         slime.setOwner(owner);
         slime.hopToward(slime.getX(), slime.getY(), slime.getZ() + 5, 1, false);
         slime.setDeltaMovement(0, 0, 0.2);
@@ -56,7 +56,7 @@ public class SlimeGameTests {
     @GameTest(maxTicks = 70)
     public void releasingDriverInputStopsHorizontalMovement(GameTestHelper h) {
         TamedSlimeEntity slime = movingSlime(h);
-        ServerPlayer owner = h.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.serverPlayerInLevel(h);
         slime.setOwner(owner);
         h.assertTrue(slime.swallowOwner(owner), "Enter as driver");
         Vec3 start = slime.position();
@@ -76,7 +76,7 @@ public class SlimeGameTests {
     @GameTest(maxTicks = 70)
     public void captiveOwnerDoesNotKeepWalkingWithNoPrey(GameTestHelper h) {
         TamedSlimeEntity slime = movingSlime(h);
-        ServerPlayer owner = h.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.serverPlayerInLevel(h);
         slime.setOwner(owner);
         slime.hopToward(slime.getX(), slime.getY(), slime.getZ() + 5, 1, false);
         slime.setDeltaMovement(0, 0, 0.2);
@@ -95,7 +95,7 @@ public class SlimeGameTests {
     @GameTest(maxTicks = 120)
     public void captiveOwnerStillAllowsAiHunting(GameTestHelper h) {
         TamedSlimeEntity slime = movingSlime(h);
-        ServerPlayer owner = h.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.serverPlayerInLevel(h);
         slime.setOwner(owner);
         h.assertTrue(slime.trySwallow(owner), "Owner enters as captive");
         Mob prey = h.spawnWithNoFreeWill(EntityType.CHICKEN, 6, 2, 3);
@@ -108,7 +108,7 @@ public class SlimeGameTests {
     @GameTest(maxTicks = 60)
     public void idleMovementGuardStillAllowsFollowingOwner(GameTestHelper h) {
         TamedSlimeEntity slime = movingSlime(h);
-        ServerPlayer owner = h.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.serverPlayerInLevel(h);
         slime.setOwner(owner);
         owner.teleportTo(slime.getX() + 9, slime.getY(), slime.getZ());
         Vec3 start = slime.position();
@@ -160,7 +160,7 @@ public class SlimeGameTests {
     @GameTest(maxTicks = 60)
     public void levelFiveRevokesExistingDriverAndCannotBeManaged(GameTestHelper h) {
         TamedSlimeEntity slime = slime(h);
-        ServerPlayer owner = h.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.serverPlayerInLevel(h);
         slime.setOwner(owner);
         h.assertTrue(slime.swallowOwner(owner) && slime.isDriver(owner), "Before level 5 the owner can drive");
         slime.setTierLevel(5);
@@ -238,7 +238,7 @@ public class SlimeGameTests {
         ability.putInt("Ability", SlimeAbility.SHULKER.id());
         tag.put("AbsorbedAbility", ability);
         load(h, slime, tag);
-        ServerPlayer owner = h.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.serverPlayerInLevel(h);
         slime.setOwner(owner);
         h.assertTrue(slime.swallowOwner(owner), "Drive below level 5");
         Mob prey = h.spawn(EntityType.COW, 6, 2, 3);
@@ -460,7 +460,7 @@ public class SlimeGameTests {
     public void captiveOwnerCannotDriveOrManageAndCanEscape(GameTestHelper h) {
         h.assertTrue(JRConfig.isSlimePlayerCaptivity(), "Test uses default player captivity configuration");
         TamedSlimeEntity slime = slime(h);
-        ServerPlayer owner = h.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.serverPlayerInLevel(h);
         slime.setOwner(owner);
         slime.setDirectDigestion(true);
         h.assertTrue(slime.trySwallow(owner), "Passive swallow owner");
@@ -489,7 +489,7 @@ public class SlimeGameTests {
         ability.putInt("Ability", SlimeAbility.CREEPER.id());
         tag.put("AbsorbedAbility", ability);
         load(h, slime, tag);
-        ServerPlayer owner = h.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.serverPlayerInLevel(h);
         slime.setOwner(owner);
         h.assertTrue(slime.swallowOwner(owner), "Owner drives");
         float ownerHealth = owner.getHealth();
@@ -546,7 +546,7 @@ public class SlimeGameTests {
         ability.putInt("Ability", SlimeAbility.SHULKER.id());
         tag.put("AbsorbedAbility", ability);
         load(h, slime, tag);
-        ServerPlayer owner = h.makeMockServerPlayerInLevel();
+        ServerPlayer owner = MockPlayers.serverPlayerInLevel(h);
         slime.setOwner(owner);
         h.assertTrue(slime.swallowOwner(owner), "Owner drives");
         Mob prey = h.spawnWithNoFreeWill(EntityType.COW, 6, 2, 3);

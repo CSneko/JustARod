@@ -11,6 +11,7 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.SavedDataStorage;
+import org.cneko.justarod.test.MockPlayers;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -90,7 +91,7 @@ public class BodyWorldGameTests {
 
     @GameTest(maxTicks = 40)
     public void hostDeathAllocatesFreshRegion(GameTestHelper h) {
-        var host = h.makeMockServerPlayerInLevel();
+        var host = MockPlayers.serverPlayerInLevel(h);
         host.setGameMode(net.minecraft.world.level.GameType.SURVIVAL);
         BodyRegionData data = BodyRegionData.get(h.getLevel().getServer());
         long old = data.regionFor(host.getUUID());

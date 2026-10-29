@@ -54,6 +54,11 @@ public class EmpathyDollGameTests {
 
     private ServerPlayer player(GameTestHelper h, double z) { return connectedPlayer(h, z).player(); }
 
+    private static boolean near(net.minecraft.network.protocol.game.ClientboundSoundPacket sound, Vec3 position) {
+        return Math.abs(sound.getX() - position.x) < 2 && Math.abs(sound.getY() - position.y) < 2
+                && Math.abs(sound.getZ() - position.z) < 2;
+    }
+
     private EmpathyDollEntity doll(GameTestHelper h, ServerPlayer operator, ServerPlayer target) {
         var d = new EmpathyDollEntity(JREntities.EMPATHY_DOLL, h.getLevel());
         d.setPos(operator.position().add(0, 0, 1.5));
@@ -180,6 +185,18 @@ public class EmpathyDollGameTests {
         var target = connection.player();
         var d = doll(h, operator, target);
         while (connection.channel().readOutbound() != null) { }
+        java.util.List<String> soundTicks = new java.util.ArrayList<>();
+        h.onEachTick(() -> {
+            int inTick = 0;
+            Object packet;
+            while ((packet = connection.channel().readOutbound()) != null) {
+                // Other tests share this level; only count the squeeze this doll/target pair produced.
+                if (packet instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket sound
+                        && sound.getSound().value().location().equals(org.cneko.justarod.sound.JRSounds.DOLL_SQUEEZE.location())
+                        && (near(sound, d.position()) || near(sound, target.position()))) inTick++;
+            }
+            if (inTick > 0) soundTicks.add(h.getTick() + "x" + inTick);
+        });
         h.assertTrue(EmpathyDollEvents.trigger(d, operator, EmpathyReaction.SQUEEZE), "First squeeze starts");
         for (int tick : new int[]{3, 6, 9}) {
             h.runAfterDelay(tick, () -> {
@@ -196,13 +213,9 @@ public class EmpathyDollGameTests {
         h.runAfterDelay(26, () -> {
             h.assertTrue(d.squeezeHeight(0) == 1 && EmpathyDollEvents.activeReaction(target) == null,
                     "Both animations finish relative to the last click");
-            int sounds = 0;
-            Object packet;
-            while ((packet = connection.channel().readOutbound()) != null) {
-                if (packet instanceof net.minecraft.network.protocol.game.ClientboundSoundPacket sound
-                        && sound.getSound().value().location().equals(org.cneko.justarod.sound.JRSounds.DOLL_SQUEEZE.location())) sounds++;
-            }
-            h.assertTrue(sounds == 4, "Each accepted click plays one sound, without duplicate same-tick sounds; count=" + sounds);
+            h.assertTrue(soundTicks.stream().allMatch(s -> s.endsWith("x1")),
+                    "No duplicate squeeze sound in a single tick; sounds=" + soundTicks);
+            h.assertTrue(soundTicks.size() == 4, "Each accepted click plays one sound; sounds=" + soundTicks);
             h.succeed();
         });
     }

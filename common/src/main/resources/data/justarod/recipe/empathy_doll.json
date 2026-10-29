@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " S ",
+    "WPW",
+    " W "
+  ],
+  "key": {
+    "S": "minecraft:string",
+    "W": "#minecraft:wool",
+    "P": "minecraft:ender_pearl"
+  },
+  "result": {
+    "id": "justarod:empathy_doll",
+    "count": 1
+  }
+}

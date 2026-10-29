@@ -1,0 +1,20 @@
+{
+  "name": "共感娃娃",
+  "icon": "justarod:empathy_doll",
+  "category": "justarod:misc",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "用羊毛、线和末影珍珠合成一个 Fumo 坐姿娃娃。$(br2)手持右键玩家绑定；潜行右键空气绑定自己，已绑定时则解绑。绑定后使用该玩家的皮肤。$(br2)右键方块摆放，空手潜行右键娃娃收回，保留共感对象。"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "对摆好的娃娃右键互动：$(li)空手：抚摸放松$(li)羽毛：挠痒抖动、小跳$(li)冰块：发抖、寒气雪花$(li)仙人掌：短促激灵、损失 0.5 点生命值$(li)末地烛：短暂愣住并获得高潮效果，由效果冒大量爱心$(br2)空手左键：娃娃和玩家同步挤扁并播放音效。目标须在线且在同一维度；互动不消耗道具，共用短暂冷却。"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "justarod:empathy_doll"
+    }
+  ]
+}

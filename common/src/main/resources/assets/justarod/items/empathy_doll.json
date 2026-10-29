@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "justarod:item/empathy_doll",
+    "model": {
+      "type": "justarod:fumo_doll"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "Empathy Doll",
+  "icon": "justarod:empathy_doll",
+  "category": "justarod:misc",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Craft a seated Fumo plush with wool, string and an ender pearl.$(br2)Use on a player to link their skin and reactions. Sneak-use in air to link yourself, or unlink a bound doll.$(br2)Use on a block to place. Sneak-use the doll with an empty hand to pick it up, preserving its link."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Use an item on the placed doll:$(li)Empty hand: relaxing strokes$(li)Feather: shaking and a small hop$(li)Ice: shivers, mist and snowflakes$(li)Cactus: a sudden flinch and 0.5 damage$(li)End rod: a stunned pause and the Orgasm effect, which emits hearts$(br2)Attack with an empty hand to squish both doll and player with a squeak. The player must be online in the same dimension. Tools are not consumed; dolls share a short cooldown per linked player."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "justarod:empathy_doll"
+    }
+  ]
+}

@@ -24,7 +24,7 @@ public class EndRodGunGameTests {
     private EndRodGunItem gun() { return JRItems.Companion.getEND_ROD_GUN(); }
 
     private ServerPlayer player(GameTestHelper h, boolean dual, Mode mode) {
-        ServerPlayer player = h.makeMockServerPlayerInLevel();
+        ServerPlayer player = MockPlayers.serverPlayerInLevel(h);
         player.connection.handleAcceptPlayerLoad(new net.minecraft.network.protocol.game.ServerboundPlayerLoadedPacket());
         // Work above the test structure's enclosing barrier roof.
         Vec3 position = h.absoluteVec(new Vec3(3.5, 12, 1.5));
@@ -100,7 +100,11 @@ public class EndRodGunGameTests {
         h.assertTrue(rods(h, player).size() == 2, "Each gun fires once in the initial tick");
         h.runAfterDelay(3, () -> {
             player.stopUsingItem();
-            h.assertTrue(rods(h, player).size() == 8, "Both guns fire every tick, with no four-tick delay");
+            // The player's own tick may land before or after the structure tick, so allow one volley of slack.
+            // A four-tick delay would cap this at two rods (four with the initial volley).
+            int rods = rods(h, player).size();
+            h.assertTrue(rods >= 6, "Both guns fire every tick, with no four-tick delay; rods="
+                    + rods + ", using=" + player.isUsingItem() + ", playerTicks=" + player.tickCount);
             h.succeed();
         });
     }
@@ -156,6 +160,8 @@ public class EndRodGunGameTests {
         player.teleportTo(player.getX(), h.absoluteVec(new Vec3(0, 40, 0)).y, player.getZ());
         var cow = h.spawnWithNoFreeWill(EntityType.COW, 3, 40, 7);
         cow.setNoGravity(true);
+        // Pin the target: hit knockback otherwise pushes it out of the ticked structure area mid-salvo.
+        h.onEachTick(() -> cow.setDeltaMovement(Vec3.ZERO));
         // Match the crosshair to the target's center, then let real player/item/server ticks drive the salvo.
         Vec3 aim = cow.getBoundingBox().getCenter().subtract(player.getEyePosition());
         player.setXRot((float) -Math.toDegrees(Math.atan2(aim.y, aim.horizontalDistance())));
@@ -182,7 +188,8 @@ public class EndRodGunGameTests {
         h.runAfterDelay(38, () -> player.stopUsingItem());
         h.succeedWhen(() -> {
             h.assertTrue(cow.getHealth() <= initialHealth - 3.99f, "All twenty released rods deal their 0.2 damage; health="
-                    + cow.getHealth() + ", releases=" + releaseTicks.size() + ", vehicle=" + cow.getVehicle());
+                    + cow.getHealth() + ", releases=" + releaseTicks.size() + ", vehicle=" + cow.getVehicle()
+                    + ", alive=" + rods(h, player).size());
             h.assertTrue(rods(h, player).isEmpty(), "A full salvo completes after releasing use, leaving no stranded rods");
             h.assertTrue(releaseTicks.size() == 20, "All twenty releases were observed at the requested cadence");
         });
@@ -218,6 +225,8 @@ public class EndRodGunGameTests {
         player.teleportTo(player.getX(), h.absoluteVec(new Vec3(0, 40, 0)).y, player.getZ());
         var cow = h.spawnWithNoFreeWill(EntityType.COW, 3, 40, 7);
         cow.setNoGravity(true);
+        // Pin the target: hit knockback otherwise pushes it out of the ticked structure area mid-salvo.
+        h.onEachTick(() -> cow.setDeltaMovement(Vec3.ZERO));
         float health = cow.getHealth();
         gun().use(h.getLevel(), player, InteractionHand.MAIN_HAND);
         player.stopUsingItem();

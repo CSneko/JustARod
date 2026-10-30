@@ -1,6 +1,5 @@
 package org.cneko.justarod.effect
 
-import net.minecraft.core.particles.ParticleOptions
 import net.minecraft.core.particles.ParticleTypes
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.server.level.ServerLevel
@@ -15,12 +14,10 @@ import kotlin.math.sin
  * 注入式末地烛喷入水/牛奶后的「印记」。
  * 减速由注入时一并施加，这里只负责图标、持续时间和屁股上的粒子。
  *
- * @param milk 牛奶用白色粒子，水用原版水花
+ * @param milk 只影响效果颜色；粒子统一用原版水花
  */
 class InjectedFluidEffect(private val milk: Boolean) :
     MobEffect(MobEffectCategory.HARMFUL, if (milk) 0xFFFFFF else 0x3FA9F5) {
-
-    private val particle: ParticleOptions = if (milk) ParticleTypes.SNOWFLAKE else ParticleTypes.SPLASH
 
     override fun shouldApplyEffectTickThisTick(duration: Int, amplifier: Int): Boolean = duration % 2 == 0
 
@@ -30,7 +27,7 @@ class InjectedFluidEffect(private val milk: Boolean) :
         val x = entity.x + sin(yaw) * 0.18
         val y = entity.y + 0.55
         val z = entity.z - cos(yaw) * 0.18
-        world.sendParticles(particle, x, y, z, 2, 0.08, 0.04, 0.08, 0.0)
+        world.sendParticles(ParticleTypes.SPLASH, x, y, z, 2, 0.08, 0.04, 0.08, 0.0)
         return true
     }
 }

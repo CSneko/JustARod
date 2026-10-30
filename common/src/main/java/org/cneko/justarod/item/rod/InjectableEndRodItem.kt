@@ -31,7 +31,7 @@ import java.util.function.Consumer
  * - 插入累计 300 tick（15 秒）后：清空 1000 mB，给使用者发滤镜并挂上对应 buff：
  *   水 → 「喷... 喷进来了...」+ 缓慢 I（3 分钟，屁股持续冒水花）；
  *   牛奶 → 同上，粒子换成白色；
- *   岩浆 → 「好烫...」，效果等同点燃 15 秒，入水即灭。
+ *   岩浆 → 「好烫...」，效果等同点燃 6 秒，入水即灭。
  * - 无耐久；没有流体时完全不触发（连插入的高潮/润滑那套效果都不走）。
  */
 class InjectableEndRodItem : SelfUsedItem(
@@ -50,14 +50,14 @@ class InjectableEndRodItem : SelfUsedItem(
         /** 插入 15 秒后喷入。 */
         const val INJECT_TICKS = 300
 
-        /** 滤镜持续时间（与岩浆燃烧一致：15 秒）。 */
+        /** 全屏滤镜持续时间：15 秒。 */
         const val FILTER_TICKS = 300
 
         /** 水/牛奶的 buff 持续时间：3 分钟。 */
         const val FLUID_EFFECT_TICKS = 3600
 
-        /** 岩浆 buff 的持续时间：15 秒（等同于原来的燃烧时间）。 */
-        const val LAVA_EFFECT_TICKS = 300
+        /** 岩浆 buff 的持续时间：6 秒（等同于燃烧时间）。 */
+        const val LAVA_EFFECT_TICKS = 120
 
         const val WATER = "minecraft:water"
         const val LAVA = "minecraft:lava"

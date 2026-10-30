@@ -35,10 +35,8 @@ class JREffects {
         val PARONYCHIA_EFFECT: Holder<MobEffect> = register("paronychia", ParonychiaEffect())
         val FATIGUE_EFFECT: Holder<MobEffect> = register("fatigue", FatigueEffect())
         // ===== 注入式末地烛 =====
-        /** 喷入水：「喷... 喷进来了...」 */
-        val INJECTED_WATER_EFFECT: Holder<MobEffect> = register("injected_water", InjectedFluidEffect(false))
-        /** 喷入牛奶：同上，但粒子是白的 */
-        val INJECTED_MILK_EFFECT: Holder<MobEffect> = register("injected_milk", InjectedFluidEffect(true))
+        /** 喷入水/牛奶（共用）：「喷... 喷进来了...」 */
+        val INJECTED_FLUID_EFFECT: Holder<MobEffect> = register("injected_fluid", InjectedFluidEffect())
         /** 喷入岩浆：「好烫...」，效果等同点燃 */
         val INJECTED_LAVA_EFFECT: Holder<MobEffect> = register("injected_lava", InjectedLavaEffect())
         fun init(){

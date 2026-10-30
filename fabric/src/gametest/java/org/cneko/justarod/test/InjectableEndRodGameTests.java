@@ -84,15 +84,15 @@ public class InjectableEndRodGameTests {
         stack.set(JRComponents.Companion.getUSED_TIME_MARK(), InjectableEndRodItem.INJECT_TICKS - 2);
         rod().onUse(stack, h.getLevel(), player, 0, true, 1);
         h.assertTrue(InjectableEndRodItem.Companion.amountOf(stack) == 2000, "Injection waits for a full 15 seconds");
-        h.assertFalse(player.hasEffect(JREffects.Companion.getINJECTED_WATER_EFFECT()), "Nothing is injected yet");
+        h.assertFalse(player.hasEffect(JREffects.Companion.getINJECTED_FLUID_EFFECT()), "Nothing is injected yet");
 
         // 第 300 tick 触发，消耗一桶，并挂上「喷... 喷进来了...」+ 缓慢 I。
         rod().onUse(stack, h.getLevel(), player, 0, true, 1);
         h.assertTrue(InjectableEndRodItem.Companion.amountOf(stack) == 1000,
                 "Each injection consumes exactly one bucket, actual=" + InjectableEndRodItem.Companion.amountOf(stack));
         h.assertTrue(InjectableEndRodItem.Companion.progressOf(stack) == 0, "Progress resets after an injection");
-        h.assertTrue(player.hasEffect(JREffects.Companion.getINJECTED_WATER_EFFECT()),
-                "Water injection applies the splash debuff");
+        h.assertTrue(player.hasEffect(JREffects.Companion.getINJECTED_FLUID_EFFECT()),
+                "Water injection applies the shared fluid debuff");
         h.assertTrue(player.hasEffect(net.minecraft.world.effect.MobEffects.SLOWNESS), "Water injection slows the user");
         h.assertTrue(player.getEffect(net.minecraft.world.effect.MobEffects.SLOWNESS).getDuration()
                         == InjectableEndRodItem.FLUID_EFFECT_TICKS,

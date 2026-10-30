@@ -11,13 +11,11 @@ import kotlin.math.max
 import kotlin.math.sin
 
 /**
- * 注入式末地烛喷入水/牛奶后的「印记」。
- * 减速由注入时一并施加，这里只负责图标、持续时间和屁股上的粒子。
- *
- * @param milk 只影响效果颜色；粒子统一用原版水花
+ * 注入式末地烛喷入水/牛奶后的「喷... 喷进来了...」。
+ * 水和牛奶共用这一个效果，减速由注入时一并施加；
+ * 这里只负责图标、持续时间和屁股上的水花。
  */
-class InjectedFluidEffect(private val milk: Boolean) :
-    MobEffect(MobEffectCategory.HARMFUL, if (milk) 0xFFFFFF else 0x3FA9F5) {
+class InjectedFluidEffect : MobEffect(MobEffectCategory.HARMFUL, 0x9FD8FF) {
 
     override fun shouldApplyEffectTickThisTick(duration: Int, amplifier: Int): Boolean = duration % 2 == 0
 
@@ -33,7 +31,7 @@ class InjectedFluidEffect(private val milk: Boolean) :
 }
 
 /**
- * 岩浆：和原来「点燃 15 秒」的效果一致，只是换成了图标。
+ * 岩浆：「好烫...」，和原来「点燃」的效果一致，只是换成了图标。
  * 每 tick 把火焰补满，让原版按 20 tick 一次结算烧伤；跳进水里立刻熄火并移除。
  */
 class InjectedLavaEffect : MobEffect(MobEffectCategory.HARMFUL, 0xFF4A00) {

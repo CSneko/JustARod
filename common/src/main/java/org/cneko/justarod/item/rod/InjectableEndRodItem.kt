@@ -187,16 +187,11 @@ class InjectableEndRodItem : SelfUsedItem(
             entity.sendSystemMessage(Component.translatable("message.justarod.injectable_end_rod.injected", fluidName(fluid)))
         }
         when (fluid) {
-            // 岩浆：「好烫...」效果等同点燃 15 秒，入水即灭
+            // 岩浆：「好烫...」效果等同点燃 6 秒，入水即灭
             LAVA -> entity.addEffect(JREffects.INJECTED_LAVA_EFFECT, LAVA_EFFECT_TICKS, 0)
-            // 牛奶：同样的 buff，只是粒子换成白色
-            MILK -> {
-                entity.addEffect(JREffects.INJECTED_MILK_EFFECT, FLUID_EFFECT_TICKS, 0)
-                entity.addEffect(MobEffects.SLOWNESS, FLUID_EFFECT_TICKS, 0)
-            }
-            // 水（以及其它）：蓝色粒子 + 缓慢 I
+            // 水与牛奶共用「喷... 喷进来了...」，都附带缓慢 I
             else -> {
-                entity.addEffect(JREffects.INJECTED_WATER_EFFECT, FLUID_EFFECT_TICKS, 0)
+                entity.addEffect(JREffects.INJECTED_FLUID_EFFECT, FLUID_EFFECT_TICKS, 0)
                 entity.addEffect(MobEffects.SLOWNESS, FLUID_EFFECT_TICKS, 0)
             }
         }

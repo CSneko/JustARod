@@ -94,6 +94,10 @@ public class JRClientNetworkingEvents {
             }
         }));
 
+        ClientPlayNetworking.registerGlobalReceiver(InjectableFluidPayload.ID, (payload, context) -> {
+            context.client().execute(() -> InjectionOverlay.show(payload.fluid(), payload.ticks()));
+        });
+
         ClientPlayNetworking.registerGlobalReceiver(XRayScanScreenPayload.ID,(payload,context)->{
             int id = payload.targetEntityId();
             ScanType type = payload.scanType();

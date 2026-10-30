@@ -7,6 +7,7 @@
   "entrypoints": {
     "fabric-gametest": [
       "org.cneko.justarod.test.EndRodGunGameTests",
+      "org.cneko.justarod.test.InjectableEndRodGameTests",
       "org.cneko.justarod.test.SlimeGameTests",
       "org.cneko.justarod.body.BodyWorldGameTests",
       "org.cneko.justarod.test.EmpathyDollGameTests"

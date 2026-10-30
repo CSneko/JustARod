@@ -74,30 +74,47 @@ public class InjectableEndRodGameTests {
     }
 
     @GameTest
-    public void injectsAfterThirtySecondsAndLavaSetsFire(GameTestHelper h) {
+    public void injectsAfterFifteenSecondsAndAppliesFluidBuffs(GameTestHelper h) {
         ServerPlayer player = playerWithRod(h);
         ItemStack stack = player.getMainHandItem();
         stack.set(JRComponents.Companion.getINJECTABLE_FLUID(), InjectableEndRodItem.WATER);
         stack.set(JRComponents.Companion.getINJECTABLE_FLUID_AMOUNT(), 2000);
 
-        // 差一 tick 不应触发：598 -> 599（还差 1 tick），下一次调用才到 600。
+        // 差一 tick 不应触发：298 -> 299（还差 1 tick），下一次调用才到 300。
         stack.set(JRComponents.Companion.getUSED_TIME_MARK(), InjectableEndRodItem.INJECT_TICKS - 2);
         rod().onUse(stack, h.getLevel(), player, 0, true, 1);
-        h.assertTrue(InjectableEndRodItem.Companion.amountOf(stack) == 2000, "Injection waits for a full 30 seconds");
-        h.assertTrue(player.getRemainingFireTicks() == 0, "Water does not ignite the user");
+        h.assertTrue(InjectableEndRodItem.Companion.amountOf(stack) == 2000, "Injection waits for a full 15 seconds");
+        h.assertFalse(player.hasEffect(JREffects.Companion.getINJECTED_WATER_EFFECT()), "Nothing is injected yet");
 
-        // 第 600 tick 触发，消耗一桶。
+        // 第 300 tick 触发，消耗一桶，并挂上「喷... 喷进来了...」+ 缓慢 I。
         rod().onUse(stack, h.getLevel(), player, 0, true, 1);
         h.assertTrue(InjectableEndRodItem.Companion.amountOf(stack) == 1000,
                 "Each injection consumes exactly one bucket, actual=" + InjectableEndRodItem.Companion.amountOf(stack));
         h.assertTrue(InjectableEndRodItem.Companion.progressOf(stack) == 0, "Progress resets after an injection");
+        h.assertTrue(player.hasEffect(JREffects.Companion.getINJECTED_WATER_EFFECT()),
+                "Water injection applies the splash debuff");
+        h.assertTrue(player.hasEffect(net.minecraft.world.effect.MobEffects.SLOWNESS), "Water injection slows the user");
+        h.assertTrue(player.getEffect(net.minecraft.world.effect.MobEffects.SLOWNESS).getDuration()
+                        == InjectableEndRodItem.FLUID_EFFECT_TICKS,
+                "The debuff lasts three minutes, actual="
+                        + player.getEffect(net.minecraft.world.effect.MobEffects.SLOWNESS).getDuration());
+        h.assertTrue(player.getRemainingFireTicks() == 0, "Water does not ignite the user");
 
-        // 岩浆：再插入 30 秒后点燃 15 秒。
+        // 岩浆：15 秒「好烫...」，效果等同点燃。
+        player.removeAllEffects();
+        player.setRemainingFireTicks(0);
         stack.set(JRComponents.Companion.getINJECTABLE_FLUID(), InjectableEndRodItem.LAVA);
         stack.set(JRComponents.Companion.getUSED_TIME_MARK(), InjectableEndRodItem.INJECT_TICKS - 1);
         rod().onUse(stack, h.getLevel(), player, 0, true, 1);
-        h.assertTrue(player.getRemainingFireTicks() >= InjectableEndRodItem.LAVA_BURN_TICKS,
-                "Lava injection sets the user on fire for 15 seconds, actual=" + player.getRemainingFireTicks());
+        h.assertTrue(player.hasEffect(JREffects.Companion.getINJECTED_LAVA_EFFECT()),
+                "Lava injection applies the burning debuff");
+        h.assertTrue(player.getEffect(JREffects.Companion.getINJECTED_LAVA_EFFECT()).getDuration()
+                        == InjectableEndRodItem.LAVA_EFFECT_TICKS,
+                "The lava debuff lasts 15 seconds");
+        // 走一 tick 效果逻辑，确认它真的在维持燃烧。
+        JREffects.Companion.getINJECTED_LAVA_EFFECT().value().applyEffectTick(h.getLevel(), player, 0);
+        h.assertTrue(player.getRemainingFireTicks() > 0,
+                "The lava debuff keeps the user burning, fireTicks=" + player.getRemainingFireTicks());
         h.assertTrue(InjectableEndRodItem.Companion.amountOf(stack) == 0, "The last bucket is consumed");
         h.assertTrue(InjectableEndRodItem.Companion.fluidOf(stack) == null, "An empty rod forgets the fluid type");
 

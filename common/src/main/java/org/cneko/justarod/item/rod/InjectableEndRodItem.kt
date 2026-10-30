@@ -16,18 +16,22 @@ import net.minecraft.world.item.Items
 import net.minecraft.world.item.TooltipFlag
 import net.minecraft.world.item.component.TooltipDisplay
 import net.minecraft.world.level.Level
+import net.minecraft.world.effect.MobEffects
 import org.cneko.justarod.JRIds
+import org.cneko.justarod.effect.JREffects
 import org.cneko.justarod.item.JRComponents
 import org.cneko.justarod.packet.InjectableFluidPayload
 import java.util.function.Consumer
-import kotlin.math.max
 
 /**
  * 注入式末地烛：插入逻辑复用 [SelfUsedItem]（副手每 tick 使用一次），
- * 额外提供「储存最多 3 桶单一流体」和「连续插入 30 秒后把储存的流体喷进去」。
+ * 额外提供「储存最多 3 桶单一流体」和「连续插入 15 秒后把储存的流体喷进去」。
  *
  * - 主手持本物品、副手持水/岩浆/牛奶桶时右键：灌入 1000 mB（只允许一种流体）。
- * - 插入累计 600 tick（30 秒）后：清空 1000 mB，给使用者发滤镜；岩浆额外点燃 15 秒（入水即灭）。
+ * - 插入累计 300 tick（15 秒）后：清空 1000 mB，给使用者发滤镜并挂上对应 buff：
+ *   水 → 「喷... 喷进来了...」+ 缓慢 I（3 分钟，屁股持续冒水花）；
+ *   牛奶 → 同上，粒子换成白色；
+ *   岩浆 → 「好烫...」，效果等同点燃 15 秒，入水即灭。
  * - 无耐久；没有流体时完全不触发（连插入的高潮/润滑那套效果都不走）。
  */
 class InjectableEndRodItem : SelfUsedItem(
@@ -43,14 +47,17 @@ class InjectableEndRodItem : SelfUsedItem(
         /** 一桶 = 1000 mB。 */
         const val BUCKET_VOLUME = 1000
 
-        /** 插入 30 秒后喷入。 */
-        const val INJECT_TICKS = 600
+        /** 插入 15 秒后喷入。 */
+        const val INJECT_TICKS = 300
 
         /** 滤镜持续时间（与岩浆燃烧一致：15 秒）。 */
         const val FILTER_TICKS = 300
 
-        /** 岩浆注入后的燃烧时间：15 秒。 */
-        const val LAVA_BURN_TICKS = 300
+        /** 水/牛奶的 buff 持续时间：3 分钟。 */
+        const val FLUID_EFFECT_TICKS = 3600
+
+        /** 岩浆 buff 的持续时间：15 秒（等同于原来的燃烧时间）。 */
+        const val LAVA_EFFECT_TICKS = 300
 
         const val WATER = "minecraft:water"
         const val LAVA = "minecraft:lava"
@@ -179,9 +186,19 @@ class InjectableEndRodItem : SelfUsedItem(
             ServerPlayNetworking.send(entity, InjectableFluidPayload(fluid, FILTER_TICKS))
             entity.sendSystemMessage(Component.translatable("message.justarod.injectable_end_rod.injected", fluidName(fluid)))
         }
-        // 岩浆：额外燃烧 15 秒。原版火焰入水即灭，正好满足「跳进水里解除燃烧」。
-        if (fluid == LAVA) {
-            entity.remainingFireTicks = max(entity.remainingFireTicks, LAVA_BURN_TICKS)
+        when (fluid) {
+            // 岩浆：「好烫...」效果等同点燃 15 秒，入水即灭
+            LAVA -> entity.addEffect(JREffects.INJECTED_LAVA_EFFECT, LAVA_EFFECT_TICKS, 0)
+            // 牛奶：同样的 buff，只是粒子换成白色
+            MILK -> {
+                entity.addEffect(JREffects.INJECTED_MILK_EFFECT, FLUID_EFFECT_TICKS, 0)
+                entity.addEffect(MobEffects.SLOWNESS, FLUID_EFFECT_TICKS, 0)
+            }
+            // 水（以及其它）：蓝色粒子 + 缓慢 I
+            else -> {
+                entity.addEffect(JREffects.INJECTED_WATER_EFFECT, FLUID_EFFECT_TICKS, 0)
+                entity.addEffect(MobEffects.SLOWNESS, FLUID_EFFECT_TICKS, 0)
+            }
         }
     }
 

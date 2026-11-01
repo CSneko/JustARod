@@ -11,6 +11,7 @@ import net.minecraft.world.level.Level
 import org.cneko.justarod.item.rod.EndRodInstructions
 import org.cneko.justarod.item.rod.EndRodItem
 import org.cneko.justarod.item.rod.SelfUsedItemInterface
+import org.cneko.justarod.item.rod.isHeldInOffhand
 
 /*
 电动的就不需要自己动手啦... 不那么费力的说
@@ -122,10 +123,8 @@ abstract class SelfUsedElectricRodItem(properties: Properties) : ElectricRodItem
 
         val e: LivingEntity = entity
 
-        // 如果放在副手
-        if (
-            e.getItemInHand(InteractionHand.OFF_HAND) == stack //是的,直接用==
-        ){
+        // 只有副手这一份才触发；用引用比较，避免背包里组件相同的另一颗也被判成「手上这份」
+        if (isHeldInOffhand(e, stack)) {
             // 减少一点耐久 (即使没耐久也不损坏)
             stack.damageValue++
             // 执行

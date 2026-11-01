@@ -25,7 +25,13 @@ public interface Insertable {
             var item = stack.getItem();
             // 26.x：inventoryTick 签名改为 (ItemStack, ServerLevel, Entity, EquipmentSlot?)
             if (entity.level() instanceof net.minecraft.server.level.ServerLevel sl) {
-                item.inventoryTick(stack, sl, entity, null);
+                // 末地烛走专门的插入 tick：背包格子的 inventoryTick 也传 null slot，
+                // 用它来区分「插入」会让背包里的末地烛自己动起来。
+                if (item instanceof org.cneko.justarod.item.rod.EndRodItem rod) {
+                    rod.tickInserted(stack, sl, entity);
+                } else {
+                    item.inventoryTick(stack, sl, entity, null);
+                }
             }
         }
     }

@@ -48,6 +48,18 @@ class JRComponents{
             DataComponentType.builder<String>().persistent(Codec.STRING).build()
         )
 
+        // ===== 注入式末地烛：储存的流体（同一时间只允许一种）=====
+        val INJECTABLE_FLUID: DataComponentType<String> = Registry.register(
+            BuiltInRegistries.DATA_COMPONENT_TYPE,
+            Identifier.fromNamespaceAndPath(MODID, "injectable_fluid"),
+            DataComponentType.builder<String>().persistent(Codec.STRING).build()
+        )
+        val INJECTABLE_FLUID_AMOUNT: DataComponentType<Int> = Registry.register(
+            BuiltInRegistries.DATA_COMPONENT_TYPE,
+            Identifier.fromNamespaceAndPath(MODID, "injectable_fluid_amount"),
+            DataComponentType.builder<Int>().persistent(Codec.INT).build()
+        )
+
         val ENTITY_TYPE: DataComponentType<EntityType<*>> = Registry.register(
             BuiltInRegistries.DATA_COMPONENT_TYPE,
             Identifier.fromNamespaceAndPath(MODID, "entity_type"),

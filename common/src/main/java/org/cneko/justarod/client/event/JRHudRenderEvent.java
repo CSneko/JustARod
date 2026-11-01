@@ -29,6 +29,17 @@ public class JRHudRenderEvent {
                     renderOrgasmOverlay(guiGraphics);
                 }
         );
+
+        // 注入式末地烛：喷入流体后的全屏滤镜（水蓝 / 岩浆红 / 牛奶白）
+        HudElementRegistry.addLast(
+                Identifier.fromNamespaceAndPath(Justarod.MODID, "injection_overlay"),
+                (HudElement) (guiGraphics, deltaTracker) -> {
+                    int color = InjectionOverlay.currentColor();
+                    if (color != 0) {
+                        guiGraphics.fill(0, 0, guiGraphics.guiWidth(), guiGraphics.guiHeight(), color);
+                    }
+                }
+        );
     }
 
     private static void renderOrgasmOverlay(GuiGraphicsExtractor g) {

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "   ",
+    " C ",
+    "BBB"
+  ],
+  "key": {
+    "C": "minecraft:end_rod",
+    "B": "minecraft:bucket"
+  },
+  "result": {
+    "id": "justarod:injectable_end_rod",
+    "count": 1
+  }
+}

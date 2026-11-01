@@ -15,6 +15,7 @@ public class JRPackets {
         PayloadTypeRegistry.clientboundPlay().register(BDSMPayload.ID, BDSMPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(MedicalPayload.ID, MedicalPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(XRayScanScreenPayload.ID, XRayScanScreenPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(InjectableFluidPayload.ID, InjectableFluidPayload.CODEC);
         // ===== 驯服史莱姆 =====
         PayloadTypeRegistry.serverboundPlay().register(SlimeContainerActionPayload.ID, SlimeContainerActionPayload.CODEC);
         PayloadTypeRegistry.serverboundPlay().register(BodyTravelPayload.ID, BodyTravelPayload.CODEC);

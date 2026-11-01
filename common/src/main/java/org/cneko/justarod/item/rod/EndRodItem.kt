@@ -63,6 +63,13 @@ abstract class EndRodItem(properties: Properties) : Item(properties), EndRodItem
         super.onCraftedBy(stack, player)
         stack?.set(JRComponents.Companion.OWNER, player?.name?.string)
     }
+    /**
+     * 已插入体内的末地烛每 tick 调用一次（由 [org.cneko.justarod.entity.Insertable.tickInside] 触发）。
+     * 插入的末地烛不在背包里，不能靠 inventoryTick 的 slot 参数区分——背包格子传的也是 null。
+     */
+    open fun tickInserted(stack: ItemStack, world: Level?, entity: LivingEntity) {
+    }
+
     abstract fun getInstruction(): EndRodInstructions
 
 }
@@ -127,18 +134,23 @@ open class SelfUsedItem(properties: Properties) : EndRodItem(properties), SelfUs
         // 只在服务端执行使用逻辑（效果/伤害/移动由服务端决定并同步给客户端）
         if (world?.isClientSide == true) return
 
-        // 如果放在副手
-        // 修bug:在工具栏第一格也生效
-        if (
-            e.getItemInHand(InteractionHand.OFF_HAND) == stack //是的,直接用==
-            || slot == null // now works with inserted rods
-            ){
+        // 只有副手这一份才触发。
+        // 以前这里还判断 slot == null，但背包格子传给 inventoryTick 的 slot 也是 null，
+        // 于是背包里任何一颗末地烛都会自我使用；插入态改由 tickInserted 单独驱动。
+        if (isHeldInOffhand(e, stack)) {
             // 减少一点耐久 (即使没耐久也不损坏)
             stack.damageValue++
             // 执行
             useOnSelf(stack, world, e, slot?.ordinal ?: -1, true)
         }
 
+    }
+
+    /** 已插入体内：由 Insertable 每 tick 调用。 */
+    override fun tickInserted(stack: ItemStack, world: Level?, entity: LivingEntity) {
+        if (stack.damageValue == stack.maxDamage) return
+        stack.damageValue++
+        useOnSelf(stack, world, entity, -1, true)
     }
 
     override fun getInstruction(): EndRodInstructions {
@@ -205,17 +217,21 @@ abstract class BothUsedItem(properties: Properties) : EndRodItem(properties),Sel
         // 只在服务端执行使用逻辑（效果/伤害/移动由服务端决定并同步给客户端）
         if (world?.isClientSide == true) return
 
-        // 如果放在副手
-        if (
-            e.getItemInHand(InteractionHand.OFF_HAND) == stack //是的,直接用==
-            || slot == null // now works with inserted rods
-        ){
+        // 只有副手这一份才触发（背包格子传的 slot 也是 null，不能用来判断插入态）。
+        if (isHeldInOffhand(e, stack)) {
             // 减少一点耐久 (即使没耐久也不损坏)
             stack.damageValue++
             // 执行
             useOnSelf(stack, world, e, slot?.ordinal ?: -1, true)
         }
 
+    }
+
+    /** 已插入体内：由 Insertable 每 tick 调用。 */
+    override fun tickInserted(stack: ItemStack, world: Level?, entity: LivingEntity) {
+        if (stack.damageValue == stack.maxDamage) return
+        stack.damageValue++
+        useOnSelf(stack, world, entity, -1, true)
     }
 }
 
@@ -368,6 +384,14 @@ enum class EndRodInstructions{
     USE_ON_OTHER_ATTACK,
     SELF_AND_OTHER_INSERT,
     SELF_AND_OTHER_ATTACK
+}
+
+/**
+ * 这一份末地烛是不是正被拿在副手。
+ * 用引用比较：ItemStack.equals 只比较物品与组件，背包里另一颗相同的烛也会被判为 true。
+ */
+fun isHeldInOffhand(entity: LivingEntity, stack: ItemStack): Boolean {
+    return entity.getItemInHand(InteractionHand.OFF_HAND) === stack
 }
 
 

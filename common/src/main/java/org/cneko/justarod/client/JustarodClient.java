@@ -32,6 +32,10 @@ public class JustarodClient {
         EntityRendererRegistry.register(JREntities.ICED_TEA_PROJECTILE, IcedTeaRenderer::new);
         EntityRendererRegistry.register(JREntities.END_ROD_PROJECTILE, org.cneko.justarod.client.renderer.EndRodProjectileRenderer::new);
         EntityRendererRegistry.register(JREntities.EMPATHY_DOLL, org.cneko.justarod.client.renderer.empathy.FumoDollRenderer::new);
+        // 末地烛陷阱：伪装方块渲染
+        net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
+                org.cneko.justarod.block.JRBlockEntities.INSTANCE.getEND_ROD_TRAP(),
+                org.cneko.justarod.client.renderer.EndRodTrapRenderer::new);
         org.cneko.justarod.client.renderer.empathy.EmpathyAnimation.init();
         JRClientNetworkingEvents.init();
         org.cneko.justarod.client.renderer.EndRodGunAnimation.init();

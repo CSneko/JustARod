@@ -23,6 +23,14 @@ public class JRBlocks {
             "golden_leaves",
             true
     );
+
+    /** 末地烛陷阱：可装末地烛、可伪装成其它完整方块，踩上去会把烛塞进副手。 */
+    public static final Block END_ROD_TRAP = register(
+            new EndRodTrapBlock(),
+            "end_rod_trap",
+            true
+    );
+
     public static void init(){
     }
 

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ITI",
+    "I I",
+    "IPI"
+  ],
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "T": "minecraft:iron_trapdoor",
+    "P": "minecraft:piston"
+  },
+  "result": {
+    "id": "justarod:end_rod_trap",
+    "count": 1
+  }
+}

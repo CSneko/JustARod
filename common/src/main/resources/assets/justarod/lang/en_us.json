@@ -48,6 +48,7 @@
   "message.justarod.injectable_end_rod.wrong_fluid": "There is still %s inside, cannot mix fluids",
   "message.justarod.injectable_end_rod.injected": "Injected %s...",
   "item.justarod.cactus_rod": "Cactus Rod",
+  "block.justarod.end_rod_trap": "End Rod Trap",
   "item.justarod.eatable_rod": "Edible Rod",
   "item.justarod.long_rod": "Long Rod",
   "item.justarod.long_rod.tooltip": "§aIt's so long... (°Д°)",

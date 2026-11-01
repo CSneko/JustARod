@@ -10,7 +10,8 @@
       "org.cneko.justarod.test.InjectableEndRodGameTests",
       "org.cneko.justarod.test.SlimeGameTests",
       "org.cneko.justarod.body.BodyWorldGameTests",
-      "org.cneko.justarod.test.EmpathyDollGameTests"
+      "org.cneko.justarod.test.EmpathyDollGameTests",
+      "org.cneko.justarod.test.EndRodTrapGameTests"
     ],
     "fabric-client-gametest": [
       "org.cneko.justarod.test.EndRodGunClientGameTests",
@@ -20,7 +21,8 @@
       "org.cneko.justarod.test.SlimeClientGameTests",
       "org.cneko.justarod.body.BodyClientGameTests",
       "org.cneko.justarod.test.EmpathyDollClientGameTests",
-      "org.cneko.justarod.test.OrgasmClientGameTests"
+      "org.cneko.justarod.test.OrgasmClientGameTests",
+      "org.cneko.justarod.test.EndRodTrapClientGameTests"
     ]
   },
   "depends": {

@@ -48,6 +48,7 @@
   "message.justarod.injectable_end_rod.wrong_fluid": "里面还有%s，不能混着装哦",
   "message.justarod.injectable_end_rod.injected": "喷入了%s……",
   "item.justarod.cactus_rod": "仙人掌末地烛",
+  "block.justarod.end_rod_trap": "末地烛陷阱",
   "item.justarod.eatable_rod": "可食用末地烛",
   "item.justarod.long_rod": "超长末地烛",
   "item.justarod.long_rod.tooltip": "§a这也太长了吧(°Д°)",

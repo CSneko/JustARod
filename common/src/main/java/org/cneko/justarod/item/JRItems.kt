@@ -258,6 +258,8 @@ class JRItems {
                 entries.accept(XP_GUN)
                 entries.accept(END_ROD_GUN)
                 entries.accept(EMPATHY_DOLL)
+                // 末地烛陷阱（方块物品）
+                entries.accept(org.cneko.justarod.block.JRBlocks.END_ROD_TRAP.asItem())
                 entries.accept(REMOTE_CONTROL)
                 entries.accept(ICED_TEA)
                 entries.accept(FREE_MATING)

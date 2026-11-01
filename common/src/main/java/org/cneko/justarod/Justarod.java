@@ -33,6 +33,8 @@ public class Justarod {
         NetWorkingRodData.Companion.init();
         JRItems.Companion.init();
         JRBlocks.init();
+        // 方块实体必须在方块之后注册
+        org.cneko.justarod.block.JRBlockEntities.INSTANCE.init();
         JREffects.Companion.init();
         JRAttributes.Companion.init();
         JRQuirks.Companion.init();

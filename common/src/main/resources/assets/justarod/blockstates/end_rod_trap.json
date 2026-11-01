@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "mimicked=false": {
+      "model": "minecraft:block/dispenser_vertical"
+    },
+    "mimicked=true": {
+      "model": "justarod:block/empty"
+    }
+  }
+}

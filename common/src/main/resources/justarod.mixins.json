@@ -27,7 +27,10 @@
     "debug.ServerPlayerSyncAccessor",
     "SlimeTrustAccessor",
     "SlimeTrustMixin",
-    "SlimeDigestionExperienceMixin"
+    "SlimeDigestionExperienceMixin",
+    "PetPlayerMixin",
+    "PetOwnerAiMixin",
+    "DisassemblyPlayerMixin"
   ],
   "server": [],
   "injectors": {
@@ -49,6 +52,19 @@
     "client.EmpathyPlayerModelMixin",
     "client.EmpathyPlayerRenderMixin",
     "client.EmpathyHandMixin",
-    "client.EmpathyCameraMixin"
+    "client.EmpathyCameraMixin",
+    "client.PetInputMixin",
+    "client.PetPlayerModelMixin",
+    "client.PetCameraMixin",
+    "client.DisassemblyModelMixin",
+    "client.DisassemblyInputMixin",
+    "client.DisassemblyHandMixin",
+    "client.DisassemblyHeldItemMixin",
+    "client.DisassemblyViewCameraMixin",
+    "client.DisassemblySplitRenderMixin",
+    "client.DisassemblyCrosshairMixin",
+    "client.AscarisCameraMixin",
+    "client.AscarisInputMixin",
+    "client.CuteScaleBobMixin"
   ]
 }

@@ -30,6 +30,14 @@ class JRAttributes {
                 100.0, 0.0, 1000.0
             ).setSyncable(true)
         )
+        val PLAYER_CUTE_SCALE_ID: Identifier = Identifier.fromNamespaceAndPath(MODID, "player.cute_scale")
+        val PLAYER_CUTE_SCALE: Holder<Attribute> = register(
+            PLAYER_CUTE_SCALE_ID,
+            RangedAttribute(
+                "attribute.name.player.cute_scale",
+                1.0, 0.25, 4.0
+            ).setSyncable(true)
+        )
         fun register(id: Identifier, attribute: Attribute): Holder<Attribute> {
             return Registry.registerForHolder(BuiltInRegistries.ATTRIBUTE, id, attribute)
         }

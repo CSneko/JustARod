@@ -22,6 +22,8 @@ public class DefaultAttributeRegistryMixin {
             cir.setReturnValue(SeeeeexNekoEntity.createNekoAttributes().build());
         } else if (type == JREntities.ROD) {
             cir.setReturnValue(RodEntity.Companion.createRodAttribute().build());
+        } else if (type == JREntities.ASCARIS) {
+            cir.setReturnValue(org.cneko.justarod.ascaris.AscarisEntity.createAscarisAttributes().build());
         }
     }
 }

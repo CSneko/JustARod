@@ -4,6 +4,12 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 
 public class JRPackets {
     public static void init(){
+        PayloadTypeRegistry.clientboundPlay().register(DisassemblyViewPayload.ID, DisassemblyViewPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(DisassemblyActionPayload.ID, DisassemblyActionPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(DisassemblyStatePayload.ID, DisassemblyStatePayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(PetActionPayload.ID, PetActionPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(PetMenuPayload.ID, PetMenuPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(PetStatePayload.ID, PetStatePayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(EmpathyReactionPayload.ID, EmpathyReactionPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(EndRodGunShotPayload.ID, EndRodGunShotPayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(FrictionPayload.ID, FrictionPayload.CODEC);
@@ -26,5 +32,8 @@ public class JRPackets {
         PayloadTypeRegistry.clientboundPlay().register(SlimeDevourStatePayload.ID, SlimeDevourStatePayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(SlimeCaptivityStatePayload.ID, SlimeCaptivityStatePayload.CODEC);
         PayloadTypeRegistry.clientboundPlay().register(SlimeFloatingPositionsPayload.ID, SlimeFloatingPositionsPayload.CODEC);
+        // ===== 蛔虫感染 & 粉白蛔虫娘 =====
+        PayloadTypeRegistry.clientboundPlay().register(AscarisVisualEventPayload.ID, AscarisVisualEventPayload.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(AscarisActionPayload.ID, AscarisActionPayload.CODEC);
     }
 }

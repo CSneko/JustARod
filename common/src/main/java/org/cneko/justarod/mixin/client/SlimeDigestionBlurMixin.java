@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class SlimeDigestionBlurMixin {
     @Inject(method = "extractOptions", at = @At("TAIL"))
     private void slimeBlurRadius(CallbackInfo ci) {
-        float blur = SlimeCaptivityClientState.blur();
+        float blur = Math.max(SlimeCaptivityClientState.blur(), org.cneko.justarod.client.ascaris.AscarisClientState.blur());
         if (blur > 0) {
             var options = ((GameRenderer) (Object) this).getGameRenderState().optionsRenderState;
             int radius = Math.round(blur * 10);
@@ -23,6 +23,8 @@ public class SlimeDigestionBlurMixin {
     }
     @Inject(method = "renderLevel", at = @At("TAIL"))
     private void slimeBlurWorld(DeltaTracker deltaTracker, CallbackInfo ci) {
-        if (SlimeCaptivityClientState.blur() > 0) ((GameRenderer) (Object) this).processBlurEffect();
+        if (Math.max(SlimeCaptivityClientState.blur(), org.cneko.justarod.client.ascaris.AscarisClientState.blur()) > 0) {
+            ((GameRenderer) (Object) this).processBlurEffect();
+        }
     }
 }

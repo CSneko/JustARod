@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "justarod:item/detached_left_leg",
+    "model": {
+      "type": "justarod:detached_part"
+    }
+  }
+}

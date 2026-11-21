@@ -60,4 +60,13 @@ public class ItemStackMixin {
             }
         }
     }
+
+    @Inject(method = "finishUsingItem", at = @At("RETURN"))
+    private void justarod$onFinishUsingItemReturn(Level level, LivingEntity user, CallbackInfoReturnable<ItemStack> cir) {
+        if (level.isClientSide() || !(user instanceof Player player)) {
+            return;
+        }
+        ItemStack stack = (ItemStack) (Object) this;
+        org.cneko.justarod.ascaris.AscarisInfectionController.onFinishConsuming(player, stack);
+    }
 }

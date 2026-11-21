@@ -18,6 +18,15 @@ public class ServerPlayerMixin {
         // 26.x：编译期接口由 mixin 注入，需显式转换
         ((org.cneko.justarod.entity.Pregnant) (Object) player).setSterilization(((org.cneko.justarod.entity.Pregnant) (Object) oldPlayer).isSterilization());
         ((org.cneko.justarod.entity.Pregnant) (Object) player).setImmune2HPV(((org.cneko.justarod.entity.Pregnant) (Object) oldPlayer).isImmune2HPV());
+        net.minecraft.nbt.CompoundTag hosted = ((org.cneko.justarod.entity.Pregnant) (Object) oldPlayer).getHostedAscarisNbt();
+        if (hosted != null && !hosted.isEmpty()) {
+            ((org.cneko.justarod.entity.Pregnant) (Object) player).setHostedAscarisNbt(hosted.copy());
+        }
+        var oldScale = oldPlayer.getAttribute(org.cneko.justarod.JRAttributes.Companion.getPLAYER_CUTE_SCALE());
+        var newScale = player.getAttribute(org.cneko.justarod.JRAttributes.Companion.getPLAYER_CUTE_SCALE());
+        if (oldScale != null && newScale != null && Math.abs(oldScale.getBaseValue() - 1.0) > 0.001) {
+            newScale.setBaseValue(oldScale.getBaseValue());
+        }
     }
 
     @Unique

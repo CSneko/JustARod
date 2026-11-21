@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "minecraft:rotten_flesh",
+    "minecraft:spider_eye",
+    "minecraft:pink_dye",
+    "minecraft:glass_bottle"
+  ],
+  "result": {
+    "id": "justarod:ascaris_egg_capsule",
+    "count": 1
+  }
+}

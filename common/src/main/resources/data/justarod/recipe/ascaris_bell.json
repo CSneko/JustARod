@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " P ",
+    "GMG",
+    " G "
+  ],
+  "key": {
+    "P": "minecraft:pink_dye",
+    "G": "minecraft:gold_ingot",
+    "M": "justarod:ascaris_molt"
+  },
+  "result": {
+    "id": "justarod:ascaris_bell",
+    "count": 1
+  }
+}

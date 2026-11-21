@@ -47,6 +47,7 @@ public final class BodyWorld {
         MinecraftServer server = ((ServerLevel) player.level()).getServer();
         BodyRegionData data = BodyRegionData.get(server);
         if (JRConfig.isInsideBodyEnabled() && data.currentRegion(player.getUUID()) != null) {
+            org.cneko.justarod.ascaris.BodyAscarisBridge.despawnForHost(server, player.getUUID());
             reset(server, player.getUUID());
         }
         data.removeVisit(player.getUUID());
@@ -98,6 +99,7 @@ public final class BodyWorld {
             return fail(visitor, "body.unavailable");
         }
         visitor.sendSystemMessage(Component.translatable("body.entered", host.getName()));
+        org.cneko.justarod.ascaris.BodyAscarisBridge.onVisitorEntered(body, slot, host, visitor);
         return true;
     }
 
@@ -125,6 +127,12 @@ public final class BodyWorld {
         }
         boolean moved = visitor.teleportTo(destination, x, y, z, Set.of(), yaw, pitch, false);
         if (moved) {
+            if (visit != null) {
+                ServerLevel body = server.getLevel(DIMENSION);
+                if (body != null) {
+                    org.cneko.justarod.ascaris.BodyAscarisBridge.onVisitorExited(body, visit.slot(), visitor, destination);
+                }
+            }
             data.removeVisit(visitor.getUUID());
             server.overworld().getDataStorage().saveAndJoin();
             visitor.sendSystemMessage(Component.translatable("body.exited"));

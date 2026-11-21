@@ -25,6 +25,7 @@ public abstract class PlayerRendererMixin {
     @Inject(method = "<init>", at = @At("TAIL"))
     private void onInit(EntityRendererProvider.Context ctx, boolean slim, CallbackInfo ci) {
         AvatarRenderer self = (AvatarRenderer) (Object) this;
+        self.addLayer(new org.cneko.justarod.client.disassembly.MountedEyeLayer(self));
         self.addLayer(new RashFeatureRenderer(self));
         self.addLayer(new BallMouthFeatureRenderer(self));
         self.addLayer(new ElectricShockFeatureRenderer(self));

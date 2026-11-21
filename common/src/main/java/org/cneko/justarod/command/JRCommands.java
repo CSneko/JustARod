@@ -10,6 +10,11 @@ public class JRCommands {
                     RodCommand.register(dispatcher);
                     org.cneko.justarod.command.SlimeDebugCommand.register(dispatcher);
                     BodyCommand.register(dispatcher);
+                    AscarisCommand.register(dispatcher);
+                    PetCommand.register(dispatcher);
+                    DisassemblyCommand.register(dispatcher);
+                    // TEMPORARY: remove this registration and the director package after filming.
+                    org.cneko.justarod.director.TemporaryDirectorCommand.register(dispatcher);
                 }
         );
         ImpartCommand.Companion.init();

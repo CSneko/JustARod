@@ -3,7 +3,8 @@ package org.cneko.justarod.client.gui;
 
 @SuppressWarnings("LombokGetterMayBeUsed")
 public enum ScanType {
-    UTERUS("uterus");
+    UTERUS("uterus"),
+    ABDOMEN("abdomen");
 
     private final String id;
 

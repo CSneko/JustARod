@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IGI",
+    "RAR",
+    " I "
+  ],
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "G": "minecraft:light_blue_stained_glass_pane",
+    "R": "minecraft:redstone",
+    "A": "minecraft:amethyst_shard"
+  },
+  "result": {
+    "id": "justarod:abdomen_scanner",
+    "count": 1
+  }
+}

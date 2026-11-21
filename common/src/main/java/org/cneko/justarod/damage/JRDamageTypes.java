@@ -17,6 +17,7 @@ public class JRDamageTypes {
     public static final ResourceKey<DamageType> ICED_TEA = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(MODID, "iced_tea"));
     public static final ResourceKey<DamageType> PARONYCHIA = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(MODID, "paronychia"));
     public static final ResourceKey<DamageType> SLEEP_DEPRIVATION = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(MODID, "stay_up_late"));
+    public static final ResourceKey<DamageType> ASCARIS_OBSTRUCTION = ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(MODID, "ascaris_obstruction"));
 
     public static DamageSource of(Level world, ResourceKey<DamageType> key) {
         return new DamageSource(world.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(key));

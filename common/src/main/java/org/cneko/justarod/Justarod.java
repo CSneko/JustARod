@@ -32,6 +32,7 @@ public class Justarod {
 
         NetWorkingRodData.Companion.init();
         JRItems.Companion.init();
+        org.cneko.justarod.disassembly.DisassemblyItems.init();
         JRBlocks.init();
         // 方块实体必须在方块之后注册
         org.cneko.justarod.block.JRBlockEntities.INSTANCE.init();
@@ -46,7 +47,10 @@ public class Justarod {
         TickEvent.Companion.init();
         JRCommands.init();
         JRPackets.init();
+        org.cneko.justarod.pet.PetController.init();
+        org.cneko.justarod.disassembly.DisassemblyController.init();
         org.cneko.justarod.body.BodyWorld.init();
+        org.cneko.justarod.ascaris.AscarisInfectionController.init();
         JRNetWorkingEvents.init();
         JRCriteria.init();
 

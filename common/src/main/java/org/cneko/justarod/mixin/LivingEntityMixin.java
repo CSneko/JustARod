@@ -60,6 +60,7 @@ public class LivingEntityMixin implements Insertable {
         AttributeSupplier.Builder builder = cir.getReturnValue();
         builder.add(JRAttributes.Companion.getPLAYER_LUBRICATING());
         builder.add(JRAttributes.Companion.getGENERIC_MAX_POWER());
+        builder.add(JRAttributes.Companion.getPLAYER_CUTE_SCALE());
     }
 
     // 26.x：LivingEntity#hurt 拆分为 hurtServer/hurtClient，注入服务端版本

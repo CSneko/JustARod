@@ -26,5 +26,165 @@
         "stream": false
       }
     ]
+  },
+  "pet_purr": {
+    "subtitle": "subtitles.justarod.pet_purr",
+    "sounds": [
+      {
+        "name": "minecraft:entity.cat.purr",
+        "type": "event"
+      }
+    ]
+  },
+  "pet_neko_voice": {
+    "subtitle": "subtitles.justarod.pet_neko_voice",
+    "sounds": [
+      {
+        "name": "toneko:item/bazooka/meow/meow1",
+        "pitch": 1.1,
+        "volume": 0.7
+      }
+    ]
+  },
+  "ascaris_bell": {
+    "category": "neutral",
+    "subtitle": "subtitles.justarod.ascaris_bell",
+    "sounds": [
+      {
+        "name": "justarod:ascaris_bell",
+        "stream": false
+      }
+    ]
+  },
+  "ascaris_rumble": {
+    "category": "neutral",
+    "subtitle": "subtitles.justarod.ascaris_rumble",
+    "sounds": [
+      {
+        "name": "justarod:ascaris_rumble",
+        "stream": false
+      }
+    ]
+  },
+  "ascaris_slither": {
+    "category": "neutral",
+    "subtitle": "subtitles.justarod.ascaris_slither",
+    "sounds": [
+      {
+        "name": "justarod:ascaris_slither",
+        "stream": false
+      }
+    ]
+  },
+  "ascaris_giggle": {
+    "category": "neutral",
+    "subtitle": "subtitles.justarod.ascaris_giggle",
+    "sounds": [
+      {
+        "name": "justarod:ascaris_giggle",
+        "stream": false
+      }
+    ]
+  },
+  "ascaris_heartbeat": {
+    "category": "neutral",
+    "subtitle": "subtitles.justarod.ascaris_heartbeat",
+    "sounds": [
+      {
+        "name": "justarod:ascaris_heartbeat",
+        "stream": false
+      }
+    ]
+  },
+  "ascaris_voice_greet": {
+    "category": "voice",
+    "subtitle": "subtitles.justarod.ascaris_voice_greet",
+    "sounds": [
+      "justarod:ascaris/greet_0",
+      "justarod:ascaris/greet_1"
+    ]
+  },
+  "ascaris_voice_happy": {
+    "category": "voice",
+    "subtitle": "subtitles.justarod.ascaris_voice_happy",
+    "sounds": [
+      "justarod:ascaris/happy_0",
+      "justarod:ascaris/happy_1",
+      "justarod:ascaris/happy_2"
+    ]
+  },
+  "ascaris_voice_curious": {
+    "category": "voice",
+    "subtitle": "subtitles.justarod.ascaris_voice_curious",
+    "sounds": [
+      "justarod:ascaris/curious_0",
+      "justarod:ascaris/curious_1"
+    ]
+  },
+  "ascaris_voice_hop": {
+    "category": "voice",
+    "subtitle": "subtitles.justarod.ascaris_voice_hop",
+    "sounds": [
+      "justarod:ascaris/hop_0",
+      "justarod:ascaris/hop_1"
+    ]
+  },
+  "ascaris_voice_sleepy": {
+    "category": "voice",
+    "subtitle": "subtitles.justarod.ascaris_voice_sleepy",
+    "sounds": [
+      "justarod:ascaris/sleepy_0",
+      "justarod:ascaris/sleepy_1"
+    ]
+  },
+  "ascaris_voice_hiss": {
+    "category": "voice",
+    "subtitle": "subtitles.justarod.ascaris_voice_hiss",
+    "sounds": [
+      "justarod:ascaris/hiss_0",
+      "justarod:ascaris/hiss_1"
+    ]
+  },
+  "ascaris_voice_hurt": {
+    "category": "voice",
+    "subtitle": "subtitles.justarod.ascaris_voice_hurt",
+    "sounds": [
+      "justarod:ascaris/hurt_0",
+      "justarod:ascaris/hurt_1",
+      "justarod:ascaris/hurt_2",
+      "justarod:ascaris/hurt_3"
+    ]
+  },
+  "ascaris_voice_whimper": {
+    "category": "voice",
+    "subtitle": "subtitles.justarod.ascaris_voice_whimper",
+    "sounds": [
+      "justarod:ascaris/whimper_0",
+      "justarod:ascaris/whimper_1"
+    ]
+  },
+  "ascaris_voice_yandere_giggle": {
+    "category": "voice",
+    "subtitle": "subtitles.justarod.ascaris_voice_yandere_giggle",
+    "sounds": [
+      "justarod:ascaris/yandere_giggle_0",
+      "justarod:ascaris/yandere_giggle_1",
+      "justarod:ascaris/yandere_giggle_2"
+    ]
+  },
+  "ascaris_voice_yandere_cling": {
+    "category": "voice",
+    "subtitle": "subtitles.justarod.ascaris_voice_yandere_cling",
+    "sounds": [
+      "justarod:ascaris/yandere_cling_0"
+    ]
+  },
+  "ascaris_voice_jealous": {
+    "category": "voice",
+    "subtitle": "subtitles.justarod.ascaris_voice_jealous",
+    "sounds": [
+      "justarod:ascaris/yandere_jealous_0",
+      "justarod:ascaris/yandere_jealous_1"
+    ]
   }
 }

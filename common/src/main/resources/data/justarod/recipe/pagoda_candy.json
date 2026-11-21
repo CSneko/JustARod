@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " S ",
+    "PBP",
+    "SSS"
+  ],
+  "key": {
+    "S": "minecraft:sugar",
+    "P": "minecraft:pink_dye",
+    "B": "minecraft:sweet_berries"
+  },
+  "result": {
+    "id": "justarod:pagoda_candy",
+    "count": 2
+  }
+}

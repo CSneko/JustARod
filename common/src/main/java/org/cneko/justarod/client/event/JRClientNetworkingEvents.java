@@ -107,8 +107,10 @@ public class JRClientNetworkingEvents {
             }
             if(entity instanceof LivingEntity le && entity instanceof Pregnant) {
                 getInstance().execute(() -> {
-                    if (type== ScanType.UTERUS) {
+                    if (type == ScanType.UTERUS) {
                         getInstance().setScreen(new UterusScanScreen(le));
+                    } else if (type == ScanType.ABDOMEN) {
+                        getInstance().setScreen(new org.cneko.justarod.client.gui.AbdomenScanScreen(le));
                     }
                 });
             }

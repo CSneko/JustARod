@@ -25,6 +25,10 @@ public class JRKeyBindings {
     public static KeyMapping SLIME_DEVOUR_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.justarod.slime_devour", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, CATEGORY));
     public static KeyMapping SLIME_ABILITY_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.justarod.slime_ability", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_V, CATEGORY));
     public static KeyMapping BODY_EXIT_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.justarod.body_exit", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_J, CATEGORY));
+    public static KeyMapping PET_MENU_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.justarod.pet_menu", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_K, CATEGORY));
+    public static KeyMapping PET_CANCEL_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.justarod.pet_cancel", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_X, CATEGORY));
+    public static KeyMapping DISASSEMBLY_MENU_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.justarod.disassembly_menu", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_H, CATEGORY));
+    public static KeyMapping DETACH_HEAD_KEY = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.justarod.detach_head", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_Y, CATEGORY));
     public static void init(){
     }
 }

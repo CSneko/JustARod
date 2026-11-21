@@ -39,6 +39,8 @@ class JREffects {
         val INJECTED_FLUID_EFFECT: Holder<MobEffect> = register("injected_fluid", InjectedFluidEffect())
         /** 喷入岩浆：「好烫...」，效果等同点燃 */
         val INJECTED_LAVA_EFFECT: Holder<MobEffect> = register("injected_lava", InjectedLavaEffect())
+        /** 蛔虫感染 */
+        val ASCARIS_INFECTION_EFFECT: Holder<MobEffect> = register("ascaris_infection", AscarisInfectionEffect())
         fun init(){
         }
 

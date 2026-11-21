@@ -24,6 +24,12 @@ import static org.cneko.justarod.Justarod.MODID;
 超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！超市你喵！
  */
 public class JREntities {
+    public static final Identifier DETACHED_PART_ID = Identifier.fromNamespaceAndPath(MODID, "detached_part");
+    public static final EntityType<org.cneko.justarod.disassembly.DetachedPartEntity> DETACHED_PART = Registry.register(
+            BuiltInRegistries.ENTITY_TYPE, DETACHED_PART_ID,
+            EntityType.Builder.<org.cneko.justarod.disassembly.DetachedPartEntity>of(org.cneko.justarod.disassembly.DetachedPartEntity::new, MobCategory.MISC)
+                    .sized(0.45f, 0.75f).eyeHeight(0.4f).clientTrackingRange(8).updateInterval(2)
+                    .build(ResourceKey.create(Registries.ENTITY_TYPE, DETACHED_PART_ID)));
     public static final Identifier EMPATHY_DOLL_ID = Identifier.fromNamespaceAndPath(MODID, "empathy_doll");
     public static final EntityType<EmpathyDollEntity> EMPATHY_DOLL = Registry.register(
             BuiltInRegistries.ENTITY_TYPE, EMPATHY_DOLL_ID,
@@ -78,6 +84,13 @@ public class JREntities {
                     .updateInterval(10)
                     .build(ICED_TEA_PROJECTILE_KEY)
     );
+    public static final Identifier PET_OWNER_NEKO_ID = Identifier.fromNamespaceAndPath(MODID, "pet_owner_neko");
+    public static final EntityType<PetOwnerNekoEntity> PET_OWNER_NEKO = Registry.register(
+            BuiltInRegistries.ENTITY_TYPE, PET_OWNER_NEKO_ID,
+            EntityType.Builder.of(PetOwnerNekoEntity::new, MobCategory.CREATURE)
+                    .sized(0.5f, 1.7f).eyeHeight(1.6f)
+                    .build(ResourceKey.create(Registries.ENTITY_TYPE, PET_OWNER_NEKO_ID)));
+
     // ===== 驯服史莱姆 =====
     public static final Identifier TAMED_SLIME_ID = Identifier.fromNamespaceAndPath(MODID, "tamed_slime");
     public static final ResourceKey<EntityType<?>> TAMED_SLIME_KEY = ResourceKey.create(Registries.ENTITY_TYPE, TAMED_SLIME_ID);
@@ -91,9 +104,26 @@ public class JREntities {
                     .build(TAMED_SLIME_KEY)
     );
 
+    // ===== 粉白蛔虫娘 =====
+    public static final Identifier ASCARIS_ID = Identifier.fromNamespaceAndPath(MODID, "ascaris");
+    public static final ResourceKey<EntityType<?>> ASCARIS_KEY = ResourceKey.create(Registries.ENTITY_TYPE, ASCARIS_ID);
+    public static final EntityType<org.cneko.justarod.ascaris.AscarisEntity> ASCARIS = Registry.register(
+            BuiltInRegistries.ENTITY_TYPE,
+            ASCARIS_ID,
+            EntityType.Builder.of(org.cneko.justarod.ascaris.AscarisEntity::new, MobCategory.CREATURE)
+                    .sized(0.55f, 1.43f)
+                    .eyeHeight(1.12f)
+                    .build(ASCARIS_KEY)
+    );
+
     public static void init(){
+        FabricDefaultAttributeRegistry.register(PET_OWNER_NEKO, NekoEntity.createNekoAttributes());
+        BiomeModifications.addSpawn(BiomeSelectors.includeByKey(net.minecraft.world.level.biome.Biomes.PLAINS),
+                MobCategory.CREATURE, PET_OWNER_NEKO, 4, 1, 1);
         // 驯服史莱姆的属性（26.x 沿用 Fabric 默认属性注册表）
         FabricDefaultAttributeRegistry.register(TAMED_SLIME, TamedSlimeEntity.createSlimeAttributes());
+        // 粉白蛔虫娘（主要经由感染排出与体内维度获得，不在主世界野外自然刷怪）
+        FabricDefaultAttributeRegistry.register(ASCARIS, org.cneko.justarod.ascaris.AscarisEntity.createAscarisAttributes());
         BiomeModifications.addSpawn(BiomeSelectors.tag(BiomeTags.IS_HILL), MobCategory.CREATURE, SEEEEEX_NEKO, 20, 1, 1);
         BiomeModifications.addSpawn(BiomeSelectors.tag(BiomeTags.IS_BEACH), MobCategory.CREATURE, LOLI_NEKO, 10, 1, 1);
     }

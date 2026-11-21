@@ -835,6 +835,45 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
         this.fatigue = Math.max(0, fatigue);
     }
 
+    // ----------------- 蛔虫感染 & 体内共生寄宿 -----------------
+    @Unique
+    private int ascaris = 0;
+    @Unique
+    private CompoundTag hostedAscarisNbt = null;
+    @Unique
+    private boolean hasHostedAscarisSynced = false;
+
+    @Override
+    public int getAscaris() {
+        return this.ascaris;
+    }
+
+    @Override
+    public void setAscaris(int ascaris) {
+        this.ascaris = Math.max(0, ascaris);
+    }
+
+    @Override
+    public CompoundTag getHostedAscarisNbt() {
+        return this.hostedAscarisNbt;
+    }
+
+    @Override
+    public void setHostedAscarisNbt(CompoundTag tag) {
+        this.hostedAscarisNbt = (tag == null || tag.isEmpty()) ? null : tag;
+        this.hasHostedAscarisSynced = this.hostedAscarisNbt != null;
+    }
+
+    @Override
+    public boolean hasHostedAscaris() {
+        return (this.hostedAscarisNbt != null && !this.hostedAscarisNbt.isEmpty()) || this.hasHostedAscarisSynced;
+    }
+
+    @Override
+    public void setHasHostedAscaris(boolean hosted) {
+        this.hasHostedAscarisSynced = hosted;
+    }
+
     @Override
     public boolean isYuri() {
         return ((INeko)this).hasQuirk(JRQuirks.Companion.getYURI_QUIRK());
@@ -926,6 +965,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
             Pregnant.lactationTick((LivingEntity & Pregnant) player);
             Pregnant.urinaryIncontinenceTick((LivingEntity & Pregnant) player);
             Pregnant.stayUpLateTick((LivingEntity & Pregnant) player);
+            Pregnant.ascarisTick(player);
+            org.cneko.justarod.scale.CuteScaleController.tickPlayer(player);
             BDSMable.ballMouthTick((Player & BDSMable) player);
             BDSMable.electricShockTick((Player & BDSMable) player);
             BDSMable.bundledTick((Player & BDSMable) player);
@@ -941,7 +982,8 @@ public abstract class PlayerMixin implements Powerable, Pregnant, BDSMable {
     private static void createPlayerAttributes(CallbackInfoReturnable<AttributeSupplier.Builder> cir) {
         cir.getReturnValue()
                 .add(Companion.getPLAYER_LUBRICATING())
-                .add(Companion.getGENERIC_MAX_POWER());
+                .add(Companion.getGENERIC_MAX_POWER())
+                .add(Companion.getPLAYER_CUTE_SCALE());
     }
 
 }

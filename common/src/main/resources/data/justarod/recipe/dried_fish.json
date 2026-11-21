@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "minecraft:cooked_cod"
+  ],
+  "result": {
+    "id": "justarod:dried_fish",
+    "count": 1
+  }
+}

@@ -295,6 +295,11 @@ public interface Pregnant{
         nbt.putInt("HrtMtfProgress", getHrtMtfProgress());
         nbt.putInt("HrtFtmProgress", getHrtFtmProgress());
         nbt.putInt("VaginalAtrophy", getVaginalAtrophy());
+        nbt.putInt("Ascaris", getAscaris());
+        CompoundTag hosted = getHostedAscarisNbt();
+        if (hosted != null && !hosted.isEmpty()) {
+            nbt.put("HostedAscaris", hosted.copy());
+        }
     }
     default void readPregnantFromNbt(CompoundTag nbt) {
         setFemale(nbt.getBooleanOr("Female", false));
@@ -448,6 +453,12 @@ public interface Pregnant{
         if (nbt.contains("HrtMtfProgress")) setHrtMtfProgress(nbt.getIntOr("HrtMtfProgress", 0));
         if (nbt.contains("HrtFtmProgress")) setHrtFtmProgress(nbt.getIntOr("HrtFtmProgress", 0));
         if (nbt.contains("VaginalAtrophy")) setVaginalAtrophy(nbt.getIntOr("VaginalAtrophy", 0));
+        if (nbt.contains("Ascaris")) setAscaris(nbt.getIntOr("Ascaris", 0));
+        if (nbt.contains("HostedAscaris")) {
+            setHostedAscarisNbt(nbt.getCompound("HostedAscaris").map(CompoundTag::copy).orElse(null));
+        } else {
+            setHostedAscarisNbt(null);
+        }
     }
 
     default Entity createBaby() {
@@ -798,6 +809,24 @@ public interface Pregnant{
     default void setHemorrhoids(int time){}
     default int getHemorrhoids(){
         return 0;
+    }
+
+    // ----------------------------- ASCARIS (蛔虫感染 & 体内共生寄宿) -----------------------------
+    default void setAscaris(int time){}
+    default int getAscaris(){
+        return 0;
+    }
+    default CompoundTag getHostedAscarisNbt() {
+        return null;
+    }
+    default void setHostedAscarisNbt(CompoundTag tag) {}
+    default boolean hasHostedAscaris() {
+        CompoundTag tag = getHostedAscarisNbt();
+        return tag != null && !tag.isEmpty();
+    }
+    default void setHasHostedAscaris(boolean hosted) {}
+    static void ascarisTick(LivingEntity entity) {
+        org.cneko.justarod.ascaris.AscarisInfectionController.tickPlayer(entity);
     }
 
     // ----------------------------- PARONYCHIA (甲沟炎) -----------------------------

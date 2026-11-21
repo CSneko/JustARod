@@ -45,6 +45,8 @@ object JRRegistry {
     val OVARIAN_CANCER = registerTime("ovarian_cancer", "卵巢癌", { it.ovarianCancer }, { e, v -> e.ovarianCancer = v }, isDisease = true)
     val BREAST_CANCER = registerTime("breast_cancer", "乳腺癌", { it.breastCancer }, { e, v -> e.breastCancer = v }, isDisease = true)
     val CORPUS_LUTEUM_RUPTURE = registerTime("corpus_luteum_rupture", "黄体破裂内出血", { it.corpusLuteumRupture }, { e, v -> e.corpusLuteumRupture = v }, isDisease = true)
+    val ASCARIS = registerTime("ascaris", "蛔虫感染", { it.ascaris }, { e, v -> e.ascaris = v }, isDisease = true)
+    val HAS_HOSTED_ASCARIS = registerBool("has_hosted_ascaris", "体内共生寄宿", { it.hasHostedAscaris() }, { e, v -> e.setHasHostedAscaris(v) })
 
     // ==================== 疾病与异常 (布尔类) ====================
     val IMMUNE_AIDS = registerBool("immune_aids", "艾滋病免疫", { it.isImmune2Aids }, { e, v -> e.isImmune2Aids = v })

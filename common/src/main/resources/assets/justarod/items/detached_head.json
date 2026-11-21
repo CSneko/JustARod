@@ -1,0 +1,9 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "justarod:item/detached_head",
+    "model": {
+      "type": "justarod:detached_part"
+    }
+  }
+}

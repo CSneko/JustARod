@@ -601,6 +601,13 @@ class PregnantCommand {
                 }
             }
             cmd.then(uterusCmd)
+            val abdomenCmd = literal("abdomen")
+            buildSelfAndTarget(abdomenCmd) { p, s ->
+                if (s.entity is ServerPlayer) {
+                    ServerPlayNetworking.send(s.entity as ServerPlayer, XRayScanScreenPayload(ScanType.ABDOMEN, (p as Entity).id))
+                }
+            }
+            cmd.then(abdomenCmd)
             baseCmd.then(cmd)
         }
 

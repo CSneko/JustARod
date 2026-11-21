@@ -20,5 +20,7 @@ public abstract class FumoSpecialModelMixin {
     @Inject(method = "bootstrap", at = @At("TAIL"))
     private static void justarod$registerFumo(CallbackInfo ci) {
         ID_MAPPER.put(FumoDollSpecialRenderer.ID, FumoDollSpecialRenderer.Unbaked.CODEC);
+        ID_MAPPER.put(org.cneko.justarod.client.disassembly.DetachedPartSpecialRenderer.ID,
+                org.cneko.justarod.client.disassembly.DetachedPartSpecialRenderer.Unbaked.CODEC);
     }
 }

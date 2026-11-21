@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " R ",
+    "SMS",
+    " G "
+  ],
+  "key": {
+    "R": "minecraft:redstone",
+    "S": "minecraft:sugar",
+    "M": "minecraft:brown_mushroom",
+    "G": "minecraft:glowstone_dust"
+  },
+  "result": {
+    "id": "justarod:albendazole",
+    "count": 2
+  }
+}

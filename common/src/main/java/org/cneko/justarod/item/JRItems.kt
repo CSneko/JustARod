@@ -51,6 +51,7 @@ class JRItems {
         val SLIME_BELL = SlimeBellItem(JRIds.itemProps("slime_bell").stacksTo(1))
         /** 分解催化物：岩浆膏 + 虚弱药水 + 金苹果合成，喂给驯服史莱姆开启分解队列 */
         val DECOMPOSE_CATALYST = DecomposeCatalystItem(JRIds.itemProps("decompose_catalyst").stacksTo(16))
+        val DRIED_FISH = Item(JRIds.itemProps("dried_fish").food(FoodProperties.Builder().nutrition(4).saturationModifier(0.5f).build()))
         val BODY_INFILTRATOR = Item(JRIds.itemProps("body_infiltrator").stacksTo(1))
         val GIANT_ROD = GiantRodItem()
         val LUBRICATING_BOOK = LubricatingBookItem()
@@ -138,11 +139,21 @@ class JRItems {
         val CHEMOTHERAPY_DRUG = ChemotherapyDrugItem(JRIds.itemProps("chemotherapy_drug"))
         val PARTHENOGENESIS_CATALYST = ParthenogenesisCatalystItem(JRIds.itemProps("parthenogenesis_catalyst").stacksTo(1))
         val YURI_MATING_MATING_MATING = YuriMatingMatingMatingItem()
+        // ===== 蛔虫感染 & 粉白蛔虫娘 =====
+        val PAGODA_CANDY = PagodaCandyItem(JRIds.itemProps("pagoda_candy").stacksTo(32))
+        val ALBENDAZOLE = AlbendazoleItem(JRIds.itemProps("albendazole").stacksTo(32))
+        val ASCARIS_EGG_CAPSULE = Item(JRIds.itemProps("ascaris_egg_capsule").stacksTo(16)
+            .food(FoodProperties.Builder().nutrition(1).saturationModifier(0.1f).alwaysEdible().build())
+            .component(DataComponents.CONSUMABLE, Consumable.builder().consumeSeconds(1.2f).build()))
+        val ASCARIS_MOLT = Item(JRIds.itemProps("ascaris_molt"))
+        val ASCARIS_BELL = AscarisBellItem(JRIds.itemProps("ascaris_bell").stacksTo(1))
+        val ABDOMEN_SCANNER = AbdomenScannerItem(JRIds.itemProps("abdomen_scanner").stacksTo(1))
 
         var JR_ITEM_GROUP_KEY: ResourceKey<CreativeModeTab>? = null
         var JR_ITEM_GROUP: CreativeModeTab? = null
         fun init(){
             // 注册物品
+            Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(MODID, "dried_fish"), DRIED_FISH)
             Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(MODID, "slime_rod"), SLIME_ROD)
             Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(MODID, "slime_bell"), SLIME_BELL)
             Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(MODID, "decompose_catalyst"), DECOMPOSE_CATALYST)
@@ -218,6 +229,12 @@ class JRItems {
             Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(MODID, "chemotherapy_drug"), CHEMOTHERAPY_DRUG)
             Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(MODID, "parthenogenesis_catalyst"), PARTHENOGENESIS_CATALYST)
             Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(MODID, "yuri_mating_mating_mating"), YURI_MATING_MATING_MATING)
+            Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(MODID, "pagoda_candy"), PAGODA_CANDY)
+            Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(MODID, "albendazole"), ALBENDAZOLE)
+            Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(MODID, "ascaris_egg_capsule"), ASCARIS_EGG_CAPSULE)
+            Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(MODID, "ascaris_molt"), ASCARIS_MOLT)
+            Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(MODID, "ascaris_bell"), ASCARIS_BELL)
+            Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(MODID, "abdomen_scanner"), ABDOMEN_SCANNER)
             // 注册物品组
             JR_ITEM_GROUP_KEY = ResourceKey.create(net.minecraft.core.registries.Registries.CREATIVE_MODE_TAB, Identifier.fromNamespaceAndPath(MODID, "item_group"))
             JR_ITEM_GROUP = FabricCreativeModeTab.builder()
@@ -231,6 +248,7 @@ class JRItems {
                 entries.accept(SLIME_BELL)
                 entries.accept(DECOMPOSE_CATALYST)
                 entries.accept(BODY_INFILTRATOR)
+                entries.accept(DRIED_FISH)
                 entries.accept(GIANT_ROD)
                 entries.accept(LUBRICATING_BOOK)
                 entries.accept(REDSTONE_ROD)
@@ -305,6 +323,12 @@ class JRItems {
                 entries.accept(CHEMOTHERAPY_DRUG)
                 entries.accept(PARTHENOGENESIS_CATALYST)
                 entries.accept(YURI_MATING_MATING_MATING)
+                entries.accept(PAGODA_CANDY)
+                entries.accept(ALBENDAZOLE)
+                entries.accept(ASCARIS_EGG_CAPSULE)
+                entries.accept(ASCARIS_MOLT)
+                entries.accept(ASCARIS_BELL)
+                entries.accept(ABDOMEN_SCANNER)
             }
         }
     }

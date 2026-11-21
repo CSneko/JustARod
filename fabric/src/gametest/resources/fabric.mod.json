@@ -11,18 +11,13 @@
       "org.cneko.justarod.test.SlimeGameTests",
       "org.cneko.justarod.body.BodyWorldGameTests",
       "org.cneko.justarod.test.EmpathyDollGameTests",
-      "org.cneko.justarod.test.EndRodTrapGameTests"
+      "org.cneko.justarod.test.EndRodTrapGameTests",
+      "org.cneko.justarod.test.PetGameTests",
+      "org.cneko.justarod.test.DisassemblyGameTests",
+      "org.cneko.justarod.test.AscarisGameTests"
     ],
     "fabric-client-gametest": [
-      "org.cneko.justarod.test.EndRodGunClientGameTests",
-      "org.cneko.justarod.test.RodClientGameTests",
-      "org.cneko.justarod.test.ConfigClientGameTests",
-      "org.cneko.justarod.test.EntitySquashClientGameTests",
-      "org.cneko.justarod.test.SlimeClientGameTests",
-      "org.cneko.justarod.body.BodyClientGameTests",
-      "org.cneko.justarod.test.EmpathyDollClientGameTests",
-      "org.cneko.justarod.test.OrgasmClientGameTests",
-      "org.cneko.justarod.test.EndRodTrapClientGameTests"
+      "org.cneko.justarod.test.AscarisClientGameTests"
     ]
   },
   "depends": {

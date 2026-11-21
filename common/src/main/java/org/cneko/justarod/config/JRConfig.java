@@ -113,6 +113,20 @@ public class JRConfig {
                     "同一目标的互动冷却（tick，限制 5~200）；连续挤压允许立即重播", "Shared interaction cooldown per target (5-200 ticks); consecutive squeezes can restart immediately")
             .addBoolean("empathy_doll.camera_motion", true, null,
                     "共感反应时启用轻微第一人称视角反馈（本地设置）", "Gentle first-person camera feedback during reactions (local setting)")
+            // ===== 反向驯服 =====
+            .addBoolean("pet.taming_enabled", false, null,
+                    "允许村民和猫娘驯服尚未绑定主人的玩家（以服务端设置为准）",
+                    "Allow villagers and catgirls to tame players without an owner (server setting)")
+            .addBoolean("pet.camera_motion", true, null,
+                    "主人拿鱼时短暂看向鱼（本地设置，移动鼠标可立即打断）",
+                    "Briefly look at the owner holding fish; mouse input interrupts (local setting)")
+            // ===== 粉白蛔虫娘 =====
+            .addBoolean("ascaris.yandere", true, null,
+                    "启用粉白蛔虫娘的病娇属性（执念值、吃醋驱赶、驱虫药黑化截停、病娇缠绕、床边凝视与暗瞳变脸）；关闭后仅保留软萌日常模式",
+                    "Enable Ascaris-chan's yandere behaviors (obsession, jealousy, dewormer intercept, yandere wrap, bed watch and dark eyes); disable for pure cute mode")
+            .addBoolean("fun.absurdity", false, null,
+                    "增加模组一些东西的荒诞感",
+                    "Add a touch of absurdity to some things in the mod")
             // ===== 整活（客户端视觉效果） =====
             .addBoolean("fun.entity_squash.enabled", false, null,
                     "让所有实体按同一 4/2 拍节奏变宽变矮、恢复原状，同时绕竖直轴每小节旋转一圈；仅改变客户端显示",
@@ -153,6 +167,11 @@ public class JRConfig {
     public static boolean isEmpathyDollEnabled() { return getBoolean("empathy_doll.enabled"); }
     public static int getEmpathyDollCooldown() { return Math.min(200, getInt("empathy_doll.cooldown_ticks", 5)); }
     public static boolean isEmpathyDollCameraMotion() { return getBoolean("empathy_doll.camera_motion"); }
+
+    public static boolean isAbsurdityEnabled() { return getBoolean("fun.absurdity"); }
+    public static boolean isPlayerTamingEnabled() { return getBoolean("pet.taming_enabled"); }
+    public static boolean isPetCameraMotion() { return getBoolean("pet.camera_motion"); }
+    public static boolean isAscarisYandereEnabled() { return getBoolean("ascaris.yandere"); }
 
     // ===== 整活 =====
     public static boolean isEntitySquashEnabled() { return getBoolean("fun.entity_squash.enabled"); }

@@ -21,6 +21,8 @@ public abstract class EmpathyPlayerRenderMixin {
         // Always balance pushes, including when the reaction expires at a frame boundary.
         poses.pushPose();
         if (state instanceof AvatarRenderState avatar) {
+            if (org.cneko.justarod.client.pet.PetClient.sitting(avatar.id) && !avatar.isPassenger)
+                poses.translate(0, -0.55, 0);
             var reaction = EmpathyAnimation.reaction(avatar);
             if (reaction != null) EmpathyAnimation.transform(poses, reaction, EmpathyAnimation.partialTick());
         }

@@ -26,12 +26,15 @@ import org.cneko.toneko.common.mod.util.TickTaskQueue;
 public class JustarodClient {
 
     public static void init() {
+        EntityRendererRegistry.register(JREntities.DETACHED_PART, org.cneko.justarod.client.disassembly.DetachedPartRenderer::new);
+        EntityRendererRegistry.register(JREntities.PET_OWNER_NEKO, org.cneko.justarod.client.pet.PetOwnerNekoRenderer::new);
         EntityRendererRegistry.register(JREntities.SEEEEEX_NEKO, NekoRenderer::new);
         EntityRendererRegistry.register(JREntities.LOLI_NEKO, LoliNekoRenderer::new);
         EntityRendererRegistry.register(JREntities.ROD, RodRenderer::new);
         EntityRendererRegistry.register(JREntities.ICED_TEA_PROJECTILE, IcedTeaRenderer::new);
         EntityRendererRegistry.register(JREntities.END_ROD_PROJECTILE, org.cneko.justarod.client.renderer.EndRodProjectileRenderer::new);
         EntityRendererRegistry.register(JREntities.EMPATHY_DOLL, org.cneko.justarod.client.renderer.empathy.FumoDollRenderer::new);
+        EntityRendererRegistry.register(JREntities.ASCARIS, org.cneko.justarod.client.ascaris.AscarisRenderer::new);
         // 末地烛陷阱：伪装方块渲染
         net.minecraft.client.renderer.blockentity.BlockEntityRenderers.register(
                 org.cneko.justarod.block.JRBlockEntities.INSTANCE.getEND_ROD_TRAP(),
@@ -44,12 +47,18 @@ public class JustarodClient {
         // 诊断命令 /jrslime（排查容器两端不一致用）
         org.cneko.justarod.client.command.SlimeDebugClientCommand.init();
         JRKeyBindings.init();
+        org.cneko.justarod.client.disassembly.DisassemblyClient.init();
+        org.cneko.justarod.client.disassembly.DisassemblyHud.init();
+        org.cneko.justarod.client.pet.PetClient.init();
         org.cneko.justarod.client.event.BodyClientEvents.init();
         ClientTickEvent.Companion.init();
         RealClientTickEvent.Companion.init();
         JRHudRenderEvent.init();
         // 骑着史莱姆时屏幕右侧的「按 G 吞噬 / 按 B 打开背包」提示
         org.cneko.justarod.client.event.JRSlimeHud.init();
+        // 蛔虫感染 & 粉白蛔虫娘视觉状态机与活体 HUD
+        org.cneko.justarod.client.ascaris.AscarisClientState.init();
+        org.cneko.justarod.client.ascaris.AscarisHud.init();
         NekoScreenRegistry.register(JREntities.SEEEEEX_NEKO_ID, JRScreenBuilders.SEEEEEX_NEKO_INTERACTIVE_SCREEN);
         NekoScreenRegistry.register(JREntities.LOLI_NEKO_ID, JRScreenBuilders.LOLI_NEKO_INTERACTIVE_SCREEN);
         var queen = new TickTaskQueue();

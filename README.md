@@ -41,6 +41,10 @@ neoforge/  NeoForge 加载器入口（运行时由 Forgified Fabric API 提供 F
 
 # 如何使用
 
+身体拆卸玩法、按键与拍摄指令见 [身体拆卸说明](docs/body-disassembly.md)。
+
+反向驯服玩法、荒诞感配置和临时拍摄指令见 [反向驯服说明](docs/reverse-taming.md)。
+
 # 已经替大家把猫猫草服了喵~
 
 ## 恰个小广子

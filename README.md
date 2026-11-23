@@ -3,7 +3,7 @@
 
 这是[More_end_rod](https://github.com/CSneko/More_end_rod/)模组的续作，但是需要toNeko作为前置，你可以将其理解为toNeko的附属模组喵
 
-你需要在 `Minecraft 1.21.1` 运行本模组，支持以下加载器：
+你需要在 `Minecraft 26.1.2` 运行本模组，支持以下加载器：
 
 - **Fabric**：需要安装 [Fabric API](https://modrinth.com/mod/fabric-api)、[Fabric Language Kotlin](https://modrinth.com/mod/fabric-language-kotlin) 以及 [toNeko](https://modrinth.com/mod/tonekomod) 作为前置哦
 - **NeoForge**：需要安装 [Forgified Fabric API](https://modrinth.com/mod/forgified-fabric-api)、[Kotlin for Forge](https://modrinth.com/mod/kotlin-for-forge) 以及 toNeko 的 NeoForge 版本作为前置哦（构建说明见下方）

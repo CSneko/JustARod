@@ -305,4 +305,38 @@ public class AscarisGameTests {
             h.succeed();
         });
     }
+
+    @GameTest(maxTicks = 40)
+    public void singleEggCapsuleAndLastFoodFinishUsingItemWork(GameTestHelper h) {
+        ServerPlayer player = survivalPlayer(h, 4.5, 4.5);
+        Pregnant p = (Pregnant) (Object) player;
+        h.assertTrue(p.getAscaris() == 0, "Player starts uninfected");
+
+        // 1. 生存模式吃下唯一 1 粒蛔虫卵胶囊（count 1 -> 0）：必须正常触发 Ⅰ 期感染
+        ItemStack firstCapsule = new ItemStack(JRItems.Companion.getASCARIS_EGG_CAPSULE(), 1);
+        firstCapsule.finishUsingItem(h.getLevel(), player);
+        h.assertTrue(firstCapsule.isEmpty(), "Single capsule is consumed down to empty in survival");
+        h.assertTrue(AscarisInfectionController.stageOf(p.getAscaris()) == 1,
+                "Eating last egg capsule via finishUsingItem infects player to Stage 1");
+        h.assertTrue(player.hasEffect(org.cneko.justarod.effect.JREffects.Companion.getASCARIS_INFECTION_EFFECT()),
+                "Ascaris infection effect is applied immediately");
+
+        // 2. 再吃 1 粒单颗胶囊 -> 推进到 Ⅱ 期
+        ItemStack secondCapsule = new ItemStack(JRItems.Companion.getASCARIS_EGG_CAPSULE(), 1);
+        secondCapsule.finishUsingItem(h.getLevel(), player);
+        h.assertTrue(secondCapsule.isEmpty(), "Second single capsule is consumed");
+        h.assertTrue(AscarisInfectionController.stageOf(p.getAscaris()) == 2,
+                "Second single egg capsule advances infection to Stage 2");
+
+        // 3. Ⅲ 期吃掉手里最后 1 块熟牛排（+8 饱食）：先恢复再偷吃 40%（3 点），10 + 8 - 3 = 15
+        p.setAscaris(AscarisInfectionController.STAGE_3_TICKS);
+        player.getFoodData().setFoodLevel(10);
+        ItemStack lastBeef = new ItemStack(Items.COOKED_BEEF, 1);
+        lastBeef.finishUsingItem(h.getLevel(), player);
+        h.assertTrue(lastBeef.isEmpty(), "Last cooked beef is consumed");
+        h.assertTrue(player.getFoodData().getFoodLevel() == 15,
+                "Stage 3 steals nutrition after eating last food stack (actual=" + player.getFoodData().getFoodLevel() + ")");
+
+        h.succeed();
+    }
 }

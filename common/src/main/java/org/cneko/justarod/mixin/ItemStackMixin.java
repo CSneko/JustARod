@@ -1,5 +1,7 @@
 package org.cneko.justarod.mixin;
 
+import com.llamalad7.mixinextras.sugar.Share;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -23,18 +25,27 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class ItemStackMixin {
 
     @Inject(method = "finishUsingItem", at = @At("HEAD"))
-    private void justarod$onFinishUsingItem(Level level, LivingEntity user, CallbackInfoReturnable<ItemStack> cir) {
+    private void justarod$onFinishUsingItem(
+            Level level,
+            LivingEntity user,
+            CallbackInfoReturnable<ItemStack> cir,
+            @Share("consumedSnapshot") LocalRef<ItemStack> consumedSnapshot
+    ) {
         if (level.isClientSide()) {
             return;
         }
         if (!(user instanceof Player player)) {
             return;
         }
+
+        ItemStack stack = (ItemStack) (Object) this;
+        // 必须在 consume() 扣减数量前保留快照：否则吃掉最后一个物品时，
+        // RETURN 阶段 this.count 已变为 0，typeHolder() 会退化为 Items.AIR、组件退化为 EMPTY。
+        consumedSnapshot.set(stack.copy());
+
         if (!(player instanceof Pregnant pregnant)) {
             return;
         }
-
-        ItemStack stack = (ItemStack) (Object) this;
 
         if (stack.is(JRItems.Companion.getSHENBAO())) {
             // 肾宝提神：消除一部分疲劳
@@ -62,11 +73,19 @@ public class ItemStackMixin {
     }
 
     @Inject(method = "finishUsingItem", at = @At("RETURN"))
-    private void justarod$onFinishUsingItemReturn(Level level, LivingEntity user, CallbackInfoReturnable<ItemStack> cir) {
+    private void justarod$onFinishUsingItemReturn(
+            Level level,
+            LivingEntity user,
+            CallbackInfoReturnable<ItemStack> cir,
+            @Share("consumedSnapshot") LocalRef<ItemStack> consumedSnapshot
+    ) {
         if (level.isClientSide() || !(user instanceof Player player)) {
             return;
         }
-        ItemStack stack = (ItemStack) (Object) this;
+        ItemStack stack = consumedSnapshot.get();
+        if (stack == null || stack.isEmpty()) {
+            return;
+        }
         org.cneko.justarod.ascaris.AscarisInfectionController.onFinishConsuming(player, stack);
     }
 }

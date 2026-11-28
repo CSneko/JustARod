@@ -145,7 +145,7 @@ class JRItems {
         val ASCARIS_EGG_CAPSULE = Item(JRIds.itemProps("ascaris_egg_capsule").stacksTo(16)
             .food(FoodProperties.Builder().nutrition(1).saturationModifier(0.1f).alwaysEdible().build())
             .component(DataComponents.CONSUMABLE, Consumable.builder().consumeSeconds(1.2f).build()))
-        val ASCARIS_MOLT = Item(JRIds.itemProps("ascaris_molt"))
+        val ASCARIS_MOLT = org.cneko.justarod.item.medical.AscarisMoltItem(JRIds.itemProps("ascaris_molt"))
         val ASCARIS_BELL = AscarisBellItem(JRIds.itemProps("ascaris_bell").stacksTo(1))
         val ABDOMEN_SCANNER = AbdomenScannerItem(JRIds.itemProps("abdomen_scanner").stacksTo(1))
 
@@ -329,6 +329,21 @@ class JRItems {
                 entries.accept(ASCARIS_MOLT)
                 entries.accept(ASCARIS_BELL)
                 entries.accept(ABDOMEN_SCANNER)
+                // 粉白蛔虫娘体内自定义生物组织方块
+                entries.accept(org.cneko.justarod.block.JRBlocks.ASCARIS_CUTICLE.asItem())
+                entries.accept(org.cneko.justarod.block.JRBlocks.ASCARIS_MUSCLE.asItem())
+                entries.accept(org.cneko.justarod.block.JRBlocks.ASCARIS_MUCOSA.asItem())
+                entries.accept(org.cneko.justarod.block.JRBlocks.ASCARIS_MUCOSA_STAIRS.asItem())
+                entries.accept(org.cneko.justarod.block.JRBlocks.ASCARIS_NERVE_CORD.asItem())
+                entries.accept(org.cneko.justarod.block.JRBlocks.ASCARIS_EXCRETORY_MEMBRANE.asItem())
+                entries.accept(org.cneko.justarod.block.JRBlocks.ASCARIS_INTESTINAL_MEMBRANE.asItem())
+                entries.accept(org.cneko.justarod.block.JRBlocks.ASCARIS_PSEUDOCOELOM_MEMBRANE.asItem())
+                entries.accept(org.cneko.justarod.block.JRBlocks.ASCARIS_UTERINE_WALL.asItem())
+                entries.accept(org.cneko.justarod.block.JRBlocks.ASCARIS_EGG_SAC.asItem())
+                entries.accept(org.cneko.justarod.block.JRBlocks.ASCARIS_OVARY_TISSUE.asItem())
+                entries.accept(org.cneko.justarod.block.JRBlocks.ASCARIS_CHYME_BLOCK.asItem())
+                entries.accept(org.cneko.justarod.block.JRBlocks.ASCARIS_MICROVILLI.asItem())
+                entries.accept(org.cneko.justarod.block.JRBlocks.ASCARIS_WARM_CUSHION.asItem())
             }
         }
     }

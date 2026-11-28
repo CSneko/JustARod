@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "justarod:block/ascaris_microvilli_hanging"
+  }
+}

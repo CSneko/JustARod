@@ -19,6 +19,8 @@ public final class BodyRegionData extends SavedData {
     public static final int REGION_X = 512;
     public static final int REGION_Z = 256;
     public static final int CELL = 1024;
+    public static final String HOST_PLAYER = "player";
+    public static final String HOST_ASCARIS = "ascaris";
     // Morton coordinates use 15 bits per axis, staying well inside Minecraft's coordinate limit.
     public static final long CAPACITY = 1L << 30;
     public static final SavedDataType<BodyRegionData> TYPE = new SavedDataType<>(
@@ -30,6 +32,7 @@ public final class BodyRegionData extends SavedData {
     private final Map<UUID, Long> owners = new HashMap<>();
     private final Map<UUID, Visit> visitors = new HashMap<>();
     private final Set<Long> initialized = new HashSet<>();
+    private final Map<Long, AscarisPhysiologyState> physiologies = new HashMap<>();
 
     public static BodyRegionData get(MinecraftServer server) {
         return server.overworld().getDataStorage().computeIfAbsent(TYPE);
@@ -44,8 +47,26 @@ public final class BodyRegionData extends SavedData {
     public long reset(UUID owner) {
         Long former = owners.get(owner);
         long fresh = allocate(owner);
-        if (former != null) initialized.remove(former);
+        if (former != null) {
+            initialized.remove(former);
+            physiologies.remove(former);
+        }
         return fresh;
+    }
+
+    public AscarisPhysiologyState physiologyFor(long slot) {
+        return physiologies.computeIfAbsent(slot, k -> {
+            setDirty();
+            return new AscarisPhysiologyState();
+        });
+    }
+
+    public boolean hasPhysiology(long slot) {
+        return physiologies.containsKey(slot);
+    }
+
+    public void markPhysiologyDirty() {
+        setDirty();
     }
 
     private long allocate(UUID owner) {
@@ -132,16 +153,35 @@ public final class BodyRegionData extends SavedData {
                 UUID host = UUID.fromString(visitTag.getStringOr("host", ""));
                 long slot = visitTag.getLongOr("slot", -1);
                 if (slot < 0 || slot >= CAPACITY) continue;
+                String hostKind = visitTag.getStringOr("host_kind", HOST_PLAYER);
+                if (!HOST_ASCARIS.equals(hostKind)) hostKind = HOST_PLAYER;
+                UUID hostEntity = host;
+                String hostEntityStr = visitTag.getStringOr("host_entity", "");
+                if (!hostEntityStr.isEmpty()) {
+                    try { hostEntity = UUID.fromString(hostEntityStr); } catch (IllegalArgumentException ignored) { }
+                }
+                boolean yandereCling = visitTag.getBooleanOr("yandere_cling", false);
+                int hostObsession = visitTag.getIntOr("host_obsession", yandereCling ? 80 : 15);
+                int hostHunger = visitTag.getIntOr("host_hunger", 80);
+                boolean hostOwned = visitTag.getBooleanOr("host_owned", yandereCling);
                 data.visitors.put(uuid, new Visit(host, slot,
                         visitTag.getStringOr("origin", "minecraft:overworld"),
                         visitTag.getDoubleOr("x", 0), visitTag.getDoubleOr("y", 64),
                         visitTag.getDoubleOr("z", 0), visitTag.getFloatOr("yaw", 0),
-                        visitTag.getFloatOr("pitch", 0)));
+                        visitTag.getFloatOr("pitch", 0), hostKind, hostEntity, yandereCling,
+                        hostObsession, hostHunger, hostOwned));
             } catch (IllegalArgumentException ignored) { }
         }
         tag.getLongArray("initialized").ifPresent(slots -> {
             for (long slot : slots) if (slot >= 0 && slot < CAPACITY) data.initialized.add(slot);
         });
+        for (var entry : tag.getListOrEmpty("physiologies")) {
+            if (!(entry instanceof CompoundTag pt)) continue;
+            long slot = pt.getLongOr("slot", -1L);
+            if (slot < 0 || slot >= CAPACITY) continue;
+            pt.getCompound("state").ifPresent(stTag ->
+                    data.physiologies.put(slot, AscarisPhysiologyState.fromTag(stTag)));
+        }
         return data;
     }
 
@@ -168,13 +208,59 @@ public final class BodyRegionData extends SavedData {
             entry.putDouble("z", visit.z());
             entry.putFloat("yaw", visit.yaw());
             entry.putFloat("pitch", visit.pitch());
+            entry.putString("host_kind", visit.hostKind());
+            entry.putString("host_entity", visit.hostEntityUuid().toString());
+            entry.putBoolean("yandere_cling", visit.yandereCling());
+            entry.putInt("host_obsession", visit.hostObsession());
+            entry.putInt("host_hunger", visit.hostHunger());
+            entry.putBoolean("host_owned", visit.hostOwnedByVisitor());
             visitorList.add(entry);
         });
         tag.put("visitors", visitorList);
         tag.putLongArray("initialized", initialized.stream().mapToLong(Long::longValue).toArray());
+        ListTag physList = new ListTag();
+        physiologies.forEach((slot, phys) -> {
+            CompoundTag entry = new CompoundTag();
+            entry.putLong("slot", slot);
+            entry.put("state", phys.toTag());
+            physList.add(entry);
+        });
+        tag.put("physiologies", physList);
         return tag;
     }
 
     public record Visit(UUID host, long slot, String origin,
-                        double x, double y, double z, float yaw, float pitch) { }
+                        double x, double y, double z, float yaw, float pitch,
+                        String hostKind, UUID hostEntityUuid, boolean yandereCling,
+                        int hostObsession, int hostHunger, boolean hostOwnedByVisitor) {
+        public Visit(UUID host, long slot, String origin,
+                     double x, double y, double z, float yaw, float pitch) {
+            this(host, slot, origin, x, y, z, yaw, pitch, HOST_PLAYER, host, false, 0, 80, false);
+        }
+
+        public Visit(UUID host, long slot, String origin,
+                     double x, double y, double z, float yaw, float pitch,
+                     String hostKind, UUID hostEntityUuid) {
+            this(host, slot, origin, x, y, z, yaw, pitch, hostKind, hostEntityUuid, false, 15, 80, false);
+        }
+
+        public Visit(UUID host, long slot, String origin,
+                     double x, double y, double z, float yaw, float pitch,
+                     String hostKind, UUID hostEntityUuid, boolean yandereCling) {
+            this(host, slot, origin, x, y, z, yaw, pitch, hostKind, hostEntityUuid, yandereCling,
+                    yandereCling ? 80 : 15, 80, yandereCling);
+        }
+
+        public boolean isAscaris() {
+            return HOST_ASCARIS.equals(hostKind);
+        }
+
+        public Visit withHostStats(int newObsession, int newHunger) {
+            int clampedObs = Math.max(0, Math.min(100, newObsession));
+            int clampedHunger = Math.max(0, Math.min(100, newHunger));
+            boolean cling = hostOwnedByVisitor && clampedObs >= 50;
+            return new Visit(host, slot, origin, x, y, z, yaw, pitch,
+                    hostKind, hostEntityUuid, cling, clampedObs, clampedHunger, hostOwnedByVisitor);
+        }
+    }
 }

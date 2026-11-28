@@ -24,7 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * /ascaris 调试与演出命令：方便直接测试感染阶段、双药驱虫、动态 B 超与蛔虫娘全部 19 个动画。
+ * /ascaris 调试与演出命令：方便直接测试感染阶段、双药驱虫、动态 B 超与蛔虫娘全部 v53 姿态动画。
  */
 public final class AscarisCommand {
 
@@ -79,10 +79,12 @@ public final class AscarisCommand {
                 .then(Commands.argument("pose", StringArgumentType.word())
                         .suggests((ctx, builder) -> {
                             for (String s : List.of(
-                                    "normal", "idle", "crawl", "sit", "sit_chair", "prone", "curl",
-                                    "tail_wrap", "collapse", "sleep", "wave", "happy", "look_around", "rest",
-                                    "yandere_stare", "yandere_wrap", "yandere_wrap_idle", "yandere_tighten",
-                                    "stalk", "threaten", "bed_watch")) {
+                                    "normal", "idle", "crawl", "sit", "sit_chair", "boat", "ride",
+                                    "swim", "swim_stand", "jump", "sneak", "sneaking",
+                                    "ladder_up", "ladder_stillness", "ladder_down", "hurt", "fly", "elytra",
+                                    "prone", "curl", "tail_wrap", "collapse", "sleep", "wave", "happy",
+                                    "look_around", "rest", "yandere_stare", "yandere_wrap",
+                                    "yandere_wrap_idle", "yandere_tighten", "stalk", "threaten", "bed_watch")) {
                                 builder.suggest(s);
                             }
                             return builder.buildFuture();
@@ -119,6 +121,46 @@ public final class AscarisCommand {
         // /ascaris chest (缩小自身并安放到最近已驯服蛔虫娘的胸口上)
         root.then(Commands.literal("chest")
                 .executes(ctx -> mountChest(ctx.getSource().getPlayerOrException())));
+
+        // /ascaris enter [mouth|vagina|anus|anywhere] (反向寄生：进入最近粉白蛔虫娘的体内维度区域)
+        root.then(Commands.literal("enter")
+                .executes(ctx -> enterNearestAscaris(ctx.getSource().getPlayerOrException(), org.cneko.justarod.body.BodyWorld.MOUTH))
+                .then(Commands.literal("mouth").executes(ctx -> enterNearestAscaris(ctx.getSource().getPlayerOrException(), org.cneko.justarod.body.BodyWorld.MOUTH)))
+                .then(Commands.literal("vagina").executes(ctx -> enterNearestAscaris(ctx.getSource().getPlayerOrException(), org.cneko.justarod.body.BodyWorld.VAGINA)))
+                .then(Commands.literal("anus").executes(ctx -> enterNearestAscaris(ctx.getSource().getPlayerOrException(), org.cneko.justarod.body.BodyWorld.ANUS)))
+                .then(Commands.literal("anywhere").executes(ctx -> enterNearestAscaris(ctx.getSource().getPlayerOrException(), org.cneko.justarod.body.BodyWorld.ANYWHERE))));
+
+        // /ascaris molt (立即触发最近粉白蛔虫娘的活体蜕皮成长)
+        root.then(Commands.literal("molt")
+                .executes(ctx -> triggerNearestMolt(ctx.getSource().getPlayerOrException())));
+
+        // /ascaris resistance <0..100> (设置最近粉白蛔虫娘的哌嗪/宝塔糖耐药性)
+        root.then(Commands.literal("resistance")
+                .then(Commands.argument("value", IntegerArgumentType.integer(0, 100))
+                        .executes(ctx -> setNearestResistance(ctx.getSource().getPlayerOrException(), IntegerArgumentType.getInteger(ctx, "value")))));
+
+        // /ascaris physiology <status|drug|bolus|ovulate|waste|glycogen> (调试与体验硬核体内生理循环)
+        var phys = Commands.literal("physiology");
+        phys.then(Commands.literal("status")
+                .executes(ctx -> showPhysiologyStatus(ctx.getSource().getPlayerOrException())));
+        phys.then(Commands.literal("drug")
+                .then(Commands.literal("none").executes(ctx -> setPhysiologyDrug(ctx.getSource().getPlayerOrException(), org.cneko.justarod.body.AscarisPhysiologyState.DRUG_NONE)))
+                .then(Commands.literal("piperazine").executes(ctx -> setPhysiologyDrug(ctx.getSource().getPlayerOrException(), org.cneko.justarod.body.AscarisPhysiologyState.DRUG_PIPERAZINE)))
+                .then(Commands.literal("albendazole").executes(ctx -> setPhysiologyDrug(ctx.getSource().getPlayerOrException(), org.cneko.justarod.body.AscarisPhysiologyState.DRUG_ALBENDAZOLE))));
+        phys.then(Commands.literal("bolus")
+                .executes(ctx -> spawnPhysiologyBolus(ctx.getSource().getPlayerOrException(), org.cneko.justarod.block.ascaris.AscarisChymeBlock.FLAVOR_SWEET))
+                .then(Commands.literal("sweet").executes(ctx -> spawnPhysiologyBolus(ctx.getSource().getPlayerOrException(), org.cneko.justarod.block.ascaris.AscarisChymeBlock.FLAVOR_SWEET)))
+                .then(Commands.literal("glow").executes(ctx -> spawnPhysiologyBolus(ctx.getSource().getPlayerOrException(), org.cneko.justarod.block.ascaris.AscarisChymeBlock.FLAVOR_GLOW)))
+                .then(Commands.literal("honey").executes(ctx -> spawnPhysiologyBolus(ctx.getSource().getPlayerOrException(), org.cneko.justarod.block.ascaris.AscarisChymeBlock.FLAVOR_HONEY_GOLD))));
+        phys.then(Commands.literal("ovulate")
+                .executes(ctx -> triggerPhysiologyOvulation(ctx.getSource().getPlayerOrException())));
+        phys.then(Commands.literal("waste")
+                .then(Commands.argument("value", IntegerArgumentType.integer(0, 100))
+                        .executes(ctx -> setPhysiologyVital(ctx.getSource().getPlayerOrException(), "waste", IntegerArgumentType.getInteger(ctx, "value")))));
+        phys.then(Commands.literal("glycogen")
+                .then(Commands.argument("value", IntegerArgumentType.integer(0, 100))
+                        .executes(ctx -> setPhysiologyVital(ctx.getSource().getPlayerOrException(), "glycogen", IntegerArgumentType.getInteger(ctx, "value")))));
+        root.then(phys);
 
         dispatcher.register(root);
     }
@@ -278,6 +320,163 @@ public final class AscarisCommand {
             nearest.tame(player);
         }
         nearest.mountShrunkPlayerOnChest(player);
+        return 1;
+    }
+
+    private static int enterNearestAscaris(ServerPlayer player, int route) {
+        AscarisEntity nearest = findNearest(player);
+        if (nearest == null) {
+            player.sendSystemMessage(Component.literal("§c附近 16 格内没有粉白蛔虫娘。"));
+            return 0;
+        }
+        return org.cneko.justarod.body.BodyWorld.enterAscaris(player, nearest, route, true) ? 1 : 0;
+    }
+
+    private static Long resolvePhysiologySlot(ServerPlayer player) {
+        var server = ((ServerLevel) player.level()).getServer();
+        var data = org.cneko.justarod.body.BodyRegionData.get(server);
+        var visit = data.visit(player.getUUID());
+        if (visit != null && visit.isAscaris()) {
+            return visit.slot();
+        }
+        AscarisEntity nearest = findNearest(player);
+        if (nearest != null) {
+            return data.regionFor(nearest.getBodyRegionOwnerUuid());
+        }
+        return null;
+    }
+
+    private static int showPhysiologyStatus(ServerPlayer player) {
+        Long slot = resolvePhysiologySlot(player);
+        if (slot == null) {
+            player.sendSystemMessage(Component.literal("§c你既不在粉白蛔虫娘体内，附近 16 格内也没有粉白蛔虫娘。"));
+            return 0;
+        }
+        var server = ((ServerLevel) player.level()).getServer();
+        var st = org.cneko.justarod.body.BodyRegionData.get(server).physiologyFor(slot);
+        String drugLabel = switch (st.drugType) {
+            case org.cneko.justarod.body.AscarisPhysiologyState.DRUG_PIPERAZINE -> "§b哌嗪麻痹(" + (st.drugTicks / 20) + "s)";
+            case org.cneko.justarod.body.AscarisPhysiologyState.DRUG_ALBENDAZOLE -> "§c阿苯达唑断糖(" + (st.drugTicks / 20) + "s)";
+            default -> "§a无";
+        };
+        player.sendSystemMessage(Component.literal(
+                "§d[体内硬核生理监护] §f静水压 §d" + st.pressureKpa() + "kPa(" + Math.round(st.hydrostaticPressure) + "%)"
+                        + " §7| §f糖原 §e" + Math.round(st.glycogen) + "%"
+                        + " §7| §f代谢毒 §b" + Math.round(st.metabolicWaste) + "%"
+                        + " §7| §f体温 §6" + String.format("%.1f°C", st.temperatureC)
+                        + "\n§7消化: 食糜团 §f" + st.boluses.size() + " §7| 直肠 §6" + Math.round(st.rectalLoad) + "%"
+                        + " §7| 生殖: 卵巢 §f" + Math.round(st.ovaryProgress) + "%§7→子宫 §d" + Math.round(st.uterineLoad) + "%"
+                        + " §7| 体壁 §a" + st.wallIntegrityPct() + "%§7(破口" + st.breaches.size() + ") §7| 药理: " + drugLabel));
+        return 1;
+    }
+
+    private static int setPhysiologyDrug(ServerPlayer player, int drugType) {
+        Long slot = resolvePhysiologySlot(player);
+        if (slot == null) {
+            player.sendSystemMessage(Component.literal("§c未找到目标粉白蛔虫娘体内槽位。"));
+            return 0;
+        }
+        var server = ((ServerLevel) player.level()).getServer();
+        ServerLevel body = server.getLevel(org.cneko.justarod.body.BodyWorld.DIMENSION);
+        if (body == null) return 0;
+        var data = org.cneko.justarod.body.BodyRegionData.get(server);
+        var visit = data.visit(player.getUUID());
+        AscarisEntity host = (visit != null && visit.isAscaris())
+                ? org.cneko.justarod.body.BodyWorld.findAscarisHost(server, visit)
+                : findNearest(player);
+        int dur = switch (drugType) {
+            case org.cneko.justarod.body.AscarisPhysiologyState.DRUG_PIPERAZINE -> 900;
+            case org.cneko.justarod.body.AscarisPhysiologyState.DRUG_ALBENDAZOLE -> 1200;
+            default -> 0;
+        };
+        org.cneko.justarod.body.AscarisPhysiologyEngine.administerInternalDrug(body, slot, host, drugType, dur);
+        if (player.level().dimension().equals(org.cneko.justarod.body.BodyWorld.DIMENSION)) {
+            org.cneko.justarod.body.AscarisPhysiologyEngine.sendPhysiologySync(player, data.physiologyFor(slot));
+        }
+        player.sendSystemMessage(Component.literal("§d已设置体内药理状态为: §e" + (drugType == 1 ? "哌嗪(宝塔糖)弛缓麻痹" : (drugType == 2 ? "阿苯达唑微管断糖" : "清除药物"))));
+        return 1;
+    }
+
+    private static int spawnPhysiologyBolus(ServerPlayer player, int flavor) {
+        Long slot = resolvePhysiologySlot(player);
+        if (slot == null) {
+            player.sendSystemMessage(Component.literal("§c未找到目标粉白蛔虫娘体内槽位。"));
+            return 0;
+        }
+        var server = ((ServerLevel) player.level()).getServer();
+        ServerLevel body = server.getLevel(org.cneko.justarod.body.BodyWorld.DIMENSION);
+        if (body == null) return 0;
+        var visit = org.cneko.justarod.body.BodyRegionData.get(server).visit(player.getUUID());
+        AscarisEntity host = (visit != null && visit.isAscaris())
+                ? org.cneko.justarod.body.BodyWorld.findAscarisHost(server, visit)
+                : findNearest(player);
+        org.cneko.justarod.body.AscarisPhysiologyEngine.onFoodSwallowed(body, slot, host, flavor);
+        player.sendSystemMessage(Component.literal("§d已触发咽部负压抽吸并投送「"
+                + org.cneko.justarod.block.ascaris.AscarisChymeBlock.flavorLabel(flavor) + "」移动食糜团！"));
+        return 1;
+    }
+
+    private static int triggerPhysiologyOvulation(ServerPlayer player) {
+        Long slot = resolvePhysiologySlot(player);
+        if (slot == null) {
+            player.sendSystemMessage(Component.literal("§c未找到目标粉白蛔虫娘体内槽位。"));
+            return 0;
+        }
+        var server = ((ServerLevel) player.level()).getServer();
+        ServerLevel body = server.getLevel(org.cneko.justarod.body.BodyWorld.DIMENSION);
+        if (body == null) return 0;
+        var data = org.cneko.justarod.body.BodyRegionData.get(server);
+        var st = data.physiologyFor(slot);
+        st.ovaryProgress = 100f;
+        org.cneko.justarod.body.AscarisPhysiologyEngine.triggerOviductTransfer(body, slot, st);
+        st.uterineLoad = Math.max(st.uterineLoad, 90f);
+        st.ovipositionCooldown = 0;
+        data.markPhysiologyDirty();
+        player.sendSystemMessage(Component.literal("§d已触发排卵输送与双子宫充盈，即将启动阴道宫缩产卵波！"));
+        return 1;
+    }
+
+    private static int setPhysiologyVital(ServerPlayer player, String key, int value) {
+        Long slot = resolvePhysiologySlot(player);
+        if (slot == null) {
+            player.sendSystemMessage(Component.literal("§c未找到目标粉白蛔虫娘体内槽位。"));
+            return 0;
+        }
+        var server = ((ServerLevel) player.level()).getServer();
+        var data = org.cneko.justarod.body.BodyRegionData.get(server);
+        var st = data.physiologyFor(slot);
+        if ("waste".equals(key)) {
+            st.metabolicWaste = value;
+        } else {
+            st.glycogen = value;
+        }
+        st.clampAll();
+        data.markPhysiologyDirty();
+        if (player.level().dimension().equals(org.cneko.justarod.body.BodyWorld.DIMENSION)) {
+            org.cneko.justarod.body.AscarisPhysiologyEngine.sendPhysiologySync(player, st);
+        }
+        player.sendSystemMessage(Component.literal("§d已将体内 " + key + " 设为 §e" + value + "%"));
+        return 1;
+    }
+
+    private static int triggerNearestMolt(ServerPlayer player) {
+        AscarisEntity nearest = findNearest(player);
+        if (nearest == null) {
+            player.sendSystemMessage(Component.literal("§c附近 16 格内没有粉白蛔虫娘。"));
+            return 0;
+        }
+        nearest.performEcdysis((ServerLevel) player.level());
+        return 1;
+    }
+
+    private static int setNearestResistance(ServerPlayer player, int value) {
+        AscarisEntity nearest = findNearest(player);
+        if (nearest == null) {
+            player.sendSystemMessage(Component.literal("§c附近 16 格内没有粉白蛔虫娘。"));
+            return 0;
+        }
+        nearest.setPiperazineResistance(value);
+        player.sendSystemMessage(Component.literal("§d已将粉白蛔虫娘的哌嗪(宝塔糖)耐药性设为: §e" + value + "%"));
         return 1;
     }
 

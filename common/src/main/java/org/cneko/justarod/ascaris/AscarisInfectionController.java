@@ -66,12 +66,19 @@ public final class AscarisInfectionController {
         ServerPlayNetworking.registerGlobalReceiver(AscarisActionPayload.ID, (payload, context) ->
                 context.server().execute(() -> {
                     ServerPlayer player = context.player();
+                    int action = payload.action();
+                    if (action >= AscarisActionPayload.ACTION_NEURAL_LOOK
+                            && action <= AscarisActionPayload.ACTION_NEURAL_EXIT) {
+                        org.cneko.justarod.body.AscarisNeuralLinkController.handleRemoteAction(
+                                player, action, payload.entityId());
+                        return;
+                    }
                     Entity entity = player.level().getEntity(payload.entityId());
                     if (entity instanceof AscarisEntity ascaris) {
-                        if (payload.action() == AscarisActionPayload.ACTION_CHEST_HOP) {
+                        if (action == AscarisActionPayload.ACTION_CHEST_HOP) {
                             ascaris.handleChestHopFromPassenger(player);
                         } else {
-                            ascaris.handleWrapActionFromPlayer(player, payload.action());
+                            ascaris.handleWrapActionFromPlayer(player, action);
                         }
                     }
                 }));
@@ -149,21 +156,26 @@ public final class AscarisInfectionController {
             return;
         }
 
-        // 2. 生肉/生鱼/腐肉/排泄物 概率引发蛔虫感染
+        // 2. 生肉/生鱼/腐肉/排泄物 概率引发蛔虫感染（「暖腹余温」可温柔隔绝生食野生虫卵！）
         float infectChance = rawFoodInfectionChance(stack);
         if (infectChance > 0f) {
-            // 憋排泄卫生差时感染风险翻倍
-            if (p.getExcretion() > 20 * 60 * 10) {
-                infectChance = Math.min(0.85f, infectChance * 1.8f);
-            }
-            if (sp.getRandom().nextFloat() < infectChance) {
-                if (AscarisHostController.hasHostedAscaris(sp)) {
-                    AscarisHostController.handleWildIntrusion(sp, false, "生食虫卵");
-                } else if (p.getAscaris() <= 0) {
-                    infectPlayer(sp, 1, "§e吃下去的东西好像不太干净……总觉得肚子里微微发痒。");
-                } else {
-                    // 重复吃脏东西加快病程推进
-                    p.setAscaris(p.getAscaris() + 2400);
+            if (sp.hasEffect(JREffects.Companion.getWARM_BELLY_EFFECT())) {
+                level.sendParticles(PINK_DUST, sp.getX(), sp.getY() + 1.0, sp.getZ(), 6, 0.25, 0.2, 0.25, 0.02);
+                sp.sendOverlayMessage(Component.literal("§d「暖腹余温」护住了你的肠胃，隔绝了生食里的野生蛔虫卵~♡"));
+            } else {
+                // 憋排泄卫生差时感染风险翻倍
+                if (p.getExcretion() > 20 * 60 * 10) {
+                    infectChance = Math.min(0.85f, infectChance * 1.8f);
+                }
+                if (sp.getRandom().nextFloat() < infectChance) {
+                    if (AscarisHostController.hasHostedAscaris(sp)) {
+                        AscarisHostController.handleWildIntrusion(sp, false, "生食虫卵");
+                    } else if (p.getAscaris() <= 0) {
+                        infectPlayer(sp, 1, "§e吃下去的东西好像不太干净……总觉得肚子里微微发痒。");
+                    } else {
+                        // 重复吃脏东西加快病程推进
+                        p.setAscaris(p.getAscaris() + 2400);
+                    }
                 }
             }
         }
@@ -214,6 +226,23 @@ public final class AscarisInfectionController {
             AscarisHostController.tickHostedPlayer(player);
         }
         Pregnant p = (Pregnant) (Object) player;
+        // 「暖腹余温」持续温柔驱散宫寒与疲劳，并轻缓舒缓饥饿
+        if (player.hasEffect(JREffects.Companion.getWARM_BELLY_EFFECT())) {
+            if (player.tickCount % 40 == 0) {
+                if (p.getUterineCold() > 0) {
+                    p.setUterineCold(Math.max(0, p.getUterineCold() - 120));
+                    if (p.getUterineCold() == 0 && player.hasEffect(JREffects.Companion.getUTERINE_COLD_EFFECT())) {
+                        player.removeEffect(JREffects.Companion.getUTERINE_COLD_EFFECT());
+                    }
+                }
+                if (p.getFatigue() > 0) {
+                    p.setFatigue(Math.max(0, p.getFatigue() - 60));
+                }
+            }
+            if (player.tickCount % 160 == 0 && player.getFoodData().getFoodLevel() < 18) {
+                player.getFoodData().eat(1, 0.2f);
+            }
+        }
         int ticks = p.getAscaris();
         if (ticks <= 0) {
             if (player.hasEffect(JREffects.Companion.getASCARIS_INFECTION_EFFECT())) {

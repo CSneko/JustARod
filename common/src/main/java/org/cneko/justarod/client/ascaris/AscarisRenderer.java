@@ -7,7 +7,9 @@ import com.geckolib.renderer.base.BoneSnapshots;
 import com.geckolib.renderer.base.GeoRenderState;
 import com.geckolib.renderer.base.RenderPassInfo;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.resources.Identifier;
@@ -19,7 +21,7 @@ import org.cneko.justarod.ascaris.AscarisPoseState;
 import java.util.Map;
 
 /**
- * 粉白蛔虫娘 GeckoLib 5.5 渲染器（v49：80 骨 / 26 动画 / 3 套 UV 一致眼部贴图动态无缝切换）。
+ * 粉白蛔虫娘 GeckoLib 5.5 渲染器（v53：83 骨含模组胸部物理 3 骨 / 1,177 方块精简几何 / 49 动画 / 3 套 UV 一致眼部贴图动态无缝切换）。
  */
 public class AscarisRenderer extends GeoEntityRenderer<AscarisEntity, AscarisRenderer.State> {
 
@@ -57,6 +59,15 @@ public class AscarisRenderer extends GeoEntityRenderer<AscarisEntity, AscarisRen
     @Override
     public State createRenderState(AscarisEntity animatable, Void unused) {
         return new State();
+    }
+
+    @Override
+    public boolean shouldRender(AscarisEntity entity, Frustum frustum, double camX, double camY, double camZ) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.getCameraEntity() == entity && mc.options.getCameraType().isFirstPerson()) {
+            return false;
+        }
+        return super.shouldRender(entity, frustum, camX, camY, camZ);
     }
 
     @Override

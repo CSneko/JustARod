@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "justarod:block/ascaris_nerve_cord_top",
+    "side": "justarod:block/ascaris_nerve_cord"
+  }
+}

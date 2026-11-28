@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "axis=x,excited=false": { "model": "justarod:block/ascaris_nerve_cord_horizontal", "x": 90, "y": 90 },
+    "axis=x,excited=true":  { "model": "justarod:block/ascaris_nerve_cord_horizontal", "x": 90, "y": 90 },
+    "axis=y,excited=false": { "model": "justarod:block/ascaris_nerve_cord" },
+    "axis=y,excited=true":  { "model": "justarod:block/ascaris_nerve_cord" },
+    "axis=z,excited=false": { "model": "justarod:block/ascaris_nerve_cord_horizontal", "x": 90 },
+    "axis=z,excited=true":  { "model": "justarod:block/ascaris_nerve_cord_horizontal", "x": 90 }
+  }
+}

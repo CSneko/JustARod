@@ -20,6 +20,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -31,6 +32,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -44,6 +46,7 @@ import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.boat.AbstractBoat;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -69,8 +72,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * 粉白蛔虫娘（Ascaris-chan）实体（v49：80 骨 / 26 动画 / 3 套眼部贴图变体 / 寄生系病娇系统）。
- * 包含软萌日常、驱虫药恐惧与高执念反杀、吃醋雷达盯梢驱赶、病娇缠绕（越挣扎越紧 & 喂糖哄好）、半夜床边凝视→醒来秒装乖。
+ * 粉白蛔虫娘（Ascaris-chan）实体（v53：83 骨含模组胸部物理 3 骨 / 1,177 方块 / 49 动画 / 3 套眼部贴图变体 / 寄生系病娇系统）。
+ * 包含软萌日常、坐船鸭子坐与游泳跳跃爬梯动画、驱虫药恐惧与高执念反杀、吃醋雷达盯梢驱赶、病娇缠绕（越挣扎越紧 & 喂糖哄好）、半夜床边凝视→醒来秒装乖。
  */
 public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSized {
 
@@ -96,7 +99,7 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
     private static final DustParticleOptions WHITE_DUST = new DustParticleOptions(0xFFF0F6, 0.75f);
     private static final DustParticleOptions YANDERE_DUST = new DustParticleOptions(0xB8184A, 0.95f);
 
-    // ===== GeckoLib 5.5 RawAnimation 缓存（全部 26 个动画） =====
+    // ===== GeckoLib 5.5 RawAnimation 缓存（v53：原有 26 动画 + 实用新增姿态动画） =====
     private static final RawAnimation ANIM_REST = RawAnimation.begin().thenLoop("animation.ascaris.rest");
     private static final RawAnimation ANIM_IDLE = RawAnimation.begin().thenLoop("animation.ascaris.idle");
     private static final RawAnimation ANIM_BLINK = RawAnimation.begin().thenLoop("animation.ascaris.blink");
@@ -127,6 +130,20 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
     private static final RawAnimation ANIM_STALK = RawAnimation.begin().thenLoop("animation.ascaris.stalk");
     private static final RawAnimation ANIM_THREATEN = RawAnimation.begin().thenPlay("animation.ascaris.threaten");
     private static final RawAnimation ANIM_BED_WATCH = RawAnimation.begin().thenLoop("animation.ascaris.bed_watch");
+    // v53 新增实用实体动画（坐船鸭子坐、骑乘、游泳、踩水、跳跃、潜行、爬梯、受击、飞行与滑翔）
+    private static final RawAnimation ANIM_BOAT = RawAnimation.begin().thenLoop("animation.ascaris.boat");
+    private static final RawAnimation ANIM_RIDE = RawAnimation.begin().thenLoop("animation.ascaris.ride");
+    private static final RawAnimation ANIM_SWIM = RawAnimation.begin().thenLoop("animation.ascaris.swim");
+    private static final RawAnimation ANIM_SWIM_STAND = RawAnimation.begin().thenLoop("animation.ascaris.swim_stand");
+    private static final RawAnimation ANIM_JUMP = RawAnimation.begin().thenLoop("animation.ascaris.jump");
+    private static final RawAnimation ANIM_SNEAK = RawAnimation.begin().thenLoop("animation.ascaris.sneak");
+    private static final RawAnimation ANIM_SNEAKING = RawAnimation.begin().thenLoop("animation.ascaris.sneaking");
+    private static final RawAnimation ANIM_LADDER_UP = RawAnimation.begin().thenLoop("animation.ascaris.ladder_up");
+    private static final RawAnimation ANIM_LADDER_STILLNESS = RawAnimation.begin().thenLoop("animation.ascaris.ladder_stillness");
+    private static final RawAnimation ANIM_LADDER_DOWN = RawAnimation.begin().thenLoop("animation.ascaris.ladder_down");
+    private static final RawAnimation ANIM_HURT = RawAnimation.begin().thenPlay("animation.ascaris.hurt");
+    private static final RawAnimation ANIM_FLY = RawAnimation.begin().thenLoop("animation.ascaris.fly");
+    private static final RawAnimation ANIM_ELYTRA = RawAnimation.begin().thenLoop("animation.ascaris.elytra");
 
     // ===== 同步数据 =====
     private static final EntityDataAccessor<Integer> DATA_POSE_STATE =
@@ -153,6 +170,15 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
             SynchedEntityData.defineId(AscarisEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Float> DATA_VISUAL_SCALE =
             SynchedEntityData.defineId(AscarisEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Integer> DATA_MOLT_STAGE =
+            SynchedEntityData.defineId(AscarisEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_FLAVOR_BUFF =
+            SynchedEntityData.defineId(AscarisEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> DATA_DORMANT_DOWNED =
+            SynchedEntityData.defineId(AscarisEntity.class, EntityDataSerializers.BOOLEAN);
+
+    private static final DustParticleOptions GLOW_FLAVOR_DUST = new DustParticleOptions(0xFFEE7E, 0.85f);
+    private static final DustParticleOptions HONEY_FLAVOR_DUST = new DustParticleOptions(0xFFBC52, 0.85f);
 
     private final AnimatableInstanceCache animCache = GeckoLibUtil.createInstanceCache(this);
 
@@ -165,6 +191,8 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
     private int threatenStrikeTimer = 0;
     private boolean threatenAllowOwner = false;
     private int downedProtectionCooldown = 0;
+    private int dormantRecoveryTicks = 0;
+    private boolean applyingAlbendazoleToxicity = false;
     private int hungerTickCounter = 0;
     private int albendazoleToxicityTicks = 0;
     private int dewormerStareTicks = 0;
@@ -176,14 +204,29 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
     private boolean wasOwnerSleeping = false;
     private boolean manualPoseHold = false;
     private boolean forcedCrawlShowcase = false;
+    private boolean neuralCrawlHold = false;
+    private int neuralControlTicks = 0;
     private int eyeOverride = EYE_AUTO;
     private int ownerWasFarTicks = 0;
     private int autoEnterCooldown = 0;
     private int chestHopCooldown = 0;
     private int voiceCooldownTicks = 0;
     private int sleepVoiceCooldownTicks = 120;
+    private int airTicks = 0;
+    // ===== 蜕皮成长 / 抗药性演化 / 风味余韵 / 狭缝卷物 / 战斗控场 / 生理外显 =====
+    private int moltProgress = 0;
+    private int postMoltTenderTicks = 0;
+    private int piperazineResistance = 0;
+    private int flavorBuffTicks = 0;
+    private int combatBindCooldown = 0;
+    private int fetchItemCooldown = 0;
+    private int physiologyWhisperCooldown = 0;
+    private int coldShiverCooldown = 0;
+    private ItemStack carriedFetchItem = ItemStack.EMPTY;
     @Nullable
     private UUID bodyHostUuid = null;
+    @Nullable
+    private UUID bodyRegionUuid = null;
 
     // ===== 胸部物理阻尼弹簧（双端同步计算：模型 bust 骨骼与坐在胸口上的缩小玩家实时同频晃动） =====
     private boolean springInitialized = false;
@@ -234,96 +277,67 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
         builder.define(DATA_CRAWLING, false);
         builder.define(DATA_EXPELLED_STAGE, EXPELLED_NONE);
         builder.define(DATA_VISUAL_SCALE, 1.0f);
+        builder.define(DATA_MOLT_STAGE, 1);
+        builder.define(DATA_FLAVOR_BUFF, 0);
+        builder.define(DATA_DORMANT_DOWNED, false);
     }
 
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new YandereJealousyGoal(this));
-        this.goalSelector.addGoal(2, new HungryAmbushWrapGoal(this));
-        this.goalSelector.addGoal(3, new TemptGoal(this, 1.12, AscarisEntity::isSweetTreat, false));
-        this.goalSelector.addGoal(4, new FollowOwnerGoal(this, 1.15, 7.0f, 2.2f) {
+        this.goalSelector.addGoal(2, new ProtectOwnerTailBindGoal(this));
+        this.goalSelector.addGoal(3, new HungryAmbushWrapGoal(this));
+        this.goalSelector.addGoal(4, new TemptGoal(this, 1.12, AscarisEntity::isSweetTreat, false));
+        this.goalSelector.addGoal(5, new GapItemFetchGoal(this));
+        this.goalSelector.addGoal(6, new FollowOwnerGoal(this, 1.15, 7.0f, 2.2f) {
             @Override
             public boolean canUse() {
-                return !AscarisEntity.this.isMovementLocked() && !AscarisEntity.this.isOrderedToSit() && super.canUse();
+                return !AscarisEntity.this.isNeuralControlled() && !AscarisEntity.this.isMovementLocked() && !AscarisEntity.this.isOrderedToSit() && super.canUse();
             }
 
             @Override
             public boolean canContinueToUse() {
-                return !AscarisEntity.this.isMovementLocked() && !AscarisEntity.this.isOrderedToSit() && super.canContinueToUse();
+                return !AscarisEntity.this.isNeuralControlled() && !AscarisEntity.this.isMovementLocked() && !AscarisEntity.this.isOrderedToSit() && super.canContinueToUse();
             }
         });
-        this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.72) {
+        this.goalSelector.addGoal(7, new ThermotaxisWarmthGoal(this));
+        this.goalSelector.addGoal(8, new WaterAvoidingRandomStrollGoal(this, 0.72) {
             @Override
             public boolean canUse() {
-                return !AscarisEntity.this.isMovementLocked() && !AscarisEntity.this.isOrderedToSit()
+                return !AscarisEntity.this.isNeuralControlled() && !AscarisEntity.this.isMovementLocked() && !AscarisEntity.this.isOrderedToSit()
                         && AscarisEntity.this.getPoseState() != AscarisPoseState.STALK && super.canUse();
             }
 
             @Override
             public boolean canContinueToUse() {
-                return !AscarisEntity.this.isMovementLocked() && !AscarisEntity.this.isOrderedToSit()
+                return !AscarisEntity.this.isNeuralControlled() && !AscarisEntity.this.isMovementLocked() && !AscarisEntity.this.isOrderedToSit()
                         && AscarisEntity.this.getPoseState() != AscarisPoseState.STALK && super.canContinueToUse();
             }
         });
-        this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 9.0f) {
+        this.goalSelector.addGoal(9, new LookAtPlayerGoal(this, Player.class, 9.0f) {
             @Override
             public boolean canUse() {
                 AscarisPoseState st = AscarisEntity.this.getPoseState();
-                return st != AscarisPoseState.SLEEP && st != AscarisPoseState.COLLAPSE
+                return !AscarisEntity.this.isNeuralControlled() && st != AscarisPoseState.SLEEP && st != AscarisPoseState.COLLAPSE
                         && !st.isWrapping() && super.canUse();
             }
         });
-        this.goalSelector.addGoal(7, new RandomLookAroundGoal(this) {
+        this.goalSelector.addGoal(10, new RandomLookAroundGoal(this) {
             @Override
             public boolean canUse() {
-                return !AscarisEntity.this.isMovementLocked()
+                return !AscarisEntity.this.isNeuralControlled() && !AscarisEntity.this.isMovementLocked()
                         && AscarisEntity.this.getPoseState() != AscarisPoseState.STALK && super.canUse();
             }
         });
     }
 
-    // ===== GeckoLib 5.5 控制器：主状态机（26 动画）+ 独立眨眼叠加轨道 =====
+    // ===== GeckoLib 5.5 控制器：主状态机（v53 全量姿态 + 自动船只/骑乘/水体/跳跃/爬梯）+ 独立眨眼叠加轨道 =====
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<AscarisEntity>("main", 5, state -> {
-            AscarisPoseState pose = this.getPoseState();
-            return switch (pose) {
-                case REST -> state.setAndContinue(ANIM_REST);
-                case COLLAPSE -> state.setAndContinue(ANIM_COLLAPSE);
-                case TAIL_WRAP -> state.setAndContinue(ANIM_TAIL_WRAP);
-                case YANDERE_WRAP -> state.setAndContinue(ANIM_YANDERE_WRAP);
-                case YANDERE_WRAP_IDLE -> state.setAndContinue(ANIM_YANDERE_WRAP_IDLE);
-                case YANDERE_TIGHTEN -> state.setAndContinue(ANIM_YANDERE_TIGHTEN);
-                case YANDERE_STARE -> state.setAndContinue(ANIM_YANDERE_STARE);
-                case STALK -> state.setAndContinue(ANIM_STALK);
-                case THREATEN -> state.setAndContinue(ANIM_THREATEN);
-                case BED_WATCH -> state.setAndContinue(ANIM_BED_WATCH);
-                case CURL_UP -> state.setAndContinue(ANIM_CURL);
-                case SLEEP -> state.setAndContinue(ANIM_SLEEP);
-                case SIT_CHAIR -> state.setAndContinue(ANIM_SIT_CHAIR);
-                case SIT_GROUND -> state.setAndContinue(ANIM_SIT);
-                case PRONE -> state.setAndContinue(ANIM_PRONE);
-                case HAPPY -> state.setAndContinue(ANIM_HAPPY);
-                case WAVE -> state.setAndContinue(ANIM_WAVE);
-                case LOOK_AROUND -> state.setAndContinue(ANIM_LOOK_AROUND);
-                case NORMAL -> {
-                    if (this.isPassenger()) {
-                        yield state.setAndContinue(ANIM_SIT_CHAIR);
-                    }
-                    if (this.isCrawling()) {
-                        yield state.setAndContinue(ANIM_CRAWL);
-                    }
-                    double horizSpeedSqr = this.getDeltaMovement().horizontalDistanceSqr();
-                    if (state.isMoving() || horizSpeedSqr > 0.0008) {
-                        boolean fast = horizSpeedSqr > 0.022 || this.isSprinting();
-                        yield state.setAndContinue(fast ? ANIM_RUN : ANIM_WALK);
-                    }
-                    yield state.setAndContinue(ANIM_IDLE);
-                }
-            };
-        }));
+        controllers.add(new AnimationController<AscarisEntity>("main", 5, state ->
+                state.setAndContinue(resolveMainAnimation(state.isMoving()))));
 
         // 独立眨眼控制器：happy / collapse / sleep / 害怕>~< curl_up / 全部病娇不眨眼死盯期间暂停
         controllers.add(new AnimationController<AscarisEntity>("blink", 2, state -> {
@@ -332,6 +346,92 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
             }
             return state.setAndContinue(ANIM_BLINK);
         }));
+    }
+
+    /** 根据当前姿态与物理运动状态解析主轨道应播放的 RawAnimation */
+    public RawAnimation resolveMainAnimation(boolean controllerMoving) {
+        AscarisPoseState pose = this.getPoseState();
+        return switch (pose) {
+            case REST -> ANIM_REST;
+            case COLLAPSE -> ANIM_COLLAPSE;
+            case TAIL_WRAP -> ANIM_TAIL_WRAP;
+            case YANDERE_WRAP -> ANIM_YANDERE_WRAP;
+            case YANDERE_WRAP_IDLE -> ANIM_YANDERE_WRAP_IDLE;
+            case YANDERE_TIGHTEN -> ANIM_YANDERE_TIGHTEN;
+            case YANDERE_STARE -> ANIM_YANDERE_STARE;
+            case STALK -> ANIM_STALK;
+            case THREATEN -> ANIM_THREATEN;
+            case BED_WATCH -> ANIM_BED_WATCH;
+            case CURL_UP -> ANIM_CURL;
+            case SLEEP -> ANIM_SLEEP;
+            case SIT_CHAIR -> ANIM_SIT_CHAIR;
+            case SIT_GROUND -> ANIM_SIT;
+            case PRONE -> ANIM_PRONE;
+            case HAPPY -> ANIM_HAPPY;
+            case WAVE -> ANIM_WAVE;
+            case LOOK_AROUND -> ANIM_LOOK_AROUND;
+            case BOAT -> ANIM_BOAT;
+            case RIDE -> ANIM_RIDE;
+            case SWIM -> ANIM_SWIM;
+            case SWIM_STAND -> ANIM_SWIM_STAND;
+            case JUMP -> ANIM_JUMP;
+            case SNEAK -> ANIM_SNEAK;
+            case SNEAKING -> ANIM_SNEAKING;
+            case LADDER_UP -> ANIM_LADDER_UP;
+            case LADDER_STILLNESS -> ANIM_LADDER_STILLNESS;
+            case LADDER_DOWN -> ANIM_LADDER_DOWN;
+            case HURT -> ANIM_HURT;
+            case FLY -> ANIM_FLY;
+            case ELYTRA -> ANIM_ELYTRA;
+            case NORMAL -> {
+                if (this.isPassenger()) {
+                    Entity vehicle = this.getVehicle();
+                    if (vehicle instanceof AbstractBoat) {
+                        yield ANIM_BOAT;
+                    }
+                    if (vehicle instanceof LivingEntity) {
+                        yield ANIM_RIDE;
+                    }
+                    yield ANIM_SIT_CHAIR;
+                }
+                if (this.isCrawling()) {
+                    yield ANIM_CRAWL;
+                }
+                if (this.onClimbable()) {
+                    double vy = this.getDeltaMovement().y;
+                    if (vy > 0.03) {
+                        yield ANIM_LADDER_UP;
+                    }
+                    if (vy < -0.03) {
+                        yield ANIM_LADDER_DOWN;
+                    }
+                    yield ANIM_LADDER_STILLNESS;
+                }
+                double horizSpeedSqr = this.getDeltaMovement().horizontalDistanceSqr();
+                boolean moving = controllerMoving || horizSpeedSqr > 0.0008;
+                if (this.isInWater()) {
+                    yield (this.isSwimming() || controllerMoving || horizSpeedSqr > 0.0012) ? ANIM_SWIM : ANIM_SWIM_STAND;
+                }
+                if (!this.onGround() && (this.airTicks >= 3 || this.getDeltaMovement().y > 0.18 || this.fallDistance > 0.6f)) {
+                    yield ANIM_JUMP;
+                }
+                if (this.isCrouching()) {
+                    yield moving ? ANIM_SNEAK : ANIM_SNEAKING;
+                }
+                if (moving) {
+                    boolean fast = horizSpeedSqr > 0.022 || this.isSprinting();
+                    yield fast ? ANIM_RUN : ANIM_WALK;
+                }
+                yield ANIM_IDLE;
+            }
+        };
+    }
+
+    /** 返回主动画控制器当前选择的第一个动画名称（便于调试与回归测试校验） */
+    public String resolveActiveAnimationName(boolean controllerMoving) {
+        RawAnimation anim = resolveMainAnimation(controllerMoving);
+        var stages = anim.getAnimationStages();
+        return stages.isEmpty() ? "" : stages.getFirst().animationName();
     }
 
     @Override
@@ -476,6 +576,17 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
     }
 
     @Override
+    public Vec3 getVehicleAttachmentPoint(Entity vehicle) {
+        float scale = getEffectiveScale();
+        if (vehicle instanceof AbstractBoat) {
+            // 对齐 v53 animation.ascaris.boat 鸭子坐船舱基准高度（Y≈10.2 模型单位），稳坐船底且头肩铃铛露在船沿上方
+            return new Vec3(0.0, 0.58 * scale, 0.0);
+        }
+        // 骑乘生物坐骑或矿车时对齐 ride / sit_chair 臀部坐高，避免浮空
+        return new Vec3(0.0, 0.42 * scale, 0.0);
+    }
+
+    @Override
     protected Vec3 getPassengerAttachmentPoint(Entity passenger, EntityDimensions dimensions, float scale) {
         return computeChestOffset(passenger, getEffectiveScale(), 1.0f);
     }
@@ -507,7 +618,8 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
         AscarisPoseState st = getPoseState();
         double baseChestY = switch (st) {
             case SIT_GROUND -> 0.52;
-            case SIT_CHAIR -> 0.76;
+            case SIT_CHAIR, RIDE -> 0.76;
+            case BOAT -> 1.07;
             case PRONE, SLEEP -> 0.28;
             default -> 0.865;
         };
@@ -686,6 +798,11 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
     @Override
     public void tick() {
         super.tick();
+        if (!this.onGround() && !this.isInWater() && !this.isPassenger() && !this.onClimbable()) {
+            this.airTicks = Math.min(this.airTicks + 1, 200);
+        } else {
+            this.airTicks = 0;
+        }
         tickBustPhysics();
         if (this.level().isClientSide()) {
             tickClientParticles();
@@ -697,7 +814,14 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
     private void tickClientParticles() {
         AscarisPoseState pose = getPoseState();
         int eye = getEyeVariant();
-        if (pose == AscarisPoseState.COLLAPSE && tickCount % 8 == 0) {
+        if (isDormantDowned() && tickCount % 8 == 0) {
+            double angle = tickCount * 0.25;
+            level().addParticle((tickCount % 16 == 0) ? PINK_DUST : WHITE_DUST,
+                    getX() + Math.cos(angle) * 0.45,
+                    getY() + 0.32,
+                    getZ() + Math.sin(angle) * 0.45,
+                    0, 0.015, 0);
+        } else if (pose == AscarisPoseState.COLLAPSE && tickCount % 8 == 0) {
             level().addParticle(WHITE_DUST,
                     getX() + (random.nextDouble() - 0.5) * 0.6,
                     getY() + 0.25,
@@ -734,6 +858,14 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
         } else if (pose == AscarisPoseState.SLEEP && tickCount % 28 == 0) {
             level().addParticle(WHITE_DUST, getX(), getY() + 0.55, getZ(), 0, 0.02, 0);
         }
+        int flavor = getFlavorBuff();
+        if (flavor > 0 && tickCount % 12 == 0) {
+            level().addParticle(flavor == 1 ? GLOW_FLAVOR_DUST : HONEY_FLAVOR_DUST,
+                    getX() + (random.nextDouble() - 0.5) * 0.65,
+                    getY() + 0.55 + random.nextDouble() * 0.65,
+                    getZ() + (random.nextDouble() - 0.5) * 0.65,
+                    0, 0.018, 0);
+        }
     }
 
     private void tickServer() {
@@ -748,7 +880,19 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
         if (downedProtectionCooldown > 0) downedProtectionCooldown--;
         if (autoEnterCooldown > 0) autoEnterCooldown--;
         if (chestHopCooldown > 0) chestHopCooldown--;
+        if (neuralControlTicks > 0) neuralControlTicks--;
         if (voiceCooldownTicks > 0) voiceCooldownTicks--;
+        if (postMoltTenderTicks > 0) postMoltTenderTicks--;
+        if (combatBindCooldown > 0) combatBindCooldown--;
+        if (fetchItemCooldown > 0) fetchItemCooldown--;
+        if (physiologyWhisperCooldown > 0) physiologyWhisperCooldown--;
+        if (coldShiverCooldown > 0) coldShiverCooldown--;
+        if (flavorBuffTicks > 0) {
+            flavorBuffTicks--;
+            if (flavorBuffTicks == 0 && getFlavorBuff() != 0) {
+                setFlavorBuff(0);
+            }
+        }
         if (sleepVoiceCooldownTicks > 0) {
             sleepVoiceCooldownTicks--;
         } else if (getPoseState() == AscarisPoseState.SLEEP || getPoseState() == AscarisPoseState.REST) {
@@ -801,6 +945,7 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
                 AscarisPoseState cur = getPoseState();
                 if (cur == AscarisPoseState.WAVE || cur == AscarisPoseState.HAPPY
                         || cur == AscarisPoseState.LOOK_AROUND || cur == AscarisPoseState.THREATEN
+                        || cur == AscarisPoseState.HURT
                         || (cur == AscarisPoseState.CURL_UP && getExpelledStage() == EXPELLED_NONE && !seesDewormerNearby())
                         || (cur == AscarisPoseState.YANDERE_STARE && !seesDewormerNearby())) {
                     setPoseState(this.isOrderedToSit() ? pickRestSitPose() : AscarisPoseState.NORMAL);
@@ -808,12 +953,51 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
             }
         }
 
-        // 2. 阿苯达唑强排残留药毒（硬核抢救窗口）
+        // 2. 阿苯达唑强排残留药毒（硬核抢救窗口：可穿透驯服保命机制真正致死）
         if (getExpelledStage() == EXPELLED_ALBENDAZOLE_CRITICAL && albendazoleToxicityTicks > 0) {
             albendazoleToxicityTicks--;
             if (albendazoleToxicityTicks % 30 == 0) {
                 serverLevel.sendParticles(ParticleTypes.SMOKE, getX(), getY() + 0.35, getZ(), 4, 0.25, 0.15, 0.25, 0.01);
-                this.hurtServer(serverLevel, damageSources().magic(), 1.0f);
+                this.applyingAlbendazoleToxicity = true;
+                try {
+                    this.hurtServer(serverLevel, damageSources().magic(), 1.0f);
+                } finally {
+                    this.applyingAlbendazoleToxicity = false;
+                }
+            }
+        }
+
+        // 2.5 驯服后安全重伤休眠态：免疫常规伤害，清火/回气/清毒/清怪物仇恨并缓慢自愈直到苏醒（坠入岩浆时优先跨距离钻回主人体内）
+        if (isDormantDowned()) {
+            if (!isTame() || getExpelledStage() == EXPELLED_ALBENDAZOLE_CRITICAL) {
+                setDormantDowned(false);
+                dormantRecoveryTicks = 0;
+            } else {
+                if (getPoseState() != AscarisPoseState.COLLAPSE) {
+                    setPoseState(AscarisPoseState.COLLAPSE);
+                }
+                manualPoseHold = true;
+                if (this.isOnFire()) this.clearFire();
+                this.setAirSupply(this.getMaxAirSupply());
+                if (tickCount % 10 == 0) {
+                    this.removeEffect(MobEffects.POISON);
+                    this.removeEffect(MobEffects.WITHER);
+                }
+                if (tickCount % 40 == 0) {
+                    clearNearbyMobAggro(serverLevel);
+                    if (this.isInLava() && tryCrossDistanceRetreatToOwner(serverLevel, "emergency_flee")) {
+                        return;
+                    }
+                    dormantRecoveryTicks += 40;
+                    float healAmt = (getHunger() >= 25) ? 1.0f : 0.5f;
+                    if (getHunger() >= 25 && dormantRecoveryTicks % 120 == 0) {
+                        setHunger(getHunger() - 1);
+                    }
+                    super.heal(healAmt);
+                    if (getHealth() >= getDormantWakeThreshold()) {
+                        wakeFromDormant(serverLevel, "auto");
+                    }
+                }
             }
         }
 
@@ -862,13 +1046,77 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
         if (tickCount % 10 == 0 && !manualPoseHold && getExpelledStage() == EXPELLED_NONE) {
             tickSleepAndBedWatch(serverLevel);
         }
-        if (tickCount % 20 == 0 && !manualPoseHold && getExpelledStage() == EXPELLED_NONE) {
+        if (tickCount % 20 == 0 && !manualPoseHold && !isNeuralControlled() && getExpelledStage() == EXPELLED_NONE) {
             tickAmbientBehaviors(serverLevel);
         }
 
         // 9. 体内维度宿主绑定同步
         if (bodyHostUuid != null && tickCount % 40 == 0) {
             BodyAscarisBridge.tickResident(serverLevel, this, bodyHostUuid);
+        }
+
+        // 10. 活体蜕皮慢速成长、饮食风味光环、体内生理状态外显与寒冷发抖反应
+        if (tickCount % 40 == 0 && getPoseState() != AscarisPoseState.COLLAPSE) {
+            tickBiologyAndPhysiologyExternalization(serverLevel);
+        }
+    }
+
+    /** 蜕皮成长、风味光环（发光浆果夜视灯）、体内生理外显（满卵害羞/酸中毒疲惫）与寒冷趋温发抖 */
+    private void tickBiologyAndPhysiologyExternalization(ServerLevel level) {
+        // 10a. 饱食状态下缓慢积累蜕皮成长值
+        if (isTame() && getHunger() >= 65 && tickCount % 400 == 0) {
+            advanceMoltProgress(level, 2);
+        }
+
+        // 10b. 发光浆果风味余韵：黑暗洞穴里的移动粉金小夜灯（为主人提供短暂夜视支援）
+        if (getFlavorBuff() == 1 && isTame() && getOwner() instanceof ServerPlayer owner
+                && owner.isAlive() && owner.level() == level && distanceToSqr(owner) <= 25.0) {
+            if (level.getMaxLocalRawBrightness(owner.blockPosition()) <= 8) {
+                owner.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 120, 0, true, false, false));
+            }
+        }
+
+        // 10c. 喜温避寒：在雪地/暴雨中受寒时发抖吐白雾并轻语求贴贴/钻肚子取暖
+        if (isColdEnvironment(level) && coldShiverCooldown == 0 && getPoseState() == AscarisPoseState.NORMAL) {
+            coldShiverCooldown = 280;
+            level.sendParticles(ParticleTypes.SNOWFLAKE, getX(), getY() + 0.9, getZ(), 6, 0.3, 0.25, 0.3, 0.01);
+            if (isTame() && getOwner() instanceof ServerPlayer owner && owner.level() == level && distanceToSqr(owner) <= 36.0) {
+                owner.sendOverlayMessage(Component.literal("§b粉白蛔虫娘在寒风/雨里冷得微微发抖，正四处寻找暖源或想钻回你肚子里取暖~"));
+            }
+        }
+
+        // 10d. 体内硬核生理状态实时外化（子宫满载害羞 / 代谢废物过高疲惫 / 低糖原撒娇）
+        var regionData = org.cneko.justarod.body.BodyRegionData.get(level.getServer());
+        Long slot = regionData.currentRegion(getBodyRegionOwnerUuid());
+        if (slot != null && regionData.hasPhysiology(slot)) {
+            var phys = regionData.physiologyFor(slot);
+            if (phys.uterineLoad >= 78.0f) {
+                level.sendParticles(WHITE_DUST, getX(), getY() + 0.65, getZ(), 5, 0.3, 0.2, 0.3, 0.01);
+                if (physiologyWhisperCooldown == 0 && isTame() && getOwner() instanceof ServerPlayer owner
+                        && owner.level() == level && distanceToSqr(owner) <= 36.0) {
+                    physiologyWhisperCooldown = 500;
+                    owner.sendSystemMessage(Component.literal(
+                            "§d「呜……肚子里双管子宫的卵囊涨得满满的了，能钻进来帮我采一点、或者轻抚安抚一下嘛 >~<」"));
+                }
+            } else if (phys.hasAcidosis()) {
+                this.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 50, 0, true, false, false));
+                if (physiologyWhisperCooldown == 0 && isTame() && getOwner() instanceof ServerPlayer owner
+                        && owner.level() == level && distanceToSqr(owner) <= 36.0) {
+                    physiologyWhisperCooldown = 500;
+                    level.playSound(null, blockPosition(), JRSounds.ASCARIS_RUMBLE, SoundSource.NEUTRAL, 0.55f, 0.9f);
+                    owner.sendSystemMessage(Component.literal(
+                            "§b「唔……体内的 H 形排泄管有点积压代谢废物了，浑身沉甸甸的……能钻进来帮我疏通排毒吗？」"));
+                }
+            }
+        }
+    }
+
+    public boolean isColdEnvironment(ServerLevel level) {
+        if (this.isInWaterOrRain()) return true;
+        try {
+            return level.getBiome(this.blockPosition()).value().getBaseTemperature() < 0.20f;
+        } catch (Throwable ignored) {
+            return false;
         }
     }
 
@@ -921,6 +1169,28 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
         Player holder = findNearbyDewormerHolder(6.5);
         if (holder == null) {
             dewormerStareTicks = 0;
+            return;
+        }
+
+        // 若已进化出高哌嗪耐药性 (>= 70%)，且对方仅拿着宝塔糖（未持阿苯达唑）：不再害怕缩团！
+        boolean holdsAlbendazole = holder.getMainHandItem().is(JRItems.Companion.getALBENDAZOLE())
+                || holder.getOffhandItem().is(JRItems.Companion.getALBENDAZOLE());
+        if (!holdsAlbendazole && piperazineResistance >= 70) {
+            dewormerStareTicks = 0;
+            if (JRConfig.isAscarisYandereEnabled() && isTame() && isOwnedBy(holder)) {
+                this.getLookControl().setLookAt(holder, 30f, 30f);
+                if (cur != AscarisPoseState.YANDERE_STARE) {
+                    setPoseState(AscarisPoseState.YANDERE_STARE);
+                    transientTimer = 70;
+                    if (scaredCooldown == 0) {
+                        scaredCooldown = 100;
+                        playVoice(JRSounds.ASCARIS_VOICE_YANDERE_GIGGLE, 0.85f, 50, false);
+                        if (holder instanceof ServerPlayer sp) {
+                            sp.sendOverlayMessage(Component.literal("§c§o「宝塔糖对我已经完全没用啦，还要拿它逗我吗♡」"));
+                        }
+                    }
+                }
+            }
             return;
         }
 
@@ -1042,12 +1312,14 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
                 || stack.is(Items.CAKE)
                 || stack.is(Items.PUMPKIN_PIE)
                 || stack.is(Items.APPLE)
+                || stack.is(Items.GOLDEN_APPLE)
+                || stack.is(Items.ENCHANTED_GOLDEN_APPLE)
                 || stack.is(Items.GLOW_BERRIES)
                 || stack.is(Items.MELON_SLICE);
     }
 
     private void updateCrawlingState() {
-        if (forcedCrawlShowcase) {
+        if (forcedCrawlShowcase || neuralCrawlHold) {
             setCrawling(true);
             return;
         }
@@ -1422,15 +1694,38 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
         }
         ServerLevel serverLevel = (ServerLevel) this.level();
 
-        // 1. 喂甜食（收服流程 / 急救 / 瞬间融化病娇黑化！）
+        // 1. 喂甜食（收服流程 / 急救唤醒 / 瞬间融化病娇黑化！）
         if (isSweetTreat(stack)) {
+            ItemStack treatCopy = stack.copyWithCount(1);
             if (!player.isCreative()) stack.shrink(1);
-            this.heal(6.0f);
+            boolean wasDormant = isTame() && isDormantDowned();
+            if (wasDormant) {
+                this.setHealth(Math.min(this.getMaxHealth(), Math.max(this.getHealth() + 6.0f, this.getMaxHealth() * 0.45f)));
+                wakeFromDormant(serverLevel, "sweet");
+            } else {
+                this.heal(6.0f);
+            }
             setHunger(Math.min(100, getHunger() + 30));
             setAffection(Math.min(100, getAffection() + 10));
             boolean wasYandere = getPoseState().isYanderePose() || getObsession() >= 55;
             setObsession(getObsession() - 30);
             albendazoleToxicityTicks = 0;
+            org.cneko.justarod.body.BodyWorld.onAscarisFedSweet(this, treatCopy);
+            // 饮食风味余韵（发光浆果=夜视小夜灯，蜂蜜/金苹果/蛋糕=蜜金护盾与加速控场）
+            int treatFlavor = org.cneko.justarod.block.ascaris.AscarisChymeBlock.flavorForItem(treatCopy);
+            if (treatFlavor == org.cneko.justarod.block.ascaris.AscarisChymeBlock.FLAVOR_GLOW) {
+                setFlavorBuff(1);
+                flavorBuffTicks = 1800;
+            } else if (treatFlavor == org.cneko.justarod.block.ascaris.AscarisChymeBlock.FLAVOR_HONEY_GOLD) {
+                setFlavorBuff(2);
+                flavorBuffTicks = 1800;
+                this.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 900, 0, true, false));
+            }
+            // 推进活体蜕皮成长周期（仅已驯服时持续累积成长并自然蜕皮！）
+            if (isTame()) {
+                advanceMoltProgress(serverLevel,
+                        treatFlavor == org.cneko.justarod.block.ascaris.AscarisChymeBlock.FLAVOR_HONEY_GOLD ? 22 : 14);
+            }
 
             int expStage = getExpelledStage();
             if (!isTame()) {
@@ -1474,7 +1769,9 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
             serverLevel.playSound(null, blockPosition(), JRSounds.ASCARIS_BELL, SoundSource.NEUTRAL, 0.6f, 1.15f);
             serverLevel.sendParticles(ParticleTypes.HEART, getX(), getY() + 1.0, getZ(), 9, 0.35, 0.35, 0.35, 0.03);
             if (player instanceof ServerPlayer sp) {
-                if (wasYandere) {
+                if (wasDormant) {
+                    sp.sendSystemMessage(Component.literal("§d「呜……甜甜的……谢谢你救醒了我~♡」§7（粉白蛔虫娘已从安全休眠中苏醒！）"));
+                } else if (wasYandere) {
                     sp.sendSystemMessage(Component.literal("§d「唔……只、只要你一直喂我甜食、不看别人，我就乖乖听话嘛~♡」§7（她眼中的高光瞬间回来了！）"));
                 } else {
                     String obsessionPart = JRConfig.isAscarisYandereEnabled() ? (" · 执念 " + getObsession() + "%") : "";
@@ -1484,10 +1781,16 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
             return InteractionResult.SUCCESS;
         }
 
-        // 2. 摇响蛔虫小金铃：Shift+右键钻回体内共生寄宿；普通右键触发/取消尾巴缠绕！
+        // 2. 摇响蛔虫小金铃：Shift+右键钻回体内共生寄宿；休眠时右键轻摇唤醒；普通右键触发/取消尾巴缠绕！
         if (stack.is(JRItems.Companion.getASCARIS_BELL()) && isTame() && isOwnedBy(player)) {
             if (player.isShiftKeyDown() && player instanceof ServerPlayer sp) {
                 AscarisHostController.enterHostBody(this, sp, "manual");
+                return InteractionResult.SUCCESS;
+            }
+            if (isDormantDowned()) {
+                this.setHealth(Math.max(this.getHealth(), 6.0f));
+                wakeFromDormant(serverLevel, "bell");
+                playTransientPose(AscarisPoseState.WAVE, 44);
                 return InteractionResult.SUCCESS;
             }
             if (getPoseState().isWrapping()) {
@@ -1498,16 +1801,55 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
             return InteractionResult.SUCCESS;
         }
 
-        // 3. 对蛔虫娘使用驱虫药
+        // 3. 对蛔虫娘使用驱虫药（含硬核哌嗪耐药性演化：反复喂宝塔糖会从软倒→抗拒→完全免疫甚至病娇反扑；阿苯达唑仍具强效！）
         if (isDewormer(stack)) {
             if (!player.isCreative()) stack.shrink(1);
             boolean harsh = stack.is(JRItems.Companion.getALBENDAZOLE());
+
+            // 宝塔糖（枸橼酸哌嗪）耐药性阶梯判定（非体内原住民驱虫场景时生效）
+            if (!harsh && bodyHostUuid == null) {
+                if (piperazineResistance >= 70) {
+                    setObsession(getObsession() + 15);
+                    serverLevel.playSound(null, blockPosition(), JRSounds.ASCARIS_BELL, SoundSource.NEUTRAL, 0.7f, 0.75f);
+                    serverLevel.sendParticles(YANDERE_DUST, getX(), getY() + 0.9, getZ(), 14, 0.35, 0.35, 0.35, 0.04);
+                    if (JRConfig.isAscarisYandereEnabled()) {
+                        playVoice(JRSounds.ASCARIS_VOICE_YANDERE_GIGGLE, 0.95f, 45, true);
+                        playTransientPose(AscarisPoseState.YANDERE_STARE, 85);
+                        if (isTame() && isOwnedBy(player) && wrapCooldown == 0 && distanceToSqr(player) <= 12.0) {
+                            startTailWrap(player, WRAP_YANDERE);
+                        }
+                        player.sendSystemMessage(Component.literal(
+                                "§c§o「这种宝塔糖我已经吃习惯了哦♡ 哌嗪对我完全无效了，还想拿它吓唬我吗？」§7（哌嗪耐药性 " + piperazineResistance + "% · 需改用阿苯达唑）"));
+                    } else {
+                        playVoice(JRSounds.ASCARIS_VOICE_HAPPY, 0.9f, 40, true);
+                        playTransientPose(AscarisPoseState.HAPPY, 48);
+                        player.sendSystemMessage(Component.literal(
+                                "§d她把宝塔糖当普通糖果嚼掉了——反复服药已令她进化出完全的哌嗪耐药性！（" + piperazineResistance + "%）"));
+                    }
+                    return InteractionResult.SUCCESS;
+                } else if (piperazineResistance >= 35) {
+                    piperazineResistance = Math.min(100, piperazineResistance + 35);
+                    playVoice(JRSounds.ASCARIS_VOICE_CURIOUS, 0.88f, 40, true);
+                    playTransientPose(AscarisPoseState.CURL_UP, 45);
+                    serverLevel.sendParticles(WHITE_DUST, getX(), getY() + 0.8, getZ(), 10, 0.3, 0.3, 0.3, 0.03);
+                    player.sendSystemMessage(Component.literal(
+                            "§e她咬牙扛住了宝塔糖的麻痹，只微微蜷缩了一瞬！§7（哌嗪耐药性上升至 §c" + piperazineResistance + "%§7）"));
+                    return InteractionResult.SUCCESS;
+                } else {
+                    piperazineResistance = Math.min(100, piperazineResistance + 35);
+                }
+            }
+
             serverLevel.playSound(null, blockPosition(), JRSounds.ASCARIS_BELL, SoundSource.NEUTRAL, 0.7f, 0.85f);
             playVoice(JRSounds.ASCARIS_VOICE_WHIMPER, 0.92f, 60, true);
             serverLevel.sendParticles(WHITE_DUST, getX(), getY() + 0.7, getZ(), 16, 0.4, 0.4, 0.4, 0.05);
             if (getPoseState().isWrapping()) releaseTailWrap(false);
             setPoseState(AscarisPoseState.COLLAPSE);
             manualPoseHold = false;
+            if (harsh) {
+                setDormantDowned(false);
+                dormantRecoveryTicks = 0;
+            }
             setExpelledStage(harsh ? EXPELLED_ALBENDAZOLE_CRITICAL : EXPELLED_PAGODA_WEAK);
             if (harsh) {
                 albendazoleToxicityTicks = 160;
@@ -1516,13 +1858,39 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
             if (bodyHostUuid != null) {
                 BodyAscarisBridge.onResidentDewormedInBody(serverLevel, this, player, bodyHostUuid, harsh);
             } else {
-                player.sendSystemMessage(Component.literal("§c她被驱虫药熏得踉跄侧倒，软绵绵地发起了抖……"));
+                int expelledVisitors = org.cneko.justarod.body.BodyWorld.expelVisitorsFromAscaris(this, player, harsh);
+                if (expelledVisitors == 0) {
+                    player.sendSystemMessage(Component.literal(harsh
+                            ? "§c阿苯达唑强力生效，她踉跄侧倒并陷入危重药毒状态……"
+                            : "§c她被宝塔糖熏得踉跄侧倒，软绵绵地发起了抖……§7（哌嗪耐药性 " + piperazineResistance + "%）"));
+                }
             }
             return InteractionResult.SUCCESS;
         }
 
         // 4. 空手互动（已驯服主人）
         if (stack.isEmpty() && isTame() && isOwnedBy(player)) {
+            if (isDormantDowned()) {
+                super.heal(4.0f);
+                setAffection(Math.min(100, getAffection() + 2));
+                setObsession(getObsession() - 6);
+                serverLevel.playSound(null, blockPosition(), JRSounds.ASCARIS_BELL, SoundSource.NEUTRAL, 0.55f, 1.1f);
+                serverLevel.sendParticles(ParticleTypes.HEART, getX(), getY() + 0.85, getZ(), 5, 0.3, 0.2, 0.3, 0.02);
+                if (getHealth() >= Math.min(getDormantWakeThreshold(), 8.0f)) {
+                    wakeFromDormant(serverLevel, "pat");
+                    playTransientPose(AscarisPoseState.HAPPY, 44);
+                    if (player instanceof ServerPlayer sp) {
+                        sp.sendSystemMessage(Component.literal("§d「呜……谢谢你一直守着我，我已经缓过来啦~♡」"));
+                    }
+                } else {
+                    playVoice(JRSounds.ASCARIS_VOICE_SLEEPY, 0.78f, 30, false);
+                    if (player instanceof ServerPlayer sp) {
+                        sp.sendOverlayMessage(Component.literal(
+                                "§d你轻柔地安抚了安全休眠中的她，她的呼吸平稳了些许……§7（再轻抚一次或喂甜食即可立刻唤醒）"));
+                    }
+                }
+                return InteractionResult.SUCCESS;
+            }
             if (getPoseState().isWrapping()) {
                 if (getWrapMode() == WRAP_YANDERE) {
                     // 病娇缠绕时温柔摸头 2 次即可顺毛哄好松开！
@@ -1602,10 +1970,20 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
     }
 
     private AscarisPoseState pickRestSitPose() {
+        if (this.isPassenger()) {
+            Entity vehicle = this.getVehicle();
+            if (vehicle instanceof AbstractBoat) {
+                return AscarisPoseState.BOAT;
+            }
+            if (vehicle instanceof LivingEntity) {
+                return AscarisPoseState.RIDE;
+            }
+            return AscarisPoseState.SIT_CHAIR;
+        }
         BlockPos pos = blockPosition();
         BlockState here = level().getBlockState(pos);
         BlockState below = level().getBlockState(pos.below());
-        if (isChairLike(here) || isChairLike(below) || this.isPassenger()) {
+        if (isChairLike(here) || isChairLike(below)) {
             return AscarisPoseState.SIT_CHAIR;
         }
         return AscarisPoseState.SIT_GROUND;
@@ -1617,37 +1995,204 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
                 || state.getBlock() instanceof BedBlock;
     }
 
-    // ===== 受伤与倒地保护 / 掉落物 =====
+    // ===== 受伤与安全休眠/跨距离避险保护 / 掉落物 =====
 
-    @Override
-    public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+    public boolean isDormantDowned() {
+        return entityData.get(DATA_DORMANT_DOWNED);
+    }
+
+    public void setDormantDowned(boolean dormant) {
+        entityData.set(DATA_DORMANT_DOWNED, dormant);
+    }
+
+    public float getDormantWakeThreshold() {
+        return Math.max(8.0f, this.getMaxHealth() * 0.25f);
+    }
+
+    /** 仅 /kill、虚空(bypasses_invulnerability) 或阿苯达唑危重药毒等极端情况可真正击杀已驯服的粉白蛔虫娘 */
+    private boolean isExtremeLethalDamage(DamageSource source) {
+        if (source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+            return true;
+        }
+        return applyingAlbendazoleToxicity || getExpelledStage() == EXPELLED_ALBENDAZOLE_CRITICAL;
+    }
+
+    /** 跨维度/跨距离解析在线主人 */
+    @Nullable
+    public ServerPlayer resolveOnlineOwner(ServerLevel level) {
+        if (getOwner() instanceof ServerPlayer sp) {
+            return sp;
+        }
+        var ref = this.getOwnerReference();
+        if (ref != null) {
+            return level.getServer().getPlayerList().getPlayer(ref.getUUID());
+        }
+        return null;
+    }
+
+    private void clearNearbyMobAggro(ServerLevel level) {
+        List<Mob> mobs = level.getEntitiesOfClass(Mob.class, this.getBoundingBox().inflate(24.0),
+                m -> m.isAlive() && m.getTarget() == this);
+        for (Mob mob : mobs) {
+            mob.setTarget(null);
+        }
+    }
+
+    private void clearDormantHazards(ServerLevel level) {
+        if (this.isOnFire()) {
+            this.clearFire();
+        }
+        this.setAirSupply(this.getMaxAirSupply());
+        this.removeEffect(MobEffects.POISON);
+        this.removeEffect(MobEffects.WITHER);
+        clearNearbyMobAggro(level);
+    }
+
+    /** 跨距离/跨维度紧急钻回主人体内避险（若体内世界正有访客或开启神经视窗，则不钻回，改为原地安全休眠） */
+    private boolean tryCrossDistanceRetreatToOwner(ServerLevel level, String reason) {
+        if (!isTame() || autoEnterCooldown > 0 || bodyHostUuid != null || hasChestPassenger()) {
+            return false;
+        }
+        if (org.cneko.justarod.body.BodyWorld.hasVisitorsOfAscaris(this)
+                || org.cneko.justarod.body.AscarisNeuralLinkController.isEntityLinked(this)) {
+            return false;
+        }
+        ServerPlayer owner = resolveOnlineOwner(level);
+        if (owner == null || !owner.isAlive() || owner.isSpectator()) {
+            return false;
+        }
+        if (owner.level().dimension().equals(org.cneko.justarod.body.BodyWorld.DIMENSION)) {
+            return false;
+        }
+        if (AscarisHostController.hasHostedAscaris(owner)) {
+            if (owner.level() == level && distanceToSqr(owner) <= 25.0 && downedProtectionCooldown == 0) {
+                downedProtectionCooldown = 1200;
+                AscarisHostController.triggerTerritorialEvictionOfEntity(owner, this);
+            }
+            return false;
+        }
+        return AscarisHostController.enterHostBody(this, owner, reason);
+    }
+
+    private void enterDormantDowned(ServerLevel level) {
+        if (hasChestPassenger()) {
+            this.ejectPassengers();
+        }
+        setDormantDowned(true);
+        this.dormantRecoveryTicks = 0;
+        this.setHealth(Math.max(2.0f, Math.min(this.getHealth(), 2.0f)));
+        this.invulnerableTime = 40;
+        this.fallDistance = 0.0f;
+        setPoseState(AscarisPoseState.COLLAPSE);
+        this.manualPoseHold = true;
+        this.getNavigation().stop();
+        clearDormantHazards(level);
+
+        level.playSound(null, blockPosition(), JRSounds.ASCARIS_BELL, SoundSource.NEUTRAL, 0.7f, 0.75f);
+        playVoice(JRSounds.ASCARIS_VOICE_WHIMPER, 0.92f, 60, true);
+        for (int i = 0; i < 12; i++) {
+            double ang = i * (Math.PI / 6.0);
+            level.sendParticles((i % 2 == 0) ? PINK_DUST : WHITE_DUST,
+                    getX() + Math.cos(ang) * 0.55, getY() + 0.4, getZ() + Math.sin(ang) * 0.55,
+                    1, 0.03, 0.03, 0.03, 0.01);
+        }
+
+        boolean hasVisitors = org.cneko.justarod.body.BodyWorld.hasVisitorsOfAscaris(this);
+        if (hasVisitors) {
+            org.cneko.justarod.body.AscarisPhysiologyEngine.onExternalHostDormant(this);
+        }
+        ServerPlayer owner = resolveOnlineOwner(level);
+        if (owner != null && (!hasVisitors || !owner.level().dimension().equals(org.cneko.justarod.body.BodyWorld.DIMENSION))) {
+            owner.sendSystemMessage(Component.literal(
+                    "§d你的粉白蛔虫娘遭遇致命伤，已收缩角质层进入安全重伤休眠（免疫常规伤害）！§7（喂甜食/空手轻抚/摇小金铃可唤醒，也会随时间慢慢苏醒）"));
+        }
+    }
+
+    /** 从安全重伤休眠中苏醒 */
+    public boolean wakeFromDormant(ServerLevel level, String reason) {
+        if (!isDormantDowned()) return false;
+        setDormantDowned(false);
+        this.dormantRecoveryTicks = 0;
+        this.manualPoseHold = false;
+        if (getExpelledStage() == EXPELLED_PAGODA_WEAK) {
+            setExpelledStage(EXPELLED_NONE);
+        }
+        if (getPoseState() == AscarisPoseState.COLLAPSE) {
+            setPoseState(isOrderedToSit() ? pickRestSitPose() : AscarisPoseState.NORMAL);
+        }
+        level.sendParticles(PINK_DUST, getX(), getY() + 0.75, getZ(), 10, 0.35, 0.3, 0.35, 0.03);
+        level.sendParticles(ParticleTypes.HEART, getX(), getY() + 1.1, getZ(), 5, 0.3, 0.25, 0.3, 0.02);
+        if (!"sweet".equals(reason) && !"pat".equals(reason)) {
+            level.playSound(null, blockPosition(), JRSounds.ASCARIS_BELL, SoundSource.NEUTRAL, 0.65f, 1.15f);
+            playVoice("auto".equals(reason) ? JRSounds.ASCARIS_VOICE_SLEEPY : JRSounds.ASCARIS_VOICE_HAPPY, 0.85f, 35, true);
+        }
+        org.cneko.justarod.body.AscarisPhysiologyEngine.onExternalHostWoke(this);
+        if ("auto".equals(reason)) {
+            ServerPlayer owner = resolveOnlineOwner(level);
+            if (owner != null && owner.level() == level && distanceToSqr(owner) <= 256.0) {
+                owner.sendSystemMessage(Component.literal("§d你的粉白蛔虫娘缓过气来，从安全休眠中揉着眼睛苏醒啦~♡"));
+            }
+        }
+        return true;
+    }
+
+    private boolean handleTamedFatalProtection(ServerLevel level, DamageSource source) {
         if (getPoseState().isWrapping()) {
             releaseTailWrap(true);
         }
-        if (isTame() && downedProtectionCooldown == 0 && getHealth() - amount <= 1.5f && getPoseState() != AscarisPoseState.COLLAPSE) {
-            downedProtectionCooldown = 1200;
-            this.setHealth(2.0f);
-            // 若主人就在身旁且允许自动钻入，吓得优先直接缩团钻回主人肚子里避难！（若体内已有原住民，则触发领地顶飞！）
-            if (autoEnterCooldown == 0 && bodyHostUuid == null && getOwner() instanceof ServerPlayer sp
-                    && sp.isAlive() && sp.level() == level && distanceToSqr(sp) <= 25.0) {
-                if (AscarisHostController.enterHostBody(this, sp, "low_hp_flee")) {
-                    return true;
-                }
-            }
-            setPoseState(AscarisPoseState.COLLAPSE);
-            manualPoseHold = true;
-            level.playSound(null, blockPosition(), JRSounds.ASCARIS_BELL, SoundSource.NEUTRAL, 0.7f, 0.75f);
-            playVoice(JRSounds.ASCARIS_VOICE_WHIMPER, 0.92f, 60, true);
-            if (getOwner() instanceof ServerPlayer sp) {
-                sp.sendSystemMessage(Component.literal("§c你的粉白蛔虫娘虚弱倒地了！快喂她甜食抢救！"));
-            }
+        this.setHealth(Math.max(2.0f, Math.min(this.getHealth(), 2.0f)));
+        this.invulnerableTime = 40;
+        this.fallDistance = 0.0f;
+        clearDormantHazards(level);
+
+        if (tryCrossDistanceRetreatToOwner(level, "emergency_flee")) {
             return true;
         }
+        enterDormantDowned(level);
+        return true;
+    }
+
+    @Override
+    public void heal(float amount) {
+        super.heal(amount);
+        if (!level().isClientSide() && isDormantDowned() && isAlive()
+                && getExpelledStage() != EXPELLED_ALBENDAZOLE_CRITICAL
+                && getHealth() >= getDormantWakeThreshold()
+                && level() instanceof ServerLevel sl) {
+            wakeFromDormant(sl, "heal");
+        }
+    }
+
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+        boolean extreme = isExtremeLethalDamage(source);
+        if (isTame() && isDormantDowned() && !extreme) {
+            clearDormantHazards(level);
+            return false;
+        }
+        if (this.isDeadOrDying() || amount <= 0.0f) {
+            return super.hurtServer(level, source, amount);
+        }
+        if (!extreme && this.isInvulnerableToBase(source)) {
+            return false;
+        }
+        if (!extreme && this.invulnerableTime > 10 && !source.is(DamageTypeTags.BYPASSES_COOLDOWN) && amount <= this.lastHurt) {
+            return false;
+        }
+        if (getPoseState().isWrapping()) {
+            releaseTailWrap(true);
+        }
+        if (isTame() && !extreme && (this.getHealth() + this.getAbsorptionAmount() - amount <= 1.5f)) {
+            return handleTamedFatalProtection(level, source);
+        }
         boolean hit = super.hurtServer(level, source, amount);
-        if (hit && isAlive() && getPoseState() != AscarisPoseState.COLLAPSE && !manualPoseHold) {
-            setPoseState(AscarisPoseState.CURL_UP);
-            transientTimer = 70;
-            level.playSound(null, blockPosition(), JRSounds.ASCARIS_BELL, SoundSource.NEUTRAL, 0.65f, 1.35f);
+        if (hit && isAlive()) {
+            org.cneko.justarod.body.AscarisPhysiologyEngine.onExternalHostHurt(this, amount);
+            if (getPoseState() != AscarisPoseState.COLLAPSE && !manualPoseHold) {
+                setPoseState(AscarisPoseState.CURL_UP);
+                transientTimer = 70;
+                level.playSound(null, blockPosition(), JRSounds.ASCARIS_BELL, SoundSource.NEUTRAL, 0.65f, 1.35f);
+            }
         }
         return hit;
     }
@@ -1655,6 +2200,10 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
     @Override
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean recentlyHit) {
         super.dropCustomDeathLoot(level, source, recentlyHit);
+        if (!carriedFetchItem.isEmpty()) {
+            this.spawnAtLocation(level, carriedFetchItem.copy());
+            carriedFetchItem = ItemStack.EMPTY;
+        }
         this.spawnAtLocation(level, new ItemStack(JRItems.Companion.getASCARIS_MOLT(), 1 + random.nextInt(2)));
         if (random.nextFloat() < 0.45f) {
             this.spawnAtLocation(level, new ItemStack(JRItems.Companion.getASCARIS_BELL(), 1));
@@ -1663,10 +2212,23 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
 
     @Override
     public void die(DamageSource source) {
-        if (!level().isClientSide() && getPoseState().isWrapping()) {
-            releaseTailWrap(false);
+        if (!level().isClientSide()) {
+            if (getPoseState().isWrapping()) {
+                releaseTailWrap(false);
+            }
+            if (bodyHostUuid == null) {
+                org.cneko.justarod.body.BodyWorld.onAscarisDeath(this);
+            }
         }
         super.die(source);
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        if (!level().isClientSide() && reason.shouldDestroy() && reason != RemovalReason.KILLED) {
+            org.cneko.justarod.body.BodyWorld.onAscarisRemoved(this);
+        }
+        super.remove(reason);
     }
 
     @Override
@@ -1705,6 +2267,8 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
     }
 
     public void forceShowcasePose(AscarisPoseState pose, boolean crawl) {
+        setDormantDowned(false);
+        this.dormantRecoveryTicks = 0;
         this.forcedCrawlShowcase = crawl;
         setCrawling(crawl);
         if (pose == AscarisPoseState.TAIL_WRAP) {
@@ -1731,6 +2295,7 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
             transientTimer = 44;
             triggerThreatenStrike(true);
         } else if (pose == AscarisPoseState.YANDERE_TIGHTEN) transientTimer = 30;
+        else if (pose == AscarisPoseState.HURT) transientTimer = 12;
         else transientTimer = 0;
         updateEyeVariant();
     }
@@ -1764,17 +2329,24 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
         this.threatenAllowOwner = false;
     }
 
-    /** 自主钻回主人体内：残血避难 或 病娇高执念主动贴身钻入（若体内已有原住民，会自动触发领地驱逐！） */
+    /** 自主钻回主人体内：残血避难 或 病娇高执念主动贴身钻入（若体内已有原住民，近距离会自动触发领地驱逐！） */
     private boolean tickAutoReentry(ServerLevel level) {
-        if (!isTame() || autoEnterCooldown > 0 || bodyHostUuid != null || hasChestPassenger() || getPoseState().isWrapping()) {
+        if (!isTame() || isDormantDowned() || autoEnterCooldown > 0 || bodyHostUuid != null
+                || hasChestPassenger() || getPoseState().isWrapping()) {
             return false;
         }
-        if (!(getOwner() instanceof ServerPlayer owner) || !owner.isAlive() || owner.isSpectator() || owner.level() != level) {
+        if (org.cneko.justarod.body.BodyWorld.hasVisitorsOfAscaris(this)
+                || org.cneko.justarod.body.AscarisNeuralLinkController.isEntityLinked(this)) {
+            return false;
+        }
+        ServerPlayer owner = resolveOnlineOwner(level);
+        if (owner == null || !owner.isAlive() || owner.isSpectator() || owner.level() != level) {
             return false;
         }
         double distSq = this.distanceToSqr(owner);
-        // 1. 残血避险：血量 < 30% 且靠近主人时自动缩团钻回主人体内疗伤
-        if (getHealth() <= getMaxHealth() * 0.30f && distSq <= 20.0) {
+        // 1. 残血避险：血量 <= 30% 且在 16 格内时主动钻回主人体内疗伤（5 格内即使已有原住民也会触发领地互动）
+        if (getHealth() <= getMaxHealth() * 0.30f && distSq <= 256.0
+                && (distSq <= 25.0 || !AscarisHostController.hasHostedAscaris(owner))) {
             return AscarisHostController.enterHostBody(this, owner, "low_hp_flee");
         }
         // 2. 病娇高执念贴身自动钻入（仅当 ascaris.yandere 启用，未强制坐下/手动摆姿，且靠得很近时）
@@ -1831,6 +2403,117 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
     public int getWrapTargetId() { return entityData.get(DATA_WRAP_TARGET_ID); }
     public int getWrapMode() { return entityData.get(DATA_WRAP_MODE); }
 
+    public boolean isNeuralControlled() {
+        return neuralControlTicks > 0;
+    }
+
+    public void refreshNeuralControl(int ticks) {
+        this.neuralControlTicks = Math.max(this.neuralControlTicks, ticks);
+    }
+
+    /** 体内神经视窗同步鼠标朝向：实时转动粉白蛔虫娘的视线与头部 */
+    public void handleNeuralLook(float yaw, float pitch) {
+        refreshNeuralControl(30);
+        float clampedPitch = Mth.clamp(pitch, -65f, 65f);
+        this.setYRot(yaw);
+        this.setYHeadRot(yaw);
+        this.yBodyRot = yaw;
+        this.setXRot(clampedPitch);
+    }
+
+    /** 体内神经视窗遥控挪步（WASD 方向 + 视角朝向） */
+    public void handleNeuralMove(float yaw, float forward, float strafe) {
+        refreshNeuralControl(35);
+        if (getPoseState() == AscarisPoseState.COLLAPSE || getPoseState().isWrapping()) {
+            return;
+        }
+        if (isOrderedToSit() || getPoseState().locksLocomotion()) {
+            setOrderedToSit(false);
+            manualPoseHold = false;
+            setPoseState(AscarisPoseState.NORMAL);
+        }
+        double rad = yaw * Mth.DEG_TO_RAD;
+        double fwdX = -Math.sin(rad);
+        double fwdZ = Math.cos(rad);
+        double leftX = Math.cos(rad);
+        double leftZ = Math.sin(rad);
+        double dirX = fwdX * forward + leftX * strafe;
+        double dirZ = fwdZ * forward + leftZ * strafe;
+        double len = Math.hypot(dirX, dirZ);
+        if (len < 0.001) return;
+        dirX /= len;
+        dirZ /= len;
+
+        this.setYRot(yaw);
+        this.setYHeadRot(yaw);
+        this.yBodyRot = yaw;
+        if (!this.isNoAi()) {
+            this.getNavigation().moveTo(getX() + dirX * 2.5, getY(), getZ() + dirZ * 2.5, isCrawling() ? 0.92 : 1.15);
+        } else {
+            this.setDeltaMovement(dirX * 0.18, this.getDeltaMovement().y, dirZ * 0.18);
+        }
+    }
+
+    /** 体内神经视窗遥控轻跳（空格） */
+    public void handleNeuralHop() {
+        refreshNeuralControl(35);
+        if (getPoseState() == AscarisPoseState.COLLAPSE || getPoseState().isWrapping()) {
+            return;
+        }
+        if (isOrderedToSit() || getPoseState().locksLocomotion()) {
+            setOrderedToSit(false);
+            manualPoseHold = false;
+            setPoseState(AscarisPoseState.NORMAL);
+        }
+        if (this.onGround()) {
+            this.jumpFromGround();
+            this.addBustImpulse(-0.45f);
+            playVoice(JRSounds.ASCARIS_VOICE_HOP, 0.85f, 20, false);
+        }
+    }
+
+    /** 体内神经视窗遥控坐下/起身（R），返回切换后是否处于坐姿 */
+    public boolean handleNeuralToggleSit() {
+        refreshNeuralControl(35);
+        if (getPoseState() == AscarisPoseState.COLLAPSE || getPoseState().isWrapping()) {
+            return isOrderedToSit();
+        }
+        AscarisPoseState cur = getPoseState();
+        if (isOrderedToSit() || cur == AscarisPoseState.SIT_GROUND || cur == AscarisPoseState.SIT_CHAIR || cur == AscarisPoseState.PRONE) {
+            setOrderedToSit(false);
+            manualPoseHold = false;
+            setPoseState(AscarisPoseState.NORMAL);
+            return false;
+        }
+        neuralCrawlHold = false;
+        setCrawling(false);
+        setOrderedToSit(true);
+        manualPoseHold = true;
+        setPoseState(pickRestSitPose());
+        this.getNavigation().stop();
+        return true;
+    }
+
+    /** 体内神经视窗遥控 1 格钻缝藏身爬行（G），返回切换后是否处于爬行态 */
+    public boolean handleNeuralToggleCrawl() {
+        refreshNeuralControl(35);
+        if (getPoseState() == AscarisPoseState.COLLAPSE || getPoseState().isWrapping()) {
+            return isCrawling();
+        }
+        if (this.isCrawling()) {
+            neuralCrawlHold = false;
+            forcedCrawlShowcase = false;
+            setCrawling(false);
+            return false;
+        }
+        setOrderedToSit(false);
+        manualPoseHold = false;
+        setPoseState(AscarisPoseState.NORMAL);
+        neuralCrawlHold = true;
+        setCrawling(true);
+        return true;
+    }
+
     public boolean isCrawling() { return entityData.get(DATA_CRAWLING); }
     public void setCrawling(boolean crawling) {
         if (entityData.get(DATA_CRAWLING) != crawling) {
@@ -1841,6 +2524,234 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
 
     public int getExpelledStage() { return entityData.get(DATA_EXPELLED_STAGE); }
     public void setExpelledStage(int stage) { entityData.set(DATA_EXPELLED_STAGE, stage); }
+
+    public int getMoltStage() { return entityData.get(DATA_MOLT_STAGE); }
+    public void setMoltStage(int stage) {
+        int clamped = Mth.clamp(stage, 1, 4);
+        entityData.set(DATA_MOLT_STAGE, clamped);
+        if (isTame()) {
+            var hp = getAttribute(Attributes.MAX_HEALTH);
+            if (hp != null) {
+                hp.setBaseValue(36.0 + clamped * 4.0);
+            }
+        }
+    }
+
+    public int getMoltProgress() { return moltProgress; }
+    public void setMoltProgress(int p) { this.moltProgress = Mth.clamp(p, 0, 100); }
+
+    public int getPiperazineResistance() { return piperazineResistance; }
+    public void setPiperazineResistance(int r) { this.piperazineResistance = Mth.clamp(r, 0, 100); }
+
+    public int getFlavorBuff() { return entityData.get(DATA_FLAVOR_BUFF); }
+    public void setFlavorBuff(int b) { entityData.set(DATA_FLAVOR_BUFF, Mth.clamp(b, 0, 2)); }
+
+    public ItemStack getCarriedFetchItem() { return carriedFetchItem; }
+
+    /** 推进活体蜕皮成长周期（Ecdysis）：达 100% 时自然蜕下新鲜「粉白虫蜕」并提升体格与最大生命！ */
+    public boolean advanceMoltProgress(ServerLevel level, int delta) {
+        if (delta <= 0) return false;
+        int prev = this.moltProgress;
+        this.moltProgress = Math.min(100, this.moltProgress + delta);
+        if (prev < 85 && this.moltProgress >= 85 && this.moltProgress < 100) {
+            level.sendParticles(WHITE_DUST, getX(), getY() + 0.85, getZ(), 10, 0.35, 0.35, 0.35, 0.02);
+            if (getOwner() instanceof ServerPlayer owner && owner.level() == level) {
+                owner.sendOverlayMessage(Component.literal("§d粉白蛔虫娘表皮泛起珍珠微光，快要进入蜕皮期啦~（" + this.moltProgress + "%）"));
+            }
+        }
+        if (this.moltProgress >= 100) {
+            performEcdysis(level);
+            return true;
+        }
+        return false;
+    }
+
+    /** 执行一次活体蜕皮（Ecdysis）：吐出新鲜「粉白虫蜕」、体格成长、短时间进入柔嫩粘人期 */
+    public void performEcdysis(ServerLevel level) {
+        this.moltProgress = 0;
+        int nextStage = Math.min(4, getMoltStage() + 1);
+        setMoltStage(nextStage);
+        this.postMoltTenderTicks = 1200;
+        this.heal(this.getMaxHealth());
+
+        // 蜕皮后体型在正常区间内随蜕皮阶段略微成长（不覆盖玩家自定义的极端缩放）
+        float curScale = getVisualScale();
+        if (curScale >= 0.82f && curScale <= 1.06f) {
+            setVisualScale(0.86f + nextStage * 0.045f);
+        }
+
+        // 在身旁产出 1 份新鲜「粉白虫蜕」
+        var drop = this.spawnAtLocation(level, new ItemStack(JRItems.Companion.getASCARIS_MOLT(), 1), 0.35f);
+        if (drop != null) {
+            drop.setDeltaMovement((random.nextDouble() - 0.5) * 0.14, 0.22, (random.nextDouble() - 0.5) * 0.14);
+        }
+        level.playSound(null, blockPosition(), net.minecraft.sounds.SoundEvents.SLIME_SQUISH_SMALL, SoundSource.NEUTRAL, 0.85f, 1.15f);
+        playVoice(JRSounds.ASCARIS_VOICE_HAPPY, 0.9f, 40, true);
+        level.sendParticles(WHITE_DUST, getX(), getY() + 0.8, getZ(), 20, 0.4, 0.45, 0.4, 0.04);
+        level.sendParticles(PINK_DUST, getX(), getY() + 0.85, getZ(), 14, 0.35, 0.4, 0.35, 0.03);
+        level.sendParticles(ParticleTypes.HEART, getX(), getY() + 1.25, getZ(), 6, 0.3, 0.25, 0.3, 0.02);
+
+        if (getOwner() instanceof ServerPlayer owner && owner.level() == level) {
+            owner.sendSystemMessage(Component.literal(
+                    "§d✦ 粉白蛔虫娘完成了一次蜕皮成长（蜕皮阶 §fL" + (nextStage + 1)
+                            + "§d · 上限血量 §a" + Math.round(getMaxHealth())
+                            + "§d），蜕下了 1 份新鲜的「粉白虫蜕」~♡"));
+        }
+    }
+
+    /** 战术长尾控场：缠住威胁主人的敌对怪物定身 3 秒，并对苦力怕直接熄灭引爆蓄力！ */
+    public boolean performCombatTailBind(ServerLevel level, LivingEntity enemy) {
+        if (enemy == null || !enemy.isAlive() || enemy == this || enemy == getOwner()) return false;
+        this.combatBindCooldown = (getFlavorBuff() == 2) ? 90 : 140;
+        enemy.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 3, false, true));
+        enemy.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 60, 0, false, true));
+        if (enemy instanceof net.minecraft.world.entity.monster.Creeper creeper) {
+            creeper.setSwellDir(-1);
+        }
+        enemy.hurtServer(level, damageSources().mobAttack(this), 3.5f);
+        LivingEntity owner = getOwner();
+        if (owner != null) {
+            Vec3 away = enemy.position().subtract(owner.position());
+            double len = Math.max(0.1, away.horizontalDistance());
+            enemy.setDeltaMovement(away.x / len * 0.42, 0.18, away.z / len * 0.42);
+            enemy.hurtMarked = true;
+        }
+        playTransientPose(AscarisPoseState.THREATEN, 32);
+        level.playSound(null, enemy.blockPosition(), JRSounds.ASCARIS_SLITHER, SoundSource.NEUTRAL, 0.85f, 0.95f);
+        playVoice(JRSounds.ASCARIS_VOICE_HISS, 0.9f, 35, true);
+        for (int i = 0; i < 14; i++) {
+            double ang = i * 0.55;
+            level.sendParticles((i % 2 == 0) ? PINK_DUST : WHITE_DUST,
+                    enemy.getX() + Math.cos(ang) * 0.65,
+                    enemy.getY() + 0.35 + (i / 14.0) * 1.1,
+                    enemy.getZ() + Math.sin(ang) * 0.65,
+                    1, 0.03, 0.03, 0.03, 0.01);
+        }
+        if (owner instanceof ServerPlayer sp && enemy instanceof net.minecraft.world.entity.monster.Creeper) {
+            sp.sendOverlayMessage(Component.literal("§d粉白蛔虫娘甩出长尾捆住了苦力怕并打断了引爆！"));
+        }
+        return true;
+    }
+
+    /** 狭缝卷物小助手：卷起目标掉落物并立即交给主人或衔在尾尖带回 */
+    public boolean tryFetchNearbyItem(ServerLevel level, net.minecraft.world.entity.item.ItemEntity itemEnt) {
+        if (itemEnt == null || !itemEnt.isAlive() || itemEnt.getItem().isEmpty() || !carriedFetchItem.isEmpty()) {
+            return false;
+        }
+        if (isDewormer(itemEnt.getItem())) return false;
+        this.carriedFetchItem = itemEnt.getItem().copy();
+        itemEnt.discard();
+        level.playSound(null, blockPosition(), JRSounds.ASCARIS_SLITHER, SoundSource.NEUTRAL, 0.65f, 1.25f);
+        level.sendParticles(PINK_DUST, getX(), getY() + 0.6, getZ(), 8, 0.3, 0.2, 0.3, 0.02);
+        if (getOwner() instanceof Player owner && distanceToSqr(owner) <= 9.0) {
+            deliverCarriedItemToOwner(level, owner);
+        }
+        return true;
+    }
+
+    private void deliverCarriedItemToOwner(ServerLevel level, Player owner) {
+        if (carriedFetchItem.isEmpty()) return;
+        ItemStack stack = carriedFetchItem.copy();
+        carriedFetchItem = ItemStack.EMPTY;
+        fetchItemCooldown = 40;
+        if (!owner.getInventory().add(stack)) {
+            owner.spawnAtLocation(level, stack, 0.25f);
+        }
+        playTransientPose(AscarisPoseState.HAPPY, 36);
+        playVoice(JRSounds.ASCARIS_VOICE_HAPPY, 0.85f, 35, false);
+        level.sendParticles(ParticleTypes.HEART, owner.getX(), owner.getY() + 1.2, owner.getZ(), 4, 0.25, 0.2, 0.25, 0.02);
+        if (owner instanceof ServerPlayer sp) {
+            sp.sendOverlayMessage(Component.literal("§d粉白蛔虫娘钻缝用长尾帮你卷回了 §f" + stack.getHoverName().getString() + " §d~♡"));
+        }
+    }
+
+    public int getAlbendazoleToxicityTicks() { return albendazoleToxicityTicks; }
+    public void setAlbendazoleToxicityTicks(int ticks) { this.albendazoleToxicityTicks = Math.max(0, ticks); }
+
+    /** 从体内器官（H形排泄管排毒 + 咽部灌糖 + 神经环安抚）完成硬核抢救后唤醒垂危/安全休眠本体 */
+    public boolean recoverFromInternalRescue() {
+        if (level().isClientSide() || !isAlive()) return false;
+        boolean wasDormant = isDormantDowned();
+        boolean wasCritical = wasDormant
+                || getExpelledStage() == EXPELLED_ALBENDAZOLE_CRITICAL
+                || getExpelledStage() == EXPELLED_PAGODA_WEAK
+                || albendazoleToxicityTicks > 0
+                || getPoseState() == AscarisPoseState.COLLAPSE;
+        this.albendazoleToxicityTicks = 0;
+        if (wasCritical) {
+            setExpelledStage(EXPELLED_NONE);
+            if (wasDormant && level() instanceof ServerLevel sl) {
+                super.heal(8.0f);
+                wakeFromDormant(sl, "internal");
+            } else {
+                if (getPoseState() == AscarisPoseState.COLLAPSE) {
+                    setPoseState(AscarisPoseState.NORMAL);
+                }
+                this.manualPoseHold = false;
+                super.heal(8.0f);
+                this.playVoice(JRSounds.ASCARIS_VOICE_HAPPY, 0.9f, 35, true);
+                if (level() instanceof ServerLevel sl) {
+                    sl.sendParticles(ParticleTypes.HEART, getX(), getY() + 1.0, getZ(), 8, 0.35, 0.35, 0.35, 0.03);
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /** 体内特定器官受到机械/化学刺激时，沿神经反射弧引发外界本体的精准生理反射 */
+    public void triggerInternalOrganReflex(String reflexTag) {
+        if (level().isClientSide() || !isAlive() || !(level() instanceof ServerLevel sl)) return;
+        switch (reflexTag) {
+            case "pharynx_swallow" -> {
+                sl.playSound(null, blockPosition(), JRSounds.SLIME_SWALLOW, SoundSource.NEUTRAL, 0.55f, 1.15f);
+                sl.sendParticles(PINK_DUST, getX(), getY() + 1.0, getZ(), 6, 0.25, 0.2, 0.25, 0.02);
+                addBustImpulse(-0.22f);
+            }
+            case "pharynx_gag" -> {
+                sl.playSound(null, blockPosition(), JRSounds.ASCARIS_RUMBLE, SoundSource.NEUTRAL, 0.65f, 1.25f);
+                playVoice(JRSounds.ASCARIS_VOICE_CURIOUS, 0.8f, 30, false);
+                if (!isMovementLocked()) {
+                    playTransientPose(AscarisPoseState.CURL_UP, 26);
+                }
+                sl.sendParticles(WHITE_DUST, getX(), getY() + 1.05, getZ(), 8, 0.25, 0.2, 0.25, 0.03);
+            }
+            case "ovary_blush" -> {
+                playVoice(JRSounds.ASCARIS_VOICE_HOP, 0.82f, 32, false);
+                sl.sendParticles(ParticleTypes.HEART, getX(), getY() + 1.15, getZ(), 5, 0.3, 0.25, 0.3, 0.02);
+                if (!isMovementLocked()) {
+                    playTransientPose(AscarisPoseState.CURL_UP, 34);
+                }
+            }
+            case "rectum_twitch" -> {
+                if (this.onGround() && !isMovementLocked()) {
+                    this.jumpFromGround();
+                    addBustImpulse(-0.35f);
+                }
+                playVoice(JRSounds.ASCARIS_VOICE_HOP, 0.78f, 28, false);
+                sl.sendParticles(PINK_DUST, getX(), getY() + 0.5, getZ(), 8, 0.3, 0.2, 0.3, 0.03);
+            }
+            case "excretory_relief" -> {
+                this.heal(3.0f);
+                this.removeEffect(MobEffects.POISON);
+                this.removeEffect(MobEffects.WEAKNESS);
+                this.removeEffect(MobEffects.SLOWNESS);
+                playVoice(JRSounds.ASCARIS_VOICE_SLEEPY, 0.75f, 35, false);
+                sl.sendParticles(WHITE_DUST, getX(), getY() + 0.85, getZ(), 10, 0.35, 0.3, 0.35, 0.03);
+            }
+            case "oviposition" -> {
+                sl.playSound(null, blockPosition(), JRSounds.ASCARIS_SLITHER, SoundSource.NEUTRAL, 0.65f, 1.15f);
+                playVoice(JRSounds.ASCARIS_VOICE_SLEEPY, 0.75f, 40, false);
+                sl.sendParticles(WHITE_DUST, getX(), getY() + 0.45, getZ(), 10, 0.3, 0.2, 0.3, 0.02);
+            }
+            case "acidosis_fatigue" -> {
+                this.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 0, true, false));
+                sl.playSound(null, blockPosition(), JRSounds.ASCARIS_RUMBLE, SoundSource.NEUTRAL, 0.5f, 0.9f);
+            }
+            default -> {
+            }
+        }
+    }
 
     public float getVisualScale() { return entityData.get(DATA_VISUAL_SCALE); }
     public void setVisualScale(float scale) {
@@ -1854,6 +2765,14 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
     @Nullable
     public UUID getBodyHostUuid() { return bodyHostUuid; }
     public void setBodyHostUuid(@Nullable UUID uuid) { this.bodyHostUuid = uuid; }
+
+    public UUID getBodyRegionOwnerUuid() {
+        return bodyRegionUuid != null ? bodyRegionUuid : this.getUUID();
+    }
+
+    public void setBodyRegionOwnerUuid(@Nullable UUID uuid) {
+        this.bodyRegionUuid = uuid;
+    }
 
     // ===== 存档读写 (MC 26.1.2 ValueInput/ValueOutput) =====
 
@@ -1869,8 +2788,18 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
         out.putFloat("VisualScale", getVisualScale());
         out.putBoolean("ManualPoseHold", manualPoseHold);
         out.putInt("AlbendazoleTox", albendazoleToxicityTicks);
+        out.putInt("MoltStage", getMoltStage());
+        out.putInt("MoltProgress", moltProgress);
+        out.putInt("PiperazineResistance", piperazineResistance);
+        out.putInt("FlavorBuff", getFlavorBuff());
+        out.putInt("FlavorBuffTicks", flavorBuffTicks);
+        out.putBoolean("DormantDowned", isDormantDowned());
+        out.putInt("DormantRecoveryTicks", dormantRecoveryTicks);
         if (bodyHostUuid != null) {
             out.putString("BodyHostUuid", bodyHostUuid.toString());
+        }
+        if (bodyRegionUuid != null) {
+            out.putString("BodyRegionUuid", bodyRegionUuid.toString());
         }
     }
 
@@ -1887,9 +2816,20 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
         setVisualScale(in.getFloatOr("VisualScale", 1.0f));
         manualPoseHold = in.getBooleanOr("ManualPoseHold", false);
         albendazoleToxicityTicks = in.getIntOr("AlbendazoleTox", 0);
+        setMoltStage(in.getIntOr("MoltStage", 1));
+        moltProgress = Mth.clamp(in.getIntOr("MoltProgress", 0), 0, 100);
+        piperazineResistance = Mth.clamp(in.getIntOr("PiperazineResistance", 0), 0, 100);
+        setFlavorBuff(in.getIntOr("FlavorBuff", 0));
+        flavorBuffTicks = Math.max(0, in.getIntOr("FlavorBuffTicks", 0));
+        setDormantDowned(in.getBooleanOr("DormantDowned", false));
+        dormantRecoveryTicks = Math.max(0, in.getIntOr("DormantRecoveryTicks", 0));
         String hostStr = in.getStringOr("BodyHostUuid", "");
         if (!hostStr.isEmpty()) {
             try { bodyHostUuid = UUID.fromString(hostStr); } catch (Exception ignored) { bodyHostUuid = null; }
+        }
+        String regionStr = in.getStringOr("BodyRegionUuid", "");
+        if (!regionStr.isEmpty()) {
+            try { bodyRegionUuid = UUID.fromString(regionStr); } catch (Exception ignored) { bodyRegionUuid = null; }
         }
     }
 
@@ -1995,12 +2935,12 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
         }
     }
 
-    // ===== 饥饿寄生突袭 AI =====
+    // ===== 饥饿寄生突袭 AI（含野生猪蛔虫生态彩蛋：无玩家时可缠上猪偷吸少量营养） =====
 
     private static final class HungryAmbushWrapGoal extends Goal {
         private final AscarisEntity ascaris;
         @Nullable
-        private Player target;
+        private LivingEntity target;
 
         private HungryAmbushWrapGoal(AscarisEntity ascaris) {
             this.ascaris = ascaris;
@@ -2009,7 +2949,7 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
 
         @Override
         public boolean canUse() {
-            if (ascaris.wrapCooldown > 0 || ascaris.isMovementLocked() || ascaris.isOrderedToSit()) return false;
+            if (ascaris.isNeuralControlled() || ascaris.wrapCooldown > 0 || ascaris.isMovementLocked() || ascaris.isOrderedToSit()) return false;
             if (ascaris.getExpelledStage() != EXPELLED_NONE || ascaris.seesDewormerNearby()) return false;
 
             if (ascaris.isTame()) {
@@ -2026,6 +2966,16 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
                 if (near != null && near.isAlive() && !near.isSpectator() && !near.isCreative()) {
                     this.target = near;
                     return true;
+                }
+                // 致敬猪蛔虫 (Ascaris suum)：野生且较饿时可缠住路过的猪吸一点点营养！
+                if (ascaris.getHunger() < 45) {
+                    List<LivingEntity> pigs = ascaris.level().getEntitiesOfClass(LivingEntity.class,
+                            ascaris.getBoundingBox().inflate(6.0),
+                            e -> e.isAlive() && e.getType() == EntityType.PIG);
+                    if (!pigs.isEmpty()) {
+                        this.target = pigs.getFirst();
+                        return true;
+                    }
                 }
                 return false;
             }
@@ -2044,7 +2994,11 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
             ascaris.getLookControl().setLookAt(target, 30f, 30f);
             ascaris.getNavigation().moveTo(target, 1.18);
             if (ascaris.distanceToSqr(target) <= 2.35) {
-                int mode = (JRConfig.isAscarisYandereEnabled() && ascaris.getObsession() >= 65) ? WRAP_YANDERE : WRAP_PARASITIC;
+                if (target.getType() == EntityType.PIG) {
+                    ascaris.setHunger(Math.min(100, ascaris.getHunger() + 25));
+                }
+                int mode = (JRConfig.isAscarisYandereEnabled() && ascaris.getObsession() >= 65 && target instanceof Player)
+                        ? WRAP_YANDERE : WRAP_PARASITIC;
                 ascaris.startTailWrap(target, mode);
                 this.target = null;
             }
@@ -2053,6 +3007,192 @@ public class AscarisEntity extends TamableAnimal implements GeoEntity, VisualSiz
         @Override
         public void stop() {
             this.target = null;
+            ascaris.getNavigation().stop();
+        }
+    }
+
+    // ===== 战术长尾控场协同战斗 AI（帮主人定身扑近的敌对怪并打断苦力怕引爆！） =====
+
+    private static final class ProtectOwnerTailBindGoal extends Goal {
+        private final AscarisEntity ascaris;
+        @Nullable
+        private LivingEntity enemy;
+
+        private ProtectOwnerTailBindGoal(AscarisEntity ascaris) {
+            this.ascaris = ascaris;
+            this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
+        }
+
+        @Override
+        public boolean canUse() {
+            if (!ascaris.isTame() || ascaris.isNeuralControlled() || ascaris.isMovementLocked()
+                    || ascaris.isOrderedToSit() || ascaris.combatBindCooldown > 0 || ascaris.hasChestPassenger()) {
+                return false;
+            }
+            if (ascaris.getExpelledStage() != EXPELLED_NONE) return false;
+            LivingEntity owner = ascaris.getOwner();
+            if (owner == null || !owner.isAlive() || ascaris.distanceToSqr(owner) > 196.0) return false;
+
+            List<net.minecraft.world.entity.monster.Monster> threats = ascaris.level().getEntitiesOfClass(
+                    net.minecraft.world.entity.monster.Monster.class,
+                    owner.getBoundingBox().inflate(6.5),
+                    m -> m.isAlive() && !m.isSpectator());
+            if (threats.isEmpty()) return false;
+            this.enemy = threats.getFirst();
+            return true;
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            return enemy != null && enemy.isAlive() && ascaris.combatBindCooldown == 0
+                    && !ascaris.isMovementLocked() && !ascaris.isOrderedToSit()
+                    && ascaris.distanceToSqr(enemy) <= 100.0;
+        }
+
+        @Override
+        public void tick() {
+            if (enemy == null) return;
+            ascaris.getLookControl().setLookAt(enemy, 30f, 30f);
+            ascaris.getNavigation().moveTo(enemy, 1.28);
+            if (ascaris.distanceToSqr(enemy) <= 7.0 && ascaris.level() instanceof ServerLevel sl) {
+                ascaris.performCombatTailBind(sl, enemy);
+                this.enemy = null;
+            }
+        }
+
+        @Override
+        public void stop() {
+            this.enemy = null;
+            ascaris.getNavigation().stop();
+        }
+    }
+
+    // ===== “蛔虫喜钻孔” 1 格狭缝卷物小助手 AI =====
+
+    private static final class GapItemFetchGoal extends Goal {
+        private final AscarisEntity ascaris;
+        @Nullable
+        private net.minecraft.world.entity.item.ItemEntity targetItem;
+        private int scanTicker = 0;
+
+        private GapItemFetchGoal(AscarisEntity ascaris) {
+            this.ascaris = ascaris;
+            this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
+        }
+
+        @Override
+        public boolean canUse() {
+            if (!ascaris.isTame() || ascaris.isNeuralControlled() || ascaris.isMovementLocked()
+                    || ascaris.isOrderedToSit() || ascaris.hasChestPassenger() || ascaris.fetchItemCooldown > 0) {
+                return false;
+            }
+            if (ascaris.getExpelledStage() != EXPELLED_NONE) return false;
+            LivingEntity owner = ascaris.getOwner();
+            if (!(owner instanceof Player) || !owner.isAlive() || ascaris.distanceToSqr(owner) > 256.0) return false;
+            if (!ascaris.carriedFetchItem.isEmpty()) return true;
+            if (++scanTicker < 15) return false;
+            scanTicker = 0;
+
+            List<net.minecraft.world.entity.item.ItemEntity> items = ascaris.level().getEntitiesOfClass(
+                    net.minecraft.world.entity.item.ItemEntity.class,
+                    ascaris.getBoundingBox().inflate(9.0),
+                    it -> it.isAlive() && !it.getItem().isEmpty() && !isDewormer(it.getItem()) && it.getAge() >= 10);
+            if (items.isEmpty()) return false;
+            this.targetItem = items.getFirst();
+            return true;
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            if (ascaris.isMovementLocked() || ascaris.isOrderedToSit() || ascaris.isNeuralControlled()) return false;
+            LivingEntity owner = ascaris.getOwner();
+            if (!(owner instanceof Player) || !owner.isAlive()) return false;
+            if (!ascaris.carriedFetchItem.isEmpty()) return true;
+            return targetItem != null && targetItem.isAlive() && ascaris.distanceToSqr(targetItem) <= 121.0;
+        }
+
+        @Override
+        public void tick() {
+            if (!(ascaris.level() instanceof ServerLevel sl)) return;
+            LivingEntity owner = ascaris.getOwner();
+            if (!(owner instanceof Player p)) return;
+
+            if (!ascaris.carriedFetchItem.isEmpty()) {
+                ascaris.getLookControl().setLookAt(p, 30f, 30f);
+                ascaris.getNavigation().moveTo(p, 1.22);
+                if (ascaris.distanceToSqr(p) <= 5.5) {
+                    ascaris.deliverCarriedItemToOwner(sl, p);
+                }
+                return;
+            }
+            if (targetItem != null && targetItem.isAlive()) {
+                ascaris.getLookControl().setLookAt(targetItem, 30f, 30f);
+                ascaris.getNavigation().moveTo(targetItem, 1.18);
+                if (ascaris.distanceToSqr(targetItem) <= 2.4) {
+                    ascaris.tryFetchNearbyItem(sl, targetItem);
+                    targetItem = null;
+                }
+            }
+        }
+
+        @Override
+        public void stop() {
+            targetItem = null;
+            ascaris.getNavigation().stop();
+        }
+    }
+
+    // ===== 喜温趋化 AI：严寒或雨雪时寻找熔炉/营火/灯笼等暖源靠边取暖 =====
+
+    private static final class ThermotaxisWarmthGoal extends Goal {
+        private final AscarisEntity ascaris;
+        @Nullable
+        private BlockPos warmPos;
+        private int scanTicker = 0;
+
+        private ThermotaxisWarmthGoal(AscarisEntity ascaris) {
+            this.ascaris = ascaris;
+            this.setFlags(EnumSet.of(Flag.MOVE));
+        }
+
+        @Override
+        public boolean canUse() {
+            if (ascaris.isNeuralControlled() || ascaris.isMovementLocked() || ascaris.isOrderedToSit()) return false;
+            if (!(ascaris.level() instanceof ServerLevel sl) || !ascaris.isColdEnvironment(sl)) return false;
+            if (++scanTicker < 30) return false;
+            scanTicker = 0;
+            BlockPos origin = ascaris.blockPosition();
+            for (BlockPos p : BlockPos.betweenClosed(origin.offset(-6, -2, -6), origin.offset(6, 2, 6))) {
+                BlockState bs = sl.getBlockState(p);
+                if (bs.is(net.minecraft.world.level.block.Blocks.CAMPFIRE)
+                        || bs.is(net.minecraft.world.level.block.Blocks.FURNACE)
+                        || bs.is(net.minecraft.world.level.block.Blocks.BLAST_FURNACE)
+                        || bs.is(net.minecraft.world.level.block.Blocks.SMOKER)
+                        || bs.is(net.minecraft.world.level.block.Blocks.LANTERN)
+                        || bs.is(net.minecraft.world.level.block.Blocks.TORCH)) {
+                    this.warmPos = p.immutable();
+                    return ascaris.distanceToSqr(p.getX() + 0.5, p.getY(), p.getZ() + 0.5) > 4.0;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            return warmPos != null && !ascaris.isMovementLocked() && !ascaris.isOrderedToSit()
+                    && ascaris.distanceToSqr(warmPos.getX() + 0.5, warmPos.getY(), warmPos.getZ() + 0.5) > 3.5;
+        }
+
+        @Override
+        public void tick() {
+            if (warmPos != null) {
+                ascaris.getNavigation().moveTo(warmPos.getX() + 0.5, warmPos.getY(), warmPos.getZ() + 0.5, 0.92);
+            }
+        }
+
+        @Override
+        public void stop() {
+            warmPos = null;
             ascaris.getNavigation().stop();
         }
     }

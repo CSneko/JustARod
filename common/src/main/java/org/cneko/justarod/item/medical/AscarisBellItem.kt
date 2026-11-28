@@ -45,13 +45,31 @@ class AscarisBellItem(properties: Properties) : Item(properties) {
                 }
             } else {
                 var called = 0
+                var fetched = false
                 for (a in nearby) {
                     if (a.poseState == AscarisPoseState.TAIL_WRAP) {
                         a.releaseTailWrap(false)
                     }
                     a.isOrderedToSit = false
-                    if (a.distanceToSqr(user) > 100.0) {
+                    val wasDormant = a.isDormantDowned
+                    if (wasDormant || a.distanceToSqr(user) > 100.0) {
                         a.teleportTo(user.x + 1.1, user.y, user.z + 1.1)
+                    }
+                    if (wasDormant) {
+                        if (a.health < 6.0f) {
+                            a.health = 6.0f
+                        }
+                        a.wakeFromDormant(world, "bell")
+                    }
+                    // 若附近有卡在狭缝或角落的掉落物，摇铃时顺手派她用长尾卷回来！
+                    if (!fetched) {
+                        val drops = world.getEntitiesOfClass(
+                            net.minecraft.world.entity.item.ItemEntity::class.java,
+                            user.boundingBox.inflate(9.0)
+                        ) { it.isAlive && !it.item.isEmpty && !AscarisEntity.isDewormer(it.item) }
+                        if (drops.isNotEmpty() && a.tryFetchNearbyItem(world, drops.first())) {
+                            fetched = true
+                        }
                     }
                     a.playTransientPose(AscarisPoseState.WAVE, 56)
                     if (called == 0) {
@@ -60,7 +78,7 @@ class AscarisBellItem(properties: Properties) : Item(properties) {
                     world.sendParticles(ParticleTypes.HEART, a.x, a.y + 1.2, a.z, 5, 0.3, 0.2, 0.3, 0.02)
                     called++
                 }
-                if (user is ServerPlayer) {
+                if (user is ServerPlayer && !fetched) {
                     user.sendOverlayMessage(Component.literal("§d叮铃~ 召回了 $called 只粉白蛔虫娘！（对她右键可发动贴贴缠绕）"))
                 }
             }

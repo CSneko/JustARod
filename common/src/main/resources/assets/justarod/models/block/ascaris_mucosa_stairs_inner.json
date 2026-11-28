@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/inner_stairs",
+  "textures": {
+    "bottom": "justarod:block/ascaris_mucosa",
+    "side": "justarod:block/ascaris_mucosa",
+    "top": "justarod:block/ascaris_mucosa"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "hanging=false": {
+      "model": "justarod:block/ascaris_microvilli"
+    },
+    "hanging=true": {
+      "model": "justarod:block/ascaris_microvilli_hanging"
+    }
+  }
+}

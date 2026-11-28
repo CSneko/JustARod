@@ -66,22 +66,29 @@ public final class AscarisHostController {
         if (!ascaris.isTame() || !ascaris.isOwnedBy(host)) {
             return false;
         }
-
-        ServerLevel level = (ServerLevel) host.level();
-
-        // ===== 领地意识：体内已经住着原住民，强行把第二只新来的顶飞赶出去！ =====
-        if (hasHostedAscaris(host)) {
-            triggerTerritorialEvictionOfEntity(host, ascaris);
+        if (!"manual".equals(reason) && host.level().dimension().equals(org.cneko.justarod.body.BodyWorld.DIMENSION)) {
             return false;
         }
 
-        // 先解除任何缠绕和胸口骑乘
+        ServerLevel level = (ServerLevel) host.level();
+        boolean crossDistance = ascaris.level() != host.level() || ascaris.distanceToSqr(host) > 36.0;
+
+        // ===== 领地意识：体内已经住着原住民，近距离强行把第二只新来的顶飞赶出去；远距离避险则静默退回休眠 =====
+        if (hasHostedAscaris(host)) {
+            if (!crossDistance) {
+                triggerTerritorialEvictionOfEntity(host, ascaris);
+            }
+            return false;
+        }
+
+        // 先解除任何缠绕、胸口骑乘与体内访客
         if (ascaris.getPoseState().isWrapping()) {
             ascaris.releaseTailWrap(false);
         }
         if (ascaris.hasChestPassenger()) {
             ascaris.ejectPassengers();
         }
+        org.cneko.justarod.body.BodyWorld.exitVisitorsOfAscaris(ascaris, "body.ascaris.host_entered");
 
         // 若主人体内原本有野生感染，钻入的同时把野生寄生虫一口气赶出去！
         Pregnant p = (Pregnant) (Object) host;
@@ -90,6 +97,20 @@ public final class AscarisHostController {
         // 完整序列化保存个体状态
         CompoundTag saved = serializeAscaris(ascaris);
         p.setHostedAscarisNbt(saved);
+
+        // 若跨距离/跨维度紧急钻回，在原位置也播一段粉白消散螺旋特效
+        if (crossDistance && ascaris.level() instanceof ServerLevel originLevel) {
+            for (int i = 0; i < 14; i++) {
+                double ang = i * 0.5;
+                double r = 0.7 * (1.0 - i / 14.0);
+                originLevel.sendParticles((i % 2 == 0) ? PINK_DUST : WHITE_DUST,
+                        ascaris.getX() + Math.cos(ang) * r,
+                        ascaris.getY() + 0.35 + (i / 14.0) * 0.7,
+                        ascaris.getZ() + Math.sin(ang) * r,
+                        1, 0.02, 0.02, 0.02, 0.01);
+            }
+            originLevel.playSound(null, ascaris.blockPosition(), JRSounds.ASCARIS_SLITHER, SoundSource.NEUTRAL, 0.85f, 1.15f);
+        }
 
         // 粉白螺旋钻入特效
         for (int i = 0; i < 16; i++) {
@@ -105,7 +126,7 @@ public final class AscarisHostController {
         level.playSound(null, host.blockPosition(), JRSounds.ASCARIS_BELL, SoundSource.PLAYERS, 0.7f, 1.18f);
         float voicePitch = 0.97f + level.getRandom().nextFloat() * 0.06f;
         switch (reason) {
-            case "low_hp_flee" ->
+            case "low_hp_flee", "emergency_flee" ->
                     level.playSound(null, host.blockPosition(), JRSounds.ASCARIS_VOICE_WHIMPER, SoundSource.VOICE, 0.85f, voicePitch);
             case "yandere_snuggle" ->
                     level.playSound(null, host.blockPosition(),
@@ -129,6 +150,9 @@ public final class AscarisHostController {
 
         String displayName = saved.getStringOr("CustomName", "粉白蛔虫娘");
         switch (reason) {
+            case "emergency_flee" -> host.sendSystemMessage(Component.literal(crossDistance
+                    ? "§d" + displayName + " 在远处遭遇致命危机，化作粉白微光跨越距离紧急钻回你的体内避难疗伤……"
+                    : "§d" + displayName + " 遭遇致命危机，缩成一团飞快地钻回你的肚子里避难疗伤……"));
             case "low_hp_flee" -> host.sendSystemMessage(Component.literal(
                     "§d" + displayName + " 受伤受惊了，缩成一团飞快地钻回你的肚子里避难疗伤……"));
             case "yandere_snuggle" -> host.sendSystemMessage(Component.literal(
@@ -344,6 +368,17 @@ public final class AscarisHostController {
             }
         }
 
+        // 3.5 高亲密厌氧血红蛋白水下憋气支援（线虫体腔血红蛋白对氧亲和力极高，可大幅延缓水下掉氧！）
+        if (ticks % 25 == 0 && host.getAirSupply() < host.getMaxAirSupply()) {
+            int aff = saved.getIntOr("Affection", 20);
+            if (aff >= 25) {
+                host.setAirSupply(Math.min(host.getMaxAirSupply(), host.getAirSupply() + 16));
+                if (ticks % 75 == 0) {
+                    level.sendParticles(PINK_DUST, host.getX(), host.getY() + 1.2, host.getZ(), 3, 0.25, 0.2, 0.25, 0.01);
+                }
+            }
+        }
+
         // 4. 定期同步寄宿摘要给客户端（用于活体饥饿条 & B超共生界面）
         if (ticks % 40 == 0) {
             syncHostSummaryToClient(host);
@@ -368,15 +403,17 @@ public final class AscarisHostController {
         }
     }
 
-    /** 宿主进食时：体内寄宿的她开心共享营养（吃甜食触发可爱尾尖轻啄，绝不恶性掠夺！） */
+    /** 宿主进食时：体内寄宿的她开心共享营养（甜食轻啄，不洁/有毒食物凭耐酸蛋白酶抑制剂替主人代消化清毒！） */
     public static void onHostFinishedEating(ServerPlayer host, ItemStack stack) {
         CompoundTag saved = getHostedTag(host);
         if (saved == null) return;
         if (!stack.has(net.minecraft.core.component.DataComponents.FOOD)) return;
 
         ServerLevel level = (ServerLevel) host.level();
+        boolean toxicFood = isUncleanOrToxicFood(stack);
         boolean sweet = AscarisEntity.isSweetTreat(stack);
-        int hunger = Math.min(100, saved.getIntOr("Hunger", 80) + (sweet ? 28 : 14));
+        int hungerGain = sweet ? 28 : (toxicFood ? 18 : 14);
+        int hunger = Math.min(100, saved.getIntOr("Hunger", 80) + hungerGain);
         int aff = Math.min(100, saved.getIntOr("Affection", 20) + (sweet ? 5 : 1));
         int obs = Math.max(0, saved.getIntOr("Obsession", 15) - (sweet ? 8 : 2));
         float hp = Math.min(saved.getFloatOr("MaxHealth", 30f), saved.getFloatOr("Health", 30f) + (sweet ? 5f : 2f));
@@ -384,6 +421,29 @@ public final class AscarisHostController {
         saved.putInt("Affection", aff);
         saved.putInt("Obsession", obs);
         saved.putFloat("Health", hp);
+
+        // 耐酸代消化盾：吃腐肉/蜘蛛眼/毒马铃薯/河豚/生鸡肉时，由体内的她替主人中和毒素并转化为糖原！
+        if (toxicFood) {
+            host.removeEffect(MobEffects.HUNGER);
+            host.removeEffect(MobEffects.POISON);
+            host.removeEffect(MobEffects.NAUSEA);
+            String regionStr = saved.getStringOr("BodyRegionUuid", "");
+            if (!regionStr.isEmpty()) {
+                try {
+                    var data = org.cneko.justarod.body.BodyRegionData.get(level.getServer());
+                    Long slot = data.currentRegion(java.util.UUID.fromString(regionStr));
+                    if (slot != null) {
+                        var phys = data.physiologyFor(slot);
+                        phys.glycogen = Math.min(100f, phys.glycogen + 10f);
+                        phys.metabolicWaste = Math.min(100f, phys.metabolicWaste + 6f);
+                        data.markPhysiologyDirty();
+                    }
+                } catch (IllegalArgumentException ignored) { }
+            }
+            level.playSound(null, host.blockPosition(), JRSounds.SLIME_SWALLOW, SoundSource.PLAYERS, 0.55f, 1.25f);
+            level.sendParticles(PINK_DUST, host.getX(), host.getY() + 1.0, host.getZ(), 8, 0.3, 0.25, 0.3, 0.02);
+            host.sendOverlayMessage(Component.literal("§d体内的粉白蛔虫娘替你中和并代消化了食物毒素（已转化为她的糖原~♡）"));
+        }
 
         if (sweet) {
             level.playSound(null, host.blockPosition(), JRSounds.ASCARIS_BELL, SoundSource.PLAYERS, 0.5f, 1.35f);
@@ -394,6 +454,15 @@ public final class AscarisHostController {
                     AscarisVisualEventPayload.EVENT_HUNGER_NIBBLE, host.getId(), 3, 1));
         }
         syncHostSummaryToClient(host);
+    }
+
+    public static boolean isUncleanOrToxicFood(ItemStack stack) {
+        return stack.is(net.minecraft.world.item.Items.ROTTEN_FLESH)
+                || stack.is(net.minecraft.world.item.Items.SPIDER_EYE)
+                || stack.is(net.minecraft.world.item.Items.POISONOUS_POTATO)
+                || stack.is(net.minecraft.world.item.Items.PUFFERFISH)
+                || stack.is(net.minecraft.world.item.Items.CHICKEN)
+                || stack.is(net.minecraft.world.item.Items.SUSPICIOUS_STEW);
     }
 
     /** 将宿主体内寄宿状态同步给客户端（param = 1 寄宿 / 0 无寄宿；value 打包 饱食/亲密/执念） */
@@ -420,6 +489,10 @@ public final class AscarisHostController {
         tag.putInt("Affection", a.getAffection());
         tag.putInt("Obsession", a.getObsession());
         tag.putFloat("VisualScale", a.getVisualScale());
+        tag.putInt("MoltStage", a.getMoltStage());
+        tag.putInt("MoltProgress", a.getMoltProgress());
+        tag.putInt("PiperazineResistance", a.getPiperazineResistance());
+        tag.putString("BodyRegionUuid", a.getBodyRegionOwnerUuid().toString());
         if (a.hasCustomName() && a.getCustomName() != null) {
             tag.putString("CustomName", a.getCustomName().getString());
         }
@@ -430,10 +503,20 @@ public final class AscarisHostController {
         a.setTame(true, true);
         a.tame(owner);
         a.setOrderedToSit(false);
+        a.setDormantDowned(false);
         a.setHunger(tag.getIntOr("Hunger", 80));
         a.setAffection(tag.getIntOr("Affection", 25));
         a.setObsession(tag.getIntOr("Obsession", 15));
         a.setVisualScale(tag.getFloatOr("VisualScale", 1.0f));
+        a.setMoltStage(tag.getIntOr("MoltStage", 1));
+        a.setMoltProgress(tag.getIntOr("MoltProgress", 0));
+        a.setPiperazineResistance(tag.getIntOr("PiperazineResistance", 0));
+        String regionUuidStr = tag.getStringOr("BodyRegionUuid", "");
+        if (!regionUuidStr.isEmpty()) {
+            try {
+                a.setBodyRegionOwnerUuid(java.util.UUID.fromString(regionUuidStr));
+            } catch (IllegalArgumentException ignored) { }
+        }
         float hp = tag.getFloatOr("Health", a.getMaxHealth());
         a.setHealth(Mth.clamp(hp, 2.0f, a.getMaxHealth()));
         String customName = tag.getStringOr("CustomName", "");

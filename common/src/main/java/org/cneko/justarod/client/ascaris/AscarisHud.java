@@ -54,6 +54,21 @@ public final class AscarisHud {
         boolean hosted = AscarisClientState.hasHostedAscaris()
                 || (player instanceof Pregnant p && p.hasHostedAscaris());
 
+        // 0. 粉白蛔虫娘体内：超克制暖桃色体温呼吸微晕 + 左上角硬核体内生理监护面板
+        if (AscarisClientState.hasBodyWarmth()) {
+            renderBodyWarmthVignette(g, w, h, time);
+        }
+
+        // 0.5 跨维度神经视窗取景框与遥控提示栏
+        if (AscarisClientState.isNeuralLinked()) {
+            renderNeuralLinkHud(g, mc.font, w, h, time);
+            return;
+        }
+
+        if (AscarisClientState.hasPhysiology()) {
+            renderPhysiologyHud(g, mc.font, time);
+        }
+
         // 1. 感染大气晕影（咳嗽低热 / 腹鸣尾影 / Ⅳ期剧痛脉动）
         renderInfectionAtmosphere(g, mc.font, w, h, time, stage);
 
@@ -71,6 +86,221 @@ public final class AscarisHud {
         if (AscarisClientState.hasWrapVisual()) {
             renderTailWrapOverlay(g, mc.font, w, h, time);
         }
+    }
+
+    private static void renderBodyWarmthVignette(GuiGraphicsExtractor g, int w, int h, float time) {
+        float weight = AscarisClientState.bodyWarmthWeight();
+        int mode = AscarisClientState.bodyWarmthMode();
+        boolean yandere = mode == 3;
+        boolean warmNook = mode == 2;
+
+        float wave;
+        int rgb;
+        float baseAlpha;
+        if (mode == 4) {
+            // 哌嗪（宝塔糖）弛缓麻痹：冰蓝静止微晕
+            wave = 0.35f + 0.25f * Mth.sin(time * 0.7f);
+            rgb = 0x7BA4E8;
+            baseAlpha = (22f + 12f * wave) * weight;
+        } else if (mode == 5) {
+            // 阿苯达唑微管断糖 / 炎症高热：焦灼橙红脉冲
+            wave = 0.5f + 0.5f * Mth.sin(time * 3.4f);
+            rgb = 0xE6523A;
+            baseAlpha = (26f + 22f * wave) * weight;
+        } else if (mode == 6) {
+            // 代谢废物蓄积 / 酸中毒：暗青雾气边
+            wave = 0.5f + 0.5f * Mth.sin(time * 1.9f);
+            rgb = 0x5C9B8E;
+            baseAlpha = (20f + 14f * wave) * weight;
+        } else if (yandere) {
+            // 真实感柔和双搏心跳（lub-dub）
+            float cycle = (time * 0.85f) % 1.0f;
+            float beat1 = Math.max(0f, 1.0f - Math.abs(cycle - 0.12f) / 0.09f);
+            float beat2 = Math.max(0f, 1.0f - Math.abs(cycle - 0.28f) / 0.08f) * 0.72f;
+            wave = Math.max(beat1, beat2);
+            float obsScale = Mth.clamp((AscarisClientState.bodyWarmthObsession() - 45) / 55.0f, 0.2f, 1.0f);
+            rgb = 0xC82458;
+            baseAlpha = (22f + 22f * obsScale + 22f * wave) * weight;
+        } else if (warmNook) {
+            wave = 0.5f + 0.5f * Mth.sin(time * 1.35f);
+            rgb = 0xFFBC96;
+            baseAlpha = (26f + 16f * wave) * weight;
+        } else {
+            wave = 0.5f + 0.5f * Mth.sin(time * 1.45f);
+            rgb = 0xFFB09E;
+            baseAlpha = (15f + 12f * wave) * weight;
+        }
+
+        int a = Mth.clamp(Math.round(baseAlpha), 0, 96);
+        if (a <= 2) return;
+        int edge = (a << 24) | rgb;
+        int clear = rgb & 0x00FFFFFF;
+        int bandH = Math.max(24, h / (warmNook ? 4 : 5));
+        g.fillGradient(0, 0, w, bandH, edge, clear);
+        g.fillGradient(0, h - bandH, w, h, clear, edge);
+
+        // 极轻左右柔和渐隐暖边（6 阶平滑衰减，无硬切接缝且保证视野中心完全明亮清晰）
+        int sideSteps = 6;
+        int stepW = Math.max(3, w / 90);
+        for (int i = 0; i < sideSteps; i++) {
+            float t = 1.0f - (i / (float) sideSteps);
+            int sa = Math.round((a * 0.55f) * t * t);
+            if (sa <= 1) continue;
+            int sc = (sa << 24) | rgb;
+            int xL = i * stepW;
+            int xR = w - (i + 1) * stepW;
+            g.fill(xL, 0, xL + stepW, h, sc);
+            g.fill(xR, 0, xR + stepW, h, sc);
+        }
+    }
+
+    /** 左上角精炼生物生理监护面板（实时反映静水压/糖原/代谢/体温/消化/生殖/体壁与双药药理，不遮挡中央视野） */
+    private static void renderPhysiologyHud(GuiGraphicsExtractor g, Font font, float time) {
+        int pressure = AscarisClientState.physPressure();
+        int glycogen = AscarisClientState.physGlycogen();
+        int waste = AscarisClientState.physWaste();
+        float tempC = AscarisClientState.physTempC();
+        int uterus = AscarisClientState.physUterus();
+        int rectum = AscarisClientState.physRectum();
+        int wall = AscarisClientState.physWallIntegrity();
+        int drug = AscarisClientState.physDrugType();
+        int ovary = AscarisClientState.physOvary();
+        int boluses = AscarisClientState.physBolusCount();
+        int breaches = AscarisClientState.physBreachCount();
+        int flags = AscarisClientState.physFlags();
+        boolean ovipositing = (flags & 8) != 0;
+        boolean suction = (flags & 128) != 0;
+
+        String actLabel = switch (AscarisClientState.physHostActivity()) {
+            case 1 -> "游走";
+            case 2 -> "疾跑";
+            case 3 -> "钻缝";
+            case 4 -> "缠绕";
+            case 5 -> "蜷缩";
+            case 6 -> "睡眠";
+            case 7 -> "虚弱";
+            default -> "静息";
+        };
+        String tempColor = (tempC >= 38.4f) ? "§c" : ((tempC <= 35.8f) ? "§b" : "§6");
+        Component titleLine = Component.literal("§d✦ 体内生理 §7[" + actLabel + "] " + tempColor + String.format("%.1f°C", tempC));
+        String gutTag = suction ? "§e抽吸中" : (AscarisClientState.physPeristalsis() ? "§d蠕动" : (drug == 1 ? "§b停摆" : "§7平稳"));
+        Component gutLine = Component.literal("§7消化: §f食糜" + boluses + " §7| " + gutTag + " §7| 直肠§6" + rectum + "%");
+        Component reproLine = Component.literal(ovipositing
+                ? "§d生殖: §f⚡产道宫缩排卵中 §7(子宫" + uterus + "%)"
+                : "§7生殖: 卵§f" + ovary + "%§7→子宫§d" + uterus + "% §7| 壁§a" + wall + "%" + (breaches > 0 ? "§c(-" + breaches + ")" : ""));
+        Component drugLine = (drug == 0) ? null : Component.literal(drug == 1
+                ? "§b⚠ 哌嗪麻痹: 神经阻滞·括约肌松弛"
+                : "§c⚠ 阿苯达唑: 断糖高热·去排泄管冲洗!");
+
+        int maxW = Math.max(font.width(titleLine), Math.max(font.width(gutLine), font.width(reproLine)));
+        if (drugLine != null) {
+            maxW = Math.max(maxW, font.width(drugLine) + 4);
+        }
+
+        int x = 8;
+        int y = 8;
+        int panelW = Math.max(172, maxW + 12);
+        int panelH = (drug != 0) ? 94 : 80;
+        g.fill(x, y, x + panelW, y + panelH, 0x9A180B13);
+        int topBorder = switch (drug) {
+            case 1 -> 0xDD7BA8F0;
+            case 2 -> 0xDDE8543C;
+            default -> 0xCCFF9AC2;
+        };
+        g.fill(x, y, x + panelW, y + 1, topBorder);
+        g.fill(x, y + panelH - 1, x + panelW, y + panelH, 0x66FF9AC2);
+
+        g.text(font, titleLine, x + 5, y + 4, 0xFFFFEAF2);
+
+        // 3 条核心内稳态微进度条
+        float kpa = Math.round(pressure * 2.5f) / 10.0f;
+        int pCol = (pressure <= 35) ? 0xFF7AAAF0 : (pressure >= 80 ? 0xFFE84878 : 0xFFFF9AC2);
+        drawMiniVitalBar(g, font, x + 5, y + 16, panelW - 10, "静水压", kpa + "kPa", pressure / 100f, pCol);
+
+        int gCol = (glycogen <= 22) ? 0xFFE8A438 : 0xFFFFCF7A;
+        drawMiniVitalBar(g, font, x + 5, y + 28, panelW - 10, "糖原能", glycogen + "%", glycogen / 100f, gCol);
+
+        int wCol = (waste >= 70) ? 0xFF56B8A2 : 0xFF8BE2FF;
+        drawMiniVitalBar(g, font, x + 5, y + 40, panelW - 10, "代谢毒", waste + "%", waste / 100f, wCol);
+
+        // 器官实时流水线摘要（消化 + 生殖 + 体壁完整度）
+        g.text(font, gutLine, x + 5, y + 53, 0xFFEEDBE4);
+        g.text(font, reproLine, x + 5, y + 65, 0xFFEEDBE4);
+
+        if (drugLine != null) {
+            float blink = 0.65f + 0.35f * Mth.sin(time * 7.0f);
+            int bgA = Math.round(135 * blink);
+            int bgCol = (bgA << 24) | (drug == 1 ? 0x1A2E58 : 0x5A1610);
+            g.fill(x + 4, y + 77, x + panelW - 4, y + 90, bgCol);
+            g.text(font, drugLine, x + 6, y + 79, 0xFFFFFFFF);
+        }
+    }
+
+    private static void drawMiniVitalBar(GuiGraphicsExtractor g, Font font, int x, int y, int w,
+                                         String label, String valText, float frac, int fillArgb) {
+        g.text(font, Component.literal("§7" + label), x, y, 0xFFDFC8D4);
+        int barX = x + 36;
+        int barW = w - 76;
+        g.fill(barX, y + 2, barX + barW, y + 7, 0x99281320);
+        int fw = Math.round(barW * Mth.clamp(frac, 0f, 1f));
+        if (fw > 0) {
+            g.fill(barX, y + 2, barX + fw, y + 7, fillArgb);
+        }
+        g.text(font, Component.literal("§f" + valText), barX + barW + 4, y, 0xFFFFEAF2);
+    }
+
+    private static void renderNeuralLinkHud(GuiGraphicsExtractor g, Font font, int w, int h, float time) {
+        float pulse = 0.5f + 0.5f * Mth.sin(time * 3.0f);
+        int edgeA = Math.round(18 + 10 * pulse);
+        int edgeCol = (edgeA << 24) | PINK_MAIN;
+        int clear = PINK_MAIN & 0x00FFFFFF;
+        g.fillGradient(0, 0, w, h / 7, edgeCol, clear);
+        g.fillGradient(0, h - h / 7, w, h, clear, edgeCol);
+
+        // 四角粉白柔光神经视窗角标（水平内缩避开右上角药水效果图标框！）
+        int cornerA = Math.round(165 + 45 * pulse);
+        int cornerCol = (cornerA << 24) | CREAM_WHITE;
+        int accentCol = ((cornerA - 25) << 24) | PINK_MAIN;
+        int padX = 34;
+        int padY = 12;
+        int len = 16;
+        // 左上
+        g.fill(padX, padY, padX + len, padY + 2, cornerCol);
+        g.fill(padX, padY, padX + 2, padY + len, cornerCol);
+        g.fill(padX + 3, padY + 3, padX + 8, padY + 4, accentCol);
+        // 右上
+        g.fill(w - padX - len, padY, w - padX, padY + 2, cornerCol);
+        g.fill(w - padX - 2, padY, w - padX, padY + len, cornerCol);
+        g.fill(w - padX - 8, padY + 3, w - padX - 3, padY + 4, accentCol);
+        // 左下
+        g.fill(padX, h - padY - 2, padX + len, h - padY, cornerCol);
+        g.fill(padX, h - padY - len, padX + 2, h - padY, cornerCol);
+        // 右下
+        g.fill(w - padX - len, h - padY - 2, w - padX, h - padY, cornerCol);
+        g.fill(w - padX - 2, h - padY - len, w - padX, h - padY, cornerCol);
+
+        // 顶部神经连接状态胶囊
+        String poseTag = AscarisClientState.isNeuralCrawling() ? " §7| §b钻缝爬行"
+                : (AscarisClientState.isNeuralSitting() ? " §7| §e乖乖坐着" : " §7| §a自由活动");
+        Component header = Component.literal("§d✦ 神经视窗 · 粉白蛔虫娘视角 §7| §e饱食 "
+                + AscarisClientState.neuralHunger() + "% §7| §a生命 "
+                + AscarisClientState.neuralHpPct() + "%" + poseTag);
+        int hw = font.width(header);
+        int hx = (w - hw) / 2 - 8;
+        int hy = 14;
+        g.fill(hx, hy - 3, hx + hw + 16, hy + font.lineHeight + 3, 0x9C1D0B14);
+        g.fill(hx, hy - 3, hx + hw + 16, hy - 2, 0xCCFF9AC2);
+        g.text(font, header, hx + 8, hy, 0xFFFFEAF2);
+
+        // 底部遥控按键指引条
+        Component footer = Component.literal(
+                "§f[鼠标]§7环顾  §f[WASD]§7挪步  §f[空格]§7轻跳  §f[R]§7坐/起  §f[G]§7钻1格缝  §d[X / Shift]§f 返回体内");
+        int fw = font.width(footer);
+        int fx = (w - fw) / 2 - 8;
+        int fy = h - 26;
+        g.fill(fx, fy - 3, fx + fw + 16, fy + font.lineHeight + 3, 0x9C1D0B14);
+        g.fill(fx, fy + font.lineHeight + 2, fx + fw + 16, fy + font.lineHeight + 3, 0xCCFF9AC2);
+        g.text(font, footer, fx + 8, fy, 0xFFFFDCE8);
     }
 
     private static void renderInfectionAtmosphere(GuiGraphicsExtractor g, Font font, int w, int h, float time, int stage) {

@@ -45,10 +45,18 @@ public final class BodyAscarisBridge {
             if (hosted != null) {
                 AscarisHostController.applySerializedState(existing, hosted, host);
                 if (visitor != host) {
-                    existing.playTransientPose(AscarisPoseState.THREATEN, 44);
-                    existing.triggerThreatenStrike(false);
-                    visitor.sendSystemMessage(Component.literal(
-                            "§c§o「喂！不准随便钻进我主人的身体里！快滚出去啦！」§7（宿主寄宿的粉白蛔虫娘触发领地意识！）"));
+                    boolean holdingSweet = AscarisEntity.isSweetTreat(visitor.getMainHandItem())
+                            || AscarisEntity.isSweetTreat(visitor.getOffhandItem());
+                    if (holdingSweet) {
+                        existing.playTransientPose(AscarisPoseState.LOOK_AROUND, 44);
+                        visitor.sendSystemMessage(Component.literal(
+                                "§d「唔……虽然这里是主人的身体，看在甜食的份上就先不抽你了，不许乱碰哦~」"));
+                    } else {
+                        existing.playTransientPose(AscarisPoseState.THREATEN, 44);
+                        existing.triggerThreatenStrike(false);
+                        visitor.sendSystemMessage(Component.literal(
+                                "§c§o「喂！不准随便钻进我主人的身体里！快滚出去啦！」§7（宿主寄宿的粉白蛔虫娘触发领地意识！）"));
+                    }
                 }
             } else {
                 syncScaleToStage(existing, stage);
@@ -72,10 +80,18 @@ public final class BodyAscarisBridge {
             AscarisHostController.applySerializedState(resident, hosted, host);
             bodyLevel.addFreshEntity(resident);
             if (visitor != host) {
-                resident.playTransientPose(AscarisPoseState.THREATEN, 44);
-                resident.triggerThreatenStrike(false);
-                visitor.sendSystemMessage(Component.literal(
-                        "§c§o「这里是我主人的身体，外人不准擅自闯进来！」§7（住在 " + host.getName().getString() + " 体内的她立刻哈气甩尾护领地！）"));
+                boolean holdingSweet = AscarisEntity.isSweetTreat(visitor.getMainHandItem())
+                        || AscarisEntity.isSweetTreat(visitor.getOffhandItem());
+                if (holdingSweet) {
+                    resident.playTransientPose(AscarisPoseState.LOOK_AROUND, 44);
+                    visitor.sendSystemMessage(Component.literal(
+                            "§d「唔……这里是 " + host.getName().getString() + " 的体内哦，看在你带着甜食的份上就先放你一马~」"));
+                } else {
+                    resident.playTransientPose(AscarisPoseState.THREATEN, 44);
+                    resident.triggerThreatenStrike(false);
+                    visitor.sendSystemMessage(Component.literal(
+                            "§c§o「这里是我主人的身体，外人不准擅自闯进来！」§7（住在 " + host.getName().getString() + " 体内的她立刻哈气甩尾护领地！）"));
+                }
             }
             return;
         }

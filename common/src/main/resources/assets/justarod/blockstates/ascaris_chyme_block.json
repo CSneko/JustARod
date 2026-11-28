@@ -1,0 +1,40 @@
+{
+  "variants": {
+    "bites=0,flavor=0": {
+      "model": "justarod:block/ascaris_chyme_block"
+    },
+    "bites=1,flavor=0": {
+      "model": "justarod:block/ascaris_chyme_block_bite1"
+    },
+    "bites=2,flavor=0": {
+      "model": "justarod:block/ascaris_chyme_block_bite2"
+    },
+    "bites=3,flavor=0": {
+      "model": "justarod:block/ascaris_chyme_block_bite3"
+    },
+    "bites=0,flavor=1": {
+      "model": "justarod:block/ascaris_chyme_block_glow"
+    },
+    "bites=1,flavor=1": {
+      "model": "justarod:block/ascaris_chyme_block_glow_bite1"
+    },
+    "bites=2,flavor=1": {
+      "model": "justarod:block/ascaris_chyme_block_glow_bite2"
+    },
+    "bites=3,flavor=1": {
+      "model": "justarod:block/ascaris_chyme_block_glow_bite3"
+    },
+    "bites=0,flavor=2": {
+      "model": "justarod:block/ascaris_chyme_block_honey"
+    },
+    "bites=1,flavor=2": {
+      "model": "justarod:block/ascaris_chyme_block_honey_bite1"
+    },
+    "bites=2,flavor=2": {
+      "model": "justarod:block/ascaris_chyme_block_honey_bite2"
+    },
+    "bites=3,flavor=2": {
+      "model": "justarod:block/ascaris_chyme_block_honey_bite3"
+    }
+  }
+}

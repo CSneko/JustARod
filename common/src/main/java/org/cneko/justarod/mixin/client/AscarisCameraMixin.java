@@ -34,6 +34,15 @@ public abstract class AscarisCameraMixin {
         Entity camEntity = self.entity();
         if (camEntity == null) return;
         Minecraft mc = Minecraft.getInstance();
+
+        // 体内神经视窗：零延迟同步鼠标朝向，让玩家透过粉白蛔虫娘双眼丝滑环顾四周！
+        if (camEntity instanceof AscarisEntity && AscarisClientState.isNeuralLinked() && mc.player != null) {
+            if (!self.isDetached()) {
+                setRotation(mc.player.getYRot(), Mth.clamp(mc.player.getXRot(), -65f, 65f));
+            }
+            return;
+        }
+
         if (camEntity != mc.player) return;
 
         float pt = self.getCameraEntityPartialTicks(tracker);
@@ -86,6 +95,25 @@ public abstract class AscarisCameraMixin {
             if (tighten > 0.01f) {
                 yawOff += Mth.sin(t * 24.0f) * tighten * 1.2f * w;
                 pitchOff += Mth.cos(t * 20.0f) * tighten * 1.0f * w;
+            }
+        }
+        // 粉白蛔虫娘体内静水骨骼微律动（外界疾跑/缠绕/蠕动/阿苯达唑毒发时的克制生理起伏，绝不晕 3D）
+        if (AscarisClientState.hasPhysiology()) {
+            int act = AscarisClientState.physHostActivity();
+            int drug = AscarisClientState.physDrugType();
+            if (act == 2 || act == 4) {
+                // 外界疾跑或尾巴缠绕：静水压搏动微晃
+                pitchOff += Mth.sin(t * 5.2f) * 0.36f;
+                yawOff += Mth.cos(t * 2.6f) * 0.24f;
+            } else if (act == 1 || act == 3) {
+                pitchOff += Mth.sin(t * 3.0f) * 0.16f;
+            }
+            if (drug == 2) {
+                // 阿苯达唑炎症痉挛微颤
+                yawOff += Mth.sin(t * 16.0f) * 0.28f;
+                pitchOff += Mth.cos(t * 13.0f) * 0.22f;
+            } else if (AscarisClientState.physPeristalsis()) {
+                pitchOff += Mth.sin(t * 2.2f) * 0.14f;
             }
         }
 

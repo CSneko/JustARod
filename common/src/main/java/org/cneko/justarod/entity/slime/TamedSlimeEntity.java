@@ -1889,8 +1889,25 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
             float progress = storage.struggleProgress().get(i);
             progress += autoStrugglePerTick(entity);
             storage.struggleProgress().set(i, progress);
+            if (entity instanceof org.cneko.justarod.ascaris.AscarisEntity && this.tickCount % 6 == 0) {
+                serverLevel.sendParticles(new net.minecraft.core.particles.DustParticleOptions(0xFF9AC2, 0.9f),
+                        this.getX(), this.getY() + this.tier().blockSize() * 0.5D, this.getZ(),
+                        5, 0.35D, 0.25D, 0.35D, 0.03D);
+            }
             if (progress >= struggleThreshold()) {
+                boolean wasAscaris = entity instanceof org.cneko.justarod.ascaris.AscarisEntity;
                 releaseEntity(uuid);
+                if (wasAscaris && entity instanceof org.cneko.justarod.ascaris.AscarisEntity ascaris) {
+                    serverLevel.playSound(null, this.blockPosition(), org.cneko.justarod.sound.JRSounds.SLIME_SWALLOW,
+                            net.minecraft.sounds.SoundSource.NEUTRAL, 0.85F, 0.82F);
+                    serverLevel.sendParticles(new net.minecraft.core.particles.DustParticleOptions(0xFFF2F7, 0.9f),
+                            ascaris.getX(), ascaris.getY() + 0.7D, ascaris.getZ(), 14, 0.4D, 0.35D, 0.4D, 0.05D);
+                    ascaris.playTransientPose(org.cneko.justarod.ascaris.AscarisPoseState.HAPPY, 44);
+                    for (Player near : serverLevel.getEntitiesOfClass(Player.class, this.getBoundingBox().inflate(12.0D))) {
+                        near.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                                "§d粉白蛔虫娘凭借耐酸角质层在史莱姆肚子里疯狂扭动，把史莱姆撑得打了个大嗝把她吐了出来！"));
+                    }
+                }
                 i--;
             }
         }
@@ -1971,8 +1988,9 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
         return -1;
     }
 
-    /** 每个实体每 tick 自动积累的挣扎进度：越大的史莱姆越难逃出 */
+    /** 每个实体每 tick 自动积累的挣扎进度：越大的史莱姆越难逃出（粉白蛔虫娘凭耐酸角质层剧烈扭动可极速挣脱！） */
     private float autoStrugglePerTick(Entity entity) {
+        if (entity instanceof org.cneko.justarod.ascaris.AscarisEntity) return 8.0F;
         if (isUncontrolled() && entity instanceof Player) return 0;
         float base = entity instanceof Player ? 0.35F : 0.5F;
         // 阈值随等级线性上升，这里让"漂移速度"相应下降
@@ -2022,7 +2040,8 @@ public class TamedSlimeEntity extends Slime implements VisualSized {
     public boolean isDecomposing() { return decomposeTasks > 0 || stepActive; }
     public boolean isDecomposingItemSlot(int slot) { return stepActive && activeItemSlot == slot; }
     private boolean isProtectedFromDigestion(Entity entity, boolean automatic) {
-        return (entity instanceof Player && (isUncontrolled() || entityData.get(DATA_CAPTIVITY)))
+        return entity instanceof org.cneko.justarod.ascaris.AscarisEntity
+                || (entity instanceof Player && (isUncontrolled() || entityData.get(DATA_CAPTIVITY)))
                 || (automatic && entity instanceof Player p && isDriver(p));
     }
     public boolean hasDigestibleContent() {

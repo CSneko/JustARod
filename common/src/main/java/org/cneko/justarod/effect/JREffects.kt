@@ -41,6 +41,8 @@ class JREffects {
         val INJECTED_LAVA_EFFECT: Holder<MobEffect> = register("injected_lava", InjectedLavaEffect())
         /** 蛔虫感染 */
         val ASCARIS_INFECTION_EFFECT: Holder<MobEffect> = register("ascaris_infection", AscarisInfectionEffect())
+        /** 暖腹余温（粉白蛔虫娘体内温柔陪伴余韵） */
+        val WARM_BELLY_EFFECT: Holder<MobEffect> = register("warm_belly", WarmBellyEffect())
         fun init(){
         }
 

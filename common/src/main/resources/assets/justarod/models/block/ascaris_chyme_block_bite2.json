@@ -1,0 +1,21 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "justarod:block/ascaris_chyme_block",
+    "all": "justarod:block/ascaris_chyme_block"
+  },
+  "elements": [
+    {
+      "from": [3, 0, 3],
+      "to": [13, 8, 13],
+      "faces": {
+        "down":  { "texture": "#all", "cullface": "down" },
+        "up":    { "texture": "#all" },
+        "north": { "texture": "#all" },
+        "south": { "texture": "#all" },
+        "west":  { "texture": "#all" },
+        "east":  { "texture": "#all" }
+      }
+    }
+  ]
+}

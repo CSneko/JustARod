@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "justarod:block/ascaris_muscle_horizontal",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
+      "model": "justarod:block/ascaris_muscle"
+    },
+    "axis=z": {
+      "model": "justarod:block/ascaris_muscle_horizontal",
+      "x": 90
+    }
+  }
+}

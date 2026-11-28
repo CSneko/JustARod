@@ -116,6 +116,19 @@ public class JREntities {
                     .build(ASCARIS_KEY)
     );
 
+    // ===== 粉白体腔免疫小细胞（体内维度自由漂浮的共生免疫活体） =====
+    public static final Identifier ASCARIS_COELOMOCYTE_ID = Identifier.fromNamespaceAndPath(MODID, "ascaris_coelomocyte");
+    public static final ResourceKey<EntityType<?>> ASCARIS_COELOMOCYTE_KEY = ResourceKey.create(Registries.ENTITY_TYPE, ASCARIS_COELOMOCYTE_ID);
+    public static final EntityType<org.cneko.justarod.body.AscarisCoelomocyteEntity> ASCARIS_COELOMOCYTE = Registry.register(
+            BuiltInRegistries.ENTITY_TYPE,
+            ASCARIS_COELOMOCYTE_ID,
+            EntityType.Builder.<org.cneko.justarod.body.AscarisCoelomocyteEntity>of(org.cneko.justarod.body.AscarisCoelomocyteEntity::new, MobCategory.AMBIENT)
+                    .sized(0.58f, 0.58f)
+                    .clientTrackingRange(6)
+                    .updateInterval(2)
+                    .build(ASCARIS_COELOMOCYTE_KEY)
+    );
+
     public static void init(){
         FabricDefaultAttributeRegistry.register(PET_OWNER_NEKO, NekoEntity.createNekoAttributes());
         BiomeModifications.addSpawn(BiomeSelectors.includeByKey(net.minecraft.world.level.biome.Biomes.PLAINS),

@@ -1,7 +1,7 @@
 package org.cneko.justarod.ascaris;
 
 /**
- * High-level pose states for Ascaris-chan covering all 26 animations in ascaris.animation.json (v49).
+ * High-level pose states for Ascaris-chan covering v53 animations in ascaris.animation.json (49 animations).
  */
 public enum AscarisPoseState {
     NORMAL(0, "normal"),
@@ -22,7 +22,21 @@ public enum AscarisPoseState {
     YANDERE_TIGHTEN(15, "yandere_tighten"),
     STALK(16, "stalk"),
     THREATEN(17, "threaten"),
-    BED_WATCH(18, "bed_watch");
+    BED_WATCH(18, "bed_watch"),
+    // v53 新增姿态（保持 0..18 存档 ID 完全向后兼容）
+    BOAT(19, "boat"),
+    RIDE(20, "ride"),
+    SWIM(21, "swim"),
+    SWIM_STAND(22, "swim_stand"),
+    JUMP(23, "jump"),
+    SNEAK(24, "sneak"),
+    SNEAKING(25, "sneaking"),
+    LADDER_UP(26, "ladder_up"),
+    LADDER_STILLNESS(27, "ladder_stillness"),
+    LADDER_DOWN(28, "ladder_down"),
+    HURT(29, "hurt"),
+    FLY(30, "fly"),
+    ELYTRA(31, "elytra");
 
     private final int id;
     private final String commandName;
@@ -89,7 +103,19 @@ public enum AscarisPoseState {
                 || this == YANDERE_WRAP_IDLE
                 || this == YANDERE_TIGHTEN
                 || this == THREATEN
-                || this == BED_WATCH;
+                || this == BED_WATCH
+                || this == BOAT
+                || this == RIDE
+                || this == SWIM
+                || this == SWIM_STAND
+                || this == JUMP
+                || this == SNEAK
+                || this == SNEAKING
+                || this == LADDER_UP
+                || this == LADDER_STILLNESS
+                || this == LADDER_DOWN
+                || this == FLY
+                || this == ELYTRA;
     }
 
     public static AscarisPoseState byId(int id) {
@@ -113,6 +139,10 @@ public enum AscarisPoseState {
         if ("curl_up".equals(lower) || "curl_idle".equals(lower)) return CURL_UP;
         if ("collapse_idle".equals(lower)) return COLLAPSE;
         if ("tail_wrap_idle".equals(lower)) return TAIL_WRAP;
+        if ("ladder".equals(lower)) return LADDER_UP;
+        if ("swimming".equals(lower)) return SWIM;
+        if ("elytra_fly".equals(lower)) return ELYTRA;
+        if ("attacked".equals(lower)) return HURT;
         return null;
     }
 }
